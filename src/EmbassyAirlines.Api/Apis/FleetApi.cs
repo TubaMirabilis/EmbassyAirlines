@@ -1,3 +1,6 @@
+using EmbassyAirlines.Application.Dtos;
+using EmbassyAirlines.Application.Exceptions;
+using EmbassyAirlines.Application.Queries;
 using Mediator;
 using Microsoft.AspNetCore.Mvc;
 

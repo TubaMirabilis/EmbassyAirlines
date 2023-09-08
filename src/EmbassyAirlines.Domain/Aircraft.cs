@@ -3,9 +3,10 @@ namespace EmbassyAirlines.Domain;
 public class Aircraft
 {
     public Guid Id { get; set; }
+    public DateTime CreatedAt { get; set; }
     public required string Registration { get; set; }
     public required string Model { get; set; }
-    public string Type { get; set; }
+    public required string Type { get; set; }
     public required int EconomySeats { get; set; }
     public required int BusinessSeats { get; set; }
     public required int FlightHours { get; set; }
