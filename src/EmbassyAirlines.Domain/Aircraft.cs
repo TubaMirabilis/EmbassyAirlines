@@ -9,7 +9,7 @@ public class Aircraft
     public required string Type { get; set; }
     public required int EconomySeats { get; set; }
     public required int BusinessSeats { get; set; }
-    public required int FlightHours { get; set; }
+    public required float FlightHours { get; set; }
     public required int BasicEmptyWeight { get; set; }
     public required int MaximumZeroFuelWeight { get; set; }
     public required int MaximumTakeoffWeight { get; set; }

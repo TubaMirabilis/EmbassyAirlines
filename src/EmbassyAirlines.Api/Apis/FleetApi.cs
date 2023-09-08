@@ -1,3 +1,4 @@
+using EmbassyAirlines.Application.Commands;
 using EmbassyAirlines.Application.Dtos;
 using EmbassyAirlines.Application.Exceptions;
 using EmbassyAirlines.Application.Queries;

@@ -16,6 +16,7 @@ internal sealed class FleetRepository : IFleetRepository
 
     public async Task<Aircraft?> GetAircraftById(Guid id, CancellationToken cancellationToken = default)
         => await _ctx.Aircraft.FindAsync(id);
+        
     public async Task AddAircraft(Aircraft aircraft, CancellationToken cancellationToken = default)
     {
         using var transaction = await _ctx.Database.BeginTransactionAsync(cancellationToken);
