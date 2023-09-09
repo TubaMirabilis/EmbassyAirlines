@@ -4,6 +4,7 @@ public class Aircraft
 {
     public Guid Id { get; set; }
     public DateTime CreatedAt { get; set; }
+    public DateTime UpdatedAt { get; set; }
     public required string Registration { get; set; }
     public required string Model { get; set; }
     public required string Type { get; set; }

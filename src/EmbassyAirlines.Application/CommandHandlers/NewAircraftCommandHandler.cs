@@ -16,7 +16,7 @@ public sealed class NewAircraftCommandHandler : ICommandHandler<NewAircraftDto, 
     {
         var mapper = new AircraftMapper();
         var aircraft = mapper.MapNewAircraftDtoToAircraft(command);
-        await _repository.AddAircraft(aircraft, cancellationToken);
+        await _repository.AddAircraftAsync(aircraft, cancellationToken);
         return mapper.MapAircraftToAircraftDto(aircraft);
     }
 }

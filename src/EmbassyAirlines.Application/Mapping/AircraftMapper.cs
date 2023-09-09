@@ -13,6 +13,7 @@ public partial class AircraftMapper
         var aircraft = NewAircraftDtoToAircraft(dto);
         aircraft.Id = Guid.NewGuid();
         aircraft.CreatedAt = DateTime.UtcNow;
+        aircraft.UpdatedAt = DateTime.UtcNow;
         return aircraft;
     }
     private partial Aircraft NewAircraftDtoToAircraft(NewAircraftDto dto);

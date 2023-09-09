@@ -4,7 +4,7 @@ using EmbassyAirlines.Application.Enums;
 
 namespace EmbassyAirlines.Application.Validators;
 
-public class UpdateAircraftDtoValidator : AbstractValidator<NewAircraftDto>
+public class UpdateAircraftDtoValidator : AbstractValidator<UpdateAircraftDto>
 {
     public UpdateAircraftDtoValidator()
     {
