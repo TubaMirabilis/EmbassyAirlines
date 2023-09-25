@@ -20,6 +20,7 @@ builder.Services.AddMediator(options =>
 {
     options.ServiceLifetime = ServiceLifetime.Scoped;
 });
+builder.Services.AddOutputCache();
 var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
@@ -28,5 +29,6 @@ if (app.Environment.IsDevelopment())
 }
 app.UseCors("CorsPolicy");
 app.UseHttpsRedirection();
+app.UseOutputCache();
 app.MapFleetApi();
 app.Run();
