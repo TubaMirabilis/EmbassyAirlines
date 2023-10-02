@@ -15,9 +15,9 @@ public sealed class GetAircraftByIdHandler : IQueryHandler<GetAircraftById, Airc
     {
         _repository = repository;
     }
-    public async ValueTask<AircraftDto> Handle(GetAircraftById query, CancellationToken cancellationToken)
+    public async ValueTask<AircraftDto> Handle(GetAircraftById query, CancellationToken ct)
     {
-        var aircraft = await _repository.GetAircraftByIdAsync(query.Id, cancellationToken);
+        var aircraft = await _repository.GetAircraftByIdAsync(query.Id, ct);
         if (aircraft is null)
         {
             throw new NotFoundException($"Aircraft with id {query.Id} not found");

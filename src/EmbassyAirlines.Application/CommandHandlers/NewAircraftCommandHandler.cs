@@ -12,11 +12,11 @@ public sealed class NewAircraftCommandHandler : ICommandHandler<NewAircraftDto, 
     {
         _repository = repository;
     }
-    public async ValueTask<AircraftDto> Handle(NewAircraftDto command, CancellationToken cancellationToken)
+    public async ValueTask<AircraftDto> Handle(NewAircraftDto command, CancellationToken ct)
     {
         var mapper = new AircraftMapper();
         var aircraft = mapper.MapNewAircraftDtoToAircraft(command);
-        await _repository.AddAircraftAsync(aircraft, cancellationToken);
+        await _repository.AddAircraftAsync(aircraft, ct);
         return mapper.MapAircraftToAircraftDto(aircraft);
     }
 }

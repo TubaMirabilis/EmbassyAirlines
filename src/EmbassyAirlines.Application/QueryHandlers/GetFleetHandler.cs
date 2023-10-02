@@ -15,10 +15,10 @@ public sealed class GetFleetHandler : IQueryHandler<GetFleet, IEnumerable<Aircra
     {
         _repository = repository;
     }
-    public async ValueTask<IEnumerable<AircraftDto>> Handle(GetFleet query, CancellationToken cancellationToken)
+    public async ValueTask<IEnumerable<AircraftDto>> Handle(GetFleet query, CancellationToken ct)
     {
         var mapper = new AircraftMapper();
-        var aircraft = await _repository.GetFleetAsync(cancellationToken);
+        var aircraft = await _repository.GetFleetAsync(ct);
         return aircraft.Select(a => mapper.MapAircraftToAircraftDto(a));
     }
 }

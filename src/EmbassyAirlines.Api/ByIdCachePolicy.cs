@@ -5,7 +5,7 @@ namespace EmbassyAirlines.Api;
 
 public class ByIdCachePolicy : IOutputCachePolicy
 {
-    ValueTask IOutputCachePolicy.CacheRequestAsync(OutputCacheContext context, CancellationToken cancellationToken)
+    ValueTask IOutputCachePolicy.CacheRequestAsync(OutputCacheContext context, CancellationToken ct)
     {
         var idRouteVal = context.HttpContext.Request.RouteValues["id"];
         if (idRouteVal is null)
@@ -24,12 +24,12 @@ public class ByIdCachePolicy : IOutputCachePolicy
         return ValueTask.CompletedTask;
     }
 
-    ValueTask IOutputCachePolicy.ServeFromCacheAsync(OutputCacheContext context, CancellationToken cancellationToken)
+    ValueTask IOutputCachePolicy.ServeFromCacheAsync(OutputCacheContext context, CancellationToken ct)
     {
         return ValueTask.CompletedTask;
     }
 
-    ValueTask IOutputCachePolicy.ServeResponseAsync(OutputCacheContext context, CancellationToken cancellationToken)
+    ValueTask IOutputCachePolicy.ServeResponseAsync(OutputCacheContext context, CancellationToken ct)
     {
         var response = context.HttpContext.Response;
 

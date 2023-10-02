@@ -9,7 +9,7 @@ public sealed class MessageValidatorBehaviour<TMessage, TResponse> : IPipelineBe
 {
     public ValueTask<TResponse> Handle(
         TMessage message,
-        CancellationToken cancellationToken,
+        CancellationToken ct,
         MessageHandlerDelegate<TMessage, TResponse> next
     )
     {
@@ -17,6 +17,6 @@ public sealed class MessageValidatorBehaviour<TMessage, TResponse> : IPipelineBe
         {
             throw new ValidationException(validationError);
         }
-        return next(message, cancellationToken);
+        return next(message, ct);
     }
 }

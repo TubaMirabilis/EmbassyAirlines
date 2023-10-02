@@ -13,13 +13,13 @@ public sealed class ErrorLoggingBehaviour<TMessage, TResponse> : IPipelineBehavi
     }
     public async ValueTask<TResponse> Handle(
         TMessage message,
-        CancellationToken cancellationToken,
+        CancellationToken ct,
         MessageHandlerDelegate<TMessage, TResponse> next
     )
     {
         try
         {
-            return await next(message, cancellationToken);
+            return await next(message, ct);
         }
         catch (Exception ex)
         {

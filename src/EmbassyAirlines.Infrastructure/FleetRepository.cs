@@ -12,28 +12,28 @@ internal sealed class FleetRepository : IFleetRepository
     {
         _ctx = ctx;
     }
-    public async Task<IEnumerable<Aircraft>> GetFleetAsync(CancellationToken cancellationToken = default)
-        => await _ctx.Aircraft.ToListAsync(cancellationToken);
+    public async Task<IEnumerable<Aircraft>> GetFleetAsync(CancellationToken ct = default)
+        => await _ctx.Aircraft.ToListAsync(ct);
 
-    public async Task<Aircraft?> GetAircraftByIdAsync(Guid id, CancellationToken cancellationToken = default)
-        => await _ctx.Aircraft.FindAsync(id);
+    public async Task<Aircraft?> GetAircraftByIdAsync(Guid id, CancellationToken ct = default)
+        => await _ctx.Aircraft.FindAsync(id, ct);
 
-    public async Task AddAircraftAsync(Aircraft aircraft, CancellationToken cancellationToken = default)
+    public async Task AddAircraftAsync(Aircraft aircraft, CancellationToken ct = default)
     {
-        using var transaction = await _ctx.Database.BeginTransactionAsync(cancellationToken);
+        using var transaction = await _ctx.Database.BeginTransactionAsync(ct);
         try
         {
             _ctx.Aircraft.Add(aircraft);
-            await _ctx.SaveChangesAsync(cancellationToken);
-            await transaction.CommitAsync(cancellationToken);
+            await _ctx.SaveChangesAsync(ct);
+            await transaction.CommitAsync(ct);
         }
         catch (Exception)
         {
-            await transaction.RollbackAsync(cancellationToken);
+            await transaction.RollbackAsync(ct);
             throw;
         }
     }
-    public async Task<int> UpdateAircraftAsync(Guid id, UpdateAircraftDto updatedAircraft, CancellationToken cancellationToken = default)
+    public async Task<int> UpdateAircraftAsync(Guid id, UpdateAircraftDto updatedAircraft, CancellationToken ct = default)
         => await _ctx.Aircraft.Where(a => a.Id == id)
             .ExecuteUpdateAsync(updates =>
                 updates.SetProperty(a => a.UpdatedAt, DateTime.UtcNow)
@@ -50,5 +50,8 @@ internal sealed class FleetRepository : IFleetRepository
                     .SetProperty(a => a.MaximumCargoWeight, updatedAircraft.MaximumCargoWeight)
                     .SetProperty(a => a.FuelOnboard, updatedAircraft.FuelOnboard)
                     .SetProperty(a => a.FuelCapacity, updatedAircraft.FuelCapacity)
-                    .SetProperty(a => a.MinimumCabinCrew, updatedAircraft.MinimumCabinCrew), cancellationToken);
+                    .SetProperty(a => a.MinimumCabinCrew, updatedAircraft.MinimumCabinCrew), ct);
+    public async Task<int> DeleteAircraftAsync(Guid id, CancellationToken ct = default)
+        => await _ctx.Aircraft.Where(a => a.Id == id)
+            .ExecuteDeleteAsync(ct);
 }

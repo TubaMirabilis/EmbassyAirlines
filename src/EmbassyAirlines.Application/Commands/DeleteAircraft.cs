@@ -1,3 +1,5 @@
+using Mediator;
+
 namespace EmbassyAirlines.Application.Commands;
 
-public sealed record DeleteAircraft(Guid Id);
+public sealed record DeleteAircraft(Guid Id): ICommand<Unit>;

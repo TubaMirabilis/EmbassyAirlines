@@ -14,14 +14,14 @@ public sealed class UpdateAircraftCommandHandler : ICommandHandler<UpdateAircraf
     {
         _repository = repository;
     }
-    public async ValueTask<AircraftDto> Handle(UpdateAircraft command, CancellationToken cancellationToken)
+    public async ValueTask<AircraftDto> Handle(UpdateAircraft command, CancellationToken ct)
     {
-        var rowsAffected = await _repository.UpdateAircraftAsync(command.Id, command.Dto, cancellationToken);
+        var rowsAffected = await _repository.UpdateAircraftAsync(command.Id, command.Dto, ct);
         if (rowsAffected == 0)
         {
             throw new NotFoundException($"Aircraft with id {command.Id} not found");
         }
-        var aircraft = await _repository.GetAircraftByIdAsync(command.Id, cancellationToken);
+        var aircraft = await _repository.GetAircraftByIdAsync(command.Id, ct);
         return new AircraftMapper().MapAircraftToAircraftDto(aircraft!);
     }
 }
