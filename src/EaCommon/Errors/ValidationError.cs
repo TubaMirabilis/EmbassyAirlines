@@ -1,3 +1,3 @@
-namespace EmbassyAirlines.Application.Errors;
+namespace EaCommon.Errors;
 
 public sealed record ValidationError(IEnumerable<string> Errors);
