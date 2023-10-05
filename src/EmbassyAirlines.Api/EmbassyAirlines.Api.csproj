@@ -18,6 +18,7 @@
   <ItemGroup>
     <ProjectReference Include="..\EmbassyAirlines.Application\EmbassyAirlines.Application.csproj" />
     <ProjectReference Include="..\EmbassyAirlines.Infrastructure\EmbassyAirlines.Infrastructure.csproj" />
+    <ProjectReference Include="..\EaCommon\EaCommon.csproj" />
   </ItemGroup>
 
 </Project>

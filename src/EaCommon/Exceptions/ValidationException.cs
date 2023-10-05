@@ -1,6 +1,6 @@
-using EmbassyAirlines.Application.Errors;
+using EaCommon.Errors;
 
-namespace EmbassyAirlines.Application.Exceptions;
+namespace EaCommon.Exceptions;
 
 public sealed class ValidationException : Exception
 {

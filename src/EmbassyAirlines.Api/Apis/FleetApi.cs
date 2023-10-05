@@ -1,3 +1,4 @@
+using EaCommon.Exceptions;
 using EmbassyAirlines.Application.Commands;
 using EmbassyAirlines.Application.Dtos;
 using EmbassyAirlines.Application.Exceptions;

@@ -1,8 +1,8 @@
-using EmbassyAirlines.Application.Errors;
+using EaCommon.Errors;
 using Mediator;
 using System.Diagnostics.CodeAnalysis;
 
-namespace EmbassyAirlines.Application.Interfaces;
+namespace EaCommon.Interfaces;
 
 public interface IValidate : IMessage
 {

@@ -1,3 +1,3 @@
-namespace EaIdentity.Application.Dtos;
+namespace EaIdentity.Domain;
 
-public sealed record AuthenticationResult(string Token, string RefreshToken, bool Success, IEnumerable<string> Errors);
+public sealed record AuthenticationResult(string? Token, string? RefreshToken, bool Success, IEnumerable<string> Errors);

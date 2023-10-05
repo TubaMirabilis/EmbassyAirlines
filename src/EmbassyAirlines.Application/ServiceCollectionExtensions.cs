@@ -1,4 +1,4 @@
-using EmbassyAirlines.Application.PipelineBehaviors;
+using EaCommon.PipelineBehaviors;
 using Mediator;
 using Microsoft.Extensions.DependencyInjection;
 

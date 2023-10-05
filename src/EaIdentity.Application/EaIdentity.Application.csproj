@@ -2,6 +2,12 @@
 
   <ItemGroup>
     <ProjectReference Include="..\EaIdentity.Domain\EaIdentity.Domain.csproj" />
+    <ProjectReference Include="..\EaCommon\EaCommon.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="FluentValidation" Version="11.7.1" />
+    <PackageReference Include="Mediator.Abstractions" Version="2.1.7" />
   </ItemGroup>
 
   <PropertyGroup>

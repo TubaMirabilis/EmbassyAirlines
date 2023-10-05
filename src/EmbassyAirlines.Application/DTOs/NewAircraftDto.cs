@@ -1,6 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
-using EmbassyAirlines.Application.Errors;
-using EmbassyAirlines.Application.Interfaces;
+using EaCommon.Errors;
+using EaCommon.Interfaces;
 using EmbassyAirlines.Application.Validators;
 using Mediator;
 

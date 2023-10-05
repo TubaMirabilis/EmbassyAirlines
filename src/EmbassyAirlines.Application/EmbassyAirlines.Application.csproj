@@ -8,13 +8,13 @@
 
   <ItemGroup>
     <PackageReference Include="FluentValidation" Version="11.7.1" />
-    <PackageReference Include="Mediator.Abstractions" Version="2.1.5" />
-    <PackageReference Include="Microsoft.Extensions.Logging" Version="7.0.0" />
+    <PackageReference Include="Mediator.Abstractions" Version="2.1.7" />
     <PackageReference Include="Riok.Mapperly" Version="3.1.0" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\EmbassyAirlines.Domain\EmbassyAirlines.Domain.csproj" />
+    <ProjectReference Include="..\EaCommon\EaCommon.csproj" />
   </ItemGroup>
 
 </Project>

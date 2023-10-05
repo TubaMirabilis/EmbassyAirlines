@@ -1,8 +1,8 @@
-using EmbassyAirlines.Application.Exceptions;
-using EmbassyAirlines.Application.Interfaces;
+using EaCommon.Exceptions;
+using EaCommon.Interfaces;
 using Mediator;
 
-namespace EmbassyAirlines.Application.PipelineBehaviors;
+namespace EaCommon.PipelineBehaviors;
 
 public sealed class MessageValidatorBehaviour<TMessage, TResponse> : IPipelineBehavior<TMessage, TResponse>
     where TMessage : IValidate

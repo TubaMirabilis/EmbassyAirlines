@@ -1,7 +1,7 @@
 using Mediator;
 using Microsoft.Extensions.Logging;
 
-namespace EmbassyAirlines.Application.PipelineBehaviors;
+namespace EaCommon.PipelineBehaviors;
 
 public sealed class ErrorLoggingBehaviour<TMessage, TResponse> : IPipelineBehavior<TMessage, TResponse>
     where TMessage : IMessage
