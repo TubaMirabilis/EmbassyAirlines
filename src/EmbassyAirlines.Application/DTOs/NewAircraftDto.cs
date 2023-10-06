@@ -19,11 +19,8 @@ public sealed record NewAircraftDto(string Registration, string Model,
         if (result.IsValid)
         {
             error = null;
-        }
-        else
-        {
-            error = new ValidationError(result.Errors.Select(e => e.ErrorMessage).ToArray());
-        }
         return result.IsValid;
+        }
+            error = new ValidationError(result.Errors.Select(e => e.ErrorMessage).ToArray());
     }
 }

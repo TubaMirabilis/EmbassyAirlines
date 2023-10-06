@@ -2,7 +2,7 @@ namespace EaIdentity.Infrastructure.Identity;
 
 public class RefreshToken
 {
-    public string Token { get; set; }
+    public required string Token { get; set; }
     public required string JwtId { get; set; }
     public required DateTime CreationDate { get; set; }
     public required DateTime ExpiryDate { get; set; }

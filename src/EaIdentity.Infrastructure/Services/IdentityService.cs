@@ -1,9 +1,12 @@
 using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
 using EaIdentity.Application.Services;
 using EaIdentity.Domain;
 using EaIdentity.Infrastructure.Data;
 using EaIdentity.Infrastructure.Identity;
 using EaIdentity.Infrastructure.Options;
+using LanguageExt;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -70,31 +73,52 @@ internal sealed class IdentityService : IIdentityService
         }
         return await GenerateAuthenticationResultForUserAsync(user);
     }
-
     public async Task<AuthenticationResult> RefreshTokenAsync(string token, string refreshToken, CancellationToken ct)
     {
-        var validatedToken = GetPrincipalFromToken(token);
-        if (validatedToken == null)
+        var validatedTokenOption = GetPrincipalFromToken(token);
+        return await validatedTokenOption.MatchAsync<ClaimsPrincipal, AuthenticationResult>(
+            Some: async principal => await ValidateTokenAndGenerateAuthenticationResultAsync(principal, refreshToken),
+            None: () => new AuthenticationResult(null, null, false, new[] { "Invalid Token" })
+        );
+    }
+    private Option<ClaimsPrincipal> GetPrincipalFromToken(string token)
+    {
+        var tokenHandler = new JwtSecurityTokenHandler();
+        try
         {
-            return new AuthenticationResult(null, null, false, new[] { "Invalid Token" });
+            var tokenValidationParameters = _tokenValidationParameters.Clone();
+            tokenValidationParameters.ValidateLifetime = false;
+            var principal = tokenHandler.ValidateToken(token, tokenValidationParameters, out var validatedToken);
+            if (IsJwtWithValidSecurityAlgorithm(validatedToken))
+            {
+                return Option<ClaimsPrincipal>.Some(principal);
+            }
+            return Option<ClaimsPrincipal>.None;
         }
+        catch
+        {
+            return Option<ClaimsPrincipal>.None;
+        }
+    }
+    private async Task<AuthenticationResult> ValidateTokenAndGenerateAuthenticationResultAsync(ClaimsPrincipal principal, string refreshToken)
+    {
         var expiryDateUnix =
-            long.Parse(validatedToken.Claims.Single(x => x.Type == JwtRegisteredClaimNames.Exp).Value);
+            long.Parse(principal.Claims.Single(x => x.Type == JwtRegisteredClaimNames.Exp).Value);
         var expiryDateTimeUtc = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc)
             .AddSeconds(expiryDateUnix);
         if (expiryDateTimeUtc > DateTime.UtcNow)
         {
             return new AuthenticationResult(null, null, false, new[] { "This token hasn't expired yet" });
         }
-        var jti = validatedToken.Claims.Single(x => x.Type == JwtRegisteredClaimNames.Jti).Value;
+        var jti = principal.Claims.Single(x => x.Type == JwtRegisteredClaimNames.Jti).Value;
         var storedRefreshToken = await _context.RefreshTokens.SingleOrDefaultAsync(x => x.Token == refreshToken);
         if (storedRefreshToken == null)
         {
-            return new AuthenticationResult { Errors = new[] { "This refresh token does not exist" } };
+            return new AuthenticationResult(null, null, false, new[] { "This refresh token does not exist" });
         }
         if (DateTime.UtcNow > storedRefreshToken.ExpiryDate)
         {
-            return new AuthenticationResult { Errors = new[] { "This refresh token has expired" } };
+            return new AuthenticationResult(null, null, false, new[] { "This refresh token has expired" });
         }
         if (storedRefreshToken.Invalidated)
         {
@@ -106,33 +130,17 @@ internal sealed class IdentityService : IIdentityService
         }
         if (storedRefreshToken.JwtId != jti)
         {
-            return new AuthenticationResult { Errors = new[] { "This refresh token does not match this JWT" } };
+            return new AuthenticationResult(null, null, false, new[] { "This refresh token does not match this JWT" });
         }
         storedRefreshToken.Used = true;
         _context.RefreshTokens.Update(storedRefreshToken);
         await _context.SaveChangesAsync();
-        var user = await _userManager.FindByIdAsync(validatedToken.Claims.Single(x => x.Type == "id").Value);
+        var user = await _userManager.FindByIdAsync(principal.Claims.Single(x => x.Type == "id").Value);
+        if (user is null)
+        {
+            return new AuthenticationResult(null, null, false, new[] { "User not found" });
+        }
         return await GenerateAuthenticationResultForUserAsync(user);
-    }
-    private ClaimsPrincipal GetPrincipalFromToken(string token)
-    {
-        var tokenHandler = new JwtSecurityTokenHandler();
-        try
-        {
-            var tokenValidationParameters = _tokenValidationParameters.Clone();
-            tokenValidationParameters.ValidateLifetime = false;
-            var principal = tokenHandler.ValidateToken(token, tokenValidationParameters, out var validatedToken);
-            if (!IsJwtWithValidSecurityAlgorithm(validatedToken))
-            {
-                return null;
-            }
-
-            return principal;
-        }
-        catch
-        {
-            return null;
-        }
     }
     private bool IsJwtWithValidSecurityAlgorithm(SecurityToken validatedToken)
     {
@@ -142,6 +150,10 @@ internal sealed class IdentityService : IIdentityService
     }
     private async Task<AuthenticationResult> GenerateAuthenticationResultForUserAsync(IdentityUser user)
     {
+        if (user.Email is null)
+        {
+            return new AuthenticationResult(null, null, false, new[] { "User does not have an email address" });
+        }
         var tokenHandler = new JwtSecurityTokenHandler();
         var key = Encoding.ASCII.GetBytes(_jwtSettings.Secret);
         var claims = new List<Claim>
@@ -182,12 +194,13 @@ internal sealed class IdentityService : IIdentityService
         var token = tokenHandler.CreateToken(tokenDescriptor);
         var refreshToken = new RefreshToken
         {
+            Token = Guid.NewGuid().ToString(),
             JwtId = token.Id,
             UserId = user.Id,
             CreationDate = DateTime.UtcNow,
             ExpiryDate = DateTime.UtcNow.AddMonths(6)
         };
-        await _context.RefreshTokens.AddAsync(refreshToken);
+        _context.RefreshTokens.Add(refreshToken);
         await _context.SaveChangesAsync();
         return new AuthenticationResult(tokenHandler.WriteToken(token), refreshToken.Token, true, Array.Empty<string>());
     }

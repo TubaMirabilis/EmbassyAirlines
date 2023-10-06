@@ -18,6 +18,7 @@ public static class FleetApi
             var fleet = await mediator.Send(new GetFleet(), ct);
             return Results.Ok(fleet);
         }).CacheOutput(x => x.Tag("fleet"))
+            .Produces(StatusCodes.Status200OK)
             .WithName("Get fleet");
         app.MapGet("/api/fleet/{id:guid}/", async ([FromRoute] Guid id, [FromServices] IMediator mediator, CancellationToken ct) =>
         {
@@ -31,6 +32,8 @@ public static class FleetApi
                 return Results.NotFound(ex.Message);
             }
         }).CacheOutput(x => x.AddPolicy<ByIdCachePolicy>())
+            .Produces(StatusCodes.Status200OK)
+            .Produces(StatusCodes.Status404NotFound)
             .WithName("Get aircraft by id");
         app.MapPost("/api/fleet/", async ([FromBody] NewAircraftDto dto, [FromServices] IMediator mediator, IOutputCacheStore cache, CancellationToken ct) =>
         {
@@ -44,7 +47,9 @@ public static class FleetApi
             {
                 return Results.BadRequest(ex.ValidationError);
             }
-        }).WithName("Add aircraft");
+        }).Produces(StatusCodes.Status201Created)
+            .Produces(StatusCodes.Status400BadRequest)
+            .WithName("Add aircraft");
         app.MapPut("/api/fleet/{id:guid}/", async ([FromRoute] Guid id, [FromBody] UpdateAircraftDto dto, [FromServices] IMediator mediator, IOutputCacheStore cache, CancellationToken ct) =>
         {
             try
@@ -61,7 +66,10 @@ public static class FleetApi
             {
                 return Results.BadRequest(ex.ValidationError);
             }
-        }).WithName("Update aircraft");
+        }).Produces(StatusCodes.Status200OK)
+            .Produces(StatusCodes.Status400BadRequest)
+            .Produces(StatusCodes.Status404NotFound)
+            .WithName("Update aircraft");
         app.MapDelete("/api/fleet/{id:guid}/", async ([FromRoute] Guid id, [FromServices] IMediator mediator, CancellationToken ct) =>
         {
             try
@@ -73,7 +81,9 @@ public static class FleetApi
             {
                 return Results.NotFound(ex.Message);
             }
-        }).WithName("Delete aircraft");
+        }).Produces(StatusCodes.Status204NoContent)
+            .Produces(StatusCodes.Status404NotFound)
+            .WithName("Delete aircraft");
         return app;
     }
 }
