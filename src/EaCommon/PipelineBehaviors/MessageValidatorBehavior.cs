@@ -4,7 +4,7 @@ using Mediator;
 
 namespace EaCommon.PipelineBehaviors;
 
-public sealed class MessageValidatorBehaviour<TMessage, TResponse> : IPipelineBehavior<TMessage, TResponse>
+public sealed class MessageValidatorBehavior<TMessage, TResponse> : IPipelineBehavior<TMessage, TResponse>
     where TMessage : IValidate
 {
     public ValueTask<TResponse> Handle(

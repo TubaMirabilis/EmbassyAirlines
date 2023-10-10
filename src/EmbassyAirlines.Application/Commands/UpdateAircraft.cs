@@ -16,11 +16,10 @@ public sealed record UpdateAircraft(Guid Id, UpdateAircraftDto Dto) : ICommand<A
         if (result.IsValid)
         {
             error = null;
+            return result.IsValid;
         }
-        else
-        {
-            error = new ValidationError(result.Errors.Select(e => e.ErrorMessage).ToArray());
-        }
-        return result.IsValid;
+        error = new ValidationError(result.Errors.Select(e => e.ErrorMessage)
+            .ToArray());
+        return !result.IsValid;
     }
 }
