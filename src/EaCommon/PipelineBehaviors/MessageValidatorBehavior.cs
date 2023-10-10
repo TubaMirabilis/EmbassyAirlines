@@ -1,22 +1,28 @@
-using EaCommon.Exceptions;
 using EaCommon.Interfaces;
+using FluentResults;
 using Mediator;
 
 namespace EaCommon.PipelineBehaviors;
 
 public sealed class MessageValidatorBehavior<TMessage, TResponse> : IPipelineBehavior<TMessage, TResponse>
     where TMessage : IValidate
+    where TResponse : ResultBase, new()
 {
-    public ValueTask<TResponse> Handle(
+    public async ValueTask<TResponse> Handle(
         TMessage message,
         CancellationToken ct,
-        MessageHandlerDelegate<TMessage, TResponse> next
-    )
+        MessageHandlerDelegate<TMessage, TResponse> next)
     {
-        if (!message.IsValid(out var validationError))
+        var validationResult = message.Validate();
+        if (validationResult.IsSuccess)
         {
-            throw new ValidationException(validationError);
+            return await next(message, ct);
         }
-        return next(message, ct);
+        var result = new TResponse();
+        foreach (var reason in validationResult.Reasons)
+        {
+            result.Reasons.Add(reason);
+        }
+        return result;
     }
 }

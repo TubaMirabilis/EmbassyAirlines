@@ -1,4 +1,3 @@
-using EaCommon.Exceptions;
 using EaIdentity.Application.Dtos;
 using Mediator;
 using Microsoft.AspNetCore.Mvc;
@@ -17,20 +16,32 @@ public class IdentityController : Controller
     [HttpPost("/register/")]
     public async Task<IActionResult> Register([FromBody] UserRegistrationDto dto, CancellationToken ct)
     {
-        try
+        var result = await _mediator.Send(dto, ct);
+        if (result.Success)
         {
-            var result = await _mediator.Send(dto, ct);
-            if (result.Success)
-            {
-                return Ok(new AuthSuccessDto(result.Token, result.RefreshToken));
-            }
-            return BadRequest(new AuthFailedDto(result.Errors));
+            return Ok(new AuthSuccessDto(result.Token, result.RefreshToken));
         }
-        catch (ValidationException ex)
-        {
-            return BadRequest(new AuthFailedDto(ex.ValidationError.Errors));
-        }
+        return BadRequest(new AuthFailedDto(result.Errors));
+        // Fail
+        return BadRequest(new AuthFailedDto(ex.ValidationError.Errors));
     }
+    // [HttpPost("/register/")]
+    // public async Task<IActionResult> Register([FromBody] UserRegistrationDto dto, CancellationToken ct)
+    // {
+    //     try
+    //     {
+    //         var result = await _mediator.Send(dto, ct);
+    //         if (result.Success)
+    //         {
+    //             return Ok(new AuthSuccessDto(result.Token, result.RefreshToken));
+    //         }
+    //         return BadRequest(new AuthFailedDto(result.Errors));
+    //     }
+    //     catch (ValidationException ex)
+    //     {
+    //         return BadRequest(new AuthFailedDto(ex.ValidationError.Errors));
+    //     }
+    // }
 
     [HttpPost("/login/")]
     public async Task<IActionResult> Login([FromBody] UserLoginRequestDto dto, CancellationToken ct)

@@ -40,7 +40,6 @@ internal sealed class IdentityService : IIdentityService
         {
             return new AuthenticationResult(null, null, false, new[] { "User with this email address already exists" });
         }
-
         var newUserId = Guid.NewGuid();
         var newUser = new IdentityUser
         {
@@ -48,15 +47,13 @@ internal sealed class IdentityService : IIdentityService
             Email = email,
             UserName = email
         };
-
         var createdUser = await _userManager.CreateAsync(newUser, password);
-
-        if (!createdUser.Succeeded)
+        if (createdUser.Succeeded)
         {
-            return new AuthenticationResult(null, null, false, createdUser.Errors.Select(x => x.Description));
+            return await GenerateAuthenticationResultForUserAsync(newUser);
         }
-
-        return await GenerateAuthenticationResultForUserAsync(newUser);
+        return new AuthenticationResult(null, null, false, createdUser.Errors
+            .Select(x => x.Description));
     }
 
     public async Task<AuthenticationResult> LoginAsync(string email, string password, CancellationToken ct)
