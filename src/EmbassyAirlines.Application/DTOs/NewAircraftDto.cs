@@ -9,7 +9,8 @@ public sealed record NewAircraftDto(string Registration, string Model,
     string Type, int EconomySeats, int BusinessSeats, float FlightHours,
     int BasicEmptyWeight, int MaximumZeroFuelWeight, int MaximumTakeoffWeight,
     int MaximumLandingWeight, int MaximumCargoWeight, int FuelOnboard,
-    int FuelCapacity, int MinimumCabinCrew) : ICommand<AircraftDto>, IValidate
+    int FuelCapacity, int MinimumCabinCrew)
+    : ICommand<Result<AircraftDto>>, IValidate
 {
     public Result Validate()
     {

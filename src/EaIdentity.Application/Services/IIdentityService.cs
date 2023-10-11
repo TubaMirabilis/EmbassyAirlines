@@ -1,10 +1,11 @@
 using EaIdentity.Domain;
+using FluentResults;
 
 namespace EaIdentity.Application.Services;
 
 public interface IIdentityService
 {
-    Task<AuthenticationResult> RegisterAsync(string email, string password, CancellationToken ct);
-    Task<AuthenticationResult> LoginAsync(string email, string password, CancellationToken ct);
-    Task<AuthenticationResult> RefreshTokenAsync(string token, string refreshToken, CancellationToken ct);
+    Task<Result<AuthenticationResult>> RegisterAsync(string email, string password, CancellationToken ct);
+    Task<Result<AuthenticationResult>> LoginAsync(string email, string password, CancellationToken ct);
+    Task<Result<AuthenticationResult>> RefreshTokenAsync(string token, string refreshToken, CancellationToken ct);
 }

@@ -10,4 +10,10 @@ internal sealed class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     {
     }
     public DbSet<RefreshToken> RefreshTokens { get; set; }
+    protected override void OnModelCreating(ModelBuilder builder)
+    {
+        base.OnModelCreating(builder);
+        builder.Entity<RefreshToken>()
+            .HasKey(rt => rt.Token); // Set the primary key to the Token property
+    }
 }

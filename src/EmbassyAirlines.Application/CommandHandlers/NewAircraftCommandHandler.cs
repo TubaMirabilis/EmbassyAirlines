@@ -1,18 +1,19 @@
 using EmbassyAirlines.Application.Dtos;
 using EmbassyAirlines.Application.Mapping;
 using EmbassyAirlines.Application.Repositories;
+using FluentResults;
 using Mediator;
 
 namespace EmbassyAirlines.Application.CommandHandlers;
 
-public sealed class NewAircraftCommandHandler : ICommandHandler<NewAircraftDto, AircraftDto>
+public sealed class NewAircraftCommandHandler : ICommandHandler<NewAircraftDto, Result<AircraftDto>>
 {
     private readonly IFleetRepository _repository;
     public NewAircraftCommandHandler(IFleetRepository repository)
     {
         _repository = repository;
     }
-    public async ValueTask<AircraftDto> Handle(NewAircraftDto command, CancellationToken ct)
+    public async ValueTask<Result<AircraftDto>> Handle(NewAircraftDto command, CancellationToken ct)
     {
         var mapper = new AircraftMapper();
         var aircraft = mapper.MapNewAircraftDtoToAircraft(command);

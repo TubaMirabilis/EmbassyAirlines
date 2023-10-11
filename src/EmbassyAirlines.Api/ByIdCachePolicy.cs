@@ -51,17 +51,14 @@ public class ByIdCachePolicy : IOutputCachePolicy
     private static bool AttemptOutputCaching(OutputCacheContext context)
     {
         var request = context.HttpContext.Request;
-
         if (!HttpMethods.IsGet(request.Method) && !HttpMethods.IsHead(request.Method))
         {
             return false;
         }
-
         if (!StringValues.IsNullOrEmpty(request.Headers.Authorization) || request.HttpContext.User?.Identity?.IsAuthenticated == true)
         {
             return false;
         }
-
         return true;
     }
 }

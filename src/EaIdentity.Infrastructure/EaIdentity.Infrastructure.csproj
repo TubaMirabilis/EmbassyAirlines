@@ -2,9 +2,11 @@
 
   <ItemGroup>
     <ProjectReference Include="..\eaidentity.application\eaidentity.application.csproj" />
+    <ProjectReference Include="..\EaCommon\EaCommon.csproj" />
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="FluentResults" Version="3.15.2" />
     <PackageReference Include="LanguageExt.Core" Version="4.4.6" />
     <PackageReference Include="Microsoft.AspNetCore.Identity" Version="2.2.0" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="7.0.11" />

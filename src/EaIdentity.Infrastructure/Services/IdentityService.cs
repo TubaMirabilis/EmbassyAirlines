@@ -1,11 +1,13 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using EaCommon.Errors;
 using EaIdentity.Application.Services;
 using EaIdentity.Domain;
 using EaIdentity.Infrastructure.Data;
 using EaIdentity.Infrastructure.Identity;
 using EaIdentity.Infrastructure.Options;
+using FluentResults;
 using LanguageExt;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -20,7 +22,6 @@ internal sealed class IdentityService : IIdentityService
     private readonly JwtSettings _jwtSettings;
     private readonly TokenValidationParameters _tokenValidationParameters;
     private readonly ApplicationDbContext _context;
-
     public IdentityService(UserManager<IdentityUser> userManager,
         JwtSettings jwtSettings,
         TokenValidationParameters tokenValidationParameters,
@@ -32,13 +33,13 @@ internal sealed class IdentityService : IIdentityService
         _context = context;
         _roleManager = roleManager;
     }
-
-    public async Task<AuthenticationResult> RegisterAsync(string email, string password, CancellationToken ct)
+    public async Task<Result<AuthenticationResult>> RegisterAsync(string email,
+        string password, CancellationToken ct)
     {
         var existingUser = await _userManager.FindByEmailAsync(email);
         if (existingUser is not null)
         {
-            return new AuthenticationResult(null, null, false, new[] { "User with this email address already exists" });
+            return Result.Fail(new DuplicateEmailError());
         }
         var newUserId = Guid.NewGuid();
         var newUser = new IdentityUser
@@ -50,32 +51,32 @@ internal sealed class IdentityService : IIdentityService
         var createdUser = await _userManager.CreateAsync(newUser, password);
         if (createdUser.Succeeded)
         {
-            return await GenerateAuthenticationResultForUserAsync(newUser);
+            return await GenerateAuthenticationResultForUserAsync(newUser, ct);
         }
-        return new AuthenticationResult(null, null, false, createdUser.Errors
-            .Select(x => x.Description));
+        return Result.Fail(createdUser.Errors.Select(x => x.Description));
     }
-
-    public async Task<AuthenticationResult> LoginAsync(string email, string password, CancellationToken ct)
+    public async Task<Result<AuthenticationResult>> LoginAsync(string email,
+        string password, CancellationToken ct)
     {
         var user = await _userManager.FindByEmailAsync(email);
-        if (user == null)
+        if (user is null)
         {
-            return new AuthenticationResult(null, null, false, new[] { "User does not exist" });
+            return Result.Fail(new NotFoundError("User"));
         }
         var userHasValidPassword = await _userManager.CheckPasswordAsync(user, password);
         if (!userHasValidPassword)
         {
-            return new AuthenticationResult(null, null, false, new[] { "User/password combination is wrong" });
+            return Result.Fail(new AuthError("User/password combination is wrong"));
         }
-        return await GenerateAuthenticationResultForUserAsync(user);
+        return await GenerateAuthenticationResultForUserAsync(user, ct);
     }
-    public async Task<AuthenticationResult> RefreshTokenAsync(string token, string refreshToken, CancellationToken ct)
+    public async Task<Result<AuthenticationResult>> RefreshTokenAsync(string token, string refreshToken, CancellationToken ct)
     {
         var validatedTokenOption = GetPrincipalFromToken(token);
-        return await validatedTokenOption.MatchAsync<ClaimsPrincipal, AuthenticationResult>(
-            Some: async principal => await ValidateTokenAndGenerateAuthenticationResultAsync(principal, refreshToken),
-            None: () => new AuthenticationResult(null, null, false, new[] { "Invalid Token" })
+        return await validatedTokenOption.MatchAsync<ClaimsPrincipal, Result<AuthenticationResult>>(
+            Some: async principal => await ValidateTokenAndGenerateAuthenticationResultAsync(principal,
+                refreshToken, ct),
+            None: () => Result.Fail(new AuthError("Invalid Token"))
         );
     }
     private Option<ClaimsPrincipal> GetPrincipalFromToken(string token)
@@ -97,7 +98,8 @@ internal sealed class IdentityService : IIdentityService
             return Option<ClaimsPrincipal>.None;
         }
     }
-    private async Task<AuthenticationResult> ValidateTokenAndGenerateAuthenticationResultAsync(ClaimsPrincipal principal, string refreshToken)
+    private async Task<Result<AuthenticationResult>> ValidateTokenAndGenerateAuthenticationResultAsync(ClaimsPrincipal principal,
+        string refreshToken, CancellationToken ct)
     {
         var expiryDateUnix =
             long.Parse(principal.Claims.Single(x => x.Type == JwtRegisteredClaimNames.Exp).Value);
@@ -105,29 +107,29 @@ internal sealed class IdentityService : IIdentityService
             .AddSeconds(expiryDateUnix);
         if (expiryDateTimeUtc > DateTime.UtcNow)
         {
-            return new AuthenticationResult(null, null, false, new[] { "This token hasn't expired yet" });
+            return Result.Fail(new AuthError("This token hasn't expired yet"));
         }
         var jti = principal.Claims.Single(x => x.Type == JwtRegisteredClaimNames.Jti).Value;
         var storedRefreshToken = await _context.RefreshTokens.SingleOrDefaultAsync(x => x.Token == refreshToken);
-        if (storedRefreshToken == null)
+        if (storedRefreshToken is null)
         {
-            return new AuthenticationResult(null, null, false, new[] { "This refresh token does not exist" });
+            return Result.Fail(new NotFoundError("Refresh Token"));
         }
         if (DateTime.UtcNow > storedRefreshToken.ExpiryDate)
         {
-            return new AuthenticationResult(null, null, false, new[] { "This refresh token has expired" });
+            return Result.Fail(new AuthError("This refresh token has expired"));
         }
         if (storedRefreshToken.Invalidated)
         {
-            return new AuthenticationResult(null, null, false, new[] { "This refresh token has been invalidated" });
+            return Result.Fail(new AuthError("This refresh token has been invalidated"));
         }
         if (storedRefreshToken.Used)
         {
-            return new AuthenticationResult(null, null, false, new[] { "This refresh token has been used" });
+            return Result.Fail(new AuthError("This refresh token has been used"));
         }
         if (storedRefreshToken.JwtId != jti)
         {
-            return new AuthenticationResult(null, null, false, new[] { "This refresh token does not match this JWT" });
+            return Result.Fail(new AuthError("This refresh token does not match this JWT"));
         }
         storedRefreshToken.Used = true;
         _context.RefreshTokens.Update(storedRefreshToken);
@@ -135,9 +137,9 @@ internal sealed class IdentityService : IIdentityService
         var user = await _userManager.FindByIdAsync(principal.Claims.Single(x => x.Type == "id").Value);
         if (user is null)
         {
-            return new AuthenticationResult(null, null, false, new[] { "User not found" });
+            return Result.Fail(new NotFoundError("User"));
         }
-        return await GenerateAuthenticationResultForUserAsync(user);
+        return await GenerateAuthenticationResultForUserAsync(user, ct);
     }
     private bool IsJwtWithValidSecurityAlgorithm(SecurityToken validatedToken)
     {
@@ -145,11 +147,12 @@ internal sealed class IdentityService : IIdentityService
                jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256,
                    StringComparison.InvariantCultureIgnoreCase);
     }
-    private async Task<AuthenticationResult> GenerateAuthenticationResultForUserAsync(IdentityUser user)
+    private async Task<Result<AuthenticationResult>> GenerateAuthenticationResultForUserAsync(IdentityUser user,
+        CancellationToken ct)
     {
-        if (user.Email is null)
+        if (string.IsNullOrEmpty(user.Email))
         {
-            return new AuthenticationResult(null, null, false, new[] { "User does not have an email address" });
+            return Result.Fail(new PropertyFormatError("User does not have an email address"));
         }
         var tokenHandler = new JwtSecurityTokenHandler();
         var key = Encoding.ASCII.GetBytes(_jwtSettings.Secret);
@@ -198,7 +201,7 @@ internal sealed class IdentityService : IIdentityService
             ExpiryDate = DateTime.UtcNow.AddMonths(6)
         };
         _context.RefreshTokens.Add(refreshToken);
-        await _context.SaveChangesAsync();
-        return new AuthenticationResult(tokenHandler.WriteToken(token), refreshToken.Token, true, Array.Empty<string>());
+        await _context.SaveChangesAsync(ct);
+        return new AuthenticationResult(tokenHandler.WriteToken(token), refreshToken.Token);
     }
 }

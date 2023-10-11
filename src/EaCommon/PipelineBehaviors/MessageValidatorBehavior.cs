@@ -1,3 +1,4 @@
+using EaCommon.Errors;
 using EaCommon.Interfaces;
 using FluentResults;
 using Mediator;
@@ -21,7 +22,7 @@ public sealed class MessageValidatorBehavior<TMessage, TResponse> : IPipelineBeh
         var result = new TResponse();
         foreach (var reason in validationResult.Reasons)
         {
-            result.Reasons.Add(reason);
+            result.Errors.Add(new ValidationError(reason.Message));
         }
         return result;
     }

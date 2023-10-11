@@ -7,7 +7,7 @@ using Mediator;
 namespace EaIdentity.Application.Dtos;
 
 public sealed record UserRegistrationDto(string Email, string Password)
-    : ICommand<AuthenticationResult>, IValidate
+    : ICommand<Result<AuthenticationResult>>, IValidate
 {
     public Result Validate()
     {
