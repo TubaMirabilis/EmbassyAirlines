@@ -1,5 +1,4 @@
 using EmbassyAirlines.Application.Dtos;
-using EmbassyAirlines.Application.Exceptions;
 using EmbassyAirlines.Application.Mapping;
 using EmbassyAirlines.Application.Queries;
 using EmbassyAirlines.Application.Repositories;

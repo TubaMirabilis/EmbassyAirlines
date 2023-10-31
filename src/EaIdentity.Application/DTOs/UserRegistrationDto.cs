@@ -1,28 +1,15 @@
-using EaCommon.Errors;
 using EaCommon.Interfaces;
 using EaIdentity.Application.Validators;
 using EaIdentity.Domain;
+using ErrorOr;
+using FluentValidation.Results;
 using Mediator;
-using System.Diagnostics.CodeAnalysis;
 
 namespace EaIdentity.Application.Dtos;
 
 public sealed record UserRegistrationDto(string Email, string Password)
-    : ICommand<AuthenticationResult>, IValidate
+    : ICommand<ErrorOr<AuthenticationResult>>, IValidate
 {
-    public bool IsValid([NotNullWhen(false)] out ValidationError? error)
-    {
-        var validator = new UserRegistrationDtoValidator();
-        var result = validator.Validate(this);
-        if (result.IsValid)
-        {
-            error = null;
-        }
-        else
-        {
-            error = new ValidationError(result.Errors.Select(e =>
-                e.ErrorMessage).ToArray());
-        }
-        return result.IsValid;
-    }
+    public async Task<ValidationResult> ValidateAsync(CancellationToken ct)
+        => await new UserRegistrationDtoValidator().ValidateAsync(this, ct);
 }

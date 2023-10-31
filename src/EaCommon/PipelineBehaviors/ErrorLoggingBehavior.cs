@@ -3,11 +3,11 @@ using Microsoft.Extensions.Logging;
 
 namespace EaCommon.PipelineBehaviors;
 
-public sealed class ErrorLoggingBehaviour<TMessage, TResponse> : IPipelineBehavior<TMessage, TResponse>
+public sealed class ErrorLoggingBehavior<TMessage, TResponse> : IPipelineBehavior<TMessage, TResponse>
     where TMessage : IMessage
 {
-    private readonly ILogger<ErrorLoggingBehaviour<TMessage, TResponse>> _logger;
-    public ErrorLoggingBehaviour(ILogger<ErrorLoggingBehaviour<TMessage, TResponse>> logger)
+    private readonly ILogger<ErrorLoggingBehavior<TMessage, TResponse>> _logger;
+    public ErrorLoggingBehavior(ILogger<ErrorLoggingBehavior<TMessage, TResponse>> logger)
     {
         _logger = logger;
     }

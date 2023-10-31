@@ -1,12 +1,11 @@
-using EaCommon.Exceptions;
 using EaIdentity.Application.Dtos;
+using ErrorOr;
 using Mediator;
 using Microsoft.AspNetCore.Mvc;
 
 namespace EaIdentity.Api.Controllers;
 
-[ApiController]
-public class IdentityController : Controller
+public class IdentityController : ApiController
 {
     private readonly IMediator _mediator;
     public IdentityController(IMediator mediator)
@@ -17,41 +16,26 @@ public class IdentityController : Controller
     [HttpPost("/register/")]
     public async Task<IActionResult> Register([FromBody] UserRegistrationDto dto, CancellationToken ct)
     {
-        try
-        {
-            var result = await _mediator.Send(dto, ct);
-            if (result.Success)
-            {
-                return Ok(new AuthSuccessDto(result.Token, result.RefreshToken));
-            }
-            return BadRequest(new AuthFailedDto(result.Errors));
-        }
-        catch (ValidationException ex)
-        {
-            return BadRequest(new AuthFailedDto(ex.ValidationError.Errors));
-        }
+        var result = await _mediator.Send(dto, ct);
+        return result.Match(
+            succ => Ok(new AuthSuccessDto(result.Value.Token, result.Value.RefreshToken)),
+            errors => Problem(errors));
     }
-
     [HttpPost("/login/")]
     public async Task<IActionResult> Login([FromBody] UserLoginRequestDto dto, CancellationToken ct)
     {
         var result = await _mediator.Send(dto, ct);
-        if (result.Success)
-        {
-            return Ok(new AuthSuccessDto(result.Token, result.RefreshToken));
-        }
-        return BadRequest(new AuthFailedDto(result.Errors));
+        return result.Match(
+            succ => Ok(new AuthSuccessDto(result.Value.Token, result.Value.RefreshToken)),
+            errors => Problem(errors));
     }
 
     [HttpPost("/refresh/")]
     public async Task<IActionResult> Refresh([FromBody] RefreshTokenRequestDto dto, CancellationToken ct)
     {
-        // var authResponse = await _identityService.RefreshTokenAsync(request.Token, request.RefreshToken);
         var result = await _mediator.Send(dto, ct);
-        if (result.Success)
-        {
-            return Ok(new AuthSuccessDto(result.Token, result.RefreshToken));
-        }
-        return BadRequest(new AuthFailedDto(result.Errors));
+        return result.Match(
+            succ => Ok(new AuthSuccessDto(result.Value.Token, result.Value.RefreshToken)),
+            errors => Problem(errors));
     }
 }

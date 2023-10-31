@@ -1,10 +1,9 @@
-using EaCommon.Errors;
+using FluentValidation.Results;
 using Mediator;
-using System.Diagnostics.CodeAnalysis;
 
 namespace EaCommon.Interfaces;
 
 public interface IValidate : IMessage
 {
-    bool IsValid([NotNullWhen(false)] out ValidationError? error);
+    Task<ValidationResult> ValidateAsync(CancellationToken ct);
 }

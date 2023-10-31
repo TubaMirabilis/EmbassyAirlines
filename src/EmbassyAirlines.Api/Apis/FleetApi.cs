@@ -1,8 +1,8 @@
-using EaCommon.Exceptions;
+using EmbassyAirlines.Api.Helpers;
 using EmbassyAirlines.Application.Commands;
 using EmbassyAirlines.Application.Dtos;
-using EmbassyAirlines.Application.Exceptions;
 using EmbassyAirlines.Application.Queries;
+using ErrorOr;
 using Mediator;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OutputCaching;
@@ -22,65 +22,41 @@ public static class FleetApi
             .WithName("Get fleet");
         app.MapGet("/api/fleet/{id:guid}/", async ([FromRoute] Guid id, [FromServices] IMediator mediator, CancellationToken ct) =>
         {
-            try
-            {
-                var aircraft = await mediator.Send(new GetAircraftById(id), ct);
-                return Results.Ok(aircraft);
-            }
-            catch (NotFoundException ex)
-            {
-                return Results.NotFound(ex.Message);
-            }
+            var result = await mediator.Send(new GetAircraftById(id), ct);
+            return result.Match(
+                ac => Results.Ok(result),
+                errors => ErrorHandlingHelper.HandleProblems(errors));
         }).CacheOutput(x => x.AddPolicy<ByIdCachePolicy>())
             .Produces(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status404NotFound)
             .WithName("Get aircraft by id");
         app.MapPost("/api/fleet/", async ([FromBody] NewAircraftDto dto, [FromServices] IMediator mediator, IOutputCacheStore cache, CancellationToken ct) =>
         {
-            try
-            {
-                var response = await mediator.Send(dto, ct);
-                await cache.EvictByTagAsync("fleet", ct);
-                return Results.Created($"/api/fleet/{response.Id}", response);
-            }
-            catch (ValidationException ex)
-            {
-                return Results.BadRequest(ex.ValidationError);
-            }
+            var result = await mediator.Send(dto, ct);
+            await cache.EvictByTagAsync("fleet", ct);
+            return result.Match(
+                ac => Results.Created($"/api/fleet/{result.Value.Id}", result),
+                errors => ErrorHandlingHelper.HandleProblems(errors));
         }).Produces(StatusCodes.Status201Created)
             .Produces(StatusCodes.Status400BadRequest)
             .WithName("Add aircraft");
         app.MapPut("/api/fleet/{id:guid}/", async ([FromRoute] Guid id, [FromBody] UpdateAircraftDto dto, [FromServices] IMediator mediator, IOutputCacheStore cache, CancellationToken ct) =>
         {
-            try
-            {
-                var response = await mediator.Send(new UpdateAircraft(id, dto), ct);
-                await cache.EvictByTagAsync(id.ToString(), ct);
-                return Results.Ok(response);
-            }
-            catch (NotFoundException ex)
-            {
-                return Results.NotFound(ex.Message);
-            }
-            catch (ValidationException ex)
-            {
-                return Results.BadRequest(ex.ValidationError);
-            }
+            var result = await mediator.Send(new UpdateAircraft(id, dto), ct);
+            await cache.EvictByTagAsync(id.ToString(), ct);
+            return result.Match(
+                rows => Results.Ok(result),
+                errors => ErrorHandlingHelper.HandleProblems(errors));
         }).Produces(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status400BadRequest)
             .Produces(StatusCodes.Status404NotFound)
             .WithName("Update aircraft");
         app.MapDelete("/api/fleet/{id:guid}/", async ([FromRoute] Guid id, [FromServices] IMediator mediator, CancellationToken ct) =>
         {
-            try
-            {
-                await mediator.Send(new DeleteAircraft(id), ct);
-                return Results.NoContent();
-            }
-            catch (NotFoundException ex)
-            {
-                return Results.NotFound(ex.Message);
-            }
+            var result = await mediator.Send(new DeleteAircraft(id), ct);
+            return result.Match(
+                rows => Results.NoContent(),
+                errors => ErrorHandlingHelper.HandleProblems(errors));
         }).Produces(StatusCodes.Status204NoContent)
             .Produces(StatusCodes.Status404NotFound)
             .WithName("Delete aircraft");
