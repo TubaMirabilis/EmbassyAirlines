@@ -1,6 +1,11 @@
+using EaIdentity.Application;
+using EaIdentity.Infrastructure;
 using Mediator;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Configuration.AddEnvironmentVariables(prefix: "EAIDENTITY_");
+builder.Services.AddApplication();
+builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();

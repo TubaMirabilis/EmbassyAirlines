@@ -19,6 +19,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\EaIdentity.Application\EaIdentity.Application.csproj" />
+    <ProjectReference Include="..\EaIdentity.Infrastructure\EaIdentity.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

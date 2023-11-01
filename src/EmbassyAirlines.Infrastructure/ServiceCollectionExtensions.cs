@@ -9,13 +9,13 @@ public static class ServiceCollectionExtensions
 {
     public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
-        var connectionString = "server=" + configuration["MySqlConnection:Server"] +
-            ";user=" + configuration["MySqlConnection:User"] +
-            ";password=" + configuration["MySqlConnection:Password"] +
-            ";database=" + configuration["MySqlConnection:Database"];
+        var connectionString = "Host=" + configuration["NpgSqlConnection:Host"] +
+            ";Username=" + configuration["NpgSqlConnection:Username"] +
+            ";Password=" + configuration["NpgSqlConnection:Password"] +
+            ";Database=" + configuration["NpgSqlConnection:Database"];
         return services.AddDbContext<ApplicationDbContext>(options =>
         {
-            options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString));
+            options.UseNpgsql(connectionString);
         })
         .AddTransient<IFleetRepository, FleetRepository>();
     }
