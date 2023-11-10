@@ -185,6 +185,8 @@ internal sealed class IdentityService : IIdentityService
         {
             Subject = new ClaimsIdentity(claims),
             Expires = DateTime.UtcNow.Add(_jwtSettings.TokenLifetime),
+            Issuer = _jwtSettings.Issuer,
+            Audience = _jwtSettings.Audience,
             SigningCredentials =
                 new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
         };

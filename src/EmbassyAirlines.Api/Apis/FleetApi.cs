@@ -19,7 +19,8 @@ public static class FleetApi
             return Results.Ok(fleet);
         }).CacheOutput(x => x.Tag("fleet"))
             .Produces(StatusCodes.Status200OK)
-            .WithName("Get fleet");
+            .WithName("Get fleet")
+            .RequireAuthorization();
         app.MapGet("/api/fleet/{id:guid}/", async ([FromRoute] Guid id, [FromServices] IMediator mediator, CancellationToken ct) =>
         {
             var result = await mediator.Send(new GetAircraftById(id), ct);
@@ -29,7 +30,8 @@ public static class FleetApi
         }).CacheOutput(x => x.AddPolicy<ByIdCachePolicy>())
             .Produces(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status404NotFound)
-            .WithName("Get aircraft by id");
+            .WithName("Get aircraft by id")
+            .RequireAuthorization();
         app.MapPost("/api/fleet/", async ([FromBody] NewAircraftDto dto, [FromServices] IMediator mediator, IOutputCacheStore cache, CancellationToken ct) =>
         {
             var result = await mediator.Send(dto, ct);
@@ -39,7 +41,8 @@ public static class FleetApi
                 errors => ErrorHandlingHelper.HandleProblems(errors));
         }).Produces(StatusCodes.Status201Created)
             .Produces(StatusCodes.Status400BadRequest)
-            .WithName("Add aircraft");
+            .WithName("Add aircraft")
+            .RequireAuthorization();
         app.MapPut("/api/fleet/{id:guid}/", async ([FromRoute] Guid id, [FromBody] UpdateAircraftDto dto, [FromServices] IMediator mediator, IOutputCacheStore cache, CancellationToken ct) =>
         {
             var result = await mediator.Send(new UpdateAircraft(id, dto), ct);
@@ -50,7 +53,8 @@ public static class FleetApi
         }).Produces(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status400BadRequest)
             .Produces(StatusCodes.Status404NotFound)
-            .WithName("Update aircraft");
+            .WithName("Update aircraft")
+            .RequireAuthorization();
         app.MapDelete("/api/fleet/{id:guid}/", async ([FromRoute] Guid id, [FromServices] IMediator mediator, CancellationToken ct) =>
         {
             var result = await mediator.Send(new DeleteAircraft(id), ct);
@@ -59,7 +63,8 @@ public static class FleetApi
                 errors => ErrorHandlingHelper.HandleProblems(errors));
         }).Produces(StatusCodes.Status204NoContent)
             .Produces(StatusCodes.Status404NotFound)
-            .WithName("Delete aircraft");
+            .WithName("Delete aircraft")
+            .RequireAuthorization();
         return app;
     }
 }

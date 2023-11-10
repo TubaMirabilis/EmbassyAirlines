@@ -22,12 +22,19 @@ public static class ServiceCollectionExtensions
         });
         var secret = configuration["JwtSettings:Secret"];
         var tokenLifetimeStr = configuration["JwtSettings:TokenLifetime"];
-        if (secret is not null && TimeSpan.TryParse(tokenLifetimeStr, out var tokenLifetime))
+        var issuer = configuration["JwtSettings:Issuer"];
+        var audience = configuration["JwtSettings:Audience"];
+        if (secret is not null &&
+            TimeSpan.TryParse(tokenLifetimeStr, out var tokenLifetime) &&
+            issuer is not null &&
+            audience is not null)
         {
             var jwtSettings = new JwtSettings
             {
                 Secret = secret,
-                TokenLifetime = tokenLifetime
+                TokenLifetime = tokenLifetime,
+                Issuer = issuer,
+                Audience = audience
             };
             services.AddSingleton(jwtSettings);
         }
