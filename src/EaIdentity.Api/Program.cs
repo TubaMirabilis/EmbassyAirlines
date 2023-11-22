@@ -3,13 +3,15 @@ using EaIdentity.Infrastructure;
 using Mediator;
 
 var builder = WebApplication.CreateBuilder(args);
-builder.Configuration.AddEnvironmentVariables(prefix: "EAIDENTITY_");
-builder.Services.AddApplication();
-builder.Services.AddInfrastructure(builder.Configuration);
-builder.Services.AddControllers();
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
-builder.Services.AddMediator(options =>
+var config = builder.Configuration;
+var services = builder.Services;
+config.AddEnvironmentVariables(prefix: "EAIDENTITY_");
+services.AddApplication();
+services.AddInfrastructure(config);
+services.AddControllers();
+services.AddEndpointsApiExplorer();
+services.AddSwaggerGen();
+services.AddMediator(options =>
 {
     options.ServiceLifetime = ServiceLifetime.Scoped;
 });

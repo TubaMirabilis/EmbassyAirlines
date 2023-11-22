@@ -11,17 +11,18 @@ using Swashbuckle.AspNetCore.SwaggerGen;
 
 var builder = WebApplication.CreateBuilder(args);
 var config = builder.Configuration;
+var services = builder.Services;
 config.AddEnvironmentVariables(prefix: "EMBASSYAIRLINES_");
-builder.Services.AddApplication();
-builder.Services.AddInfrastructure(config);
-builder.Services.AddCors(options =>
+services.AddApplication();
+services.AddInfrastructure(config);
+services.AddCors(options =>
 {
     options.AddPolicy("CorsPolicy", b =>
         b.AllowAnyOrigin()
          .AllowAnyMethod()
          .AllowAnyHeader());
 });
-builder.Services.AddAuthentication(x =>
+services.AddAuthentication(x =>
 {
     x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
     x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -40,14 +41,19 @@ builder.Services.AddAuthentication(x =>
         ValidateIssuerSigningKey = true
     };
 });
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
-builder.Services.AddTransient<IConfigureOptions<SwaggerGenOptions>, ConfigureSwaggerOptions>();
-builder.Services.AddMediator(options =>
+services.AddEndpointsApiExplorer();
+services.AddSwaggerGen();
+services.AddTransient<IConfigureOptions<SwaggerGenOptions>, ConfigureSwaggerOptions>();
+services.AddMediator(options =>
 {
     options.ServiceLifetime = ServiceLifetime.Scoped;
 });
-builder.Services.AddOutputCache();
+services.AddOutputCache()
+    .AddStackExchangeRedisCache(options =>
+    {
+        options.Configuration = config["Redis:ConnectionString"];
+        options.InstanceName = config["Redis:InstanceName"];
+    });
 var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
