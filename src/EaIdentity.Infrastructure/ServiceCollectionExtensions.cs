@@ -1,10 +1,14 @@
+using System.Text;
 using EaIdentity.Application.Services;
 using EaIdentity.Infrastructure.Data;
+using EaIdentity.Infrastructure.Identity;
 using EaIdentity.Infrastructure.Options;
 using EaIdentity.Infrastructure.Services;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.IdentityModel.Tokens;
 
 namespace EaIdentity.Infrastructure;
 
@@ -20,29 +24,49 @@ public static class ServiceCollectionExtensions
         {
             options.UseNpgsql(connectionString);
         });
+        services.AddIdentity<ApplicationUser, IdentityRole>(options =>
+        {
+            options.Password.RequireLowercase = false;
+            options.Password.RequireUppercase = false;
+            options.Password.RequireNonAlphanumeric = false;
+            options.Password.RequireDigit = false;
+            options.SignIn.RequireConfirmedAccount = true;
+            options.User.AllowedUserNameCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ ";
+        })
+        .AddRoles<IdentityRole>()
+        .AddEntityFrameworkStores<ApplicationDbContext>();
         services.AddHealthChecks().AddNpgSql(connectionString);
         var secret = config["JwtSettings:Secret"];
         var tokenLifetimeStr = config["JwtSettings:TokenLifetime"];
         var issuer = config["JwtSettings:Issuer"];
         var audience = config["JwtSettings:Audience"];
-        if (secret is not null &&
-            TimeSpan.TryParse(tokenLifetimeStr, out var tokenLifetime) &&
-            issuer is not null &&
-            audience is not null)
-        {
-            var jwtSettings = new JwtSettings
-            {
-                Secret = secret,
-                TokenLifetime = tokenLifetime,
-                Issuer = issuer,
-                Audience = audience
-            };
-            services.AddSingleton(jwtSettings);
-        }
-        else
+        if (secret is null ||
+            !TimeSpan.TryParse(tokenLifetimeStr, out var tokenLifetime) ||
+            issuer is null ||
+            audience is null)
         {
             throw new Exception("The JWT settings are not configured properly");
         }
+        var jwtSettings = new JwtSettings
+        {
+            Secret = secret,
+            TokenLifetime = tokenLifetime,
+            Issuer = issuer,
+            Audience = audience
+        };
+        services.AddSingleton(jwtSettings);
+        var tokenValidationParameters = new TokenValidationParameters
+        {
+            ValidIssuer = config["JwtSettings:Issuer"],
+            ValidAudience = config["JwtSettings:Audience"],
+            IssuerSigningKey = new SymmetricSecurityKey
+            (Encoding.UTF8.GetBytes(config["JwtSettings:Key"]!)),
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true
+        };
+        services.AddSingleton(tokenValidationParameters);
         services.AddScoped<IIdentityService, IdentityService>();
         return services;
     }
