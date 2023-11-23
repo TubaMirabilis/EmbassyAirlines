@@ -13,10 +13,12 @@ public static class ServiceCollectionExtensions
             ";Username=" + config["NpgSqlConnection:Username"] +
             ";Password=" + config["NpgSqlConnection:Password"] +
             ";Database=" + config["NpgSqlConnection:Database"];
-        return services.AddDbContext<ApplicationDbContext>(options =>
+        services.AddDbContext<ApplicationDbContext>(options =>
         {
             options.UseNpgsql(connectionString);
-        })
-        .AddTransient<IFleetRepository, FleetRepository>();
+        });
+        services.AddHealthChecks().AddNpgSql(connectionString);
+        services.AddTransient<IFleetRepository, FleetRepository>();
+        return services;
     }
 }

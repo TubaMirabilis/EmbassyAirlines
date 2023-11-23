@@ -20,6 +20,7 @@ public static class ServiceCollectionExtensions
         {
             options.UseNpgsql(connectionString);
         });
+        services.AddHealthChecks().AddNpgSql(connectionString);
         var secret = config["JwtSettings:Secret"];
         var tokenLifetimeStr = config["JwtSettings:TokenLifetime"];
         var issuer = config["JwtSettings:Issuer"];

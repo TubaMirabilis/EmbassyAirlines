@@ -3,8 +3,10 @@ using EmbassyAirlines.Api.Apis;
 using EmbassyAirlines.Api.Swagger;
 using EmbassyAirlines.Application;
 using EmbassyAirlines.Infrastructure;
+using HealthChecks.UI.Client;
 using Mediator;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Swashbuckle.AspNetCore.SwaggerGen;
@@ -62,6 +64,10 @@ if (app.Environment.IsDevelopment())
 }
 app.UseCors("CorsPolicy");
 app.UseHttpsRedirection();
+app.MapHealthChecks("/_health", new HealthCheckOptions
+{
+    ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
+});
 app.UseOutputCache();
 app.MapFleetApi();
 app.Run();

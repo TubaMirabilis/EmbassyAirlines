@@ -7,7 +7,7 @@ namespace EmbassyAirlines.Infrastructure;
 
 internal sealed class FleetRepository : IFleetRepository
 {
-    private ApplicationDbContext _ctx;
+    private readonly ApplicationDbContext _ctx;
     public FleetRepository(ApplicationDbContext ctx)
     {
         _ctx = ctx;

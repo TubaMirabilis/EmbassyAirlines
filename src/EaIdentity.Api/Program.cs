@@ -1,6 +1,8 @@
 using EaIdentity.Application;
 using EaIdentity.Infrastructure;
+using HealthChecks.UI.Client;
 using Mediator;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 
 var builder = WebApplication.CreateBuilder(args);
 var config = builder.Configuration;
@@ -22,6 +24,10 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 app.UseHttpsRedirection();
+app.MapHealthChecks("/_health", new HealthCheckOptions
+{
+    ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
+});
 app.UseAuthorization();
 app.MapControllers();
 app.Run();
