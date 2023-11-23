@@ -14,6 +14,8 @@ using Swashbuckle.AspNetCore.SwaggerGen;
 var builder = WebApplication.CreateBuilder(args);
 var config = builder.Configuration;
 var services = builder.Services;
+var key = config["JwtSettings:Key"] ?? throw new Exception("The JWT settings are not configured properly");
+var keyAsBytes = Encoding.UTF8.GetBytes(key);
 config.AddEnvironmentVariables(prefix: "EMBASSYAIRLINES_");
 services.AddApplication();
 services.AddInfrastructure(config);
@@ -35,8 +37,7 @@ services.AddAuthentication(x =>
     {
         ValidIssuer = config["JwtSettings:Issuer"],
         ValidAudience = config["JwtSettings:Audience"],
-        IssuerSigningKey = new SymmetricSecurityKey
-            (Encoding.UTF8.GetBytes(config["JwtSettings:Key"]!)),
+        IssuerSigningKey = new SymmetricSecurityKey(keyAsBytes),
         ValidateIssuer = true,
         ValidateAudience = true,
         ValidateLifetime = true,

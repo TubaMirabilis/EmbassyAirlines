@@ -8,11 +8,12 @@ public class ByIdCachePolicy : IOutputCachePolicy
     ValueTask IOutputCachePolicy.CacheRequestAsync(OutputCacheContext context, CancellationToken ct)
     {
         var idRouteVal = context.HttpContext.Request.RouteValues["id"];
-        if (idRouteVal is null)
+        var idRouteValStr = idRouteVal?.ToString();
+        if (string.IsNullOrEmpty(idRouteValStr))
         {
             return ValueTask.CompletedTask;
         }
-        context.Tags.Add(idRouteVal.ToString()!);
+        context.Tags.Add(idRouteValStr);
 
         var attemptOutputCaching = AttemptOutputCaching(context);
         context.EnableOutputCaching = true;

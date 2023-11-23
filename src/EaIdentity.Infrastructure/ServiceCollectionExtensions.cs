@@ -40,13 +40,16 @@ public static class ServiceCollectionExtensions
         var tokenLifetimeStr = config["JwtSettings:TokenLifetime"];
         var issuer = config["JwtSettings:Issuer"];
         var audience = config["JwtSettings:Audience"];
-        if (secret is null ||
+        var key = config["JwtSettings:Key"];
+        if (string.IsNullOrEmpty(secret) ||
             !TimeSpan.TryParse(tokenLifetimeStr, out var tokenLifetime) ||
-            issuer is null ||
-            audience is null)
+            string.IsNullOrEmpty(issuer) ||
+            string.IsNullOrEmpty(audience) ||
+            string.IsNullOrEmpty(key))
         {
             throw new Exception("The JWT settings are not configured properly");
         }
+        var keyAsBytes = Encoding.UTF8.GetBytes(key);
         var jwtSettings = new JwtSettings
         {
             Secret = secret,
@@ -59,8 +62,7 @@ public static class ServiceCollectionExtensions
         {
             ValidIssuer = config["JwtSettings:Issuer"],
             ValidAudience = config["JwtSettings:Audience"],
-            IssuerSigningKey = new SymmetricSecurityKey
-            (Encoding.UTF8.GetBytes(config["JwtSettings:Key"]!)),
+            IssuerSigningKey = new SymmetricSecurityKey(keyAsBytes),
             ValidateIssuer = true,
             ValidateAudience = true,
             ValidateLifetime = true,

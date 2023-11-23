@@ -23,6 +23,10 @@ public sealed class UpdateAircraftCommandHandler : ICommandHandler<UpdateAircraf
             return Errors.Aircraft.NotFound;
         }
         var aircraft = await _repository.GetAircraftByIdAsync(command.Id, ct);
-        return new AircraftMapper().MapAircraftToAircraftDto(aircraft!);
+        if (aircraft is null)
+        {
+            return Errors.Aircraft.NotFound;
+        }
+        return new AircraftMapper().MapAircraftToAircraftDto(aircraft);
     }
 }
