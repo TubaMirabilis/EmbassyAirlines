@@ -7,12 +7,12 @@ namespace EmbassyAirlines.Infrastructure;
 
 public static class ServiceCollectionExtensions
 {
-    public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
+    public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration config)
     {
-        var connectionString = "Host=" + configuration["NpgSqlConnection:Host"] +
-            ";Username=" + configuration["NpgSqlConnection:Username"] +
-            ";Password=" + configuration["NpgSqlConnection:Password"] +
-            ";Database=" + configuration["NpgSqlConnection:Database"];
+        var connectionString = "Host=" + config["NpgSqlConnection:Host"] +
+            ";Username=" + config["NpgSqlConnection:Username"] +
+            ";Password=" + config["NpgSqlConnection:Password"] +
+            ";Database=" + config["NpgSqlConnection:Database"];
         return services.AddDbContext<ApplicationDbContext>(options =>
         {
             options.UseNpgsql(connectionString);

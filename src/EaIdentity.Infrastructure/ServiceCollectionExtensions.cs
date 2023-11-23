@@ -10,20 +10,20 @@ namespace EaIdentity.Infrastructure;
 
 public static class ServiceCollectionExtensions
 {
-    public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
+    public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration config)
     {
-        var connectionString = "Host=" + configuration["NpgSqlConnection:Host"] +
-            ";Username=" + configuration["NpgSqlConnection:Username"] +
-            ";Password=" + configuration["NpgSqlConnection:Password"] +
-            ";Database=" + configuration["NpgSqlConnection:Database"];
+        var connectionString = "Host=" + config["NpgSqlConnection:Host"] +
+            ";Username=" + config["NpgSqlConnection:Username"] +
+            ";Password=" + config["NpgSqlConnection:Password"] +
+            ";Database=" + config["NpgSqlConnection:Database"];
         services.AddDbContext<ApplicationDbContext>(options =>
         {
             options.UseNpgsql(connectionString);
         });
-        var secret = configuration["JwtSettings:Secret"];
-        var tokenLifetimeStr = configuration["JwtSettings:TokenLifetime"];
-        var issuer = configuration["JwtSettings:Issuer"];
-        var audience = configuration["JwtSettings:Audience"];
+        var secret = config["JwtSettings:Secret"];
+        var tokenLifetimeStr = config["JwtSettings:TokenLifetime"];
+        var issuer = config["JwtSettings:Issuer"];
+        var audience = config["JwtSettings:Audience"];
         if (secret is not null &&
             TimeSpan.TryParse(tokenLifetimeStr, out var tokenLifetime) &&
             issuer is not null &&
