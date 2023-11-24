@@ -5,6 +5,22 @@ services:
     build:
       context: .
       dockerfile: ./docker/api.dockerfile
+    depends_on:
+      - postgres
+    environment:
+      EMBASSYAIRLINES_NpgSqlConnection__Host: 'postgres'
+      EMBASSYAIRLINES_NpgSqlConnection__Username: 'stupid'
+      EMBASSYAIRLINES_NpgSqlConnection__Password: 'bastard'
+      EMBASSYAIRLINES_NpgSqlConnection__Database: 'fakebase'
     ports:
       - "5000:5000"
-    
+
+  postgres:
+    image: postgres:latest
+    environment:
+      postgres_user: 'STUPID'
+      postgres_password: 'BASTARD'
+      postgres_db: 'FAKEBASE'
+    expose:
+      - 5432
+    restart: always
