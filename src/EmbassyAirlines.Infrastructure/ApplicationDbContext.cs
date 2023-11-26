@@ -1,15 +1,18 @@
 ﻿using EmbassyAirlines.Domain;
+using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace EmbassyAirlines.Infrastructure;
 
-internal sealed class ApplicationDbContext : DbContext
+internal sealed class ApplicationDbContext : DbContext, IDataProtectionKeyContext
 {
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
         : base(options)
     {
     }
     public DbSet<Aircraft> Aircraft { get; set; }
+    public DbSet<DataProtectionKey> DataProtectionKeys { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Aircraft>()

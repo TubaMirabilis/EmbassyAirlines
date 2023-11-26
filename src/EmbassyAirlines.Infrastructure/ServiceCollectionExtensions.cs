@@ -1,4 +1,5 @@
 using EmbassyAirlines.Application.Repositories;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -10,13 +11,15 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration config)
     {
         var connectionString = "Host=" + config["NpgSqlConnection:Host"] +
+            ";Port=" + config["NpgSqlConnection:Port"] +
+            ";Database=" + config["NpgSqlConnection:Database"] +
             ";Username=" + config["NpgSqlConnection:Username"] +
-            ";Password=" + config["NpgSqlConnection:Password"] +
-            ";Database=" + config["NpgSqlConnection:Database"];
+            ";Password=" + config["NpgSqlConnection:Password"];
         services.AddDbContext<ApplicationDbContext>(options =>
         {
             options.UseNpgsql(connectionString);
         });
+        services.AddDataProtection().PersistKeysToDbContext<ApplicationDbContext>();
         services.AddHealthChecks().AddNpgSql(connectionString);
         services.AddTransient<IFleetRepository, FleetRepository>();
         return services;

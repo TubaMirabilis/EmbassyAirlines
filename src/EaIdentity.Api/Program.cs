@@ -6,8 +6,8 @@ using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 
 var builder = WebApplication.CreateBuilder(args);
 var config = builder.Configuration;
-var services = builder.Services;
 config.AddEnvironmentVariables(prefix: "EAIDENTITY_");
+var services = builder.Services;
 services.AddApplication();
 services.AddInfrastructure(config);
 services.AddControllers();

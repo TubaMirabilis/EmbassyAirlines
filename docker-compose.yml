@@ -8,19 +8,26 @@ services:
     depends_on:
       - postgres
     environment:
+      EMBASSYAIRLINES_JwtSettings__Secret: 'supersecret'
       EMBASSYAIRLINES_NpgSqlConnection__Host: 'postgres'
+      EMBASSYAIRLINES_NpgSqlConnection__Port: '5432'
+      EMBASSYAIRLINES_NpgSqlConnection__Database: 'fakebase'
       EMBASSYAIRLINES_NpgSqlConnection__Username: 'stupid'
       EMBASSYAIRLINES_NpgSqlConnection__Password: 'bastard'
-      EMBASSYAIRLINES_NpgSqlConnection__Database: 'fakebase'
     ports:
       - "5000:5000"
 
   postgres:
     image: postgres:latest
     environment:
-      postgres_user: 'STUPID'
-      postgres_password: 'BASTARD'
-      postgres_db: 'FAKEBASE'
-    expose:
-      - 5432
+      POSTGRES_USER: 'STUPID'
+      POSTGRES_PASSWORD: 'BASTARD'
+      POSTGRES_DB: 'FAKEBASE'
+    ports:
+      - "5432:5432"
     restart: always
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
+volumes:
+  postgres-data:
