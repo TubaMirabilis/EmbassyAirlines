@@ -53,7 +53,7 @@ services.AddMediator(options =>
     options.ServiceLifetime = ServiceLifetime.Scoped;
 });
 services.AddOutputCache()
-    .AddStackExchangeRedisCache(options =>
+    .AddStackExchangeRedisOutputCache(options =>
     {
         options.Configuration = config["Redis:ConnectionString"];
         options.InstanceName = config["Redis:InstanceName"];

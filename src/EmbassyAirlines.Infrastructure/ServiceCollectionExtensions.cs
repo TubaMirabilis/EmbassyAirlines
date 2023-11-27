@@ -10,6 +10,8 @@ public static class ServiceCollectionExtensions
 {
     public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration config)
     {
+        var redisConfig = config["Redis:ConnectionString"];
+        ArgumentException.ThrowIfNullOrEmpty(redisConfig);
         var connectionString = "Host=" + config["NpgSqlConnection:Host"] +
             ";Port=" + config["NpgSqlConnection:Port"] +
             ";Database=" + config["NpgSqlConnection:Database"] +
@@ -21,6 +23,7 @@ public static class ServiceCollectionExtensions
         });
         services.AddDataProtection().PersistKeysToDbContext<ApplicationDbContext>();
         services.AddHealthChecks().AddNpgSql(connectionString);
+        services.AddHealthChecks().AddRedis(redisConfig);
         services.AddTransient<IFleetRepository, FleetRepository>();
         return services;
     }
