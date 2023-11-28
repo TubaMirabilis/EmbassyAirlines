@@ -1,3 +1,0 @@
-This is a temperary file so github will keep the config directory.
-
-Config is a directory used to store server config files and scripts, for use on the host and any containers present in the deployment.
