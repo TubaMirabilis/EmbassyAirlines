@@ -34,8 +34,7 @@ public static class ServiceCollectionExtensions
             options.User.AllowedUserNameCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ ";
         })
         .AddRoles<IdentityRole>()
-        .AddEntityFrameworkStores<ApplicationDbContext>();
-        services.AddHealthChecks().AddNpgSql(connectionString);
+        .AddEntityFrameworkStores<ApplicationDbContext>();        services.AddHealthChecks().AddNpgSql(connectionString);
         var secret = config["JwtSettings:Secret"];
         var tokenLifetimeStr = config["JwtSettings:TokenLifetime"];
         var issuer = config["JwtSettings:Issuer"];
@@ -48,18 +47,12 @@ public static class ServiceCollectionExtensions
             throw new Exception("The JWT settings are not configured properly");
         }
         var secretAsBytes = Encoding.UTF8.GetBytes(secret);
-        var jwtSettings = new JwtSettings
-        {
-            Secret = secret,
-            TokenLifetime = tokenLifetime,
-            Issuer = issuer,
-            Audience = audience
-        };
+        JwtSettings jwtSettings = new(secret, tokenLifetime, issuer, audience);
         services.AddSingleton(jwtSettings);
-        var tokenValidationParameters = new TokenValidationParameters
+        TokenValidationParameters tokenValidationParameters = new
         {
-            ValidIssuer = config["JwtSettings:Issuer"],
-            ValidAudience = config["JwtSettings:Audience"],
+            ValidIssuer = issuer,
+            ValidAudience = audience,
             IssuerSigningKey = new SymmetricSecurityKey(secretAsBytes),
             ValidateIssuer = true,
             ValidateAudience = true,
