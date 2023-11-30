@@ -22,7 +22,7 @@ public static class ServiceCollectionExtensions
             options.UseNpgsql(connectionString);
         });
         services.AddDataProtection().PersistKeysToDbContext<ApplicationDbContext>();
-        services.AddHealthChecks().AddNpgSql(connectionString);
+        services.AddHealthChecks().AddDbContextCheck<ApplicationDbContext>();
         services.AddHealthChecks().AddRedis(redisConfig);
         services.AddTransient<IFleetRepository, FleetRepository>();
         return services;
