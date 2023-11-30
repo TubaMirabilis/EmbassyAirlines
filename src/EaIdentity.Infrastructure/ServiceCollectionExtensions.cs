@@ -49,7 +49,7 @@ public static class ServiceCollectionExtensions
         var secretAsBytes = Encoding.UTF8.GetBytes(secret);
         JwtSettings jwtSettings = new(secret, tokenLifetime, issuer, audience);
         services.AddSingleton(jwtSettings);
-        TokenValidationParameters tokenValidationParameters = new
+        var tokenValidationParameters = new TokenValidationParameters
         {
             ValidIssuer = issuer,
             ValidAudience = audience,
