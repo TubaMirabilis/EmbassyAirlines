@@ -21,7 +21,7 @@ jobs:
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
       - name: DotNet Restore
-        run: dotnet restore ./EmbassyAirlines.sln
+        run: dotnet restore
       - name: DotNet Build
         run: dotnet build ./EmbassyAirlines.sln --configuration Release --no-restore
       - name: DotNet Test
