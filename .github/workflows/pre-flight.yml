@@ -1,0 +1,53 @@
+name: Preflight Checks
+
+on:
+  push:
+    branches:
+      - main
+
+env:
+  DOTNET_VERSION: "8.0.x"
+  PYTHON_VERSION: "3.x"
+
+jobs:
+  DotNet:
+    name: DotNet Build and Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+      - name: DotNet Restore
+        run: dotnet restore ./EmbassyAirlines.sln
+      - name: DotNet Build
+        run: dotnet build ./EmbassyAirlines.sln --configuration Release --no-restore
+      - name: DotNet Test
+        run: dotnet test ./EmbassyAirlines.sln --configuration Release --no-restore --no-build
+
+  CodeFormatCheck:
+    name: Code Format Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - name: Fail on Long Lines
+        run: |
+          output=$(python3 .github/scripts/longlines.py)
+          if [ ! -z "$output" ]; then
+            echo "$output"
+            exit 1
+          fi
+      - name: Fail on Long Methods
+        run: |
+          output=$(python3 .github/scripts/longmethods.py)
+          if [ ! -z "$output" ]; then
+            echo "$output"
+            exit 1
+          fi
