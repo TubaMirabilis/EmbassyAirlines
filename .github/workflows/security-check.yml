@@ -1,0 +1,18 @@
+name: Security Scan
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  containers:
+    runs-on: ubuntu-latest
+    env:
+      urls: ${{secrets.URLS}}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Container Scan
+        run: |
+          . .github/scripts/trivy.sh
