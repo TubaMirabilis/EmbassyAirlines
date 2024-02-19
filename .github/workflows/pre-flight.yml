@@ -3,7 +3,7 @@ name: Preflight Checks
 on:
   push:
     branches:
-      - main
+      - master
 
 env:
   DOTNET_VERSION: "8.0.x"
