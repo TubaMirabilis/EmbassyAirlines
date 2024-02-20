@@ -1,7 +1,7 @@
 version: '3.8'
 
 services:
-  api:
+  gateway-api:
     build:
       context: .
       dockerfile: ./docker/gateway-api.dockerfile
@@ -17,5 +17,6 @@ services:
       driver: ${logdriver}
       options:
         tag: "gateway-api"
+
 volumes:
   letsencrypt:
