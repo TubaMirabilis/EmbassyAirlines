@@ -3,7 +3,7 @@ FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
 WORKDIR /app
 
 # Build image
-FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:8.0.101 AS build
 COPY ./src/Gateway.Api/ /src/Gateway.Api/
 
 WORKDIR /src/Gateway.Api
