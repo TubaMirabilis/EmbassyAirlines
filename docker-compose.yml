@@ -1,10 +1,10 @@
 version: '3.8'
 
 services:
-  gateway-api:
+  fleet-api:
     build:
       context: .
-      dockerfile: ./docker/gateway-api.dockerfile
+      dockerfile: ./docker/fleet-api.dockerfile
     restart: always
     environment:
       ASPNETCORE_URLS: ${urls}
@@ -16,7 +16,37 @@ services:
     logging:
       driver: ${logdriver}
       options:
-        tag: "gateway-api"
+        tag: "fleet-api"
+
+  fleet-db:
+    image: postgres:latest
+    restart: always
+    environment:
+      POSTGRES_DB: ${fleetdb}
+      POSTGRES_USER: ${fleetuser}
+      POSTGRES_PASSWORD: ${fleetpassword}
+    expose:
+      - 5432
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+gateway-api:
+  build:
+    context: .
+    dockerfile: ./docker/gateway-api.dockerfile
+  restart: always
+  environment:
+    ASPNETCORE_URLS: ${urls}
+  volumes:
+    - letsencrypt:/https
+  expose:
+    - 80
+    - 443
+  logging:
+    driver: ${logdriver}
+    options:
+      tag: "gateway-api"
 
 volumes:
   letsencrypt:
+  postgres_data:
