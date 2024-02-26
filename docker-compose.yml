@@ -30,22 +30,22 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
-gateway-api:
-  build:
-    context: .
-    dockerfile: ./docker/gateway-api.dockerfile
-  restart: always
-  environment:
-    ASPNETCORE_URLS: ${urls}
-  volumes:
-    - letsencrypt:/https
-  expose:
-    - 80
-    - 443
-  logging:
-    driver: ${logdriver}
-    options:
-      tag: "gateway-api"
+  gateway-api:
+    build:
+      context: .
+      dockerfile: ./docker/gateway-api.dockerfile
+    restart: always
+    environment:
+      ASPNETCORE_URLS: ${urls}
+    volumes:
+      - letsencrypt:/https
+    expose:
+      - 80
+      - 443
+    logging:
+      driver: ${logdriver}
+      options:
+        tag: "gateway-api"
 
 volumes:
   letsencrypt:
