@@ -5,6 +5,7 @@ WORKDIR /app
 # Build image
 FROM mcr.microsoft.com/dotnet/sdk:8.0.101 AS build
 COPY ./src/Fleet.Api/ /src/Fleet.Api/
+COPY ./src/Shared/ /src/Shared/
 
 WORKDIR /src/Fleet.Api
 RUN dotnet restore "Fleet.Api.csproj"
