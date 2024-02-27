@@ -62,13 +62,9 @@ def process_method(file_path, file_content, class_name, method_match, line_thres
             )
 
 
-def main(parent_directory="./src", line_threshold=26):
-    exclude_path = os.path.join(
-        parent_directory, "Mastermind.Infrastructure/Migrations"
-    )
-
+def main(parent_directory="./src", line_threshold=22):
     for root, dirs, files in os.walk(parent_directory):
-        if os.path.abspath(root).startswith(os.path.abspath(exclude_path)):
+        if "Migrations" in os.path.basename(root):
             continue
         for file in files:
             if file.endswith(".cs"):
