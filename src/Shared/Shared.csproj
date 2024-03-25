@@ -14,4 +14,8 @@
     <PackageReference Include="ErrorOr" Version="1.10.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Update="SonarAnalyzer.CSharp" Version="9.23.0.88079" />
+  </ItemGroup>
+
 </Project>

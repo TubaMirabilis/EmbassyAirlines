@@ -85,7 +85,7 @@ public sealed class ByIdCachePolicy : IOutputCachePolicy
     //
     // Returns:
     //     True if the response should be stored in the cache; otherwise, false.
-    private bool AttemptOutputCaching(OutputCacheContext context)
+    private static bool AttemptOutputCaching(OutputCacheContext context)
     {
         var request = context.HttpContext.Request;
         if (!HttpMethods.IsGet(request.Method) &&

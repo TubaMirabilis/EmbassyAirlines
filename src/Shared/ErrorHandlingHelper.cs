@@ -5,13 +5,14 @@ namespace Shared;
 
 public static class ErrorHandlingHelper
 {
-    public static IResult HandleProblems(List<Error> errors)
+    public static IResult HandleProblems(IList<Error> errors)
     {
-        if (errors.Count is 0)
+        ArgumentNullException.ThrowIfNull(errors);
+        if (errors.Count == 0)
         {
             return Results.Problem();
         }
-        if (errors.TrueForAll(error => error.Type == ErrorType.Validation))
+        if (errors.All(error => error.Type == ErrorType.Validation))
         {
             return Results.Problem(
                 statusCode: StatusCodes.Status400BadRequest,
