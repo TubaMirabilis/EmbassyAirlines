@@ -16,6 +16,8 @@ dotnet_diagnostic.CA1031.severity = none
 dotnet_diagnostic.CA1034.severity = none
 # CA1707: Identifiers should not contain underscores
 dotnet_diagnostic.CA1707.severity = none
+# CA1716: Identifiers should not match keywords
+dotnet_diagnostic.CA1716.severity = none
 # CA1724: Type names should not match namespaces
 dotnet_diagnostic.CA1724.severity = none
 # CA1727: Use PascalCase for named placeholders
@@ -34,6 +36,8 @@ dotnet_diagnostic.CA2234.severity = none
 dotnet_diagnostic.CA3003.severity = none
 # S1118: Utility classes should not have public constructors
 dotnet_diagnostic.S1118.severity = none
+# S1144: Unused private types or members should be removed
+dotnet_diagnostic.S1144.severity = none
 # S1244: Do not check floating point equality with exact values
 dotnet_diagnostic.S1244.severity = none
 # S2094: Remove empty records

@@ -1,5 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Fleet.Api.Entities;
+﻿using Fleet.Api.Entities;
+using Microsoft.EntityFrameworkCore;
 
 namespace Fleet.Api.Database;
 

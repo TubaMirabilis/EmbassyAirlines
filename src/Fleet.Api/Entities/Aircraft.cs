@@ -25,5 +25,5 @@ public sealed class Aircraft
     public required int MaximumCargoWeight { get; set; }
     public required int FuelOnboard { get; set; }
     public required int FuelCapacity { get; set; }
-    public required byte MinimumCabinCrew { get; set; }  
+    public required byte MinimumCabinCrew { get; set; }
 }
