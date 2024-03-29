@@ -1,6 +1,7 @@
 using Carter;
 using Fleet.Api.Database;
 using Microsoft.EntityFrameworkCore;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Configuration.AddEnvironmentVariables(prefix: "FLEETAPI_");
