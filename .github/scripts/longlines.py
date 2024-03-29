@@ -12,6 +12,9 @@ def filter_directories_and_files(dirnames, filename):
         or filename.endswith(".ico")
         or filename.endswith(".json")
         or filename.endswith(".sln")
+        or filename.endswith(".dot")
+        or filename.endswith(".png")
+        or filename == ".editorconfig"
         or filename == "nginx.conf"
         or filename == "docker-compose.yml"
     )
