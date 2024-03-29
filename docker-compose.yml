@@ -1,4 +1,4 @@
-version: '3.8'
+version: "3.8"
 
 services:
   fleet-api:
@@ -44,6 +44,15 @@ services:
       driver: ${logdriver}
       options:
         tag: "gateway-api"
+
+  seq:
+    image: datalust/seq:latest
+    restart: always
+    environment:
+      - ACCEPT_EULA=Y
+    expose:
+      - 5341
+      - 8081
 
 volumes:
   letsencrypt:

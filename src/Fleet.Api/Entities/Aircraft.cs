@@ -1,3 +1,5 @@
+using Fleet.Api.Enums;
+
 namespace Fleet.Api.Entities;
 
 public sealed class Aircraft
@@ -6,7 +8,7 @@ public sealed class Aircraft
     public required DateTime CreatedAt { get; set; }
     public required DateTime UpdatedAt { get; set; }
     public required string Registration { get; set; }
-    public required string Status { get; set; }
+    public required AircraftStatus Status { get; set; }
     public required string Location { get; set; }
     public required string Model { get; set; }
     public required string Type { get; set; }
