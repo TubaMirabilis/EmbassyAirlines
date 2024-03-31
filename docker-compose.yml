@@ -7,7 +7,12 @@ services:
       dockerfile: ./docker/fleet-api.dockerfile
     restart: always
     environment:
+      ASPNETCORE_URLS: ${fleeturls}
+      ASPNETCORE_Kestrel__Certificates__Default__Path: ${pubkey}
+      ASPNETCORE_Kestrel__Certificates__Default__KeyPath: ${privkey}
       FLEETAPI_Database: ${fleetcs}
+      FLEETAPI_Redis__ConnectionString: ${fleetcache}
+      FLEETAPI_Redis__InstanceName: ${fleetcacheinstance}
     volumes:
       - letsencrypt:/https
     expose:
@@ -28,22 +33,30 @@ services:
     ports:
       - 5440:5432
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - fleet_data:/var/lib/postgresql/data
+
+  fleet-cache:
+    image: redis:latest
+    expose:
+      - 6300
+    volumes:
+      - fleet_cache:/data
+    restart: always
 
   gateway-api:
     build:
       context: .
       dockerfile: ./docker/gateway-api.dockerfile
     restart: always
+    environment:
+      ASPNETCORE_URLS: ${gatewayurls}
+      ASPNETCORE_Kestrel__Certificates__Default__Path: ${pubkey}
+      ASPNETCORE_Kestrel__Certificates__Default__KeyPath: ${privkey}
     volumes:
       - letsencrypt:/https
     expose:
       - 5000
       - 5001
-    logging:
-      driver: ${logdriver}
-      options:
-        tag: "gateway-api"
 
   seq:
     image: datalust/seq:latest
@@ -56,4 +69,5 @@ services:
 
 volumes:
   letsencrypt:
-  postgres_data:
+  fleet_data:
+  fleet_cache:
