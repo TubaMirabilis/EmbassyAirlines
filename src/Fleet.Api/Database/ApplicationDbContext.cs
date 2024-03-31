@@ -16,10 +16,12 @@ public class ApplicationDbContext : DbContext
         ArgumentNullException.ThrowIfNull(modelBuilder);
         var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
         modelBuilder.Entity<Aircraft>().Property(a => a.Registration).HasMaxLength(12).HasColumnType("varchar(12)");
-        modelBuilder.Entity<Aircraft>().Property(a => a.Status).HasConversion<string>().HasMaxLength(20).HasColumnType("varchar(20)");
+        modelBuilder.Entity<Aircraft>().Property(a => a.Status).HasConversion<string>()
+            .HasMaxLength(20).HasColumnType("varchar(20)");
         modelBuilder.Entity<Aircraft>().Property(a => a.Location).HasMaxLength(4).HasColumnType("varchar(4)");
         modelBuilder.Entity<Aircraft>().Property(a => a.Model).HasMaxLength(50).HasColumnType("varchar(50)");
-        modelBuilder.Entity<Aircraft>().Property(a => a.Type).HasConversion<string>().HasMaxLength(20).HasColumnType("varchar(20)");
+        modelBuilder.Entity<Aircraft>().Property(a => a.Type).HasConversion<string>()
+            .HasMaxLength(20).HasColumnType("varchar(20)");
         modelBuilder.Entity<Aircraft>().Property(a => a.TypeDesignator).HasMaxLength(4).HasColumnType("varchar(4)");
         modelBuilder.Entity<Aircraft>().Property(a => a.EngineModel).HasMaxLength(50).HasColumnType("varchar(50)");
         // SeatingConfiguration is a dictionary, so we need to configure it as a JSON column. ef core will handle serialization/deserialization

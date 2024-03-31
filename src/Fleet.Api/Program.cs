@@ -24,7 +24,8 @@ builder.Services.AddOutputCache()
 });
 builder.Services.AddHealthChecks()
     .AddDbContextCheck<ApplicationDbContext>()
-    .AddRedis(builder.Configuration["Redis:ConnectionString"] ?? throw new InvalidOperationException("Redis connection string is missing."));
+    .AddRedis(builder.Configuration["Redis:ConnectionString"]
+        ?? throw new InvalidOperationException("Redis connection string is missing."));
 var assembly = typeof(Program).Assembly;
 builder.Services.AddMediatR(config => config.RegisterServicesFromAssembly(assembly));
 builder.Services.AddCarter();
