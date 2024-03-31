@@ -11,7 +11,7 @@ public sealed class Aircraft
     public required AircraftStatus Status { get; set; }
     public required string Location { get; set; }
     public required string Model { get; set; }
-    public required string Type { get; set; }
+    public required AircraftType Type { get; set; }
     public required string TypeDesignator { get; set; }
     public required short Wingspan { get; set; }
     public required string EngineModel { get; set; }
