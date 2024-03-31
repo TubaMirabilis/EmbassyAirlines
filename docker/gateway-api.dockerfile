@@ -5,6 +5,7 @@ WORKDIR /app
 # Build image
 FROM mcr.microsoft.com/dotnet/sdk:8.0.203 AS build
 COPY ./src/Gateway.Api/ /src/Gateway.Api/
+COPY ./src/Shared/ /src/Shared/
 
 WORKDIR /src/Gateway.Api
 RUN dotnet restore "Gateway.Api.csproj"
