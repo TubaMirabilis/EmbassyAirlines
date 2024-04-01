@@ -10,10 +10,7 @@ namespace Fleet.Api.Features.Aircraft;
 
 public static class GetAircraft
 {
-    public sealed record Query : IRequest<ErrorOr<AircraftResponse>>
-    {
-        public required Guid Id { get; init; }
-    }
+    public sealed record Query(Guid Id) : IRequest<ErrorOr<AircraftResponse>>;
     internal sealed class Handler : IRequestHandler<Query, ErrorOr<AircraftResponse>>
     {
         private readonly ApplicationDbContext _ctx;
@@ -54,7 +51,7 @@ public class GetAircraftEndpoint : ICarterModule
         app.MapGet("api/aircraft/{id}", async (Guid id, ISender sender, CancellationToken ct) =>
         {
             _logger.LogInformation("Getting aircraft by id {id}", id);
-            var query = new GetAircraft.Query { Id = id };
+            var query = new GetAircraft.Query(id);
             var result = await sender.Send(query, ct);
             return result.Match(
                 ac => Results.Ok(result),

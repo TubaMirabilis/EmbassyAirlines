@@ -28,7 +28,6 @@ def process_file_content(file_path, file_content, line_threshold):
     method_regex = (
         r"(public|protected|private|internal|static)(\s+\w+)?\s+[\w<>,\s]+\s+(\w+)\s*\("
     )
-
     classes = re.finditer(class_record_struct_regex, file_content)
     for class_match in classes:
         class_name = (
@@ -40,6 +39,8 @@ def process_file_content(file_path, file_content, line_threshold):
 def process_class(file_path, file_content, class_name, method_regex, line_threshold):
     methods = re.finditer(method_regex, file_content)
     for method_match in methods:
+        if any(x in method_match.group(0).lower() for x in ["class", "struct", "record"]):
+            continue
         process_method(
             file_path, file_content, class_name, method_match, line_threshold
         )
@@ -62,7 +63,7 @@ def process_method(file_path, file_content, class_name, method_match, line_thres
             )
 
 
-def main(parent_directory="./src", line_threshold=22):
+def main(parent_directory="./src", line_threshold=19):
     for root, dirs, files in os.walk(parent_directory):
         if "Migrations" in os.path.basename(root):
             continue

@@ -11,10 +11,7 @@ namespace Fleet.Api.Features.Aircraft;
 
 public static class AddAircraft
 {
-    public sealed record Command : IRequest<ErrorOr<AircraftResponse>>
-    {
-        public required AddAircraftRequest Request { get; init; }
-    }
+    public sealed record Command(AddAircraftRequest Request) : IRequest<ErrorOr<AircraftResponse>>;
     internal sealed class Handler : IRequestHandler<Command, ErrorOr<AircraftResponse>>
     {
         private readonly ApplicationDbContext _ctx;
@@ -49,7 +46,7 @@ public class AddAircraftEndpoint : ICarterModule
             ISender sender, IOutputCacheStore cache, CancellationToken ct) =>
         {
             _logger.LogInformation("Adding aircraft");
-            var command = new AddAircraft.Command { Request = request };
+            var command = new AddAircraft.Command(request);
             var result = await sender.Send(command, ct);
             if (!result.IsError)
             {
