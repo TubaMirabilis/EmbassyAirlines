@@ -1,6 +1,6 @@
 namespace Fleet.Api.Contracts;
 
-public sealed record AddAircraftRequest(string Registration, string Status,
+public sealed record AddAircraftRequest(string Registration, string AircraftStatus, string OperationalStatus,
     string Location, string Model, string Type, string TypeDesignator,
     short Wingspan, string EngineModel, byte EngineCount, int ServiceCeiling,
     Dictionary<string, short> SeatingConfiguration, float FlightHours,
