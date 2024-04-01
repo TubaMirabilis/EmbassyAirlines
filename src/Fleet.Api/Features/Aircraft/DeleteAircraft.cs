@@ -1,6 +1,5 @@
 ﻿using Carter;
 using ErrorOr;
-using Fleet.Api.Contracts;
 using Fleet.Api.Database;
 using MediatR;
 using Microsoft.AspNetCore.OutputCaching;
@@ -48,7 +47,8 @@ public class DeleteAircraftEndpoint : ICarterModule
     }
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapDelete("api/aircraft/{id}", async (Guid id, ISender sender, IOutputCacheStore cache, CancellationToken ct) =>
+        app.MapDelete("api/aircraft/{id}", async (Guid id, ISender sender,
+            IOutputCacheStore cache, CancellationToken ct) =>
         {
             _logger.LogInformation("Deleting aircraft by id {id}", id);
             var command = new DeleteAircraft.Command(id);

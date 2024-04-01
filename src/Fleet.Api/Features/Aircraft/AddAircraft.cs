@@ -4,7 +4,6 @@ using Fleet.Api.Contracts;
 using Fleet.Api.Database;
 using MediatR;
 using Microsoft.AspNetCore.OutputCaching;
-using Microsoft.EntityFrameworkCore;
 using Shared;
 
 namespace Fleet.Api.Features.Aircraft;
