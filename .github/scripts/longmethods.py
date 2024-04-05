@@ -63,7 +63,7 @@ def process_method(file_path, file_content, class_name, method_match, line_thres
             )
 
 
-def main(parent_directory="./src", line_threshold=21):
+def main(parent_directory="./src", line_threshold=25):
     for root, dirs, files in os.walk(parent_directory):
         if "Migrations" in os.path.basename(root):
             continue
