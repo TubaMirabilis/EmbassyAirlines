@@ -17,16 +17,16 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(builder.Configuration["Database"]));
-builder.Services.AddOutputCache()
-    .AddStackExchangeRedisOutputCache(options =>
-{
-    options.Configuration = builder.Configuration["Redis:ConnectionString"];
-    options.InstanceName = builder.Configuration["Redis:InstanceName"];
-});
-builder.Services.AddHealthChecks()
-    .AddDbContextCheck<ApplicationDbContext>()
-    .AddRedis(builder.Configuration["Redis:ConnectionString"]
-        ?? throw new InvalidOperationException("Redis connection string is missing."));
+// builder.Services.AddOutputCache()
+//     .AddStackExchangeRedisOutputCache(options =>
+// {
+//     options.Configuration = builder.Configuration["Redis:ConnectionString"];
+//     options.InstanceName = builder.Configuration["Redis:InstanceName"];
+// });
+// builder.Services.AddHealthChecks()
+//     .AddDbContextCheck<ApplicationDbContext>()
+//     .AddRedis(builder.Configuration["Redis:ConnectionString"]
+//         ?? throw new InvalidOperationException("Redis connection string is missing."));
 builder.Services.AddCarter();
 var assembly = typeof(Program).Assembly;
 builder.Services.AddMediatR(config => config.RegisterServicesFromAssembly(assembly));

@@ -1,10 +1,11 @@
 ﻿using System.Text.Json;
 using Fleet.Api.Entities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 
 namespace Fleet.Api.Database;
 
-public class ApplicationDbContext : DbContext
+public sealed class ApplicationDbContext : DbContext
 {
     public ApplicationDbContext(DbContextOptions options)
         : base(options)
@@ -31,7 +32,11 @@ public class ApplicationDbContext : DbContext
                 v => JsonSerializer.Serialize<Dictionary<string, short>>(v, options),
                 v => JsonSerializer.Deserialize<Dictionary<string, short>>(v, options)
                     ?? new Dictionary<string, short>()
-            );
+            ).Metadata.SetValueComparer(new ValueComparer<Dictionary<string, short>>(
+                (c1, c2) => c1!.SequenceEqual(c2!),
+                c => c.Aggregate(0, (a, v) => HashCode.Combine(a, v.GetHashCode())),
+                c => c.ToDictionary(kv => kv.Key, kv => kv.Value)
+            ));
     }
 
     public DbSet<Aircraft> Aircraft { get; set; }

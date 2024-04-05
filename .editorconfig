@@ -34,6 +34,8 @@ dotnet_diagnostic.CA2227.severity = none
 dotnet_diagnostic.CA2234.severity = none
 # CA3003: Review code for file path injection vulnerabilities
 dotnet_diagnostic.CA3003.severity = none
+# S125: Sections of code should not be commented out
+dotnet_diagnostic.S125.severity = none
 # S1118: Utility classes should not have public constructors
 dotnet_diagnostic.S1118.severity = none
 # S1144: Unused private types or members should be removed
