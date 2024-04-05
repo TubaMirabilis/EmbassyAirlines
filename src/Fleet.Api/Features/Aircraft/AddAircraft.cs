@@ -2,6 +2,7 @@
 using ErrorOr;
 using Fleet.Api.Contracts;
 using Fleet.Api.Database;
+using Fleet.Api.Enums;
 using FluentValidation;
 using MediatR;
 using Microsoft.AspNetCore.OutputCaching;
@@ -17,11 +18,11 @@ public static class AddAircraft
         public AddAircraftRequestValidator()
         {
             RuleFor(x => x.Registration).NotEmpty().MaximumLength(12);
-            RuleFor(x => x.AircraftStatus).NotEmpty().MaximumLength(20);
-            RuleFor(x => x.OperationalStatus).NotEmpty().MaximumLength(20);
+            RuleFor(x => x.AircraftStatus).IsEnumName(typeof(AircraftStatus));
+            RuleFor(x => x.OperationalStatus).IsEnumName(typeof(OperationalStatus));
             RuleFor(x => x.Location).NotEmpty().MaximumLength(4);
             RuleFor(x => x.Model).NotEmpty().MaximumLength(50);
-            RuleFor(x => x.Type).NotEmpty().MaximumLength(20);
+            RuleFor(x => x.Type).IsEnumName(typeof(AircraftType));
             RuleFor(x => x.TypeDesignator).NotEmpty().MaximumLength(4);
             RuleFor(x => x.EngineModel).NotEmpty().MaximumLength(50);
             RuleFor(x => x.SeatingConfiguration).NotEmpty();
