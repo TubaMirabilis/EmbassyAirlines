@@ -1,5 +1,6 @@
 using Carter;
 using Fleet.Api.Database;
+using FluentValidation;
 using HealthChecks.UI.Client;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.EntityFrameworkCore;
@@ -26,9 +27,10 @@ builder.Services.AddHealthChecks()
     .AddDbContextCheck<ApplicationDbContext>()
     .AddRedis(builder.Configuration["Redis:ConnectionString"]
         ?? throw new InvalidOperationException("Redis connection string is missing."));
+builder.Services.AddCarter();
 var assembly = typeof(Program).Assembly;
 builder.Services.AddMediatR(config => config.RegisterServicesFromAssembly(assembly));
-builder.Services.AddCarter();
+builder.Services.AddValidatorsFromAssembly(assembly);
 var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
