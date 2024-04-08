@@ -43,6 +43,48 @@ services:
       - fleet_cache:/data
     restart: always
 
+  flights-api:
+    build:
+      context: .
+      dockerfile: ./docker/flights-api.dockerfile
+    restart: always
+    environment:
+      ASPNETCORE_URLS: ${flightsurls}
+      ASPNETCORE_Kestrel__Certificates__Default__Path: ${pubkey}
+      ASPNETCORE_Kestrel__Certificates__Default__KeyPath: ${privkey}
+      FLIGHTSAPI_Database: ${flightscs}
+      FLIGHTSAPI_Redis__ConnectionString: ${flightscache}
+      FLIGHTSAPI_Redis__InstanceName: ${flightscacheinstance}
+    volumes:
+      - letsencrypt:/https
+    expose:
+      - 5020
+      - 5021
+    logging:
+      driver: ${logdriver}
+      options:
+        tag: "flights-api"
+
+  flights-db:
+    image: postgres:latest
+    restart: always
+    environment:
+      POSTGRES_DB: ${flightsdb}
+      POSTGRES_USER: ${flightsuser}
+      POSTGRES_PASSWORD: ${flightspassword}
+    ports:
+      - 5440:5432
+    volumes:
+      - flights_data:/var/lib/postgresql/data
+
+  flights-cache:
+    image: redis:latest
+    expose:
+      - 6310
+    volumes:
+      - flights_cache:/data
+    restart: always
+
   gateway-api:
     build:
       context: .

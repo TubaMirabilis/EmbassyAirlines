@@ -1,22 +1,18 @@
 using Carter;
-using Fleet.Api.Database;
 using FluentValidation;
 using HealthChecks.UI.Client;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
-using Microsoft.EntityFrameworkCore;
 using Serilog;
 using Shared;
 
 var builder = WebApplication.CreateBuilder(args);
-builder.Configuration.AddEnvironmentVariables(prefix: "FLEETAPI_");
+builder.Configuration.AddEnvironmentVariables(prefix: "FLIGHTSAPI_");
 builder.Host.UseSerilog((context, loggerConfig) =>
     loggerConfig.ReadFrom.Configuration(context.Configuration));
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddProblemDetails();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseNpgsql(builder.Configuration["Database"]));
 builder.Services.AddOutputCache()
     .AddStackExchangeRedisOutputCache(options =>
 {
@@ -24,7 +20,6 @@ builder.Services.AddOutputCache()
     options.InstanceName = builder.Configuration["Redis:InstanceName"];
 });
 builder.Services.AddHealthChecks()
-    .AddDbContextCheck<ApplicationDbContext>()
     .AddRedis(builder.Configuration["Redis:ConnectionString"]
         ?? throw new InvalidOperationException("Redis connection string is missing."));
 builder.Services.AddCarter();
