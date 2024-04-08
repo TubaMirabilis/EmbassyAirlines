@@ -1,7 +1,9 @@
 using Carter;
+using Flights.Api.Database;
 using FluentValidation;
 using HealthChecks.UI.Client;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Microsoft.EntityFrameworkCore;
 using Serilog;
 using Shared;
 
@@ -13,6 +15,8 @@ builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddProblemDetails();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseNpgsql(builder.Configuration["Database"]));
 builder.Services.AddOutputCache()
     .AddStackExchangeRedisOutputCache(options =>
 {
@@ -20,6 +24,7 @@ builder.Services.AddOutputCache()
     options.InstanceName = builder.Configuration["Redis:InstanceName"];
 });
 builder.Services.AddHealthChecks()
+    .AddDbContextCheck<ApplicationDbContext>()
     .AddRedis(builder.Configuration["Redis:ConnectionString"]
         ?? throw new InvalidOperationException("Redis connection string is missing."));
 builder.Services.AddCarter();
