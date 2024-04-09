@@ -31,7 +31,7 @@ services:
       POSTGRES_USER: ${fleetuser}
       POSTGRES_PASSWORD: ${fleetpassword}
     ports:
-      - 5440:5432
+      - 5410:5410
     volumes:
       - fleet_data:/var/lib/postgresql/data
 
@@ -73,7 +73,7 @@ services:
       POSTGRES_USER: ${flightsuser}
       POSTGRES_PASSWORD: ${flightspassword}
     ports:
-      - 5440:5432
+      - 5420:5420
     volumes:
       - flights_data:/var/lib/postgresql/data
 
