@@ -36,10 +36,16 @@ public sealed class Flight
     public string? ArrivalMetar { get; set; }
     public DateTime? ActualDepartureTimeUtc { get; set; }
     public DateTime? ActualArrivalTimeUtc { get; set; }
-    public short TotalPassengers => (short)(AdultMen + AdultWomen + Children);
-    public string Duration => (ArrivalTimeUtc - DepartureTimeUtc).ToString("hh\\:mm", CultureInfo.InvariantCulture);
-    public DateTime DepartureTimeLocal => TimeZoneInfo.ConvertTimeFromUtc(DepartureTimeUtc, TimeZoneInfo.FindSystemTimeZoneById(DepartureTimeZoneId));
-    public DateTime ArrivalTimeLocal => TimeZoneInfo.ConvertTimeFromUtc(ArrivalTimeUtc, TimeZoneInfo.FindSystemTimeZoneById(ArrivalTimeZoneId));
-    public string DepartureTimeLocalString => DepartureTimeLocal.ToString("yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture);
-    public string ArrivalTimeLocalString => ArrivalTimeLocal.ToString("yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture);
+    public short TotalPassengers
+        => (short)(AdultMen + AdultWomen + Children);
+    public string Duration
+        => (ArrivalTimeUtc - DepartureTimeUtc).ToString("hh\\:mm", CultureInfo.InvariantCulture);
+    public DateTime DepartureTimeLocal
+        => TimeZoneInfo.ConvertTimeFromUtc(DepartureTimeUtc, TimeZoneInfo.FindSystemTimeZoneById(DepartureTimeZoneId));
+    public DateTime ArrivalTimeLocal
+        => TimeZoneInfo.ConvertTimeFromUtc(ArrivalTimeUtc, TimeZoneInfo.FindSystemTimeZoneById(ArrivalTimeZoneId));
+    public string DepartureTimeLocalString
+        => DepartureTimeLocal.ToString("yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture);
+    public string ArrivalTimeLocalString
+        => ArrivalTimeLocal.ToString("yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture);
 }
