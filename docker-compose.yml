@@ -113,3 +113,5 @@ volumes:
   letsencrypt:
   fleet_data:
   fleet_cache:
+  flights_data:
+  flights_cache:
