@@ -29,4 +29,8 @@
     <ProjectReference Include="..\Shared\Shared.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Update="SonarAnalyzer.CSharp" Version="9.23.2.88755" />
+  </ItemGroup>
+
 </Project>
