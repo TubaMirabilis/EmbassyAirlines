@@ -7,8 +7,8 @@ public sealed class Flight
 {
     public Guid Id { get; set; }
     public required string Number { get; set; }
-    public required string Departure { get; set; }
-    public required string Arrival { get; set; }
+    public required string NumberIataFormat { get; set; }
+    public required string NumberIcaoFormat { get; set; }
     public required DateTime DepartureTimeUtc { get; set; }
     public required DateTime ArrivalTimeUtc { get; set; }
     public required string DepartureTimeZoneId { get; set; }
