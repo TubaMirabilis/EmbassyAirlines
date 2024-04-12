@@ -1,0 +1,16 @@
+namespace Flights.Api.Contracts;
+
+public sealed record FlightResponse(Guid Id, string Number, string NumberIataFormat, string NumberIcaoFormat,
+    DateTime DepartureTimeUtc, DateTime ArrivalTimeUtc,
+    string DepartureTimeZoneId, string ArrivalTimeZoneId,
+    string AircraftTypeDesignator, string AircraftRegistration, string Status,
+    string DepartureGate, string ArrivalGate, string DepartureTerminal,
+    string ArrivalTerminal, string DepartureAirportIata,
+    string ArrivalAirportIata, string DepartureAirportIcao,
+    string ArrivalAirportIcao, short Distance, short AdultMen, short AdultWomen,
+    short Children, short CheckedBags, string Notes, string? DepartureTaf,
+    string? ArrivalTaf, string? DepartureMetar, string? ArrivalMetar,
+    DateTime? ActualDepartureTimeUtc, DateTime? ActualArrivalTimeUtc,
+    short TotalPassengers, string Duration, DateTime DepartureTimeLocal,
+    DateTime ArrivalTimeLocal, string DepartureTimeLocalString,
+    string ArrivalTimeLocalString);
