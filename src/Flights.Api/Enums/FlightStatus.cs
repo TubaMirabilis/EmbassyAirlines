@@ -1,6 +1,6 @@
 namespace Flights.Api.Enums;
 
-public enum Status
+public enum FlightStatus
 {
     Scheduled,
     EnRoute,

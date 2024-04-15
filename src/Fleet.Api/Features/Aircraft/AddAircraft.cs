@@ -92,7 +92,7 @@ public class AddAircraftEndpoint : ICarterModule
                 await cache.EvictByTagAsync("aircraft", ct);
             }
             return result.Match(
-                ac => Results.Created("/api/aircraft", ac),
+                ac => Results.Created($"/api/aircraft/{ac.Id}", ac),
                 errors => ErrorHandlingHelper.HandleProblems(errors));
         }).WithName("Add aircraft")
         .WithOpenApi();

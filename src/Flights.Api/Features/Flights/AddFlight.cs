@@ -1,8 +1,12 @@
-﻿using ErrorOr;
+﻿using Carter;
+using ErrorOr;
 using Flights.Api.Contracts;
+using Flights.Api.Database;
 using Flights.Api.Enums;
 using FluentValidation;
 using MediatR;
+using Microsoft.AspNetCore.OutputCaching;
+using Shared;
 
 namespace Flights.Api.Features.Aircraft;
 
@@ -22,7 +26,25 @@ public static class AddFlight
             RuleFor(x => x.ArrivalTimeZoneId).NotEmpty().MaximumLength(50).Must(IsValidTimeZoneId);
             RuleFor(x => x.AircraftTypeDesignator).NotEmpty().MaximumLength(4);
             RuleFor(x => x.AircraftRegistration).NotEmpty().MaximumLength(10);
-            RuleFor(x => x.Status).IsEnumName(typeof(Status));
+            RuleFor(x => x.Status).IsEnumName(typeof(FlightStatus));
+            RuleFor(x => x.DepartureGate).NotEmpty().MaximumLength(10);
+            RuleFor(x => x.ArrivalGate).NotEmpty().MaximumLength(10);
+            RuleFor(x => x.DepartureTerminal).NotEmpty().MaximumLength(10);
+            RuleFor(x => x.ArrivalTerminal).NotEmpty().MaximumLength(10);
+            RuleFor(x => x.DepartureAirportIata).NotEmpty().MaximumLength(3);
+            RuleFor(x => x.ArrivalAirportIata).NotEmpty().MaximumLength(3);
+            RuleFor(x => x.DepartureAirportIcao).NotEmpty().MaximumLength(4);
+            RuleFor(x => x.ArrivalAirportIcao).NotEmpty().MaximumLength(4);
+            RuleFor(x => x.Distance).NotEmpty().GreaterThan((short)0);
+            RuleFor(x => x.AdultMen).NotEmpty().GreaterThanOrEqualTo((short)0);
+            RuleFor(x => x.AdultWomen).NotEmpty().GreaterThanOrEqualTo((short)0);
+            RuleFor(x => x.Children).NotEmpty().GreaterThanOrEqualTo((short)0);
+            RuleFor(x => x.CheckedBags).NotEmpty().GreaterThanOrEqualTo((short)0);
+            RuleFor(x => x.Notes).MaximumLength(500);
+            RuleFor(x => x.DepartureTaf).MaximumLength(500);
+            RuleFor(x => x.ArrivalTaf).MaximumLength(500);
+            RuleFor(x => x.DepartureMetar).MaximumLength(500);
+            RuleFor(x => x.ArrivalMetar).MaximumLength(500);
         }
         private static bool IsValidTimeZoneId(string x)
         {
@@ -41,60 +63,60 @@ public static class AddFlight
             }
         }
     }
-    internal sealed class Handler : IRequestHandler<Command, ErrorOr<AircraftResponse>>
+    internal sealed class Handler : IRequestHandler<Command, ErrorOr<FlightResponse>>
     {
         private readonly ApplicationDbContext _ctx;
         private readonly ILogger<Handler> _logger;
-        private readonly IValidator<AddAircraftRequest> _validator;
-        public Handler(ApplicationDbContext ctx, ILogger<Handler> logger, IValidator<AddAircraftRequest> validator)
+        private readonly IValidator<AddOrUpdateFlightRequest> _validator;
+        public Handler(ApplicationDbContext ctx, ILogger<Handler> logger, IValidator<AddOrUpdateFlightRequest> validator)
         {
             _ctx = ctx;
             _logger = logger;
             _validator = validator;
         }
-        public async Task<ErrorOr<AircraftResponse>> Handle(Command request, CancellationToken cancellationToken)
+        public async Task<ErrorOr<FlightResponse>> Handle(Command request, CancellationToken cancellationToken)
         {
-            _logger.LogInformation("Validating AddAircraftRequest");
+            _logger.LogInformation("Validating AddOrUpdateFlightRequest");
             var validationResult = await _validator.ValidateAsync(request.Request, cancellationToken);
             if (!validationResult.IsValid)
             {
-                _logger.LogWarning("Validation failed for AddAircraftRequest");
+                _logger.LogWarning("Validation failed for AddOrUpdateFlightRequest");
                 return Error.Validation(validationResult.Errors[0].ErrorMessage);
             }
-            _logger.LogInformation("Mapping AddAircraftRequest to Aircraft");
-            var mapper = new AircraftMapper();
-            var aircraft = mapper.MapAddAircraftRequestToAircraft(request.Request);
-            _logger.LogInformation("Adding aircraft");
-            _ctx.Aircraft.Add(aircraft);
+            _logger.LogInformation("Mapping AddOrUpdateFlightRequest to Flight");
+            var mapper = new FlightMapper();
+            var flight = mapper.MapAddOrUpdateFlightRequestToFlight(request.Request);
+            _logger.LogInformation("Adding flight to database");
+            _ctx.Flights.Add(flight);
             await _ctx.SaveChangesAsync(cancellationToken);
-            _logger.LogInformation("Aircraft added");
-            return mapper.MapAircraftToAircraftResponse(aircraft);
+            _logger.LogInformation("Flight added to database");
+            return mapper.MapFlightToFlightResponse(flight);
         }
     }
 }
-public class AddAircraftEndpoint : ICarterModule
+public class AddFlightEndpoint : ICarterModule
 {
-    private readonly ILogger<AddAircraftEndpoint> _logger;
-    public AddAircraftEndpoint(ILogger<AddAircraftEndpoint> logger)
+    private readonly ILogger<AddFlightEndpoint> _logger;
+    public AddFlightEndpoint(ILogger<AddFlightEndpoint> logger)
     {
         _logger = logger;
     }
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapPost("api/aircraft", async (AddAircraftRequest request,
+        app.MapPost("api/flights", async (AddOrUpdateFlightRequest request,
             ISender sender, IOutputCacheStore cache, CancellationToken ct) =>
         {
-            _logger.LogInformation("Adding aircraft");
-            var command = new AddAircraft.Command(request);
+            _logger.LogInformation("Received request to add flight");
+            var command = new AddFlight.Command(request);
             var result = await sender.Send(command, ct);
             if (!result.IsError)
             {
-                await cache.EvictByTagAsync("aircraft", ct);
+                await cache.EvictByTagAsync("flights", ct);
             }
             return result.Match(
-                ac => Results.Created("/api/aircraft", ac),
+                flight => Results.Created($"/api/flights/{flight.Id}", flight),
                 errors => ErrorHandlingHelper.HandleProblems(errors));
-        }).WithName("Add aircraft")
+        }).WithName("Add flight")
         .WithOpenApi();
     }
 }

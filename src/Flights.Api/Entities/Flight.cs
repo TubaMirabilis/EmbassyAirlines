@@ -17,7 +17,7 @@ public sealed class Flight
     public required string ArrivalTimeZoneId { get; set; }
     public required string AircraftTypeDesignator { get; set; }
     public required string AircraftRegistration { get; set; }
-    public required Status Status { get; set; }
+    public required FlightStatus Status { get; set; }
     public required string DepartureGate { get; set; }
     public required string ArrivalGate { get; set; }
     public required string DepartureTerminal { get; set; }
