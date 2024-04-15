@@ -68,7 +68,8 @@ public static class AddFlight
         private readonly ApplicationDbContext _ctx;
         private readonly ILogger<Handler> _logger;
         private readonly IValidator<AddOrUpdateFlightRequest> _validator;
-        public Handler(ApplicationDbContext ctx, ILogger<Handler> logger, IValidator<AddOrUpdateFlightRequest> validator)
+        public Handler(ApplicationDbContext ctx, ILogger<Handler> logger,
+            IValidator<AddOrUpdateFlightRequest> validator)
         {
             _ctx = ctx;
             _logger = logger;
