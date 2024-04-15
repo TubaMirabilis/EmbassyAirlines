@@ -89,7 +89,11 @@ public static class AddFlight
             var flight = mapper.MapAddOrUpdateFlightRequestToFlight(request.Request);
             _logger.LogInformation("Adding flight to database");
             _ctx.Flights.Add(flight);
-            await _ctx.SaveChangesAsync(cancellationToken);
+            if (await _ctx.SaveChangesAsync(cancellationToken) == 0)
+            {
+                _logger.LogWarning("Failed to add flight to database");
+                return Error.Failure("Failed to add flight to database");
+            }
             _logger.LogInformation("Flight added to database");
             return mapper.MapFlightToFlightResponse(flight);
         }

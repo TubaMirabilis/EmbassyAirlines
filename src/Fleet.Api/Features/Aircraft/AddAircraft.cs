@@ -46,7 +46,8 @@ public static class AddAircraft
         private readonly ApplicationDbContext _ctx;
         private readonly ILogger<Handler> _logger;
         private readonly IValidator<AddAircraftRequest> _validator;
-        public Handler(ApplicationDbContext ctx, ILogger<Handler> logger, IValidator<AddAircraftRequest> validator)
+        public Handler(ApplicationDbContext ctx, ILogger<Handler> logger,
+            IValidator<AddAircraftRequest> validator)
         {
             _ctx = ctx;
             _logger = logger;
@@ -64,10 +65,14 @@ public static class AddAircraft
             _logger.LogInformation("Mapping AddAircraftRequest to Aircraft");
             var mapper = new AircraftMapper();
             var aircraft = mapper.MapAddAircraftRequestToAircraft(request.Request);
-            _logger.LogInformation("Adding aircraft");
+            _logger.LogInformation("Adding aircraft to database");
             _ctx.Aircraft.Add(aircraft);
-            await _ctx.SaveChangesAsync(cancellationToken);
-            _logger.LogInformation("Aircraft added");
+            if (await _ctx.SaveChangesAsync(cancellationToken) == 0)
+            {
+                _logger.LogWarning("Failed to add aircraft to database");
+                return Error.Failure("Failed to add aircraft to database");
+            }
+            _logger.LogInformation("Aircraft added to database");
             return mapper.MapAircraftToAircraftResponse(aircraft);
         }
     }
@@ -84,7 +89,7 @@ public class AddAircraftEndpoint : ICarterModule
         app.MapPost("api/aircraft", async (AddAircraftRequest request,
             ISender sender, IOutputCacheStore cache, CancellationToken ct) =>
         {
-            _logger.LogInformation("Adding aircraft");
+            _logger.LogInformation("Received request to add aircraft");
             var command = new AddAircraft.Command(request);
             var result = await sender.Send(command, ct);
             if (!result.IsError)
