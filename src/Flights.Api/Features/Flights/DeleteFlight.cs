@@ -1,6 +1,7 @@
 ﻿using Carter;
 using ErrorOr;
 using Flights.Api.Database;
+using Flights.Api.Entities;
 using Flights.Api.Enums;
 using MediatR;
 using Microsoft.AspNetCore.OutputCaching;
@@ -24,15 +25,31 @@ public static class DeleteFlight
         public async Task<ErrorOr<Unit>> Handle(Command request, CancellationToken cancellationToken)
         {
             _logger.LogInformation("Deleting flight by id {id}", request.Id);
+            var flight = await ValidateRequest(request, cancellationToken);
+            if (flight.IsError)
+            {
+                return flight.FirstError;
+            }
+            _ctx.Flights.Remove(flight.Value);
+            if (await _ctx.SaveChangesAsync(cancellationToken) == 0)
+            {
+                _logger.LogError("Failed to delete flight");
+                return Error.Failure("Failed to delete flight");
+            }
+            _logger.LogInformation("Flight deleted");
+            return Unit.Value;
+        }
+        private async Task<ErrorOr<Flight>> ValidateRequest(Command request, CancellationToken cancellationToken)
+        {
             var flight = await _ctx.Flights
-                .Where(flight => flight.Id == request.Id)
-                .FirstOrDefaultAsync(cancellationToken);
+                            .Where(flight => flight.Id == request.Id)
+                            .FirstOrDefaultAsync(cancellationToken);
             if (flight is null)
             {
                 _logger.LogWarning("Flight not found");
                 return Error.NotFound("Flight not found");
             }
-            if (flight.Status == FlightStatus.EnRoute || flight.Status == FlightStatus.Diverting)
+            if (flight.Status is FlightStatus.EnRoute or FlightStatus.Diverting)
             {
                 _logger.LogWarning("Cannot delete flight that is en route or diverting");
                 return Error.Validation("Cannot delete flight that is en route or diverting");
@@ -44,22 +61,14 @@ public static class DeleteFlight
             }
             if (flight.Status == FlightStatus.Arrived && (DateTime.UtcNow - flight.ArrivalTimeUtc).TotalDays > 120)
             {
-                goto Delete;
+                return flight;
             }
             if (flight.TotalPassengers > 0 || flight.CheckedBags > 0)
             {
                 _logger.LogWarning("Cannot delete flight with passengers or checked bags");
                 return Error.Validation("Cannot delete flight with passengers or checked bags");
             }
-            Delete:
-            _ctx.Flights.Remove(flight);
-            if (await _ctx.SaveChangesAsync(cancellationToken) == 0)
-            {
-                _logger.LogError("Failed to delete flight");
-                return Error.Failure("Failed to delete flight");
-            }
-            _logger.LogInformation("Flight deleted");
-            return Unit.Value;
+            return flight;
         }
     }
 }
