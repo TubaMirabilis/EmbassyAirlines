@@ -8,7 +8,7 @@ using MediatR;
 using Microsoft.AspNetCore.OutputCaching;
 using Shared;
 
-namespace Flights.Api.Features.Aircraft;
+namespace Flights.Api.Features.Flights;
 
 public static class AddFlight
 {

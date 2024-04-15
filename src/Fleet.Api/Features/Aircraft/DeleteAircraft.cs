@@ -32,7 +32,11 @@ public static class DeleteAircraft
                 return Error.NotFound("Aircraft not found");
             }
             _ctx.Aircraft.Remove(aircraft);
-            await _ctx.SaveChangesAsync(cancellationToken);
+            if (await _ctx.SaveChangesAsync(cancellationToken) == 0)
+            {
+                _logger.LogError("Failed to delete aircraft");
+                return Error.Failure("Failed to delete aircraft");
+            }
             _logger.LogInformation("Aircraft deleted");
             return Unit.Value;
         }
@@ -50,7 +54,7 @@ public class DeleteAircraftEndpoint : ICarterModule
         app.MapDelete("api/aircraft/{id}", async (Guid id, ISender sender,
             IOutputCacheStore cache, CancellationToken ct) =>
         {
-            _logger.LogInformation("Deleting aircraft by id {id}", id);
+            _logger.LogInformation("Received request to delete aircraft by id {id}", id);
             var command = new DeleteAircraft.Command(id);
             var result = await sender.Send(command, ct);
             if (!result.IsError)
