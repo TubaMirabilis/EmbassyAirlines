@@ -1,6 +1,6 @@
 namespace Flights.Api.Contracts;
 
-public sealed record AddOrUpdateFlightRequest(Guid Id, string Number, string NumberIataFormat, string NumberIcaoFormat,
+public sealed record AddOrUpdateFlightRequest(string Number, string NumberIataFormat, string NumberIcaoFormat,
     DateTime DepartureTimeUtc, DateTime ArrivalTimeUtc,
     string DepartureTimeZoneId, string ArrivalTimeZoneId,
     string AircraftTypeDesignator, string AircraftRegistration, string Status,

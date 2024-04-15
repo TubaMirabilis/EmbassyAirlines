@@ -6,6 +6,8 @@ namespace Flights.Api.Entities;
 public sealed class Flight
 {
     public Guid Id { get; set; }
+    public DateTime CreatedAt { get; set; }
+    public DateTime UpdatedAt { get; set; }
     public required string Number { get; set; }
     public required string NumberIataFormat { get; set; }
     public required string NumberIcaoFormat { get; set; }
