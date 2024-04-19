@@ -57,14 +57,10 @@ public static class DeleteFlight
                 _logger.LogWarning("Cannot delete flight that has arrived within the last 120 days");
                 return Error.Validation("Cannot delete flight that has arrived within the last 120 days");
             }
-            if (flight.Status == FlightStatus.Arrived && (DateTime.UtcNow - flight.ArrivalTimeUtc).TotalDays > 120)
+            if ((flight.TotalPassengers > 0 || flight.CheckedBags > 0) && flight.Status != FlightStatus.Arrived)
             {
-                return flight;
-            }
-            if (flight.TotalPassengers > 0 || flight.CheckedBags > 0)
-            {
-                _logger.LogWarning("Cannot delete flight with passengers or checked bags");
-                return Error.Validation("Cannot delete flight with passengers or checked bags");
+                _logger.LogWarning("Cannot delete flight with passengers or checked bags unless it has arrived");
+                return Error.Validation("Cannot delete flight with passengers or checked bags unless it has arrived");
             }
             return flight;
         }
