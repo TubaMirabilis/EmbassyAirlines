@@ -41,9 +41,7 @@ public static class DeleteFlight
         }
         private async Task<ErrorOr<Flight>> ValidateRequest(Command request, CancellationToken cancellationToken)
         {
-            var flight = await _ctx.Flights
-                            .Where(flight => flight.Id == request.Id)
-                            .FirstOrDefaultAsync(cancellationToken);
+            var flight = await _ctx.Flights.FirstOrDefaultAsync(x => x.Id == request.Id, cancellationToken);
             if (flight is null)
             {
                 _logger.LogWarning("Flight not found");
