@@ -79,17 +79,11 @@ public static class AddAircraft
 }
 public class AddAircraftEndpoint : ICarterModule
 {
-    private readonly ILogger<AddAircraftEndpoint> _logger;
-    public AddAircraftEndpoint(ILogger<AddAircraftEndpoint> logger)
-    {
-        _logger = logger;
-    }
     public void AddRoutes(IEndpointRouteBuilder app)
     {
         app.MapPost("api/aircraft", async (AddAircraftRequest request,
             ISender sender, IOutputCacheStore cache, CancellationToken ct) =>
         {
-            _logger.LogInformation("Received request to add aircraft");
             var command = new AddAircraft.Command(request);
             var result = await sender.Send(command, ct);
             if (!result.IsError)

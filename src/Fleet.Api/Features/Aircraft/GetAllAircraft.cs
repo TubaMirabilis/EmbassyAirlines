@@ -35,16 +35,10 @@ public static class GetAllAircraft
 }
 public class GetAllAircraftEndpoint : ICarterModule
 {
-    private readonly ILogger<GetAllAircraftEndpoint> _logger;
-    public GetAllAircraftEndpoint(ILogger<GetAllAircraftEndpoint> logger)
-    {
-        _logger = logger;
-    }
     public void AddRoutes(IEndpointRouteBuilder app)
     {
         app.MapGet("api/aircraft", async (ISender sender, CancellationToken ct) =>
         {
-            _logger.LogInformation("Getting all aircraft");
             var query = new GetAllAircraft.Query();
             var result = await sender.Send(query, ct);
             return result.Match(

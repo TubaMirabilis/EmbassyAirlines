@@ -41,16 +41,10 @@ public static class GetAircraft
 }
 public class GetAircraftEndpoint : ICarterModule
 {
-    private readonly ILogger<GetAircraftEndpoint> _logger;
-    public GetAircraftEndpoint(ILogger<GetAircraftEndpoint> logger)
-    {
-        _logger = logger;
-    }
     public void AddRoutes(IEndpointRouteBuilder app)
     {
         app.MapGet("api/aircraft/{id}", async (Guid id, ISender sender, CancellationToken ct) =>
         {
-            _logger.LogInformation("Getting aircraft by id {id}", id);
             var query = new GetAircraft.Query(id);
             var result = await sender.Send(query, ct);
             return result.Match(

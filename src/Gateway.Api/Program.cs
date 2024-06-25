@@ -26,4 +26,4 @@ app.MapHealthChecks("/_health", new HealthCheckOptions
     ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
 });
 app.MapReverseProxy();
-app.Run();
+await app.RunAsync();

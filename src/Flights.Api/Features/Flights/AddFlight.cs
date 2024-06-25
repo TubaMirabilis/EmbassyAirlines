@@ -101,17 +101,11 @@ public static class AddFlight
 }
 public class AddFlightEndpoint : ICarterModule
 {
-    private readonly ILogger<AddFlightEndpoint> _logger;
-    public AddFlightEndpoint(ILogger<AddFlightEndpoint> logger)
-    {
-        _logger = logger;
-    }
     public void AddRoutes(IEndpointRouteBuilder app)
     {
         app.MapPost("api/flights", async (AddOrUpdateFlightRequest request,
             ISender sender, IOutputCacheStore cache, CancellationToken ct) =>
         {
-            _logger.LogInformation("Received request to add flight");
             var command = new AddFlight.Command(request);
             var result = await sender.Send(command, ct);
             if (!result.IsError)

@@ -44,17 +44,11 @@ public static class DeleteAircraft
 }
 public class DeleteAircraftEndpoint : ICarterModule
 {
-    private readonly ILogger<DeleteAircraftEndpoint> _logger;
-    public DeleteAircraftEndpoint(ILogger<DeleteAircraftEndpoint> logger)
-    {
-        _logger = logger;
-    }
     public void AddRoutes(IEndpointRouteBuilder app)
     {
         app.MapDelete("api/aircraft/{id}", async (Guid id, ISender sender,
             IOutputCacheStore cache, CancellationToken ct) =>
         {
-            _logger.LogInformation("Received request to delete aircraft by id {id}", id);
             var command = new DeleteAircraft.Command(id);
             var result = await sender.Send(command, ct);
             if (!result.IsError)

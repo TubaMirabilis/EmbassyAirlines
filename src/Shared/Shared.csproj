@@ -15,7 +15,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Update="SonarAnalyzer.CSharp" Version="9.23.2.88755" />
+    <PackageReference Update="Microsoft.CodeAnalysis.Common" Version="4.10.0" />
+    <PackageReference Update="Microsoft.CodeAnalysis.CSharp" Version="4.10.0" />
+    <PackageReference Update="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.10.0" />
+    <PackageReference Update="Microsoft.CodeAnalysis.Workspaces.Common" Version="4.10.0" />
+    <PackageReference Update="SonarAnalyzer.CSharp" Version="9.27.0.93347" />
   </ItemGroup>
 
 </Project>

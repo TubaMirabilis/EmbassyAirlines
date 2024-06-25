@@ -9,8 +9,8 @@
   <ItemGroup>
     <PackageReference Include="AspNetCore.HealthChecks.UI.Client" Version="8.0.1" />
     <PackageReference Include="Serilog.AspNetCore" Version="8.0.1" />
-    <PackageReference Include="Serilog.Sinks.Seq" Version="7.0.0" />
-    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
+    <PackageReference Include="Serilog.Sinks.Seq" Version="8.0.0" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
     <PackageReference Include="Yarp.ReverseProxy" Version="2.1.0" />
   </ItemGroup>
 
@@ -19,7 +19,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Update="SonarAnalyzer.CSharp" Version="9.23.2.88755" />
+    <PackageReference Update="Microsoft.CodeAnalysis.Common" Version="4.10.0" />
+    <PackageReference Update="Microsoft.CodeAnalysis.CSharp" Version="4.10.0" />
+    <PackageReference Update="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.10.0" />
+    <PackageReference Update="Microsoft.CodeAnalysis.Workspaces.Common" Version="4.10.0" />
+    <PackageReference Update="SonarAnalyzer.CSharp" Version="9.27.0.93347" />
   </ItemGroup>
 
 </Project>
