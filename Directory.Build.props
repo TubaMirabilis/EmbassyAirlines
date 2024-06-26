@@ -9,31 +9,7 @@
   <ItemGroup>
     <PackageReference
       Include="SonarAnalyzer.CSharp"
-      Version="9.23.1.88495"
-      PrivateAssets="all"
-      Condition="$(MSBuildProjectExtension) == '.csproj'"
-    />
-    <PackageReference
-      Include="Microsoft.CodeAnalysis.CSharp"
-      Version="4.7.0"
-      PrivateAssets="all"
-      Condition="$(MSBuildProjectExtension) == '.csproj'"
-    />
-    <PackageReference
-      Include="Microsoft.CodeAnalysis.CSharp.Workspaces"
-      Version="4.7.0"
-      PrivateAssets="all"
-      Condition="$(MSBuildProjectExtension) == '.csproj'"
-    />
-    <PackageReference
-      Include="Microsoft.CodeAnalysis.Common"
-      Version="4.7.0"
-      PrivateAssets="all"
-      Condition="$(MSBuildProjectExtension) == '.csproj'"
-    />
-    <PackageReference
-      Include="Microsoft.CodeAnalysis.Workspaces.Common"
-      Version="4.7.0"
+      Version="9.22.0.87781"
       PrivateAssets="all"
       Condition="$(MSBuildProjectExtension) == '.csproj'"
     />
