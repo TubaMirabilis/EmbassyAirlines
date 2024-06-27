@@ -22,8 +22,6 @@ public static class AddFlight
             RuleFor(x => x.NumberIcaoFormat).NotEmpty().MaximumLength(10);
             RuleFor(x => x.DepartureTimeUtc).NotEmpty().LessThan(x => x.ArrivalTimeUtc);
             RuleFor(x => x.ArrivalTimeUtc).NotEmpty();
-            RuleFor(x => x.DepartureTimeZoneId).NotEmpty().MaximumLength(50).Must(IsValidTimeZoneId);
-            RuleFor(x => x.ArrivalTimeZoneId).NotEmpty().MaximumLength(50).Must(IsValidTimeZoneId);
             RuleFor(x => x.AircraftTypeDesignator).NotEmpty().MaximumLength(4);
             RuleFor(x => x.AircraftRegistration).NotEmpty().MaximumLength(10);
             RuleFor(x => x.Status).IsEnumName(typeof(FlightStatus));
@@ -33,8 +31,6 @@ public static class AddFlight
             RuleFor(x => x.ArrivalTerminal).NotEmpty().MaximumLength(10);
             RuleFor(x => x.DepartureAirportIata).NotEmpty().MaximumLength(3);
             RuleFor(x => x.ArrivalAirportIata).NotEmpty().MaximumLength(3);
-            RuleFor(x => x.DepartureAirportIcao).NotEmpty().MaximumLength(4);
-            RuleFor(x => x.ArrivalAirportIcao).NotEmpty().MaximumLength(4);
             RuleFor(x => x.Distance).NotEmpty().GreaterThan((short)0);
             RuleFor(x => x.AdultMen).NotEmpty().GreaterThanOrEqualTo((short)0);
             RuleFor(x => x.AdultWomen).NotEmpty().GreaterThanOrEqualTo((short)0);

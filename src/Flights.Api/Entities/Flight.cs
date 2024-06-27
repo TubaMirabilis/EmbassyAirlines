@@ -13,8 +13,8 @@ public sealed class Flight
     public required string NumberIcaoFormat { get; set; }
     public required DateTime DepartureTimeUtc { get; set; }
     public required DateTime ArrivalTimeUtc { get; set; }
-    public required string DepartureTimeZoneId { get; set; }
-    public required string ArrivalTimeZoneId { get; set; }
+    public string DepartureTimeZoneId => DepartureAirport.TimeZoneId;
+    public string ArrivalTimeZoneId => ArrivalAirport.TimeZoneId;
     public required string AircraftTypeDesignator { get; set; }
     public required string AircraftRegistration { get; set; }
     public required FlightStatus Status { get; set; }
@@ -22,10 +22,14 @@ public sealed class Flight
     public required string ArrivalGate { get; set; }
     public required string DepartureTerminal { get; set; }
     public required string ArrivalTerminal { get; set; }
-    public required string DepartureAirportIata { get; set; }
-    public required string ArrivalAirportIata { get; set; }
-    public required string DepartureAirportIcao { get; set; }
-    public required string ArrivalAirportIcao { get; set; }
+    public required string DepartureAirportFullName { get; set; }
+    public required string ArrivalAirportFullName { get; set; }
+    public string DepartureAirportIata => DepartureAirport.Iata;
+    public string ArrivalAirportIata => ArrivalAirport.Iata;
+    public string DepartureAirportIcao => DepartureAirport.Icao;
+    public string ArrivalAirportIcao => ArrivalAirport.Icao;
+    public required Airport DepartureAirport { get; set; }
+    public required Airport ArrivalAirport { get; set; }
     public required short Distance { get; set; }
     public required short AdultMen { get; set; }
     public required short AdultWomen { get; set; }
