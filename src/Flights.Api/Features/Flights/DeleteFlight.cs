@@ -1,8 +1,7 @@
 ﻿using Carter;
 using ErrorOr;
 using Flights.Api.Database;
-using Flights.Api.Entities;
-using Flights.Api.Enums;
+using Flights.Api.Domain.Flights;
 using MediatR;
 using Microsoft.AspNetCore.OutputCaching;
 using Microsoft.EntityFrameworkCore;

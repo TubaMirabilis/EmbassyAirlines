@@ -2,7 +2,7 @@
 using ErrorOr;
 using Flights.Api.Contracts;
 using Flights.Api.Database;
-using Flights.Api.Enums;
+using Flights.Api.Domain.Flights;
 using FluentValidation;
 using MediatR;
 using Microsoft.AspNetCore.OutputCaching;
@@ -73,24 +73,20 @@ public static class AddFlight
         }
         public async Task<ErrorOr<FlightResponse>> Handle(Command request, CancellationToken cancellationToken)
         {
-            _logger.LogInformation("Validating AddOrUpdateFlightRequest");
             var validationResult = await _validator.ValidateAsync(request.Request, cancellationToken);
             if (!validationResult.IsValid)
             {
                 _logger.LogWarning("Validation failed for AddOrUpdateFlightRequest");
                 return Error.Validation(validationResult.Errors[0].ErrorMessage);
             }
-            _logger.LogInformation("Mapping AddOrUpdateFlightRequest to Flight");
             var mapper = new FlightMapper();
             var flight = mapper.MapAddOrUpdateFlightRequestToFlight(request.Request);
-            _logger.LogInformation("Adding flight to database");
             _ctx.Flights.Add(flight);
             if (await _ctx.SaveChangesAsync(cancellationToken) == 0)
             {
                 _logger.LogWarning("Failed to add flight to database");
                 return Error.Failure("Failed to add flight to database");
             }
-            _logger.LogInformation("Flight added to database");
             return mapper.MapFlightToFlightResponse(flight);
         }
     }

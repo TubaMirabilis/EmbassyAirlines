@@ -1,4 +1,4 @@
-namespace Flights.Api.Enums;
+namespace Flights.Api.Domain.Flights;
 
 public enum FlightStatus
 {

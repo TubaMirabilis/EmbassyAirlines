@@ -1,4 +1,4 @@
-namespace Flights.Api.Entities;
+namespace Flights.Api.Domain;
 
 public sealed class Airport
 {

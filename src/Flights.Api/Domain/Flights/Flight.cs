@@ -1,7 +1,6 @@
 using System.Globalization;
-using Flights.Api.Enums;
 
-namespace Flights.Api.Entities.Flights;
+namespace Flights.Api.Domain.Flights;
 
 public sealed class Flight
 {
@@ -13,24 +12,15 @@ public sealed class Flight
     public required string NumberIcaoFormat { get; set; }
     public required DateTime DepartureTimeUtc { get; set; }
     public required DateTime ArrivalTimeUtc { get; set; }
-    public string DepartureTimeZoneId => DepartureAirport.TimeZoneId;
-    public string ArrivalTimeZoneId => ArrivalAirport.TimeZoneId;
-    public required string AircraftTypeDesignator { get; set; }
-    public required string AircraftRegistration { get; set; }
+    public required Aircraft Aircraft { get; set; }
     public required FlightStatus Status { get; set; }
     public required string DepartureGate { get; set; }
     public required string ArrivalGate { get; set; }
     public required string DepartureTerminal { get; set; }
     public required string ArrivalTerminal { get; set; }
-    public string DepartureAirportFullName => DepartureAirport.FullName;
-    public string ArrivalAirportFullName => ArrivalAirport.FullName;
-    public string DepartureAirportIata => DepartureAirport.Iata;
-    public string ArrivalAirportIata => ArrivalAirport.Iata;
-    public string DepartureAirportIcao => DepartureAirport.Icao;
-    public string ArrivalAirportIcao => ArrivalAirport.Icao;
     public required Airport DepartureAirport { get; set; }
     public required Airport ArrivalAirport { get; set; }
-    public required short Distance { get; set; }
+    public int Distance => CalculateGreatCircleDistance(DepartureAirport, ArrivalAirport);
     public required short AdultMen { get; set; }
     public required short AdultWomen { get; set; }
     public required short Children { get; set; }
@@ -47,11 +37,23 @@ public sealed class Flight
     public string Duration
         => (ArrivalTimeUtc - DepartureTimeUtc).ToString("hh\\:mm", CultureInfo.InvariantCulture);
     public DateTime DepartureTimeLocal
-        => TimeZoneInfo.ConvertTimeFromUtc(DepartureTimeUtc, TimeZoneInfo.FindSystemTimeZoneById(DepartureTimeZoneId));
+        => TimeZoneInfo.ConvertTimeFromUtc(DepartureTimeUtc, TimeZoneInfo.FindSystemTimeZoneById(DepartureAirport.TimeZoneId));
     public DateTime ArrivalTimeLocal
-        => TimeZoneInfo.ConvertTimeFromUtc(ArrivalTimeUtc, TimeZoneInfo.FindSystemTimeZoneById(ArrivalTimeZoneId));
-    public string DepartureTimeLocalString
-        => DepartureTimeLocal.ToString("yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture);
-    public string ArrivalTimeLocalString
-        => ArrivalTimeLocal.ToString("yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture);
+        => TimeZoneInfo.ConvertTimeFromUtc(ArrivalTimeUtc, TimeZoneInfo.FindSystemTimeZoneById(ArrivalAirport.TimeZoneId));
+    public int CalculateGreatCircleDistance(Airport origin, Airport destination)
+    {
+        double originLatitudeRadians = origin.Latitude * (Math.PI / 180);
+        double originLongitudeRadians = origin.Longitude * (Math.PI / 180);
+        double destinationLatitudeRadians = destination.Latitude * (Math.PI / 180);
+        double destinationLongitudeRadians = destination.Longitude * (Math.PI / 180);
+        double dLat = destinationLatitudeRadians - originLatitudeRadians;
+        double dLon = destinationLongitudeRadians - originLongitudeRadians;
+        double a = Math.Sin(dLat / 2) * Math.Sin(dLat / 2) +
+                   Math.Cos(originLatitudeRadians) * Math.Cos(destinationLatitudeRadians) *
+                   Math.Sin(dLon / 2) * Math.Sin(dLon / 2);
+        double c = 2 * Math.Atan2(Math.Sqrt(a), Math.Sqrt(1 - a));
+        const double earthRadiusNauticalMiles = 3440.065;
+        double distance = earthRadiusNauticalMiles * c;
+        return Math.Round(distance);
+    }
 }
