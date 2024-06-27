@@ -20,7 +20,7 @@ public sealed class Flight
     public required string ArrivalTerminal { get; set; }
     public required Airport DepartureAirport { get; set; }
     public required Airport ArrivalAirport { get; set; }
-    public int Distance => CalculateGreatCircleDistance(DepartureAirport, ArrivalAirport);
+    public double Distance => CalculateGreatCircleDistance(DepartureAirport, ArrivalAirport);
     public required short AdultMen { get; set; }
     public required short AdultWomen { get; set; }
     public required short Children { get; set; }
@@ -40,7 +40,7 @@ public sealed class Flight
         => TimeZoneInfo.ConvertTimeFromUtc(DepartureTimeUtc, TimeZoneInfo.FindSystemTimeZoneById(DepartureAirport.TimeZoneId));
     public DateTime ArrivalTimeLocal
         => TimeZoneInfo.ConvertTimeFromUtc(ArrivalTimeUtc, TimeZoneInfo.FindSystemTimeZoneById(ArrivalAirport.TimeZoneId));
-    public int CalculateGreatCircleDistance(Airport origin, Airport destination)
+    private static double CalculateGreatCircleDistance(Airport origin, Airport destination)
     {
         double originLatitudeRadians = origin.Latitude * (Math.PI / 180);
         double originLongitudeRadians = origin.Longitude * (Math.PI / 180);

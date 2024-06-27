@@ -22,16 +22,12 @@ public static class AddFlight
             RuleFor(x => x.NumberIcaoFormat).NotEmpty().MaximumLength(10);
             RuleFor(x => x.DepartureTimeUtc).NotEmpty().LessThan(x => x.ArrivalTimeUtc);
             RuleFor(x => x.ArrivalTimeUtc).NotEmpty();
-            RuleFor(x => x.AircraftTypeDesignator).NotEmpty().MaximumLength(4);
-            RuleFor(x => x.AircraftRegistration).NotEmpty().MaximumLength(10);
+            RuleFor(x => x.AircraftId).NotEmpty();
             RuleFor(x => x.Status).IsEnumName(typeof(FlightStatus));
             RuleFor(x => x.DepartureGate).NotEmpty().MaximumLength(10);
             RuleFor(x => x.ArrivalGate).NotEmpty().MaximumLength(10);
             RuleFor(x => x.DepartureTerminal).NotEmpty().MaximumLength(10);
             RuleFor(x => x.ArrivalTerminal).NotEmpty().MaximumLength(10);
-            RuleFor(x => x.DepartureAirportIata).NotEmpty().MaximumLength(3);
-            RuleFor(x => x.ArrivalAirportIata).NotEmpty().MaximumLength(3);
-            RuleFor(x => x.Distance).NotEmpty().GreaterThan((short)0);
             RuleFor(x => x.AdultMen).NotEmpty().GreaterThanOrEqualTo((short)0);
             RuleFor(x => x.AdultWomen).NotEmpty().GreaterThanOrEqualTo((short)0);
             RuleFor(x => x.Children).NotEmpty().GreaterThanOrEqualTo((short)0);
