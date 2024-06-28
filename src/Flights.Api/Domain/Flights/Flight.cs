@@ -66,9 +66,11 @@ public sealed class Flight
     public string Duration
         => (ArrivalTimeUtc - DepartureTimeUtc).ToString("hh\\:mm", CultureInfo.InvariantCulture);
     public DateTime DepartureTimeLocal
-        => TimeZoneInfo.ConvertTimeFromUtc(DepartureTimeUtc, TimeZoneInfo.FindSystemTimeZoneById(DepartureAirport.TimeZoneId));
+        => TimeZoneInfo.ConvertTimeFromUtc(DepartureTimeUtc,
+            TimeZoneInfo.FindSystemTimeZoneById(DepartureAirport.TimeZoneId));
     public DateTime ArrivalTimeLocal
-        => TimeZoneInfo.ConvertTimeFromUtc(ArrivalTimeUtc, TimeZoneInfo.FindSystemTimeZoneById(ArrivalAirport.TimeZoneId));
+        => TimeZoneInfo.ConvertTimeFromUtc(ArrivalTimeUtc,
+            TimeZoneInfo.FindSystemTimeZoneById(ArrivalAirport.TimeZoneId));
     public static Flight Create(FlightCreationArgs args)
     {
         ArgumentNullException.ThrowIfNull(args);

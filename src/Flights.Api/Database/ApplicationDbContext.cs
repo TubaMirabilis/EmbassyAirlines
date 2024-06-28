@@ -1,7 +1,6 @@
 ﻿using Flights.Api.Domain;
 using Flights.Api.Domain.Flights;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Flights.Api.Database;
 

@@ -1,5 +1,3 @@
-using System.Globalization;
-
 namespace Flights.Api.Domain.Flights;
 
 public sealed record FlightCreationArgs
