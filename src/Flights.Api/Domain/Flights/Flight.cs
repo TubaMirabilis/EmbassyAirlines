@@ -4,30 +4,57 @@ namespace Flights.Api.Domain.Flights;
 
 public sealed class Flight
 {
-    public Guid Id { get; set; }
-    public DateTime CreatedAt { get; set; }
-    public DateTime UpdatedAt { get; set; }
-    public required string Number { get; set; }
-    public required string NumberIataFormat { get; set; }
-    public required string NumberIcaoFormat { get; set; }
-    public required DateTime DepartureTimeUtc { get; set; }
-    public required DateTime ArrivalTimeUtc { get; set; }
-    public required Aircraft Aircraft { get; set; }
-    public required FlightStatus Status { get; set; }
-    public required string DepartureGate { get; set; }
-    public required string ArrivalGate { get; set; }
-    public required string DepartureTerminal { get; set; }
-    public required string ArrivalTerminal { get; set; }
-    public required Guid DepartureAirportId { get; set; }
-    public Airport? DepartureAirport { get; set; }
-    public required Guid ArrivalAirportId { get; set; }
-    public Airport? ArrivalAirport { get; set; }
+    private Flight(FlightCreationArgs args)
+    {
+        Id = Guid.NewGuid();
+        CreatedAt = DateTime.UtcNow;
+        UpdatedAt = DateTime.UtcNow;
+        Number = args.Number;
+        NumberIataFormat = args.NumberIataFormat;
+        NumberIcaoFormat = args.NumberIcaoFormat;
+        DepartureTimeUtc = args.DepartureTimeUtc;
+        ArrivalTimeUtc = args.ArrivalTimeUtc;
+        Aircraft = args.Aircraft;
+        Status = args.Status;
+        DepartureGate = args.DepartureGate;
+        ArrivalGate = args.ArrivalGate;
+        DepartureTerminal = args.DepartureTerminal;
+        ArrivalTerminal = args.ArrivalTerminal;
+        DepartureAirport = args.DepartureAirport;
+        ArrivalAirport = args.ArrivalAirport;
+        AdultMen = args.AdultMen;
+        AdultWomen = args.AdultWomen;
+        Children = args.Children;
+        CheckedBags = args.CheckedBags;
+        Notes = args.Notes;
+    }
+#pragma warning disable CS8618
+    private Flight()
+    {
+    }
+#pragma warning restore CS8618
+    public Guid Id { get; private set; }
+    public DateTime CreatedAt { get; private set; }
+    public DateTime UpdatedAt { get; private set; }
+    public string Number { get; set; }
+    public string NumberIataFormat { get; set; }
+    public string NumberIcaoFormat { get; set; }
+    public DateTime DepartureTimeUtc { get; set; }
+    public DateTime ArrivalTimeUtc { get; set; }
+    public Aircraft Aircraft { get; set; }
+    public FlightStatus Status { get; set; }
+    public string DepartureGate { get; set; }
+    public string ArrivalGate { get; set; }
+    public string DepartureTerminal { get; set; }
+    public string ArrivalTerminal { get; set; }
+    public Airport DepartureAirport { get; set; }
+    public Airport ArrivalAirport { get; set; }
     public double Distance => CalculateGreatCircleDistance(DepartureAirport, ArrivalAirport);
-    public required short AdultMen { get; set; }
-    public required short AdultWomen { get; set; }
-    public required short Children { get; set; }
-    public required short CheckedBags { get; set; }
-    public required string Notes { get; set; }
+    public short AdultMen { get; set; }
+    public short AdultWomen { get; set; }
+    public short Children { get; set; }
+    public short CheckedBags { get; set; }
+    public string Notes { get; set; }
     public string? DepartureTaf { get; set; }
     public string? ArrivalTaf { get; set; }
     public string? DepartureMetar { get; set; }
@@ -42,6 +69,12 @@ public sealed class Flight
         => TimeZoneInfo.ConvertTimeFromUtc(DepartureTimeUtc, TimeZoneInfo.FindSystemTimeZoneById(DepartureAirport.TimeZoneId));
     public DateTime ArrivalTimeLocal
         => TimeZoneInfo.ConvertTimeFromUtc(ArrivalTimeUtc, TimeZoneInfo.FindSystemTimeZoneById(ArrivalAirport.TimeZoneId));
+    public static Flight Create(FlightCreationArgs args)
+    {
+        ArgumentNullException.ThrowIfNull(args);
+        return new(args);
+    }
+
     private static double CalculateGreatCircleDistance(Airport origin, Airport destination)
     {
         double originLatitudeRadians = origin.Latitude * (Math.PI / 180);
