@@ -18,8 +18,10 @@ public sealed class Flight
     public required string ArrivalGate { get; set; }
     public required string DepartureTerminal { get; set; }
     public required string ArrivalTerminal { get; set; }
-    public required Airport DepartureAirport { get; set; }
-    public required Airport ArrivalAirport { get; set; }
+    public required Guid DepartureAirportId { get; set; }
+    public Airport? DepartureAirport { get; set; }
+    public required Guid ArrivalAirportId { get; set; }
+    public Airport? ArrivalAirport { get; set; }
     public double Distance => CalculateGreatCircleDistance(DepartureAirport, ArrivalAirport);
     public required short AdultMen { get; set; }
     public required short AdultWomen { get; set; }
@@ -32,8 +34,8 @@ public sealed class Flight
     public string? ArrivalMetar { get; set; }
     public DateTime? ActualDepartureTimeUtc { get; set; }
     public DateTime? ActualArrivalTimeUtc { get; set; }
-    public short TotalPassengers
-        => (short)(AdultMen + AdultWomen + Children);
+    public int TotalPassengers
+        => AdultMen + AdultWomen + Children;
     public string Duration
         => (ArrivalTimeUtc - DepartureTimeUtc).ToString("hh\\:mm", CultureInfo.InvariantCulture);
     public DateTime DepartureTimeLocal

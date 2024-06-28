@@ -12,10 +12,10 @@ namespace Flights.Api.Features.Flights;
 
 public static class AddFlight
 {
-    public sealed record Command(AddOrUpdateFlightRequest Request) : IRequest<ErrorOr<FlightResponse>>;
-    public sealed class AddOrUpdateFlightRequestValidator : AbstractValidator<AddOrUpdateFlightRequest>
+    public sealed record Command(AddFlightRequest Request) : IRequest<ErrorOr<FlightResponse>>;
+    public sealed class AddFlightRequestValidator : AbstractValidator<AddFlightRequest>
     {
-        public AddOrUpdateFlightRequestValidator()
+        public AddFlightRequestValidator()
         {
             RuleFor(x => x.Number).NotEmpty().MaximumLength(10);
             RuleFor(x => x.NumberIataFormat).NotEmpty().MaximumLength(10);
@@ -33,10 +33,6 @@ public static class AddFlight
             RuleFor(x => x.Children).NotEmpty().GreaterThanOrEqualTo((short)0);
             RuleFor(x => x.CheckedBags).NotEmpty().GreaterThanOrEqualTo((short)0);
             RuleFor(x => x.Notes).MaximumLength(500);
-            RuleFor(x => x.DepartureTaf).MaximumLength(500);
-            RuleFor(x => x.ArrivalTaf).MaximumLength(500);
-            RuleFor(x => x.DepartureMetar).MaximumLength(500);
-            RuleFor(x => x.ArrivalMetar).MaximumLength(500);
         }
         private static bool IsValidTimeZoneId(string x)
         {
@@ -59,9 +55,9 @@ public static class AddFlight
     {
         private readonly ApplicationDbContext _ctx;
         private readonly ILogger<Handler> _logger;
-        private readonly IValidator<AddOrUpdateFlightRequest> _validator;
+        private readonly IValidator<AddFlightRequest> _validator;
         public Handler(ApplicationDbContext ctx, ILogger<Handler> logger,
-            IValidator<AddOrUpdateFlightRequest> validator)
+            IValidator<AddFlightRequest> validator)
         {
             _ctx = ctx;
             _logger = logger;
@@ -72,11 +68,11 @@ public static class AddFlight
             var validationResult = await _validator.ValidateAsync(request.Request, cancellationToken);
             if (!validationResult.IsValid)
             {
-                _logger.LogWarning("Validation failed for AddOrUpdateFlightRequest");
+                _logger.LogWarning("Validation failed for AddFlightRequest");
                 return Error.Validation(validationResult.Errors[0].ErrorMessage);
             }
             var mapper = new FlightMapper();
-            var flight = mapper.MapAddOrUpdateFlightRequestToFlight(request.Request);
+            var flight = mapper.MapAddFlightRequestToFlight(request.Request);
             _ctx.Flights.Add(flight);
             if (await _ctx.SaveChangesAsync(cancellationToken) == 0)
             {
@@ -91,7 +87,7 @@ public class AddFlightEndpoint : ICarterModule
 {
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapPost("api/flights", async (AddOrUpdateFlightRequest request,
+        app.MapPost("api/flights", async (AddFlightRequest request,
             ISender sender, IOutputCacheStore cache, CancellationToken ct) =>
         {
             var command = new AddFlight.Command(request);

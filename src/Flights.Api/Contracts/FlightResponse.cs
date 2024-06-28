@@ -6,5 +6,5 @@ public sealed record FlightResponse(Guid Id, DateTime CreatedAt, DateTime Update
     string ArrivalTerminal, AirportResponse DepartureAirport, AirportResponse ArrivalAirport, short Distance,
     short AdultMen, short AdultWomen, short Children, short CheckedBags, string Notes, string? DepartureTaf,
     string? ArrivalTaf, string? DepartureMetar, string? ArrivalMetar, DateTime? ActualDepartureTimeUtc,
-    DateTime? ActualArrivalTimeUtc, short TotalPassengers, string Duration, DateTime DepartureTimeLocal,
+    DateTime? ActualArrivalTimeUtc, int TotalPassengers, string Duration, DateTime DepartureTimeLocal,
     DateTime ArrivalTimeLocal);
