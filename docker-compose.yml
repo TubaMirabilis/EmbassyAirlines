@@ -108,6 +108,20 @@ services:
       - 5000
       - 5001
 
+  rabbit-mq:
+    image: rabbitmq:3.13-alpine
+    restart: always
+    environment:
+      RABBITMQ_DEFAULT_USER: ${rabbituser}
+      RABBITMQ_DEFAULT_PASS: ${rabbitpassword}
+    ports:
+      - 5672:5672
+      - 15672:15672
+    logging:
+      driver: ${logdriver}
+      options:
+        tag: "rabbit-mq"
+  
   seq:
     image: datalust/seq:latest
     restart: always
