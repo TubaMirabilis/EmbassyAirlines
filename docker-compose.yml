@@ -34,6 +34,10 @@ services:
       - 5410:5410
     volumes:
       - fleet_data:/var/lib/postgresql/data
+    logging:
+      driver: ${logdriver}
+      options:
+        tag: "fleet-db"
 
   fleet-cache:
     image: redis:latest
@@ -42,6 +46,10 @@ services:
     volumes:
       - fleet_cache:/data
     restart: always
+    logging:
+      driver: ${logdriver}
+      options:
+        tag: "fleet-cache"
 
   flights-api:
     build:
