@@ -4,16 +4,17 @@ using Microsoft.EntityFrameworkCore;
 using Npgsql;
 
 var builder = WebApplication.CreateBuilder(args);
-var connectionString = builder.Configuration["ConnectionStrings:DefaultConnection"];
+var config = builder.Configuration;
+config.AddEnvironmentVariables(prefix: "FLIGHTS_");
 var services = builder.Services;
 services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseNpgsql(connectionString)
+    options.UseNpgsql(config["ConnectionStrings:DefaultConnection"])
            .UseSnakeCaseNamingConvention()
            .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking));
 var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
-    app.ApplyMigrations();
+    await app.ApplyMigrationsAsync();
 }
 await app.RunAsync();
 
