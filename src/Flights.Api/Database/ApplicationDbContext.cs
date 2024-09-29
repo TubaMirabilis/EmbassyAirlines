@@ -15,6 +15,13 @@ public sealed class ApplicationDbContext : DbContext
         modelBuilder.Entity<Flight>(entity =>
         {
             entity.HasKey(e => e.Id);
+            entity.Property(e => e.CreatedAt)
+                  .IsRequired();
+            entity.Property(e => e.UpdatedAt)
+                  .IsRequired();
+            entity.Property(e => e.FlightNumber)
+                  .IsRequired()
+                  .HasMaxLength(10);
             entity.Property(e => e.Departure)
                   .IsRequired()
                   .HasMaxLength(100);
