@@ -27,10 +27,9 @@ public class GlobalExceptionHandler : IExceptionHandler
             Title = "Server Error",
             Type = "https://datatracker.ietf.org/doc/html/rfc7231#section-6.6.1"
         };
-        httpContext.Response.StatusCode =
-            StatusCodes.Status500InternalServerError;
-        await httpContext.Response.WriteAsJsonAsync(problemDetails,
-            cancellationToken);
+        var response = httpContext.Response;
+        response.StatusCode = StatusCodes.Status500InternalServerError;
+        await response.WriteAsJsonAsync(problemDetails, cancellationToken);
         return true;
     }
 }

@@ -1,0 +1,14 @@
+services:
+  flightsapi-database:
+    image: postgres:latest
+    container_name: flightsapi-database
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_USER: ${FLIGHTSAPI_DATABASE_USER}
+      POSTGRES_PASSWORD: ${FLIGHTSAPI_DATABASE_PASSWORD}
+      POSTGRES_DB: ${FLIGHTSAPI_DATABASE_NAME}
+    volumes:
+      - flightsapi-database:/var/lib/postgresql/data
+volumes:
+  flightsapi-database:

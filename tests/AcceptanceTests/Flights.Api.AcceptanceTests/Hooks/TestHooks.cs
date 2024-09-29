@@ -33,10 +33,13 @@ public class TestHooks
         await _dbContainer.StartAsync();
         var factory = GetWebApplicationFactory();
         _objectContainer.RegisterInstanceAs(factory);
-        using var scope = _objectContainer.Resolve<WebApplicationFactory<Program>>().Services.CreateScope();
+        using var scope = _objectContainer.Resolve<WebApplicationFactory<Program>>()
+                                          .Services
+                                          .CreateScope();
         var dbContext = scope.ServiceProvider
             .GetRequiredService<ApplicationDbContext>();
-        await dbContext.Database.MigrateAsync();
+        await dbContext.Database
+                       .MigrateAsync();
     }
 
 #pragma warning disable CA2000
@@ -45,7 +48,10 @@ public class TestHooks
             .WithWebHostBuilder(builder => builder.ConfigureTestServices(services =>
                 {
                     services.RemoveAll(typeof(DbContextOptions<ApplicationDbContext>));
-                    services.AddDbContext<ApplicationDbContext>(options => options.UseNpgsql(_dbContainer.GetConnectionString()).UseSnakeCaseNamingConvention());
+                    var connectionString = _dbContainer.GetConnectionString();
+                    services.AddDbContext<ApplicationDbContext>(options =>
+                        options.UseNpgsql(connectionString)
+                               .UseSnakeCaseNamingConvention());
                 }));
 #pragma warning restore CA2000
 
