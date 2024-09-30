@@ -19,12 +19,14 @@ public partial class InitialCreate : Migration
                 created_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                 updated_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                 flight_number = table.Column<string>(type: "character varying(10)", maxLength: 10, nullable: false),
-                departure = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
-                destination = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
-                departure_time = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                arrival_time = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                price = table.Column<decimal>(type: "numeric", nullable: false),
-                available_seats = table.Column<int>(type: "integer", nullable: false)
+                available_seats_business = table.Column<int>(type: "integer", nullable: false),
+                available_seats_economy = table.Column<int>(type: "integer", nullable: false),
+                pricing_business_price = table.Column<decimal>(type: "numeric", nullable: false),
+                pricing_economy_price = table.Column<decimal>(type: "numeric", nullable: false),
+                schedule_arrival_time = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                schedule_departure = table.Column<string>(type: "character varying(10)", maxLength: 10, nullable: false),
+                schedule_departure_time = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                schedule_destination = table.Column<string>(type: "character varying(10)", maxLength: 10, nullable: false)
             },
             constraints: table => table.PrimaryKey("pk_flights", x => x.id));
     }
