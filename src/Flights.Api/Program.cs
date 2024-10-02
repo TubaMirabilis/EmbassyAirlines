@@ -1,9 +1,11 @@
 using Flights.Api.Database;
 using Flights.Api.Extensions;
 using Microsoft.EntityFrameworkCore;
-using Npgsql;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Host.UseSerilog((context, loggerConfig) =>
+    loggerConfig.ReadFrom.Configuration(context.Configuration));
 var config = builder.Configuration;
 config.AddEnvironmentVariables(prefix: "FLIGHTS_");
 var services = builder.Services;
