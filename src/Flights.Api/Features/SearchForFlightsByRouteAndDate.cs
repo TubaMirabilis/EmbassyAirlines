@@ -24,9 +24,9 @@ public static class SearchForFlightsByRouteAndDate
                                         f.Schedule.DepartureTime == query.Date.ToDateTime(new TimeOnly(0)))
                                     .AsSplitQuery()
                                     .ToListAsync(cancellationToken);
-            return flights.Select(f => new FlightDto(f.Id, f.CreatedAt, f.UpdatedAt, f.FlightNumber, f.Schedule.Departure,
-                f.Schedule.Destination, f.Schedule.DepartureTime, f.Schedule.ArrivalTime, f.Pricing.EconomyPrice,
-                f.Pricing.BusinessPrice, f.AvailableSeats.Economy, f.AvailableSeats.Business));
+            return flights.Select(f => new FlightDto(f.Id, f.CreatedAt, f.UpdatedAt, f.FlightNumber,
+                f.Schedule.Departure, f.Schedule.Destination, f.Schedule.DepartureTime, f.Schedule.ArrivalTime,
+                f.Pricing.EconomyPrice, f.Pricing.BusinessPrice, f.AvailableSeats.Economy, f.AvailableSeats.Business));
         }
     }
 }
@@ -36,12 +36,14 @@ public sealed class SearchForFlightsByRouteAndDateEndpoint : IEndpoint
         => app.MapGet("flights", SearchForFlightsByRouteAndDate)
               .WithName("Get flights")
               .WithOpenApi();
-    private static async Task<IResult> SearchForFlightsByRouteAndDate([FromServices] ISender sender, [FromQuery] string departure, string arrival, string date, CancellationToken ct)
+    private static async Task<IResult> SearchForFlightsByRouteAndDate([FromServices] ISender sender,
+        [FromQuery] string departure, string arrival, string date, CancellationToken ct)
     {
         if (DateOnly.TryParse(date, CultureInfo.InvariantCulture, out var dateOnly))
         {
             return Results.BadRequest("Invalid date format. Please use yyyy-MM-dd");
         }
-        return Results.Ok(await sender.Send(new SearchForFlightsByRouteAndDate.Query(departure, arrival, dateOnly), ct));
+        return Results.Ok(await sender.Send(
+            new SearchForFlightsByRouteAndDate.Query(departure, arrival, dateOnly), ct));
     }
 }
