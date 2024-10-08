@@ -13,7 +13,8 @@ namespace Flights.Api.Features;
 
 public static class SearchForFlightsByRouteAndDate
 {
-    public sealed record Query(string? Departure, string? Destination, DateOnly Date) : IQuery<ErrorOr<IEnumerable<FlightDto>>>;
+    public sealed record Query(string? Departure, string? Destination, DateOnly Date)
+        : IQuery<ErrorOr<IEnumerable<FlightDto>>>;
     public sealed class Handler : IQueryHandler<Query, ErrorOr<IEnumerable<FlightDto>>>
     {
         private readonly ApplicationDbContext _ctx;
@@ -42,7 +43,8 @@ public static class SearchForFlightsByRouteAndDate
                                     .ToListAsync(cancellationToken);
             if (flights.TrueForAll(f => f.Status >= FlightStatus.CheckInClosed))
             {
-                return Error.Validation("Flight.NoAvailability", "No flights available for the selected route and date");
+                return Error.Validation("Flight.NoAvailability",
+                    "No flights available for the selected route and date");
             }
             return flights.Select(f => new FlightDto(f.Id, f.CreatedAt, f.UpdatedAt, f.FlightNumber,
                                        f.Schedule.Departure, f.Schedule.Destination, f.Schedule.DepartureTime,

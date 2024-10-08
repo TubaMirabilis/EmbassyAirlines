@@ -2,7 +2,8 @@ namespace Flights.Api.Entities;
 
 public sealed class Flight
 {
-    private Flight(string flightNumber, FlightSchedule schedule, FlightPricing pricing, AvailableSeats availableSeats, FlightStatus status)
+    private Flight(string flightNumber, FlightSchedule schedule,
+        FlightPricing pricing, AvailableSeats availableSeats, FlightStatus status)
     {
         Id = Guid.NewGuid();
         CreatedAt = DateTime.UtcNow;
