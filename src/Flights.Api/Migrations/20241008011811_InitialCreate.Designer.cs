@@ -13,7 +13,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Flights.Api.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20240930221906_InitialCreate")]
+    [Migration("20241008011811_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -40,8 +40,16 @@ namespace Flights.Api.Migrations
                     b.Property<string>("FlightNumber")
                         .IsRequired()
                         .HasMaxLength(10)
+                        .IsUnicode(false)
                         .HasColumnType("character varying(10)")
                         .HasColumnName("flight_number");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .IsUnicode(false)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("status");
 
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("timestamp with time zone")
@@ -84,8 +92,10 @@ namespace Flights.Api.Migrations
                             b1.Property<string>("Departure")
                                 .IsRequired()
                                 .HasMaxLength(10)
+                                .IsUnicode(false)
                                 .HasColumnType("character varying(10)")
-                                .HasColumnName("schedule_departure");
+                                .HasColumnName("schedule_departure")
+                                .HasAnnotation("Npgsql:CheckConstraint", "Departure = upper(Departure)");
 
                             b1.Property<DateTime>("DepartureTime")
                                 .HasColumnType("timestamp with time zone")
@@ -94,8 +104,10 @@ namespace Flights.Api.Migrations
                             b1.Property<string>("Destination")
                                 .IsRequired()
                                 .HasMaxLength(10)
+                                .IsUnicode(false)
                                 .HasColumnType("character varying(10)")
-                                .HasColumnName("schedule_destination");
+                                .HasColumnName("schedule_destination")
+                                .HasAnnotation("Npgsql:CheckConstraint", "Destination = upper(Destination)");
                         });
 
                     b.HasKey("Id")

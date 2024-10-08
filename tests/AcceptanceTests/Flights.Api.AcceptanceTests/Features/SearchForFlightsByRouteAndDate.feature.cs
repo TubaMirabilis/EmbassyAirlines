@@ -113,8 +113,8 @@ namespace Flights.Api.AcceptanceTests.Features
                             "EA123",
                             "YVR",
                             "CDG",
-                            "2020-01-01T10:00:00",
-                            "2020-01-02T05:00:00",
+                            "2025-01-01T10:00:00",
+                            "2025-01-02T05:00:00",
                             "1200.00",
                             "4500.00",
                             "50",
@@ -123,8 +123,8 @@ namespace Flights.Api.AcceptanceTests.Features
                             "EA124",
                             "YVR",
                             "CDG",
-                            "2020-01-01T14:00:00",
-                            "2020-01-02T09:00:00",
+                            "2025-01-01T14:00:00",
+                            "2025-01-02T09:00:00",
                             "1200.00",
                             "4500.00",
                             "50",
@@ -133,8 +133,8 @@ namespace Flights.Api.AcceptanceTests.Features
                             "EA125",
                             "YVR",
                             "LHR",
-                            "2020-01-01T09:00:00",
-                            "2020-01-02T04:00:00",
+                            "2025-01-01T09:00:00",
+                            "2025-01-02T04:00:00",
                             "1000.00",
                             "4000.00",
                             "60",
@@ -143,7 +143,7 @@ namespace Flights.Api.AcceptanceTests.Features
     testRunner.Given("the following flights exist:", ((string)(null)), table1, "Given ");
 #line hidden
 #line 12
-    testRunner.When("I search for flights from YVR to CDG on 2020-01-01", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+    testRunner.When("I search for flights from YVR to CDG on 2025-01-01", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line hidden
                 TechTalk.SpecFlow.Table table2 = new TechTalk.SpecFlow.Table(new string[] {
                             "FlightNumber",
@@ -159,8 +159,8 @@ namespace Flights.Api.AcceptanceTests.Features
                             "EA123",
                             "YVR",
                             "CDG",
-                            "2020-01-01T10:00:00",
-                            "2020-01-02T05:00:00",
+                            "2025-01-01T10:00:00",
+                            "2025-01-02T05:00:00",
                             "1200.00",
                             "4500.00",
                             "50",
@@ -169,8 +169,8 @@ namespace Flights.Api.AcceptanceTests.Features
                             "EA124",
                             "YVR",
                             "CDG",
-                            "2020-01-01T14:00:00",
-                            "2020-01-02T09:00:00",
+                            "2025-01-01T14:00:00",
+                            "2025-01-02T09:00:00",
                             "1200.00",
                             "4500.00",
                             "50",
@@ -214,8 +214,8 @@ namespace Flights.Api.AcceptanceTests.Features
                             "EA123",
                             "YVR",
                             "CDG",
-                            "2020-01-02T10:00:00",
-                            "2020-01-03T05:00:00",
+                            "2025-01-02T10:00:00",
+                            "2025-01-03T05:00:00",
                             "1200.00",
                             "4500.00",
                             "50",
@@ -224,7 +224,7 @@ namespace Flights.Api.AcceptanceTests.Features
     testRunner.Given("the following flights exist:", ((string)(null)), table3, "Given ");
 #line hidden
 #line 22
-    testRunner.When("I search for flights from YVR to CDG on 2020-01-01", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+    testRunner.When("I search for flights from YVR to CDG on 2025-01-01", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line hidden
 #line 23
     testRunner.Then("no flights are returned", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
@@ -265,8 +265,8 @@ namespace Flights.Api.AcceptanceTests.Features
                             "EA126",
                             "YVR",
                             "CDG",
-                            "2020-01-02T10:00:00",
-                            "2020-01-03T05:00:00",
+                            "2025-01-02T10:00:00",
+                            "2025-01-03T05:00:00",
                             "1300.00",
                             "4600.00",
                             "45",
@@ -275,7 +275,7 @@ namespace Flights.Api.AcceptanceTests.Features
     testRunner.Given("the following flights exist:", ((string)(null)), table4, "Given ");
 #line hidden
 #line 29
-    testRunner.When("I search for flights from YVR to CDG on 2020-01-02", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+    testRunner.When("I search for flights from YVR to CDG on 2025-01-02", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line hidden
                 TechTalk.SpecFlow.Table table5 = new TechTalk.SpecFlow.Table(new string[] {
                             "FlightNumber",
@@ -291,8 +291,8 @@ namespace Flights.Api.AcceptanceTests.Features
                             "EA126",
                             "YVR",
                             "CDG",
-                            "2020-01-02T10:00:00",
-                            "2020-01-03T05:00:00",
+                            "2025-01-02T10:00:00",
+                            "2025-01-03T05:00:00",
                             "1300.00",
                             "4600.00",
                             "45",
@@ -336,8 +336,8 @@ namespace Flights.Api.AcceptanceTests.Features
                             "EA123",
                             "YVR",
                             "LHR",
-                            "2020-01-01T10:00:00",
-                            "2020-01-02T05:00:00",
+                            "2025-01-01T10:00:00",
+                            "2025-01-02T05:00:00",
                             "1000.00",
                             "4000.00",
                             "60",
@@ -346,10 +346,221 @@ namespace Flights.Api.AcceptanceTests.Features
     testRunner.Given("the following flights exist:", ((string)(null)), table6, "Given ");
 #line hidden
 #line 38
-    testRunner.When("I search for flights from YVR to CDG on 2020-01-01", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+    testRunner.When("I search for flights from YVR to CDG on 2025-01-01", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line hidden
 #line 39
     testRunner.Then("no flights are returned", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+#line hidden
+            }
+            this.ScenarioCleanup();
+        }
+        
+        [Xunit.SkippableFactAttribute(DisplayName="Search with invalid date format")]
+        [Xunit.TraitAttribute("FeatureTitle", "Search for flights by route and date")]
+        [Xunit.TraitAttribute("Description", "Search with invalid date format")]
+        public void SearchWithInvalidDateFormat()
+        {
+            string[] tagsOfScenario = ((string[])(null));
+            System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Search with invalid date format", null, tagsOfScenario, argumentsOfScenario, featureTags);
+#line 41
+  this.ScenarioInitialize(scenarioInfo);
+#line hidden
+            if ((TagHelper.ContainsIgnoreTag(tagsOfScenario) || TagHelper.ContainsIgnoreTag(featureTags)))
+            {
+                testRunner.SkipScenario();
+            }
+            else
+            {
+                this.ScenarioStart();
+#line 42
+    testRunner.When("I search for flights from YVR to CDG on 2025-01-100", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+#line hidden
+#line 43
+    testRunner.Then("an error message is returned", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+#line hidden
+            }
+            this.ScenarioCleanup();
+        }
+        
+        [Xunit.SkippableFactAttribute(DisplayName="Search with lowercase airport codes")]
+        [Xunit.TraitAttribute("FeatureTitle", "Search for flights by route and date")]
+        [Xunit.TraitAttribute("Description", "Search with lowercase airport codes")]
+        public void SearchWithLowercaseAirportCodes()
+        {
+            string[] tagsOfScenario = ((string[])(null));
+            System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Search with lowercase airport codes", null, tagsOfScenario, argumentsOfScenario, featureTags);
+#line 45
+  this.ScenarioInitialize(scenarioInfo);
+#line hidden
+            if ((TagHelper.ContainsIgnoreTag(tagsOfScenario) || TagHelper.ContainsIgnoreTag(featureTags)))
+            {
+                testRunner.SkipScenario();
+            }
+            else
+            {
+                this.ScenarioStart();
+                TechTalk.SpecFlow.Table table7 = new TechTalk.SpecFlow.Table(new string[] {
+                            "FlightNumber",
+                            "DepartureAirport",
+                            "ArrivalAirport",
+                            "DepartureTime",
+                            "ArrivalTime",
+                            "EconomyPrice",
+                            "BusinessPrice",
+                            "AvailableEconomySeats",
+                            "AvailableBusinessSeats"});
+                table7.AddRow(new string[] {
+                            "EA123",
+                            "YVR",
+                            "CDG",
+                            "2025-01-01T10:00:00",
+                            "2025-01-02T05:00:00",
+                            "1200.00",
+                            "4500.00",
+                            "50",
+                            "10"});
+#line 46
+    testRunner.Given("the following flights exist:", ((string)(null)), table7, "Given ");
+#line hidden
+#line 49
+    testRunner.When("I search for flights from yvr to cdg on 2025-01-01", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+#line hidden
+                TechTalk.SpecFlow.Table table8 = new TechTalk.SpecFlow.Table(new string[] {
+                            "FlightNumber",
+                            "DepartureAirport",
+                            "ArrivalAirport",
+                            "DepartureTime",
+                            "ArrivalTime",
+                            "EconomyPrice",
+                            "BusinessPrice",
+                            "AvailableEconomySeats",
+                            "AvailableBusinessSeats"});
+                table8.AddRow(new string[] {
+                            "EA123",
+                            "YVR",
+                            "CDG",
+                            "2025-01-01T10:00:00",
+                            "2025-01-02T05:00:00",
+                            "1200.00",
+                            "4500.00",
+                            "50",
+                            "10"});
+#line 50
+    testRunner.Then("the following flights are returned:", ((string)(null)), table8, "Then ");
+#line hidden
+            }
+            this.ScenarioCleanup();
+        }
+        
+        [Xunit.SkippableFactAttribute(DisplayName="Search with missing departure airport code")]
+        [Xunit.TraitAttribute("FeatureTitle", "Search for flights by route and date")]
+        [Xunit.TraitAttribute("Description", "Search with missing departure airport code")]
+        public void SearchWithMissingDepartureAirportCode()
+        {
+            string[] tagsOfScenario = ((string[])(null));
+            System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Search with missing departure airport code", null, tagsOfScenario, argumentsOfScenario, featureTags);
+#line 54
+  this.ScenarioInitialize(scenarioInfo);
+#line hidden
+            if ((TagHelper.ContainsIgnoreTag(tagsOfScenario) || TagHelper.ContainsIgnoreTag(featureTags)))
+            {
+                testRunner.SkipScenario();
+            }
+            else
+            {
+                this.ScenarioStart();
+#line 55
+    testRunner.When("I search for flights from  to CDG on 2025-01-01", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+#line hidden
+#line 56
+    testRunner.Then("an error message is returned", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+#line hidden
+            }
+            this.ScenarioCleanup();
+        }
+        
+        [Xunit.SkippableFactAttribute(DisplayName="Search with missing arrival airport code")]
+        [Xunit.TraitAttribute("FeatureTitle", "Search for flights by route and date")]
+        [Xunit.TraitAttribute("Description", "Search with missing arrival airport code")]
+        public void SearchWithMissingArrivalAirportCode()
+        {
+            string[] tagsOfScenario = ((string[])(null));
+            System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Search with missing arrival airport code", null, tagsOfScenario, argumentsOfScenario, featureTags);
+#line 58
+  this.ScenarioInitialize(scenarioInfo);
+#line hidden
+            if ((TagHelper.ContainsIgnoreTag(tagsOfScenario) || TagHelper.ContainsIgnoreTag(featureTags)))
+            {
+                testRunner.SkipScenario();
+            }
+            else
+            {
+                this.ScenarioStart();
+#line 59
+    testRunner.When("I search for flights from YVR to  on 2025-01-01", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+#line hidden
+#line 60
+    testRunner.Then("an error message is returned", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+#line hidden
+            }
+            this.ScenarioCleanup();
+        }
+        
+        [Xunit.SkippableFactAttribute(DisplayName="Search with the same departure and arrival airports")]
+        [Xunit.TraitAttribute("FeatureTitle", "Search for flights by route and date")]
+        [Xunit.TraitAttribute("Description", "Search with the same departure and arrival airports")]
+        public void SearchWithTheSameDepartureAndArrivalAirports()
+        {
+            string[] tagsOfScenario = ((string[])(null));
+            System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Search with the same departure and arrival airports", null, tagsOfScenario, argumentsOfScenario, featureTags);
+#line 62
+  this.ScenarioInitialize(scenarioInfo);
+#line hidden
+            if ((TagHelper.ContainsIgnoreTag(tagsOfScenario) || TagHelper.ContainsIgnoreTag(featureTags)))
+            {
+                testRunner.SkipScenario();
+            }
+            else
+            {
+                this.ScenarioStart();
+#line 63
+    testRunner.When("I search for flights from YVR to YVR on 2025-01-01", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+#line hidden
+#line 64
+    testRunner.Then("an error message is returned", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+#line hidden
+            }
+            this.ScenarioCleanup();
+        }
+        
+        [Xunit.SkippableFactAttribute(DisplayName="Search with Past Date")]
+        [Xunit.TraitAttribute("FeatureTitle", "Search for flights by route and date")]
+        [Xunit.TraitAttribute("Description", "Search with Past Date")]
+        public void SearchWithPastDate()
+        {
+            string[] tagsOfScenario = ((string[])(null));
+            System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Search with Past Date", null, tagsOfScenario, argumentsOfScenario, featureTags);
+#line 66
+  this.ScenarioInitialize(scenarioInfo);
+#line hidden
+            if ((TagHelper.ContainsIgnoreTag(tagsOfScenario) || TagHelper.ContainsIgnoreTag(featureTags)))
+            {
+                testRunner.SkipScenario();
+            }
+            else
+            {
+                this.ScenarioStart();
+#line 67
+    testRunner.When("I search for flights from YVR to CDG on 2020-01-01", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+#line hidden
+#line 68
+    testRunner.Then("an error message is returned", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             }
             this.ScenarioCleanup();

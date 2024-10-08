@@ -1,5 +1,6 @@
 ﻿using Flights.Api.Entities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Flights.Api.Database;
 
@@ -21,15 +22,20 @@ public sealed class ApplicationDbContext : DbContext
                   .IsRequired();
             entity.Property(e => e.FlightNumber)
                   .IsRequired()
-                  .HasMaxLength(10);
+                  .HasMaxLength(10)
+                  .IsUnicode(false);
             entity.ComplexProperty(e => e.Schedule, schedule =>
             {
                 schedule.Property(e => e.Departure)
                         .IsRequired()
-                        .HasMaxLength(10);
+                        .HasMaxLength(10)
+                        .IsUnicode(false)
+                        .HasAnnotation("Npgsql:CheckConstraint", "Departure = upper(Departure)");
                 schedule.Property(e => e.Destination)
                         .IsRequired()
-                        .HasMaxLength(10);
+                        .HasMaxLength(10)
+                        .IsUnicode(false)
+                        .HasAnnotation("Npgsql:CheckConstraint", "Destination = upper(Destination)");
                 schedule.Property(e => e.DepartureTime)
                         .IsRequired();
                 schedule.Property(e => e.ArrivalTime)
@@ -42,11 +48,16 @@ public sealed class ApplicationDbContext : DbContext
                 pricing.Property(e => e.BusinessPrice)
                        .IsRequired();
             });
-            entity.ComplexProperty(e => e.AvailableSeats, availableSeats =>
+            entity.Property(a => a.Status)
+                  .HasConversion(new EnumToStringConverter<FlightStatus>())
+                  .HasMaxLength(20)
+                    .IsUnicode(false)
+                  .IsRequired();
+            entity.ComplexProperty(e => e.AvailableSeats, a =>
             {
-                availableSeats.Property(e => e.Economy)
+                a.Property(e => e.Economy)
                              .IsRequired();
-                availableSeats.Property(e => e.Business)
+                a.Property(e => e.Business)
                              .IsRequired();
             });
         });
