@@ -43,7 +43,7 @@ public static class SearchForFlightsByRouteAndDate
                                         f.Schedule.DepartureTime.Date == query.Date)
                                     .AsSplitQuery()
                                     .ToListAsync(cancellationToken);
-            if (flights.TrueForAll(f => f.Schedule.DepartureTime.ToDateTimeOffset() < DateTimeOffset.Now))
+            if (flights.Count != 0 && flights.TrueForAll(f => f.Schedule.DepartureTime.ToDateTimeOffset() < DateTimeOffset.Now))
             {
                 return Error.Validation("Flight.DepartureTime", "All flights have already departed");
             }
