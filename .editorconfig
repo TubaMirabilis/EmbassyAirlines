@@ -3,6 +3,10 @@ root = true
 # All files
 [*]
 indent_style = space
+indent_size = 4
+tab_width = 4
+end_of_line = crlf
+insert_final_newline = true
 
 # Xml files
 [*.xml]
@@ -67,16 +71,6 @@ dotnet_diagnostic.S6966.severity = none
 [*.md]
 max_line_length = off
 trim_trailing_whitespace = false
-
-#### Core EditorConfig Options ####
-
-# Indentation and spacing
-indent_size = 4
-tab_width = 4
-
-# New line preferences
-end_of_line = crlf
-insert_final_newline = true
 
 #### .NET Coding Conventions ####
 [*.{cs,vb}]
