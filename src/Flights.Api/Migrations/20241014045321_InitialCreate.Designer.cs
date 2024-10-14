@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using NodaTime;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
@@ -13,7 +14,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Flights.Api.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20241008011811_InitialCreate")]
+    [Migration("20241014045321_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -21,7 +22,7 @@ namespace Flights.Api.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.8")
+                .HasAnnotation("ProductVersion", "8.0.10")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -33,7 +34,7 @@ namespace Flights.Api.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
-                    b.Property<DateTime>("CreatedAt")
+                    b.Property<Instant>("CreatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at");
 
@@ -44,14 +45,7 @@ namespace Flights.Api.Migrations
                         .HasColumnType("character varying(10)")
                         .HasColumnName("flight_number");
 
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .IsUnicode(false)
-                        .HasColumnType("character varying(20)")
-                        .HasColumnName("status");
-
-                    b.Property<DateTime>("UpdatedAt")
+                    b.Property<Instant>("UpdatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("updated_at");
 
@@ -85,7 +79,7 @@ namespace Flights.Api.Migrations
                         {
                             b1.IsRequired();
 
-                            b1.Property<DateTime>("ArrivalTime")
+                            b1.Property<ZonedDateTime>("ArrivalTime")
                                 .HasColumnType("timestamp with time zone")
                                 .HasColumnName("schedule_arrival_time");
 
@@ -97,7 +91,7 @@ namespace Flights.Api.Migrations
                                 .HasColumnName("schedule_departure")
                                 .HasAnnotation("Npgsql:CheckConstraint", "Departure = upper(Departure)");
 
-                            b1.Property<DateTime>("DepartureTime")
+                            b1.Property<ZonedDateTime>("DepartureTime")
                                 .HasColumnType("timestamp with time zone")
                                 .HasColumnName("schedule_departure_time");
 

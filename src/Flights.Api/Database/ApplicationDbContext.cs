@@ -48,11 +48,6 @@ public sealed class ApplicationDbContext : DbContext
                 pricing.Property(e => e.BusinessPrice)
                        .IsRequired();
             });
-            entity.Property(a => a.Status)
-                  .HasConversion(new EnumToStringConverter<FlightStatus>())
-                  .HasMaxLength(20)
-                    .IsUnicode(false)
-                  .IsRequired();
             entity.ComplexProperty(e => e.AvailableSeats, a =>
             {
                 a.Property(e => e.Economy)

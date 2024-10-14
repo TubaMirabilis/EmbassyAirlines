@@ -31,7 +31,7 @@ public class TestHooks : IAsyncDisposable
             services.RemoveAll(typeof(DbContextOptions<ApplicationDbContext>));
             var connectionString = _dbContainer.GetConnectionString();
             services.AddDbContext<ApplicationDbContext>(options =>
-                options.UseNpgsql(connectionString)
+                options.UseNpgsql(connectionString, o => o.UseNodaTime())
                        .UseSnakeCaseNamingConvention());
         }));
     }

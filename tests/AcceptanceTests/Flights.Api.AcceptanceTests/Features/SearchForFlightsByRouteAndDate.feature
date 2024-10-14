@@ -62,3 +62,10 @@ Feature: Search for flights by route and date
   Scenario: Search with the same departure and arrival airports
     When I search for flights from YVR to YVR on 2025-01-01
     Then an error message is returned
+
+    Scenario: All flights have already departed
+    Given the following flights exist:
+      | FlightNumber | DepartureAirport | ArrivalAirport | DepartureTime       | ArrivalTime         | EconomyPrice | BusinessPrice | AvailableEconomySeats | AvailableBusinessSeats |
+      | EA123        | YVR              | CDG            | 2024-01-01T10:00:00 | 2024-01-02T05:00:00 | 1200.00      | 4500.00       | 50                    | 10                     |
+    When I search for flights from YVR to CDG on 2025-01-03
+    Then no flights are returned
