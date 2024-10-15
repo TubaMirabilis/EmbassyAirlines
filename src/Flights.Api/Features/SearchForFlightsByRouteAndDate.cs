@@ -1,7 +1,5 @@
-﻿using System.Globalization;
-using ErrorOr;
+﻿using ErrorOr;
 using Flights.Api.Database;
-using Flights.Api.Entities;
 using Mediator;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -62,7 +60,12 @@ public sealed class SearchForFlightsByRouteAndDateEndpoint : IEndpoint
     private static async Task<IResult> SearchForFlightsByRouteAndDate([FromServices] ISender sender,
         [FromQuery] string departure, string arrival, string date, CancellationToken ct)
     {
-        if (!LocalDatePattern.Iso.Parse(date).TryGetValue(LocalDate.MinIsoValue, out var localDate))
+        LocalDatePattern.Iso
+                        .Parse(date)
+                        .TryGetValue(
+                            LocalDate.MinIsoValue,
+                            out var localDate);
+        if (localDate == LocalDate.MinIsoValue)
         {
             return Results.BadRequest("Invalid date format. Please use yyyy-MM-dd");
         }

@@ -1,3 +1,4 @@
+using System.Text.Json;
 using BoDi;
 using Flights.Api.Database;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -28,6 +29,11 @@ public class TestHooks : IAsyncDisposable
             .Build();
         _factory = _factory.WithWebHostBuilder(builder => builder.ConfigureTestServices(services =>
         {
+            // Add scoped JsonSerializerOptions to the service collection
+            services.TryAddScoped(_ => new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            });
             services.RemoveAll(typeof(DbContextOptions<ApplicationDbContext>));
             var connectionString = _dbContainer.GetConnectionString();
             services.AddDbContext<ApplicationDbContext>(options =>

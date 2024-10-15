@@ -1,6 +1,5 @@
 ﻿using Flights.Api.Entities;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Flights.Api.Database;
 

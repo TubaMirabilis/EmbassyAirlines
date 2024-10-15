@@ -2,7 +2,6 @@ using System.Reflection;
 using Flights.Api.Database;
 using Flights.Api.Extensions;
 using Microsoft.EntityFrameworkCore;
-using NodaTime;
 using Serilog;
 using Shared;
 using Shared.Extensions;
@@ -15,6 +14,7 @@ var config = builder.Configuration;
 config.AddEnvironmentVariables(prefix: "FLIGHTS_");
 var services = builder.Services;
 services.AddExceptionHandler<GlobalExceptionHandler>();
+services.AddProblemDetails();
 services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(config["ConnectionStrings:DefaultConnection"],
                o => o.UseNodaTime())
