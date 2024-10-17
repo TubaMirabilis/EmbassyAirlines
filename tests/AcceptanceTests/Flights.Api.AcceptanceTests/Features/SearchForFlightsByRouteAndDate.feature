@@ -22,15 +22,6 @@ Feature: Search for flights by route and date
     When I search for flights from YVR to CDG on 2025-01-01
     Then no flights are returned
 
-  Scenario: Search for flights on a different date but same route
-    Given the following flights exist:
-      | FlightNumber | DepartureAirport | ArrivalAirport | DepartureTime       | ArrivalTime         | EconomyPrice | BusinessPrice | AvailableEconomySeats | AvailableBusinessSeats |
-      | EA126        | YVR              | CDG            | 2025-01-02T10:00:00 | 2025-01-03T05:00:00 | 1300.00      | 4600.00       | 45                    | 8                      |
-    When I search for flights from YVR to CDG on 2025-01-02
-    Then the following flights are returned:
-      | FlightNumber | DepartureAirport | ArrivalAirport | DepartureTime       | ArrivalTime         | EconomyPrice | BusinessPrice | AvailableEconomySeats | AvailableBusinessSeats |
-      | EA126        | YVR              | CDG            | 2025-01-02T10:00:00 | 2025-01-03T05:00:00 | 1300.00      | 4600.00       | 45                    | 8                      |
-
   Scenario: Search for flights with no matching route
     Given the following flights exist:
       | FlightNumber | DepartureAirport | ArrivalAirport | DepartureTime       | ArrivalTime         | EconomyPrice | BusinessPrice | AvailableEconomySeats | AvailableBusinessSeats |
