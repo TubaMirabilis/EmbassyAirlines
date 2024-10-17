@@ -12,11 +12,12 @@ using TechTalk.SpecFlow;
 namespace Flights.Api.AcceptanceTests.StepDefinitions;
 
 [Binding]
-public class SearchForFlightsByRouteAndDateSteps
+public sealed class SearchForFlightsByRouteAndDateSteps : IDisposable
 {
     private readonly HttpClient _client;
     private HttpResponseMessage? _response;
     private readonly IServiceScope _scope;
+
     public SearchForFlightsByRouteAndDateSteps(WebApplicationFactory<Program> factory)
     {
         _client = factory.CreateClient();
@@ -26,28 +27,9 @@ public class SearchForFlightsByRouteAndDateSteps
     [Given(@"the following flights exist:")]
     public async Task GivenTheFollowingFlightsExist(Table table)
     {
+        var flights = ParseFlightsFromTable(table);
         var dbContext = _scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-        foreach (var row in table.Rows)
-        {
-            var flightNumber = row["FlightNumber"];
-            var departure = row["DepartureAirport"];
-            var destination = row["ArrivalAirport"];
-            var departureTime = DateTimeOffset.Parse(row["DepartureTime"], CultureInfo.InvariantCulture);
-            var arrivalTime = DateTimeOffset.Parse(row["ArrivalTime"], CultureInfo.InvariantCulture);
-            var economyPrice = decimal.Parse(row["EconomyPrice"], CultureInfo.InvariantCulture);
-            var businessPrice = decimal.Parse(row["BusinessPrice"], CultureInfo.InvariantCulture);
-            var availableEconomySeats = int.Parse(row["AvailableEconomySeats"], CultureInfo.InvariantCulture);
-            var availableBusinessSeats = int.Parse(row["AvailableBusinessSeats"], CultureInfo.InvariantCulture);
-            var departureInstant = Instant.FromDateTimeOffset(departureTime);
-            var arrivalInstant = Instant.FromDateTimeOffset(arrivalTime);
-            var departureZdt = new ZonedDateTime(departureInstant, DateTimeZoneProviders.Tzdb["America/Vancouver"]).WithZone(DateTimeZone.Utc);
-            var arrivalZdt = new ZonedDateTime(arrivalInstant, DateTimeZoneProviders.Tzdb["Europe/Paris"]).WithZone(DateTimeZone.Utc);
-            var schedule = new FlightSchedule(departure, destination, departureZdt, arrivalZdt);
-            var pricing = new FlightPricing(economyPrice, businessPrice);
-            var availableSeats = new AvailableSeats(availableEconomySeats, availableBusinessSeats);
-            var flight = Flight.Create(flightNumber, schedule, pricing, availableSeats);
-            dbContext.Flights.Add(flight);
-        }
+        dbContext.Flights.AddRange(flights);
         await dbContext.SaveChangesAsync();
     }
 
@@ -61,24 +43,69 @@ public class SearchForFlightsByRouteAndDateSteps
     [Then(@"the following flights are returned:")]
     public async Task ThenTheFollowingFlightsAreReturned(Table table)
     {
+        var expectedFlights = GetExpectedFlightsFromTable(table);
+        var actualFlights = await GetFlightsFromResponse();
+        actualFlights.Should().BeEquivalentTo(expectedFlights);
+    }
+
+    [Then(@"no flights are returned")]
+    public async Task ThenNoFlightsAreReturned()
+    {
+        var actualFlights = await GetFlightsFromResponse();
+        actualFlights.Should().BeEmpty();
+    }
+
+    private static IEnumerable<Flight> ParseFlightsFromTable(Table table)
+    {
+        foreach (var row in table.Rows)
+        {
+            yield return CreateFlightFromRow(row);
+        }
+    }
+
+    private static Flight CreateFlightFromRow(TableRow row)
+    {
+        var flightNumber = row["FlightNumber"];
+        var departure = row["DepartureAirport"];
+        var destination = row["ArrivalAirport"];
+        var departureTime = DateTimeOffset.Parse(row["DepartureTime"], CultureInfo.InvariantCulture);
+        var arrivalTime = DateTimeOffset.Parse(row["ArrivalTime"], CultureInfo.InvariantCulture);
+        var economyPrice = decimal.Parse(row["EconomyPrice"], CultureInfo.InvariantCulture);
+        var businessPrice = decimal.Parse(row["BusinessPrice"], CultureInfo.InvariantCulture);
+        var availableEconomySeats = int.Parse(row["AvailableEconomySeats"], CultureInfo.InvariantCulture);
+        var availableBusinessSeats = int.Parse(row["AvailableBusinessSeats"], CultureInfo.InvariantCulture);
+        var departureInstant = Instant.FromDateTimeOffset(departureTime);
+        var arrivalInstant = Instant.FromDateTimeOffset(arrivalTime);
+        var departureZdt = new ZonedDateTime(departureInstant, DateTimeZoneProviders.Tzdb["America/Vancouver"]).WithZone(DateTimeZone.Utc);
+        var arrivalZdt = new ZonedDateTime(arrivalInstant, DateTimeZoneProviders.Tzdb["Europe/Paris"]).WithZone(DateTimeZone.Utc);
+        var schedule = new FlightSchedule(departure, destination, departureZdt, arrivalZdt);
+        var pricing = new FlightPricing(economyPrice, businessPrice);
+        var availableSeats = new AvailableSeats(availableEconomySeats, availableBusinessSeats);
+        return Flight.Create(flightNumber, schedule, pricing, availableSeats);
+    }
+
+    private static IEnumerable<object> GetExpectedFlightsFromTable(Table table) => table.Rows.Select(row => new
+    {
+        FlightNumber = row["FlightNumber"],
+        Departure = row["DepartureAirport"],
+        Destination = row["ArrivalAirport"],
+        DepartureTime = DateTimeOffset.Parse(row["DepartureTime"], CultureInfo.InvariantCulture),
+        ArrivalTime = DateTimeOffset.Parse(row["ArrivalTime"], CultureInfo.InvariantCulture),
+        EconomyPrice = decimal.Parse(row["EconomyPrice"], CultureInfo.InvariantCulture),
+        BusinessPrice = decimal.Parse(row["BusinessPrice"], CultureInfo.InvariantCulture),
+        AvailableEconomySeats = int.Parse(row["AvailableEconomySeats"], CultureInfo.InvariantCulture),
+        AvailableBusinessSeats = int.Parse(row["AvailableBusinessSeats"], CultureInfo.InvariantCulture)
+    });
+
+    private async Task<IEnumerable<object>> GetFlightsFromResponse()
+    {
         ArgumentNullException.ThrowIfNull(_response);
         _response.EnsureSuccessStatusCode();
         var content = await _response.Content.ReadAsStreamAsync();
         var options = _scope.ServiceProvider.GetRequiredService<JsonSerializerOptions>();
         var flights = await JsonSerializer.DeserializeAsync<IEnumerable<FlightDto>>(content, options);
-        var expectedFlights = table.Rows.Select(row => new
-        {
-            FlightNumber = row["FlightNumber"],
-            Departure = row["DepartureAirport"],
-            Destination = row["ArrivalAirport"],
-            DepartureTime = DateTimeOffset.Parse(row["DepartureTime"], CultureInfo.InvariantCulture),
-            ArrivalTime = DateTimeOffset.Parse(row["ArrivalTime"], CultureInfo.InvariantCulture),
-            EconomyPrice = decimal.Parse(row["EconomyPrice"], CultureInfo.InvariantCulture),
-            BusinessPrice = decimal.Parse(row["BusinessPrice"], CultureInfo.InvariantCulture),
-            AvailableEconomySeats = int.Parse(row["AvailableEconomySeats"], CultureInfo.InvariantCulture),
-            AvailableBusinessSeats = int.Parse(row["AvailableBusinessSeats"], CultureInfo.InvariantCulture)
-        }).ToList();
-        var actualFlights = flights?.Select(f => new
+        ArgumentNullException.ThrowIfNull(flights);
+        return flights.Select(f => new
         {
             f.FlightNumber,
             f.Departure,
@@ -89,7 +116,13 @@ public class SearchForFlightsByRouteAndDateSteps
             f.BusinessPrice,
             f.AvailableEconomySeats,
             f.AvailableBusinessSeats
-        }).ToList();
-        actualFlights.Should().BeEquivalentTo(expectedFlights);
+        });
+    }
+
+    public void Dispose()
+    {
+        _response?.Dispose();
+        _scope.Dispose();
+        _client.Dispose();
     }
 }
