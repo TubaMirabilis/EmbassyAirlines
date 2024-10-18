@@ -1,5 +1,6 @@
 ﻿using ErrorOr;
 using Flights.Api.Database;
+using FluentValidation;
 using Mediator;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -15,38 +16,45 @@ public static class SearchForFlightsByRouteAndDate
 {
     public sealed record Query(string? Departure, string? Destination, string? Date)
         : IQuery<ErrorOr<IEnumerable<FlightDto>>>;
+    public sealed class Validator : AbstractValidator<Query>
+    {
+        public Validator()
+        {
+            RuleFor(x => x.Departure)
+                .NotEmpty()
+                .WithMessage("Departure is required");
+            RuleFor(x => x.Destination)
+                .NotEmpty()
+                .WithMessage("Destination is required");
+            RuleFor(x => x.Date)
+                .NotEmpty()
+                .WithMessage("Date is required");
+            RuleFor(x => x)
+                .Must(x => x.Departure != x.Destination)
+                .WithMessage("Destination cannot be the same as departure");
+            RuleFor(x => x.Date)
+                .Must(x => LocalDatePattern.Iso.Parse(x!).TryGetValue(LocalDate.MinIsoValue, out _))
+                .WithMessage("Invalid date format. Please use yyyy-MM-dd");
+        }
+    }
     public sealed class Handler : IQueryHandler<Query, ErrorOr<IEnumerable<FlightDto>>>
     {
         private readonly ApplicationDbContext _ctx;
-        public Handler(ApplicationDbContext ctx) => _ctx = ctx;
+        private readonly IValidator<Query> _validator;
+        public Handler(ApplicationDbContext ctx, IValidator<Query> validator)
+        {
+            _ctx = ctx;
+            _validator = validator;
+        }
         public async ValueTask<ErrorOr<IEnumerable<FlightDto>>> Handle(
             Query query, CancellationToken cancellationToken)
         {
-            if (string.IsNullOrWhiteSpace(query.Departure))
+            var validationResult = await _validator.ValidateAsync(query, cancellationToken);
+            if (!validationResult.IsValid)
             {
-                return Error.Validation("Flight.Departure", "Departure is required");
+                return Error.Validation("Query.ValidationFailed", validationResult.Errors[0].ErrorMessage);
             }
-            if (string.IsNullOrWhiteSpace(query.Destination))
-            {
-                return Error.Validation("Flight.Destination", "Destination is required");
-            }
-            if (string.IsNullOrWhiteSpace(query.Date))
-            {
-                return Error.Validation("Flight.Date", "Date is required");
-            }
-            if (query.Departure == query.Destination)
-            {
-                return Error.Validation("Flight.Destination", "Destination cannot be the same as departure");
-            }
-            LocalDatePattern.Iso
-                            .Parse(query.Date)
-                            .TryGetValue(
-                                LocalDate.MinIsoValue,
-                                out var localDate);
-            if (localDate == LocalDate.MinIsoValue)
-            {
-                return Error.Validation("Flight.Date", "Invalid date format. Please use yyyy-MM-dd");
-            }
+            var localDate = LocalDatePattern.Iso.Parse(query.Date!).Value;
             var flights = await _ctx.Flights
                                     .Where(f =>
                                         f.Schedule.Departure == query.Departure &&
@@ -56,7 +64,7 @@ public static class SearchForFlightsByRouteAndDate
                                     .ToListAsync(cancellationToken);
             if (flights.Count != 0 && flights.TrueForAll(f => f.Schedule.DepartureTime.ToDateTimeOffset() < DateTimeOffset.Now))
             {
-                return Error.Validation("Flight.DepartureTime", "All flights have already departed");
+                return Error.Validation("Query.NoMoreFlights", "All flights have already departed");
             }
             return flights.Select(f => new FlightDto(f.Id, f.CreatedAt.ToDateTimeOffset(), f.UpdatedAt.ToDateTimeOffset(), f.FlightNumber, f.Schedule.Departure, f.Schedule.Destination, f.Schedule.DepartureTime.ToDateTimeOffset(), f.Schedule.ArrivalTime.ToDateTimeOffset(), f.Pricing.EconomyPrice, f.Pricing.BusinessPrice, f.AvailableSeats.Economy, f.AvailableSeats.Business))
                           .OrderBy(f => f.DepartureTime)
