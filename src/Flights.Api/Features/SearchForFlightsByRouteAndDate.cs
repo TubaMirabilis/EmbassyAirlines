@@ -27,65 +27,79 @@ public static class SearchForFlightsByRouteAndDate
                 .NotEmpty()
                 .WithMessage("Destination is required");
             RuleFor(x => x.Date)
-                .NotEmpty()
-                .WithMessage("Date is required");
+                .Custom((date, context) =>
+                {
+                    if (string.IsNullOrWhiteSpace(date))
+                    {
+                        context.AddFailure("Date is required");
+                        return;
+                    }
+                    var parseResult = LocalDatePattern.Iso.Parse(date);
+                    if (!parseResult.Success)
+                    {
+                        context.AddFailure("Invalid date format. Please use yyyy-MM-dd");
+                    }
+                });
             RuleFor(x => x)
                 .Must(x => x.Departure != x.Destination)
                 .WithMessage("Destination cannot be the same as departure");
-            RuleFor(x => x.Date)
-                .Must(x => LocalDatePattern.Iso.Parse(x!).TryGetValue(LocalDate.MinIsoValue, out _))
-                .WithMessage("Invalid date format. Please use yyyy-MM-dd");
         }
     }
-    public sealed class Handler : IQueryHandler<Query, ErrorOr<IEnumerable<FlightDto>>>
-    {
-        private readonly ApplicationDbContext _ctx;
-        private readonly IValidator<Query> _validator;
-        public Handler(ApplicationDbContext ctx, IValidator<Query> validator)
+        public sealed class Handler : IQueryHandler<Query, ErrorOr<IEnumerable<FlightDto>>>
         {
-            _ctx = ctx;
-            _validator = validator;
-        }
-        public async ValueTask<ErrorOr<IEnumerable<FlightDto>>> Handle(
-            Query query, CancellationToken cancellationToken)
-        {
-            var validationResult = await _validator.ValidateAsync(query, cancellationToken);
-            if (!validationResult.IsValid)
+            private readonly ApplicationDbContext _ctx;
+            private readonly IValidator<Query> _validator;
+            public Handler(ApplicationDbContext ctx, IValidator<Query> validator)
             {
-                return Error.Validation("Query.ValidationFailed", validationResult.Errors[0].ErrorMessage);
+                _ctx = ctx;
+                _validator = validator;
             }
-            var localDate = LocalDatePattern.Iso.Parse(query.Date!).Value;
-            var flights = await _ctx.Flights
-                                    .Where(f =>
-                                        f.Schedule.Departure == query.Departure &&
-                                        f.Schedule.Destination == query.Destination &&
-                                        f.Schedule.DepartureTime.Date == localDate)
-                                    .AsSplitQuery()
-                                    .ToListAsync(cancellationToken);
-            if (flights.Count != 0 && flights.TrueForAll(f => f.Schedule.DepartureTime.ToDateTimeOffset() < DateTimeOffset.Now))
+            public async ValueTask<ErrorOr<IEnumerable<FlightDto>>> Handle(
+                Query query, CancellationToken cancellationToken)
             {
-                return Error.Validation("Query.NoMoreFlights", "All flights have already departed");
+                var validationResult = await _validator.ValidateAsync(query, cancellationToken);
+                if (!validationResult.IsValid)
+                {
+                    var errors = string.Join("\n", validationResult.Errors.Select(e => e.ErrorMessage));
+                    return Error.Validation("Query.ValidationFailed", errors);
+                }
+                var parseResult = LocalDatePattern.Iso.Parse(query.Date!);
+                if (!parseResult.Success)
+                {
+                    return Error.Validation("Query.ValidationFailed", "Invalid date format. Please use yyyy-MM-dd");
+                }
+                var localDate = parseResult.Value;
+                var flights = await _ctx.Flights
+                                        .Where(f =>
+                                            f.Schedule.Departure == query.Departure &&
+                                            f.Schedule.Destination == query.Destination &&
+                                            f.Schedule.DepartureTime.Date == localDate)
+                                        .AsSplitQuery()
+                                        .ToListAsync(cancellationToken);
+                if (flights.Count != 0 && flights.TrueForAll(f => f.Schedule.DepartureTime.ToDateTimeOffset() < DateTimeOffset.Now))
+                {
+                    return Error.Validation("Query.NoMoreFlights", "All flights have already departed");
+                }
+                return flights.Select(f => new FlightDto(f.Id, f.CreatedAt.ToDateTimeOffset(), f.UpdatedAt.ToDateTimeOffset(), f.FlightNumber, f.Schedule.Departure, f.Schedule.Destination, f.Schedule.DepartureTime.ToDateTimeOffset(), f.Schedule.ArrivalTime.ToDateTimeOffset(), f.Pricing.EconomyPrice, f.Pricing.BusinessPrice, f.AvailableSeats.Economy, f.AvailableSeats.Business))
+                              .OrderBy(f => f.DepartureTime)
+                              .ToList();
             }
-            return flights.Select(f => new FlightDto(f.Id, f.CreatedAt.ToDateTimeOffset(), f.UpdatedAt.ToDateTimeOffset(), f.FlightNumber, f.Schedule.Departure, f.Schedule.Destination, f.Schedule.DepartureTime.ToDateTimeOffset(), f.Schedule.ArrivalTime.ToDateTimeOffset(), f.Pricing.EconomyPrice, f.Pricing.BusinessPrice, f.AvailableSeats.Economy, f.AvailableSeats.Business))
-                          .OrderBy(f => f.DepartureTime)
-                          .ToList();
         }
     }
-}
-public sealed class SearchForFlightsByRouteAndDateEndpoint : IEndpoint
-{
-    public void MapEndpoint(IEndpointRouteBuilder app)
-        => app.MapGet("flights", SearchForFlightsByRouteAndDate)
-              .WithName("Get flights")
-              .WithOpenApi();
-    private static async Task<IResult> SearchForFlightsByRouteAndDate([FromServices] ISender sender,
-        [FromQuery] string? departure, string? destination, string? date, CancellationToken ct)
+    public sealed class SearchForFlightsByRouteAndDateEndpoint : IEndpoint
     {
-        var query = new SearchForFlightsByRouteAndDate.Query(departure?.ToUpperInvariant(),
-            destination?.ToUpperInvariant(), date);
-        var result = await sender.Send(query, ct);
-        return result.Match(
-            flights => Results.Ok(flights),
-            errors => ErrorHandlingHelper.HandleProblems(errors));
+        public void MapEndpoint(IEndpointRouteBuilder app)
+            => app.MapGet("flights", SearchForFlightsByRouteAndDate)
+                  .WithName("Get flights")
+                  .WithOpenApi();
+        private static async Task<IResult> SearchForFlightsByRouteAndDate([FromServices] ISender sender,
+            [FromQuery] string? departure, string? destination, string? date, CancellationToken ct)
+        {
+            var query = new SearchForFlightsByRouteAndDate.Query(departure?.ToUpperInvariant(),
+                destination?.ToUpperInvariant(), date);
+            var result = await sender.Send(query, ct);
+            return result.Match(
+                flights => Results.Ok(flights),
+                errors => ErrorHandlingHelper.HandleProblems(errors));
+        }
     }
-}
