@@ -5,27 +5,27 @@ Feature: Search for flights by route and date
 
     Scenario: Search for flights by route and date with valid results
         Given the following flights exist:
-            | FlightNumber | DepartureAirport | DestinationAirport | DepartureTime       | ArrivalTime         | EconomyPrice | BusinessPrice | AvailableEconomySeats | AvailableBusinessSeats |
-            | EA123        | YVR              | CDG                | 2025-01-01T10:00:00 | 2025-01-02T05:00:00 | 1200.00      | 4500.00       | 50                    | 10                     |
-            | EA124        | YVR              | CDG                | 2025-01-01T14:00:00 | 2025-01-02T09:00:00 | 1200.00      | 4500.00       | 50                    | 10                     |
-            | EA125        | YVR              | LHR                | 2025-01-01T09:00:00 | 2025-01-02T04:00:00 | 1000.00      | 4000.00       | 60                    | 15                     |
+            | FlightNumber | DepartureAirportIataCode | DepartureAirportTimeZone | DestinationAirportIataCode | DestinationAirportTimeZone | DepartureTime       | ArrivalTime         | EconomyPrice | BusinessPrice | AvailableEconomySeats | AvailableBusinessSeats |
+            | EA123        | YVR                      | America/Vancouver        | CDG                        | Europe/Paris               | 2025-01-01T10:00:00 | 2025-01-02T05:00:00 | 1200.00      | 4500.00       | 50                    | 10                     |
+            | EA124        | YVR                      | America/Vancouver        | CDG                        | Europe/Paris               | 2025-01-01T14:00:00 | 2025-01-02T09:00:00 | 1200.00      | 4500.00       | 50                    | 10                     |
+            | EA125        | YVR                      | America/Vancouver        | LHR                        | Europe/London              | 2025-01-01T09:00:00 | 2025-01-02T04:00:00 | 1000.00      | 4000.00       | 60                    | 15                     |
         When I search for flights from YVR to CDG on 2025-01-01
         Then the following flights are returned:
-            | FlightNumber | DepartureAirport | DestinationAirport | DepartureTime       | ArrivalTime         | EconomyPrice | BusinessPrice | AvailableEconomySeats | AvailableBusinessSeats |
-            | EA123        | YVR              | CDG                | 2025-01-01T10:00:00 | 2025-01-02T05:00:00 | 1200.00      | 4500.00       | 50                    | 10                     |
-            | EA124        | YVR              | CDG                | 2025-01-01T14:00:00 | 2025-01-02T09:00:00 | 1200.00      | 4500.00       | 50                    | 10                     |
+            | FlightNumber | DepartureAirportIataCode | DepartureAirportTimeZone | DestinationAirportIataCode | DestinationAirportTimeZone | DepartureTime       | ArrivalTime         | EconomyPrice | BusinessPrice | AvailableEconomySeats | AvailableBusinessSeats |
+            | EA123        | YVR                      | America/Vancouver        | CDG                        | Europe/Paris               | 2025-01-01T10:00:00 | 2025-01-02T05:00:00 | 1200.00      | 4500.00       | 50                    | 10                     |
+            | EA124        | YVR                      | America/Vancouver        | CDG                        | Europe/Paris               | 2025-01-01T14:00:00 | 2025-01-02T09:00:00 | 1200.00      | 4500.00       | 50                    | 10                     |
 
     Scenario: No flights available for the given route and date
         Given the following flights exist:
-            | FlightNumber | DepartureAirport | DestinationAirport | DepartureTime       | ArrivalTime         | EconomyPrice | BusinessPrice | AvailableEconomySeats | AvailableBusinessSeats |
-            | EA123        | YVR              | CDG                | 2025-01-02T10:00:00 | 2025-01-03T05:00:00 | 1200.00      | 4500.00       | 50                    | 10                     |
+            | FlightNumber | DepartureAirportIataCode | DepartureAirportTimeZone | DestinationAirportIataCode | DestinationAirportTimeZone | DepartureTime       | ArrivalTime         | EconomyPrice | BusinessPrice | AvailableEconomySeats | AvailableBusinessSeats |
+            | EA123        | YVR                      | America/Vancouver        | CDG                        | Europe/Paris               | 2025-01-02T10:00:00 | 2025-01-03T05:00:00 | 1200.00      | 4500.00       | 50                    | 10                     |
         When I search for flights from YVR to CDG on 2025-01-01
         Then no flights are returned
 
     Scenario: Search for flights with no matching route
         Given the following flights exist:
-            | FlightNumber | DepartureAirport | DestinationAirport | DepartureTime       | ArrivalTime         | EconomyPrice | BusinessPrice | AvailableEconomySeats | AvailableBusinessSeats |
-            | EA123        | YVR              | LHR                | 2025-01-01T10:00:00 | 2025-01-02T05:00:00 | 1000.00      | 4000.00       | 60                    | 15                     |
+            | FlightNumber | DepartureAirportIataCode | DepartureAirportTimeZone | DestinationAirportIataCode | DestinationAirportTimeZone | DepartureTime       | ArrivalTime         | EconomyPrice | BusinessPrice | AvailableEconomySeats | AvailableBusinessSeats |
+            | EA123        | YVR                      | America/Vancouver        | LHR                        | Europe/London              | 2025-01-01T10:00:00 | 2025-01-02T05:00:00 | 1000.00      | 4000.00       | 60                    | 15                     |
         When I search for flights from YVR to CDG on 2025-01-01
         Then no flights are returned
 
@@ -35,21 +35,21 @@ Feature: Search for flights by route and date
 
     Scenario: Search with lowercase airport codes
         Given the following flights exist:
-            | FlightNumber | DepartureAirport | DestinationAirport | DepartureTime       | ArrivalTime         | EconomyPrice | BusinessPrice | AvailableEconomySeats | AvailableBusinessSeats |
-            | EA123        | YVR              | CDG                | 2025-01-01T10:00:00 | 2025-01-02T05:00:00 | 1200.00      | 4500.00       | 50                    | 10                     |
+            | FlightNumber | DepartureAirportIataCode | DepartureAirportTimeZone | DestinationAirportIataCode | DestinationAirportTimeZone | DepartureTime       | ArrivalTime         | EconomyPrice | BusinessPrice | AvailableEconomySeats | AvailableBusinessSeats |
+            | EA123        | YVR                      | America/Vancouver        | CDG                        | Europe/Paris               | 2025-01-01T10:00:00 | 2025-01-02T05:00:00 | 1200.00      | 4500.00       | 50                    | 10                     |
         When I search for flights from yvr to cdg on 2025-01-01
         Then the following flights are returned:
-            | FlightNumber | DepartureAirport | DestinationAirport | DepartureTime       | ArrivalTime         | EconomyPrice | BusinessPrice | AvailableEconomySeats | AvailableBusinessSeats |
-            | EA123        | YVR              | CDG                | 2025-01-01T10:00:00 | 2025-01-02T05:00:00 | 1200.00      | 4500.00       | 50                    | 10                     |
+            | FlightNumber | DepartureAirportIataCode | DepartureAirportTimeZone | DestinationAirportIataCode | DestinationAirportTimeZone | DepartureTime       | ArrivalTime         | EconomyPrice | BusinessPrice | AvailableEconomySeats | AvailableBusinessSeats |
+            | EA123        | YVR                      | America/Vancouver        | CDG                        | Europe/Paris               | 2025-01-01T10:00:00 | 2025-01-02T05:00:00 | 1200.00      | 4500.00       | 50                    | 10                     |
 
     Scenario: Search with mixed case airport codes
         Given the following flights exist:
-            | FlightNumber | DepartureAirport | DestinationAirport | DepartureTime       | ArrivalTime         | EconomyPrice | BusinessPrice | AvailableEconomySeats | AvailableBusinessSeats |
-            | EA123        | YVR              | CDG                | 2025-01-01T10:00:00 | 2025-01-02T05:00:00 | 1200.00      | 4500.00       | 50                    | 10                     |
+            | FlightNumber | DepartureAirportIataCode | DepartureAirportTimeZone | DestinationAirportIataCode | DestinationAirportTimeZone | DepartureTime       | ArrivalTime         | EconomyPrice | BusinessPrice | AvailableEconomySeats | AvailableBusinessSeats |
+            | EA123        | YVR                      | America/Vancouver        | CDG                        | Europe/Paris               | 2025-01-01T10:00:00 | 2025-01-02T05:00:00 | 1200.00      | 4500.00       | 50                    | 10                     |
         When I search for flights from YvR to CdG on 2025-01-01
         Then the following flights are returned:
-            | FlightNumber | DepartureAirport | DestinationAirport | DepartureTime       | ArrivalTime         | EconomyPrice | BusinessPrice | AvailableEconomySeats | AvailableBusinessSeats |
-            | EA123        | YVR              | CDG                | 2025-01-01T10:00:00 | 2025-01-02T05:00:00 | 1200.00      | 4500.00       | 50                    | 10                     |
+            | FlightNumber | DepartureAirportIataCode | DepartureAirportTimeZone | DestinationAirportIataCode | DestinationAirportTimeZone | DepartureTime       | ArrivalTime         | EconomyPrice | BusinessPrice | AvailableEconomySeats | AvailableBusinessSeats |
+            | EA123        | YVR                      | America/Vancouver        | CDG                        | Europe/Paris               | 2025-01-01T10:00:00 | 2025-01-02T05:00:00 | 1200.00      | 4500.00       | 50                    | 10                     |
 
     Scenario: Search with missing departure airport code
         When I search for flights from  to CDG on 2025-01-01
@@ -65,20 +65,20 @@ Feature: Search for flights by route and date
 
     Scenario: All flights have already departed
         Given the following flights exist:
-            | FlightNumber | DepartureAirport | DestinationAirport | DepartureTime       | ArrivalTime         | EconomyPrice | BusinessPrice | AvailableEconomySeats | AvailableBusinessSeats |
-            | EA123        | YVR              | CDG                | 2024-01-01T10:00:00 | 2024-01-02T05:00:00 | 1200.00      | 4500.00       | 50                    | 10                     |
+            | FlightNumber | DepartureAirportIataCode | DepartureAirportTimeZone | DestinationAirportIataCode | DestinationAirportTimeZone | DepartureTime       | ArrivalTime         | EconomyPrice | BusinessPrice | AvailableEconomySeats | AvailableBusinessSeats |
+            | EA123        | YVR                      | America/Vancouver        | CDG                        | Europe/Paris               | 2024-01-01T10:00:00 | 2024-01-02T05:00:00 | 1200.00      | 4500.00       | 50                    | 10                     |
         When I search for flights from YVR to CDG on 2025-01-03
         Then no flights are returned
 
     Scenario: Search when some flights have already departed
         Given the following flights exist:
-            | FlightNumber | DepartureAirport | DestinationAirport | DepartureTime       | ArrivalTime         | EconomyPrice | BusinessPrice | AvailableEconomySeats | AvailableBusinessSeats |
-            | EA123        | YVR              | CDG                | 2024-01-01T10:00:00 | 2024-01-02T05:00:00 | 1200.00      | 4500.00       | 50                    | 10                     |
-            | EA124        | YVR              | CDG                | 2025-01-01T14:00:00 | 2025-01-02T09:00:00 | 1200.00      | 4500.00       | 50                    | 10                     |
+            | FlightNumber | DepartureAirportIataCode | DepartureAirportTimeZone | DestinationAirportIataCode | DestinationAirportTimeZone | DepartureTime       | ArrivalTime         | EconomyPrice | BusinessPrice | AvailableEconomySeats | AvailableBusinessSeats |
+            | EA123        | YVR                      | America/Vancouver        | CDG                        | Europe/Paris               | 2024-01-01T10:00:00 | 2024-01-02T05:00:00 | 1200.00      | 4500.00       | 50                    | 10                     |
+            | EA124        | YVR                      | America/Vancouver        | CDG                        | Europe/Paris               | 2025-01-01T14:00:00 | 2025-01-02T09:00:00 | 1200.00      | 4500.00       | 50                    | 10                     |
         When I search for flights from YVR to CDG on 2025-01-01
         Then the following flights are returned:
-            | FlightNumber | DepartureAirport | DestinationAirport | DepartureTime       | ArrivalTime         | EconomyPrice | BusinessPrice | AvailableEconomySeats | AvailableBusinessSeats |
-            | EA124        | YVR              | CDG                | 2025-01-01T14:00:00 | 2025-01-02T09:00:00 | 1200.00      | 4500.00       | 50                    | 10                     |
+            | FlightNumber | DepartureAirportIataCode | DepartureAirportTimeZone | DestinationAirportIataCode | DestinationAirportTimeZone | DepartureTime       | ArrivalTime         | EconomyPrice | BusinessPrice | AvailableEconomySeats | AvailableBusinessSeats |
+            | EA124        | YVR                      | America/Vancouver        | CDG                        | Europe/Paris               | 2025-01-01T14:00:00 | 2025-01-02T09:00:00 | 1200.00      | 4500.00       | 50                    | 10                     |
 
     Scenario: Search with missing date
         When I search for flights from YVR to CDG on

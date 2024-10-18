@@ -14,8 +14,16 @@ internal sealed class FlightConfiguration : IEntityTypeConfiguration<Flight>
         builder.Property(b => b.FlightNumber).IsRequired().HasMaxLength(10).IsUnicode(false);
         builder.ComplexProperty(b => b.Schedule, schedule =>
         {
-            schedule.Property(s => s.Departure).IsRequired().HasMaxLength(10).IsUnicode(false).HasAnnotation("Npgsql:CheckConstraint", "Departure = upper(Departure)");
-            schedule.Property(s => s.Destination).IsRequired().HasMaxLength(10).IsUnicode(false).HasAnnotation("Npgsql:CheckConstraint", "Destination = upper(Destination)");
+            schedule.ComplexProperty(schedule => schedule.DepartureAirport, departure =>
+            {
+                departure.Property(d => d.IataCode).IsRequired().HasMaxLength(3).IsUnicode(false).HasAnnotation("Npgsql:CheckConstraint", "Departure = upper(Departure)");
+                departure.Property(d => d.TimeZone).IsRequired().HasMaxLength(50);
+            });
+            schedule.ComplexProperty(schedule => schedule.DestinationAirport, destination =>
+            {
+                destination.Property(d => d.IataCode).IsRequired().HasMaxLength(3).IsUnicode(false).HasAnnotation("Npgsql:CheckConstraint", "Destination = upper(Destination)");
+                destination.Property(d => d.TimeZone).IsRequired().HasMaxLength(50);
+            });
             schedule.Property(s => s.DepartureTime).IsRequired();
             schedule.Property(s => s.ArrivalTime).IsRequired();
         });

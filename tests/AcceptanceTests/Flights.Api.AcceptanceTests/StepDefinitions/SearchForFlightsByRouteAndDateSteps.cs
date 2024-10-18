@@ -90,19 +90,29 @@ public sealed class SearchForFlightsByRouteAndDateSteps : IDisposable
     private static Flight CreateFlightFromRow(TableRow row)
     {
         var flightNumber = row["FlightNumber"];
-        var departure = row["DepartureAirport"];
-        var destination = row["DestinationAirport"];
+        var departureAirportIataCode = row["DepartureAirportIataCode"];
+        var departureAirportTimeZone = row["DepartureAirportTimeZone"];
+        var destinationAirportIataCode = row["DestinationAirportIataCode"];
+        var destinationAirportTimeZone = row["DestinationAirportTimeZone"];
         var departureTime = DateTimeOffset.Parse(row["DepartureTime"], CultureInfo.InvariantCulture);
         var arrivalTime = DateTimeOffset.Parse(row["ArrivalTime"], CultureInfo.InvariantCulture);
         var economyPrice = decimal.Parse(row["EconomyPrice"], CultureInfo.InvariantCulture);
         var businessPrice = decimal.Parse(row["BusinessPrice"], CultureInfo.InvariantCulture);
         var availableEconomySeats = int.Parse(row["AvailableEconomySeats"], CultureInfo.InvariantCulture);
         var availableBusinessSeats = int.Parse(row["AvailableBusinessSeats"], CultureInfo.InvariantCulture);
+        var departureAirport = new Airport(departureAirportIataCode, departureAirportTimeZone);
+        var destinationAirport = new Airport(destinationAirportIataCode, destinationAirportTimeZone);
         var departureInstant = Instant.FromDateTimeOffset(departureTime);
         var arrivalInstant = Instant.FromDateTimeOffset(arrivalTime);
-        var departureZdt = new ZonedDateTime(departureInstant, DateTimeZoneProviders.Tzdb["America/Vancouver"]).WithZone(DateTimeZone.Utc);
-        var arrivalZdt = new ZonedDateTime(arrivalInstant, DateTimeZoneProviders.Tzdb["Europe/Paris"]).WithZone(DateTimeZone.Utc);
-        var schedule = new FlightSchedule(departure, destination, departureZdt, arrivalZdt);
+        var departureZdt = new ZonedDateTime(departureInstant, DateTimeZoneProviders.Tzdb[departureAirportTimeZone]).WithZone(DateTimeZone.Utc);
+        var arrivalZdt = new ZonedDateTime(arrivalInstant, DateTimeZoneProviders.Tzdb[destinationAirportTimeZone]).WithZone(DateTimeZone.Utc);
+        var schedule = new FlightSchedule
+        {
+            DepartureAirport = departureAirport,
+            DestinationAirport = destinationAirport,
+            DepartureTime = departureZdt,
+            ArrivalTime = arrivalZdt
+        };
         var pricing = new FlightPricing(economyPrice, businessPrice);
         var availableSeats = new AvailableSeats(availableEconomySeats, availableBusinessSeats);
         return Flight.Create(flightNumber, schedule, pricing, availableSeats);
@@ -111,8 +121,8 @@ public sealed class SearchForFlightsByRouteAndDateSteps : IDisposable
     private static IEnumerable<object> GetExpectedFlightsFromTable(Table table) => table.Rows.Select(row => new
     {
         FlightNumber = row["FlightNumber"],
-        Departure = row["DepartureAirport"],
-        Destination = row["DestinationAirport"],
+        Departure = row["DepartureAirportIataCode"],
+        Destination = row["DestinationAirportIataCode"],
         DepartureTime = DateTimeOffset.Parse(row["DepartureTime"], CultureInfo.InvariantCulture),
         ArrivalTime = DateTimeOffset.Parse(row["ArrivalTime"], CultureInfo.InvariantCulture),
         EconomyPrice = decimal.Parse(row["EconomyPrice"], CultureInfo.InvariantCulture),

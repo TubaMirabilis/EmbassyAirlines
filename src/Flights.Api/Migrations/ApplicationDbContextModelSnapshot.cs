@@ -80,25 +80,47 @@ namespace Flights.Api.Migrations
                                 .HasColumnType("timestamp with time zone")
                                 .HasColumnName("schedule_arrival_time");
 
-                            b1.Property<string>("Departure")
-                                .IsRequired()
-                                .HasMaxLength(10)
-                                .IsUnicode(false)
-                                .HasColumnType("character varying(10)")
-                                .HasColumnName("schedule_departure")
-                                .HasAnnotation("Npgsql:CheckConstraint", "Departure = upper(Departure)");
-
                             b1.Property<ZonedDateTime>("DepartureTime")
                                 .HasColumnType("timestamp with time zone")
                                 .HasColumnName("schedule_departure_time");
 
-                            b1.Property<string>("Destination")
-                                .IsRequired()
-                                .HasMaxLength(10)
-                                .IsUnicode(false)
-                                .HasColumnType("character varying(10)")
-                                .HasColumnName("schedule_destination")
-                                .HasAnnotation("Npgsql:CheckConstraint", "Destination = upper(Destination)");
+                            b1.ComplexProperty<Dictionary<string, object>>("DepartureAirport", "Flights.Api.Entities.Flight.Schedule#FlightSchedule.DepartureAirport#Airport", b2 =>
+                                {
+                                    b2.IsRequired();
+
+                                    b2.Property<string>("IataCode")
+                                        .IsRequired()
+                                        .HasMaxLength(3)
+                                        .IsUnicode(false)
+                                        .HasColumnType("character varying(3)")
+                                        .HasColumnName("schedule_departure_airport_iata_code")
+                                        .HasAnnotation("Npgsql:CheckConstraint", "Departure = upper(Departure)");
+
+                                    b2.Property<string>("TimeZone")
+                                        .IsRequired()
+                                        .HasMaxLength(50)
+                                        .HasColumnType("character varying(50)")
+                                        .HasColumnName("schedule_departure_airport_time_zone");
+                                });
+
+                            b1.ComplexProperty<Dictionary<string, object>>("DestinationAirport", "Flights.Api.Entities.Flight.Schedule#FlightSchedule.DestinationAirport#Airport", b2 =>
+                                {
+                                    b2.IsRequired();
+
+                                    b2.Property<string>("IataCode")
+                                        .IsRequired()
+                                        .HasMaxLength(3)
+                                        .IsUnicode(false)
+                                        .HasColumnType("character varying(3)")
+                                        .HasColumnName("schedule_destination_airport_iata_code")
+                                        .HasAnnotation("Npgsql:CheckConstraint", "Destination = upper(Destination)");
+
+                                    b2.Property<string>("TimeZone")
+                                        .IsRequired()
+                                        .HasMaxLength(50)
+                                        .HasColumnType("character varying(50)")
+                                        .HasColumnName("schedule_destination_airport_time_zone");
+                                });
                         });
 
                     b.HasKey("Id")

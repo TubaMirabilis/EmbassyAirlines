@@ -101,8 +101,10 @@ namespace Flights.Api.AcceptanceTests.Features
                 this.ScenarioStart();
                 TechTalk.SpecFlow.Table table1 = new TechTalk.SpecFlow.Table(new string[] {
                             "FlightNumber",
-                            "DepartureAirport",
-                            "DestinationAirport",
+                            "DepartureAirportIataCode",
+                            "DepartureAirportTimeZone",
+                            "DestinationAirportIataCode",
+                            "DestinationAirportTimeZone",
                             "DepartureTime",
                             "ArrivalTime",
                             "EconomyPrice",
@@ -112,7 +114,9 @@ namespace Flights.Api.AcceptanceTests.Features
                 table1.AddRow(new string[] {
                             "EA123",
                             "YVR",
+                            "America/Vancouver",
                             "CDG",
+                            "Europe/Paris",
                             "2025-01-01T10:00:00",
                             "2025-01-02T05:00:00",
                             "1200.00",
@@ -122,7 +126,9 @@ namespace Flights.Api.AcceptanceTests.Features
                 table1.AddRow(new string[] {
                             "EA124",
                             "YVR",
+                            "America/Vancouver",
                             "CDG",
+                            "Europe/Paris",
                             "2025-01-01T14:00:00",
                             "2025-01-02T09:00:00",
                             "1200.00",
@@ -132,7 +138,9 @@ namespace Flights.Api.AcceptanceTests.Features
                 table1.AddRow(new string[] {
                             "EA125",
                             "YVR",
+                            "America/Vancouver",
                             "LHR",
+                            "Europe/London",
                             "2025-01-01T09:00:00",
                             "2025-01-02T04:00:00",
                             "1000.00",
@@ -147,8 +155,10 @@ namespace Flights.Api.AcceptanceTests.Features
 #line hidden
                 TechTalk.SpecFlow.Table table2 = new TechTalk.SpecFlow.Table(new string[] {
                             "FlightNumber",
-                            "DepartureAirport",
-                            "DestinationAirport",
+                            "DepartureAirportIataCode",
+                            "DepartureAirportTimeZone",
+                            "DestinationAirportIataCode",
+                            "DestinationAirportTimeZone",
                             "DepartureTime",
                             "ArrivalTime",
                             "EconomyPrice",
@@ -158,7 +168,9 @@ namespace Flights.Api.AcceptanceTests.Features
                 table2.AddRow(new string[] {
                             "EA123",
                             "YVR",
+                            "America/Vancouver",
                             "CDG",
+                            "Europe/Paris",
                             "2025-01-01T10:00:00",
                             "2025-01-02T05:00:00",
                             "1200.00",
@@ -168,7 +180,9 @@ namespace Flights.Api.AcceptanceTests.Features
                 table2.AddRow(new string[] {
                             "EA124",
                             "YVR",
+                            "America/Vancouver",
                             "CDG",
+                            "Europe/Paris",
                             "2025-01-01T14:00:00",
                             "2025-01-02T09:00:00",
                             "1200.00",
@@ -202,8 +216,10 @@ namespace Flights.Api.AcceptanceTests.Features
                 this.ScenarioStart();
                 TechTalk.SpecFlow.Table table3 = new TechTalk.SpecFlow.Table(new string[] {
                             "FlightNumber",
-                            "DepartureAirport",
-                            "DestinationAirport",
+                            "DepartureAirportIataCode",
+                            "DepartureAirportTimeZone",
+                            "DestinationAirportIataCode",
+                            "DestinationAirportTimeZone",
                             "DepartureTime",
                             "ArrivalTime",
                             "EconomyPrice",
@@ -213,7 +229,9 @@ namespace Flights.Api.AcceptanceTests.Features
                 table3.AddRow(new string[] {
                             "EA123",
                             "YVR",
+                            "America/Vancouver",
                             "CDG",
+                            "Europe/Paris",
                             "2025-01-02T10:00:00",
                             "2025-01-03T05:00:00",
                             "1200.00",
@@ -253,8 +271,10 @@ namespace Flights.Api.AcceptanceTests.Features
                 this.ScenarioStart();
                 TechTalk.SpecFlow.Table table4 = new TechTalk.SpecFlow.Table(new string[] {
                             "FlightNumber",
-                            "DepartureAirport",
-                            "DestinationAirport",
+                            "DepartureAirportIataCode",
+                            "DepartureAirportTimeZone",
+                            "DestinationAirportIataCode",
+                            "DestinationAirportTimeZone",
                             "DepartureTime",
                             "ArrivalTime",
                             "EconomyPrice",
@@ -264,7 +284,9 @@ namespace Flights.Api.AcceptanceTests.Features
                 table4.AddRow(new string[] {
                             "EA123",
                             "YVR",
+                            "America/Vancouver",
                             "LHR",
+                            "Europe/London",
                             "2025-01-01T10:00:00",
                             "2025-01-02T05:00:00",
                             "1000.00",
@@ -332,8 +354,10 @@ namespace Flights.Api.AcceptanceTests.Features
                 this.ScenarioStart();
                 TechTalk.SpecFlow.Table table5 = new TechTalk.SpecFlow.Table(new string[] {
                             "FlightNumber",
-                            "DepartureAirport",
-                            "DestinationAirport",
+                            "DepartureAirportIataCode",
+                            "DepartureAirportTimeZone",
+                            "DestinationAirportIataCode",
+                            "DestinationAirportTimeZone",
                             "DepartureTime",
                             "ArrivalTime",
                             "EconomyPrice",
@@ -343,7 +367,9 @@ namespace Flights.Api.AcceptanceTests.Features
                 table5.AddRow(new string[] {
                             "EA123",
                             "YVR",
+                            "America/Vancouver",
                             "CDG",
+                            "Europe/Paris",
                             "2025-01-01T10:00:00",
                             "2025-01-02T05:00:00",
                             "1200.00",
@@ -358,8 +384,10 @@ namespace Flights.Api.AcceptanceTests.Features
 #line hidden
                 TechTalk.SpecFlow.Table table6 = new TechTalk.SpecFlow.Table(new string[] {
                             "FlightNumber",
-                            "DepartureAirport",
-                            "DestinationAirport",
+                            "DepartureAirportIataCode",
+                            "DepartureAirportTimeZone",
+                            "DestinationAirportIataCode",
+                            "DestinationAirportTimeZone",
                             "DepartureTime",
                             "ArrivalTime",
                             "EconomyPrice",
@@ -369,7 +397,9 @@ namespace Flights.Api.AcceptanceTests.Features
                 table6.AddRow(new string[] {
                             "EA123",
                             "YVR",
+                            "America/Vancouver",
                             "CDG",
+                            "Europe/Paris",
                             "2025-01-01T10:00:00",
                             "2025-01-02T05:00:00",
                             "1200.00",
@@ -403,8 +433,10 @@ namespace Flights.Api.AcceptanceTests.Features
                 this.ScenarioStart();
                 TechTalk.SpecFlow.Table table7 = new TechTalk.SpecFlow.Table(new string[] {
                             "FlightNumber",
-                            "DepartureAirport",
-                            "DestinationAirport",
+                            "DepartureAirportIataCode",
+                            "DepartureAirportTimeZone",
+                            "DestinationAirportIataCode",
+                            "DestinationAirportTimeZone",
                             "DepartureTime",
                             "ArrivalTime",
                             "EconomyPrice",
@@ -414,7 +446,9 @@ namespace Flights.Api.AcceptanceTests.Features
                 table7.AddRow(new string[] {
                             "EA123",
                             "YVR",
+                            "America/Vancouver",
                             "CDG",
+                            "Europe/Paris",
                             "2025-01-01T10:00:00",
                             "2025-01-02T05:00:00",
                             "1200.00",
@@ -429,8 +463,10 @@ namespace Flights.Api.AcceptanceTests.Features
 #line hidden
                 TechTalk.SpecFlow.Table table8 = new TechTalk.SpecFlow.Table(new string[] {
                             "FlightNumber",
-                            "DepartureAirport",
-                            "DestinationAirport",
+                            "DepartureAirportIataCode",
+                            "DepartureAirportTimeZone",
+                            "DestinationAirportIataCode",
+                            "DestinationAirportTimeZone",
                             "DepartureTime",
                             "ArrivalTime",
                             "EconomyPrice",
@@ -440,7 +476,9 @@ namespace Flights.Api.AcceptanceTests.Features
                 table8.AddRow(new string[] {
                             "EA123",
                             "YVR",
+                            "America/Vancouver",
                             "CDG",
+                            "Europe/Paris",
                             "2025-01-01T10:00:00",
                             "2025-01-02T05:00:00",
                             "1200.00",
@@ -561,8 +599,10 @@ namespace Flights.Api.AcceptanceTests.Features
                 this.ScenarioStart();
                 TechTalk.SpecFlow.Table table9 = new TechTalk.SpecFlow.Table(new string[] {
                             "FlightNumber",
-                            "DepartureAirport",
-                            "DestinationAirport",
+                            "DepartureAirportIataCode",
+                            "DepartureAirportTimeZone",
+                            "DestinationAirportIataCode",
+                            "DestinationAirportTimeZone",
                             "DepartureTime",
                             "ArrivalTime",
                             "EconomyPrice",
@@ -572,7 +612,9 @@ namespace Flights.Api.AcceptanceTests.Features
                 table9.AddRow(new string[] {
                             "EA123",
                             "YVR",
+                            "America/Vancouver",
                             "CDG",
+                            "Europe/Paris",
                             "2024-01-01T10:00:00",
                             "2024-01-02T05:00:00",
                             "1200.00",
@@ -612,8 +654,10 @@ namespace Flights.Api.AcceptanceTests.Features
                 this.ScenarioStart();
                 TechTalk.SpecFlow.Table table10 = new TechTalk.SpecFlow.Table(new string[] {
                             "FlightNumber",
-                            "DepartureAirport",
-                            "DestinationAirport",
+                            "DepartureAirportIataCode",
+                            "DepartureAirportTimeZone",
+                            "DestinationAirportIataCode",
+                            "DestinationAirportTimeZone",
                             "DepartureTime",
                             "ArrivalTime",
                             "EconomyPrice",
@@ -623,7 +667,9 @@ namespace Flights.Api.AcceptanceTests.Features
                 table10.AddRow(new string[] {
                             "EA123",
                             "YVR",
+                            "America/Vancouver",
                             "CDG",
+                            "Europe/Paris",
                             "2024-01-01T10:00:00",
                             "2024-01-02T05:00:00",
                             "1200.00",
@@ -633,7 +679,9 @@ namespace Flights.Api.AcceptanceTests.Features
                 table10.AddRow(new string[] {
                             "EA124",
                             "YVR",
+                            "America/Vancouver",
                             "CDG",
+                            "Europe/Paris",
                             "2025-01-01T14:00:00",
                             "2025-01-02T09:00:00",
                             "1200.00",
@@ -648,8 +696,10 @@ namespace Flights.Api.AcceptanceTests.Features
 #line hidden
                 TechTalk.SpecFlow.Table table11 = new TechTalk.SpecFlow.Table(new string[] {
                             "FlightNumber",
-                            "DepartureAirport",
-                            "DestinationAirport",
+                            "DepartureAirportIataCode",
+                            "DepartureAirportTimeZone",
+                            "DestinationAirportIataCode",
+                            "DestinationAirportTimeZone",
                             "DepartureTime",
                             "ArrivalTime",
                             "EconomyPrice",
@@ -659,7 +709,9 @@ namespace Flights.Api.AcceptanceTests.Features
                 table11.AddRow(new string[] {
                             "EA124",
                             "YVR",
+                            "America/Vancouver",
                             "CDG",
+                            "Europe/Paris",
                             "2025-01-01T14:00:00",
                             "2025-01-02T09:00:00",
                             "1200.00",

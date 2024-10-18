@@ -30,8 +30,16 @@ public sealed class Flight
         => new(flightNumber, schedule, pricing, availableSeats);
 }
 
-public sealed record FlightSchedule(string Departure, string Destination, ZonedDateTime DepartureTime, ZonedDateTime ArrivalTime);
+public sealed record FlightSchedule
+{
+    public required Airport DepartureAirport { get; init; }
+    public required Airport DestinationAirport { get; init; }
+    public required ZonedDateTime DepartureTime { get; init; }
+    public required ZonedDateTime ArrivalTime { get; init; }
+}
 
 public sealed record FlightPricing(decimal EconomyPrice, decimal BusinessPrice);
 
 public sealed record AvailableSeats(int Economy, int Business);
+
+public sealed record Airport(string IataCode, string TimeZone);
