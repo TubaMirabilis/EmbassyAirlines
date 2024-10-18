@@ -13,7 +13,7 @@ namespace Flights.Api.Features;
 
 public static class SearchForFlightsByRouteAndDate
 {
-    public sealed record Query(string? Departure, string? Destination, LocalDate Date)
+    public sealed record Query(string? Departure, string? Destination, string? Date)
         : IQuery<ErrorOr<IEnumerable<FlightDto>>>;
     public sealed class Handler : IQueryHandler<Query, ErrorOr<IEnumerable<FlightDto>>>
     {
@@ -30,15 +30,28 @@ public static class SearchForFlightsByRouteAndDate
             {
                 return Error.Validation("Flight.Destination", "Destination is required");
             }
+            if (string.IsNullOrWhiteSpace(query.Date))
+            {
+                return Error.Validation("Flight.Date", "Date is required");
+            }
             if (query.Departure == query.Destination)
             {
                 return Error.Validation("Flight.Destination", "Destination cannot be the same as departure");
+            }
+            LocalDatePattern.Iso
+                            .Parse(query.Date)
+                            .TryGetValue(
+                                LocalDate.MinIsoValue,
+                                out var localDate);
+            if (localDate == LocalDate.MinIsoValue)
+            {
+                return Error.Validation("Flight.Date", "Invalid date format. Please use yyyy-MM-dd");
             }
             var flights = await _ctx.Flights
                                     .Where(f =>
                                         f.Schedule.Departure == query.Departure &&
                                         f.Schedule.Destination == query.Destination &&
-                                        f.Schedule.DepartureTime.Date == query.Date)
+                                        f.Schedule.DepartureTime.Date == localDate)
                                     .AsSplitQuery()
                                     .ToListAsync(cancellationToken);
             if (flights.Count != 0 && flights.TrueForAll(f => f.Schedule.DepartureTime.ToDateTimeOffset() < DateTimeOffset.Now))
@@ -58,19 +71,10 @@ public sealed class SearchForFlightsByRouteAndDateEndpoint : IEndpoint
               .WithName("Get flights")
               .WithOpenApi();
     private static async Task<IResult> SearchForFlightsByRouteAndDate([FromServices] ISender sender,
-        [FromQuery] string departure, string arrival, string date, CancellationToken ct)
+        [FromQuery] string? departure, string? destination, string? date, CancellationToken ct)
     {
-        LocalDatePattern.Iso
-                        .Parse(date)
-                        .TryGetValue(
-                            LocalDate.MinIsoValue,
-                            out var localDate);
-        if (localDate == LocalDate.MinIsoValue)
-        {
-            return Results.BadRequest("Invalid date format. Please use yyyy-MM-dd");
-        }
         var query = new SearchForFlightsByRouteAndDate.Query(departure?.ToUpperInvariant(),
-            arrival?.ToUpperInvariant(), localDate);
+            destination?.ToUpperInvariant(), date);
         var result = await sender.Send(query, ct);
         return result.Match(
             flights => Results.Ok(flights),

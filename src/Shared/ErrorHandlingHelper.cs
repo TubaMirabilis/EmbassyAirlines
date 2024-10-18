@@ -31,6 +31,13 @@ public static class ErrorHandlingHelper
             ErrorType.Validation => StatusCodes.Status400BadRequest,
             _ => StatusCodes.Status500InternalServerError,
         };
+        if (error.Type == ErrorType.Validation)
+        {
+            return Results.Problem(
+                statusCode: statusCode,
+                title: "Validation Error",
+                detail: error.Description);
+        }
         return Results.Problem(
             statusCode: statusCode, title: error.Description);
     }

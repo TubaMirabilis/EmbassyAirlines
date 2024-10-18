@@ -3,6 +3,7 @@ using System.Text.Json;
 using Flights.Api.Database;
 using Flights.Api.Entities;
 using FluentAssertions;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using NodaTime;
@@ -17,11 +18,12 @@ public sealed class SearchForFlightsByRouteAndDateSteps : IDisposable
     private readonly HttpClient _client;
     private HttpResponseMessage? _response;
     private readonly IServiceScope _scope;
-
+    private readonly JsonSerializerOptions _options;
     public SearchForFlightsByRouteAndDateSteps(WebApplicationFactory<Program> factory)
     {
         _client = factory.CreateClient();
         _scope = factory.Services.CreateScope();
+        _options = _scope.ServiceProvider.GetRequiredService<JsonSerializerOptions>();
     }
 
     [Given(@"the following flights exist:")]
@@ -34,9 +36,16 @@ public sealed class SearchForFlightsByRouteAndDateSteps : IDisposable
     }
 
     [When(@"I search for flights from (.*) to (.*) on (.*)")]
-    public async Task WhenISearchForFlightsFromToOn(string departure, string arrival, string date)
+    public async Task WhenISearchForFlightsFromToOn(string departure, string destination, string date)
     {
-        var url = $"/flights?departure={departure}&arrival={arrival}&date={date}";
+        var url = $"/flights?departure={departure}&destination={destination}&date={date}";
+        _response = await _client.GetAsync(url);
+    }
+
+    [When(@"I search for flights from (.*) to (.*) on")]
+    public async Task WhenISearchForFlightsFromToOn(string departure, string destination)
+    {
+        var url = $"/flights?departure={departure}&destination={destination}";
         _response = await _client.GetAsync(url);
     }
 
@@ -55,6 +64,21 @@ public sealed class SearchForFlightsByRouteAndDateSteps : IDisposable
         actualFlights.Should().BeEmpty();
     }
 
+    [Then(@"an error message is returned which states that the departure and destination airports cannot be the same")]
+    public async Task ThenAnErrorMessageIsReturnedWhichStatesThatTheDepartureAndDestinationAirportsCannotBeTheSame() => await GetProblemDetailsFromResponseAndAssert("Destination cannot be the same as departure");
+
+    [Then(@"an error message is returned which states that the destination airport code is required")]
+    public async Task ThenAnErrorMessageIsReturnedWhichStatesThatTheDestinationAirportCodeIsRequired() => await GetProblemDetailsFromResponseAndAssert("Destination is required");
+
+    [Then(@"an error message is returned which states that the departure airport code is required")]
+    public async Task ThenAnErrorMessageIsReturnedWhichStatesThatTheDepartureAirportCodeIsRequired() => await GetProblemDetailsFromResponseAndAssert("Departure is required");
+
+    [Then(@"an error message is returned which states that the date format is invalid")]
+    public async Task ThenAnErrorMessageIsReturnedWhichStatesThatTheDateFormatIsInvalid() => await GetProblemDetailsFromResponseAndAssert("Invalid date format. Please use yyyy-MM-dd");
+
+    [Then(@"an error message is returned which states that the date parameter is required")]
+    public async Task ThenAnErrorMessageIsReturnedWhichStatesThatTheDateParameterIsRequired() => await GetProblemDetailsFromResponseAndAssert("Date is required");
+
     private static IEnumerable<Flight> ParseFlightsFromTable(Table table)
     {
         foreach (var row in table.Rows)
@@ -67,7 +91,7 @@ public sealed class SearchForFlightsByRouteAndDateSteps : IDisposable
     {
         var flightNumber = row["FlightNumber"];
         var departure = row["DepartureAirport"];
-        var destination = row["ArrivalAirport"];
+        var destination = row["DestinationAirport"];
         var departureTime = DateTimeOffset.Parse(row["DepartureTime"], CultureInfo.InvariantCulture);
         var arrivalTime = DateTimeOffset.Parse(row["ArrivalTime"], CultureInfo.InvariantCulture);
         var economyPrice = decimal.Parse(row["EconomyPrice"], CultureInfo.InvariantCulture);
@@ -88,7 +112,7 @@ public sealed class SearchForFlightsByRouteAndDateSteps : IDisposable
     {
         FlightNumber = row["FlightNumber"],
         Departure = row["DepartureAirport"],
-        Destination = row["ArrivalAirport"],
+        Destination = row["DestinationAirport"],
         DepartureTime = DateTimeOffset.Parse(row["DepartureTime"], CultureInfo.InvariantCulture),
         ArrivalTime = DateTimeOffset.Parse(row["ArrivalTime"], CultureInfo.InvariantCulture),
         EconomyPrice = decimal.Parse(row["EconomyPrice"], CultureInfo.InvariantCulture),
@@ -97,13 +121,21 @@ public sealed class SearchForFlightsByRouteAndDateSteps : IDisposable
         AvailableBusinessSeats = int.Parse(row["AvailableBusinessSeats"], CultureInfo.InvariantCulture)
     });
 
+    private async Task GetProblemDetailsFromResponseAndAssert(string detail)
+    {
+        ArgumentNullException.ThrowIfNull(_response);
+        var expectedProblemDetails = CreateProblemDetails(detail);
+        var content = await _response.Content.ReadAsStreamAsync();
+        var actualProblemDetails = await JsonSerializer.DeserializeAsync<ProblemDetails>(content, _options);
+        actualProblemDetails.Should().BeEquivalentTo(expectedProblemDetails);
+    }
+
     private async Task<IEnumerable<object>> GetFlightsFromResponse()
     {
         ArgumentNullException.ThrowIfNull(_response);
         _response.EnsureSuccessStatusCode();
         var content = await _response.Content.ReadAsStreamAsync();
-        var options = _scope.ServiceProvider.GetRequiredService<JsonSerializerOptions>();
-        var flights = await JsonSerializer.DeserializeAsync<IEnumerable<FlightDto>>(content, options);
+        var flights = await JsonSerializer.DeserializeAsync<IEnumerable<FlightDto>>(content, _options);
         ArgumentNullException.ThrowIfNull(flights);
         return flights.Select(f => new
         {
@@ -118,6 +150,14 @@ public sealed class SearchForFlightsByRouteAndDateSteps : IDisposable
             f.AvailableBusinessSeats
         });
     }
+
+    private static ProblemDetails CreateProblemDetails(string detail) => new ProblemDetails
+    {
+        Title = "Validation Error",
+        Status = 400,
+        Detail = detail,
+        Type = "https://tools.ietf.org/html/rfc9110#section-15.5.1"
+    };
 
     public void Dispose()
     {
