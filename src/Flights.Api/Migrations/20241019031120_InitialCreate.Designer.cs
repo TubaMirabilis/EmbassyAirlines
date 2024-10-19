@@ -14,7 +14,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Flights.Api.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20241018224908_InitialCreate")]
+    [Migration("20241019031120_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -102,6 +102,7 @@ namespace Flights.Api.Migrations
                                     b2.Property<string>("TimeZone")
                                         .IsRequired()
                                         .HasMaxLength(50)
+                                        .IsUnicode(false)
                                         .HasColumnType("character varying(50)")
                                         .HasColumnName("schedule_departure_airport_time_zone");
                                 });
@@ -121,6 +122,7 @@ namespace Flights.Api.Migrations
                                     b2.Property<string>("TimeZone")
                                         .IsRequired()
                                         .HasMaxLength(50)
+                                        .IsUnicode(false)
                                         .HasColumnType("character varying(50)")
                                         .HasColumnName("schedule_destination_airport_time_zone");
                                 });

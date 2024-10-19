@@ -1,5 +1,7 @@
 ﻿using ErrorOr;
 using Flights.Api.Database;
+using Flights.Api.Entities;
+using Flights.Api.Extensions;
 using FluentValidation;
 using Mediator;
 using Microsoft.AspNetCore.Mvc;
@@ -33,7 +35,8 @@ public static class SearchForFlightsByRouteAndDate
                         context.AddFailure("Date is required");
                         return;
                     }
-                    var parseResult = LocalDatePattern.Iso.Parse(date);
+                    var parseResult = LocalDatePattern.Iso
+                                                      .Parse(date);
                     if (!parseResult.Success)
                     {
                         context.AddFailure("Invalid date format. Please use yyyy-MM-dd");
@@ -57,12 +60,12 @@ public static class SearchForFlightsByRouteAndDate
             Query query, CancellationToken cancellationToken)
         {
             var validationResult = await _validator.ValidateAsync(query, cancellationToken);
-            if (!validationResult.IsValid)
+            if (!validationResult.IsValid(out var formattedErrors))
             {
-                var errors = string.Join("\n", validationResult.Errors.Select(e => e.ErrorMessage));
-                return Error.Validation("Query.ValidationFailed", errors);
+                return Error.Validation("Query.ValidationFailed", formattedErrors);
             }
-            var parseResult = LocalDatePattern.Iso.Parse(query.Date!);
+            var parseResult = LocalDatePattern.Iso
+                                              .Parse(query.Date!);
             if (!parseResult.Success)
             {
                 return Error.Validation("Query.ValidationFailed", "Invalid date format. Please use yyyy-MM-dd");
@@ -75,14 +78,20 @@ public static class SearchForFlightsByRouteAndDate
                                         f.Schedule.DepartureTime.Date == localDate)
                                     .AsSplitQuery()
                                     .ToListAsync(cancellationToken);
-            if (flights.Count != 0 && flights.TrueForAll(f => f.Schedule.DepartureTime.ToDateTimeOffset() < DateTimeOffset.Now))
+            if (flights.Count != 0 && AllFlightsDeparted(flights))
             {
                 return Error.Validation("Query.NoMoreFlights", "All flights have already departed");
             }
-            return flights.Select(f => new FlightDto(f.Id, f.CreatedAt.ToDateTimeOffset(), f.UpdatedAt.ToDateTimeOffset(), f.FlightNumber, f.Schedule.DepartureAirport.IataCode, f.Schedule.DestinationAirport.IataCode, f.Schedule.DepartureTime.ToDateTimeOffset(), f.Schedule.ArrivalTime.ToDateTimeOffset(), f.Pricing.EconomyPrice, f.Pricing.BusinessPrice, f.AvailableSeats.Economy, f.AvailableSeats.Business))
-                          .OrderBy(f => f.DepartureTime)
-                          .ToList();
+            return GetFlights(flights);
         }
+        private static List<FlightDto> GetFlights(IEnumerable<Flight> flights)
+            => flights.Select(f => f.ToDto())
+                      .OrderBy(f => f.DepartureTime)
+                      .ToList();
+        private static bool AllFlightsDeparted(List<Flight> flights)
+            => flights.TrueForAll(f => f.Schedule
+                                        .DepartureTime
+                                        .ToDateTimeOffset() < DateTimeOffset.Now);
     }
 }
 public sealed class SearchForFlightsByRouteAndDateEndpoint : IEndpoint
@@ -94,8 +103,9 @@ public sealed class SearchForFlightsByRouteAndDateEndpoint : IEndpoint
     private static async Task<IResult> SearchForFlightsByRouteAndDate([FromServices] ISender sender,
         [FromQuery] string? departure, string? destination, string? date, CancellationToken ct)
     {
-        var query = new SearchForFlightsByRouteAndDate.Query(departure?.ToUpperInvariant(),
-            destination?.ToUpperInvariant(), date);
+        departure = departure?.ToUpperInvariant();
+        destination = destination?.ToUpperInvariant();
+        var query = new SearchForFlightsByRouteAndDate.Query(departure, destination, date);
         var result = await sender.Send(query, ct);
         return result.Match(
             flights => Results.Ok(flights),

@@ -26,7 +26,8 @@ public sealed class Flight
     public FlightSchedule Schedule { get; private set; }
     public FlightPricing Pricing { get; private set; }
     public AvailableSeats AvailableSeats { get; private set; }
-    public static Flight Create(string flightNumber, FlightSchedule schedule, FlightPricing pricing, AvailableSeats availableSeats)
+    public static Flight Create(string flightNumber, FlightSchedule schedule,
+        FlightPricing pricing, AvailableSeats availableSeats)
         => new(flightNumber, schedule, pricing, availableSeats);
 }
 

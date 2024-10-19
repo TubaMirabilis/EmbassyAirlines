@@ -65,19 +65,24 @@ public sealed class SearchForFlightsByRouteAndDateSteps : IDisposable
     }
 
     [Then(@"an error message is returned which states that the departure and destination airports cannot be the same")]
-    public async Task ThenAnErrorMessageIsReturnedWhichStatesThatTheDepartureAndDestinationAirportsCannotBeTheSame() => await GetProblemDetailsFromResponseAndAssert("Destination cannot be the same as departure");
+    public async Task ThenAnErrorMessageIsReturnedWhichStatesThatTheDepartureAndDestinationAirportsCannotBeTheSame()
+        => await GetProblemDetailsFromResponseAndAssert("Destination cannot be the same as departure");
 
     [Then(@"an error message is returned which states that the destination airport code is required")]
-    public async Task ThenAnErrorMessageIsReturnedWhichStatesThatTheDestinationAirportCodeIsRequired() => await GetProblemDetailsFromResponseAndAssert("Destination is required");
+    public async Task ThenAnErrorMessageIsReturnedWhichStatesThatTheDestinationAirportCodeIsRequired()
+        => await GetProblemDetailsFromResponseAndAssert("Destination is required");
 
     [Then(@"an error message is returned which states that the departure airport code is required")]
-    public async Task ThenAnErrorMessageIsReturnedWhichStatesThatTheDepartureAirportCodeIsRequired() => await GetProblemDetailsFromResponseAndAssert("Departure is required");
+    public async Task ThenAnErrorMessageIsReturnedWhichStatesThatTheDepartureAirportCodeIsRequired()
+        => await GetProblemDetailsFromResponseAndAssert("Departure is required");
 
     [Then(@"an error message is returned which states that the date format is invalid")]
-    public async Task ThenAnErrorMessageIsReturnedWhichStatesThatTheDateFormatIsInvalid() => await GetProblemDetailsFromResponseAndAssert("Invalid date format. Please use yyyy-MM-dd");
+    public async Task ThenAnErrorMessageIsReturnedWhichStatesThatTheDateFormatIsInvalid()
+        => await GetProblemDetailsFromResponseAndAssert("Invalid date format. Please use yyyy-MM-dd");
 
     [Then(@"an error message is returned which states that the date parameter is required")]
-    public async Task ThenAnErrorMessageIsReturnedWhichStatesThatTheDateParameterIsRequired() => await GetProblemDetailsFromResponseAndAssert("Date is required");
+    public async Task ThenAnErrorMessageIsReturnedWhichStatesThatTheDateParameterIsRequired()
+        => await GetProblemDetailsFromResponseAndAssert("Date is required");
 
     private static IEnumerable<Flight> ParseFlightsFromTable(Table table)
     {
@@ -104,8 +109,10 @@ public sealed class SearchForFlightsByRouteAndDateSteps : IDisposable
         var destinationAirport = new Airport(destinationAirportIataCode, destinationAirportTimeZone);
         var departureInstant = Instant.FromDateTimeOffset(departureTime);
         var arrivalInstant = Instant.FromDateTimeOffset(arrivalTime);
-        var departureZdt = new ZonedDateTime(departureInstant, DateTimeZoneProviders.Tzdb[departureAirportTimeZone]).WithZone(DateTimeZone.Utc);
-        var arrivalZdt = new ZonedDateTime(arrivalInstant, DateTimeZoneProviders.Tzdb[destinationAirportTimeZone]).WithZone(DateTimeZone.Utc);
+        var departureDtz = DateTimeZoneProviders.Tzdb[departureAirportTimeZone];
+        var destinationDtz = DateTimeZoneProviders.Tzdb[destinationAirportTimeZone];
+        var departureZdt = new ZonedDateTime(departureInstant, departureDtz).WithZone(DateTimeZone.Utc);
+        var arrivalZdt = new ZonedDateTime(arrivalInstant, destinationDtz).WithZone(DateTimeZone.Utc);
         var schedule = new FlightSchedule
         {
             DepartureAirport = departureAirport,

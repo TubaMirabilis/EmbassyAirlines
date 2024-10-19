@@ -26,9 +26,9 @@ public partial class InitialCreate : Migration
                 schedule_arrival_time = table.Column<ZonedDateTime>(type: "timestamp with time zone", nullable: false),
                 schedule_departure_time = table.Column<ZonedDateTime>(type: "timestamp with time zone", nullable: false),
                 schedule_departure_airport_iata_code = table.Column<string>(type: "character varying(3)", unicode: false, maxLength: 3, nullable: false),
-                schedule_departure_airport_time_zone = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
+                schedule_departure_airport_time_zone = table.Column<string>(type: "character varying(50)", unicode: false, maxLength: 50, nullable: false),
                 schedule_destination_airport_iata_code = table.Column<string>(type: "character varying(3)", unicode: false, maxLength: 3, nullable: false),
-                schedule_destination_airport_time_zone = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false)
+                schedule_destination_airport_time_zone = table.Column<string>(type: "character varying(50)", unicode: false, maxLength: 50, nullable: false)
             },
             constraints: table => table.PrimaryKey("pk_flights", x => x.id));
     }
