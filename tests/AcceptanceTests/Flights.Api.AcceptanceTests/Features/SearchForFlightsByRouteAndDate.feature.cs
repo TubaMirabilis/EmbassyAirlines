@@ -108,9 +108,7 @@ namespace Flights.Api.AcceptanceTests.Features
                             "DepartureTime",
                             "ArrivalTime",
                             "EconomyPrice",
-                            "BusinessPrice",
-                            "AvailableEconomySeats",
-                            "AvailableBusinessSeats"});
+                            "BusinessPrice"});
                 table1.AddRow(new string[] {
                             "EA123",
                             "YVR",
@@ -120,9 +118,7 @@ namespace Flights.Api.AcceptanceTests.Features
                             "2025-01-01T10:00:00",
                             "2025-01-02T05:00:00",
                             "1200.00",
-                            "4500.00",
-                            "50",
-                            "10"});
+                            "4500.00"});
                 table1.AddRow(new string[] {
                             "EA124",
                             "YVR",
@@ -132,9 +128,7 @@ namespace Flights.Api.AcceptanceTests.Features
                             "2025-01-01T14:00:00",
                             "2025-01-02T09:00:00",
                             "1200.00",
-                            "4500.00",
-                            "50",
-                            "10"});
+                            "4500.00"});
                 table1.AddRow(new string[] {
                             "EA125",
                             "YVR",
@@ -144,9 +138,7 @@ namespace Flights.Api.AcceptanceTests.Features
                             "2025-01-01T09:00:00",
                             "2025-01-02T04:00:00",
                             "1000.00",
-                            "4000.00",
-                            "60",
-                            "15"});
+                            "4000.00"});
 #line 7
         testRunner.Given("the following flights exist:", ((string)(null)), table1, "Given ");
 #line hidden
@@ -175,8 +167,8 @@ namespace Flights.Api.AcceptanceTests.Features
                             "2025-01-02T05:00:00",
                             "1200.00",
                             "4500.00",
-                            "50",
-                            "10"});
+                            "301",
+                            "36"});
                 table2.AddRow(new string[] {
                             "EA124",
                             "YVR",
@@ -187,8 +179,8 @@ namespace Flights.Api.AcceptanceTests.Features
                             "2025-01-02T09:00:00",
                             "1200.00",
                             "4500.00",
-                            "50",
-                            "10"});
+                            "301",
+                            "36"});
 #line 13
         testRunner.Then("the following flights are returned:", ((string)(null)), table2, "Then ");
 #line hidden
@@ -223,9 +215,7 @@ namespace Flights.Api.AcceptanceTests.Features
                             "DepartureTime",
                             "ArrivalTime",
                             "EconomyPrice",
-                            "BusinessPrice",
-                            "AvailableEconomySeats",
-                            "AvailableBusinessSeats"});
+                            "BusinessPrice"});
                 table3.AddRow(new string[] {
                             "EA123",
                             "YVR",
@@ -235,9 +225,7 @@ namespace Flights.Api.AcceptanceTests.Features
                             "2025-01-02T10:00:00",
                             "2025-01-03T05:00:00",
                             "1200.00",
-                            "4500.00",
-                            "50",
-                            "10"});
+                            "4500.00"});
 #line 19
         testRunner.Given("the following flights exist:", ((string)(null)), table3, "Given ");
 #line hidden
@@ -278,9 +266,7 @@ namespace Flights.Api.AcceptanceTests.Features
                             "DepartureTime",
                             "ArrivalTime",
                             "EconomyPrice",
-                            "BusinessPrice",
-                            "AvailableEconomySeats",
-                            "AvailableBusinessSeats"});
+                            "BusinessPrice"});
                 table4.AddRow(new string[] {
                             "EA123",
                             "YVR",
@@ -290,9 +276,7 @@ namespace Flights.Api.AcceptanceTests.Features
                             "2025-01-01T10:00:00",
                             "2025-01-02T05:00:00",
                             "1000.00",
-                            "4000.00",
-                            "60",
-                            "15"});
+                            "4000.00"});
 #line 26
         testRunner.Given("the following flights exist:", ((string)(null)), table4, "Given ");
 #line hidden
@@ -361,9 +345,7 @@ namespace Flights.Api.AcceptanceTests.Features
                             "DepartureTime",
                             "ArrivalTime",
                             "EconomyPrice",
-                            "BusinessPrice",
-                            "AvailableEconomySeats",
-                            "AvailableBusinessSeats"});
+                            "BusinessPrice"});
                 table5.AddRow(new string[] {
                             "EA123",
                             "YVR",
@@ -373,9 +355,7 @@ namespace Flights.Api.AcceptanceTests.Features
                             "2025-01-01T10:00:00",
                             "2025-01-02T05:00:00",
                             "1200.00",
-                            "4500.00",
-                            "50",
-                            "10"});
+                            "4500.00"});
 #line 37
         testRunner.Given("the following flights exist:", ((string)(null)), table5, "Given ");
 #line hidden
@@ -404,8 +384,8 @@ namespace Flights.Api.AcceptanceTests.Features
                             "2025-01-02T05:00:00",
                             "1200.00",
                             "4500.00",
-                            "50",
-                            "10"});
+                            "301",
+                            "36"});
 #line 41
         testRunner.Then("the following flights are returned:", ((string)(null)), table6, "Then ");
 #line hidden
@@ -440,9 +420,7 @@ namespace Flights.Api.AcceptanceTests.Features
                             "DepartureTime",
                             "ArrivalTime",
                             "EconomyPrice",
-                            "BusinessPrice",
-                            "AvailableEconomySeats",
-                            "AvailableBusinessSeats"});
+                            "BusinessPrice"});
                 table7.AddRow(new string[] {
                             "EA123",
                             "YVR",
@@ -452,9 +430,7 @@ namespace Flights.Api.AcceptanceTests.Features
                             "2025-01-01T10:00:00",
                             "2025-01-02T05:00:00",
                             "1200.00",
-                            "4500.00",
-                            "50",
-                            "10"});
+                            "4500.00"});
 #line 46
         testRunner.Given("the following flights exist:", ((string)(null)), table7, "Given ");
 #line hidden
@@ -483,8 +459,8 @@ namespace Flights.Api.AcceptanceTests.Features
                             "2025-01-02T05:00:00",
                             "1200.00",
                             "4500.00",
-                            "50",
-                            "10"});
+                            "301",
+                            "36"});
 #line 50
         testRunner.Then("the following flights are returned:", ((string)(null)), table8, "Then ");
 #line hidden
@@ -606,9 +582,7 @@ namespace Flights.Api.AcceptanceTests.Features
                             "DepartureTime",
                             "ArrivalTime",
                             "EconomyPrice",
-                            "BusinessPrice",
-                            "AvailableEconomySeats",
-                            "AvailableBusinessSeats"});
+                            "BusinessPrice"});
                 table9.AddRow(new string[] {
                             "EA123",
                             "YVR",
@@ -618,9 +592,7 @@ namespace Flights.Api.AcceptanceTests.Features
                             "2024-01-01T10:00:00",
                             "2024-01-02T05:00:00",
                             "1200.00",
-                            "4500.00",
-                            "50",
-                            "10"});
+                            "4500.00"});
 #line 67
         testRunner.Given("the following flights exist:", ((string)(null)), table9, "Given ");
 #line hidden
@@ -661,9 +633,7 @@ namespace Flights.Api.AcceptanceTests.Features
                             "DepartureTime",
                             "ArrivalTime",
                             "EconomyPrice",
-                            "BusinessPrice",
-                            "AvailableEconomySeats",
-                            "AvailableBusinessSeats"});
+                            "BusinessPrice"});
                 table10.AddRow(new string[] {
                             "EA123",
                             "YVR",
@@ -673,9 +643,7 @@ namespace Flights.Api.AcceptanceTests.Features
                             "2024-01-01T10:00:00",
                             "2024-01-02T05:00:00",
                             "1200.00",
-                            "4500.00",
-                            "50",
-                            "10"});
+                            "4500.00"});
                 table10.AddRow(new string[] {
                             "EA124",
                             "YVR",
@@ -685,9 +653,7 @@ namespace Flights.Api.AcceptanceTests.Features
                             "2025-01-01T14:00:00",
                             "2025-01-02T09:00:00",
                             "1200.00",
-                            "4500.00",
-                            "50",
-                            "10"});
+                            "4500.00"});
 #line 74
         testRunner.Given("the following flights exist:", ((string)(null)), table10, "Given ");
 #line hidden
@@ -716,8 +682,8 @@ namespace Flights.Api.AcceptanceTests.Features
                             "2025-01-02T09:00:00",
                             "1200.00",
                             "4500.00",
-                            "50",
-                            "10"});
+                            "301",
+                            "36"});
 #line 79
         testRunner.Then("the following flights are returned:", ((string)(null)), table11, "Then ");
 #line hidden

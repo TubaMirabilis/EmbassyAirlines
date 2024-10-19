@@ -2,6 +2,7 @@ using System.Globalization;
 using System.Text.Json;
 using Flights.Api.Database;
 using Flights.Api.Entities;
+using Flights.Api.Services;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -103,8 +104,7 @@ public sealed class SearchForFlightsByRouteAndDateSteps : IDisposable
         var arrivalTime = DateTimeOffset.Parse(row["ArrivalTime"], CultureInfo.InvariantCulture);
         var economyPrice = decimal.Parse(row["EconomyPrice"], CultureInfo.InvariantCulture);
         var businessPrice = decimal.Parse(row["BusinessPrice"], CultureInfo.InvariantCulture);
-        var availableEconomySeats = int.Parse(row["AvailableEconomySeats"], CultureInfo.InvariantCulture);
-        var availableBusinessSeats = int.Parse(row["AvailableBusinessSeats"], CultureInfo.InvariantCulture);
+        var seats = new SeatService().CreateSeats("B78X");
         var departureAirport = new Airport(departureAirportIataCode, departureAirportTimeZone);
         var destinationAirport = new Airport(destinationAirportIataCode, destinationAirportTimeZone);
         var departureInstant = Instant.FromDateTimeOffset(departureTime);
@@ -121,8 +121,7 @@ public sealed class SearchForFlightsByRouteAndDateSteps : IDisposable
             ArrivalTime = arrivalZdt
         };
         var pricing = new FlightPricing(economyPrice, businessPrice);
-        var availableSeats = new AvailableSeats(availableEconomySeats, availableBusinessSeats);
-        return Flight.Create(flightNumber, schedule, pricing, availableSeats);
+        return Flight.Create(flightNumber, schedule, pricing, seats);
     }
 
     private static IEnumerable<object> GetExpectedFlightsFromTable(Table table) => table.Rows.Select(row => new

@@ -14,7 +14,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Flights.Api.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20241019031120_InitialCreate")]
+    [Migration("20241019130206_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -48,19 +48,6 @@ namespace Flights.Api.Migrations
                     b.Property<Instant>("UpdatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("updated_at");
-
-                    b.ComplexProperty<Dictionary<string, object>>("AvailableSeats", "Flights.Api.Entities.Flight.AvailableSeats#AvailableSeats", b1 =>
-                        {
-                            b1.IsRequired();
-
-                            b1.Property<int>("Business")
-                                .HasColumnType("integer")
-                                .HasColumnName("available_seats_business");
-
-                            b1.Property<int>("Economy")
-                                .HasColumnType("integer")
-                                .HasColumnName("available_seats_economy");
-                        });
 
                     b.ComplexProperty<Dictionary<string, object>>("Pricing", "Flights.Api.Entities.Flight.Pricing#FlightPricing", b1 =>
                         {
@@ -132,6 +119,54 @@ namespace Flights.Api.Migrations
                         .HasName("pk_flights");
 
                     b.ToTable("flights", (string)null);
+                });
+
+            modelBuilder.Entity("Flights.Api.Entities.Seat", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid>("FlightId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("flight_id");
+
+                    b.Property<bool>("IsAvailable")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_available");
+
+                    b.Property<string>("SeatNumber")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("seat_number");
+
+                    b.Property<int>("SeatType")
+                        .HasColumnType("integer")
+                        .HasColumnName("seat_type");
+
+                    b.HasKey("Id")
+                        .HasName("pk_seat");
+
+                    b.HasIndex("FlightId")
+                        .HasDatabaseName("ix_seat_flight_id");
+
+                    b.ToTable("seat", (string)null);
+                });
+
+            modelBuilder.Entity("Flights.Api.Entities.Seat", b =>
+                {
+                    b.HasOne("Flights.Api.Entities.Flight", null)
+                        .WithMany("Seats")
+                        .HasForeignKey("FlightId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_seat_flights_flight_id");
+                });
+
+            modelBuilder.Entity("Flights.Api.Entities.Flight", b =>
+                {
+                    b.Navigation("Seats");
                 });
 #pragma warning restore 612, 618
         }

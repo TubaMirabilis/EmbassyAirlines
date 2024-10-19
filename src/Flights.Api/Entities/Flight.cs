@@ -4,15 +4,20 @@ namespace Flights.Api.Entities;
 
 public sealed class Flight
 {
-    private Flight(string flightNumber, FlightSchedule schedule, FlightPricing pricing, AvailableSeats availableSeats)
+    private readonly List<Seat> _seats = [];
+    private Flight(string flightNumber, FlightSchedule schedule, FlightPricing pricing, IEnumerable<Seat> seats)
     {
+        if (!seats.All(s => s.IsAvailable))
+        {
+            throw new ArgumentException("All seats must be available when creating a flight");
+        }
         Id = Guid.NewGuid();
         CreatedAt = SystemClock.Instance.GetCurrentInstant();
         UpdatedAt = SystemClock.Instance.GetCurrentInstant();
         FlightNumber = flightNumber;
         Schedule = schedule;
         Pricing = pricing;
-        AvailableSeats = availableSeats;
+        _seats.AddRange(seats);
     }
 #pragma warning disable CS8618
     private Flight()
@@ -25,12 +30,11 @@ public sealed class Flight
     public string FlightNumber { get; private set; }
     public FlightSchedule Schedule { get; private set; }
     public FlightPricing Pricing { get; private set; }
-    public AvailableSeats AvailableSeats { get; private set; }
+    public IReadOnlyList<Seat> Seats => _seats.AsReadOnly();
     public static Flight Create(string flightNumber, FlightSchedule schedule,
-        FlightPricing pricing, AvailableSeats availableSeats)
-        => new(flightNumber, schedule, pricing, availableSeats);
+        FlightPricing pricing, IEnumerable<Seat> seats)
+        => new(flightNumber, schedule, pricing, seats);
 }
-
 public sealed record FlightSchedule
 {
     public required Airport DepartureAirport { get; init; }
@@ -38,9 +42,5 @@ public sealed record FlightSchedule
     public required ZonedDateTime DepartureTime { get; init; }
     public required ZonedDateTime ArrivalTime { get; init; }
 }
-
 public sealed record FlightPricing(decimal EconomyPrice, decimal BusinessPrice);
-
-public sealed record AvailableSeats(int Economy, int Business);
-
 public sealed record Airport(string IataCode, string TimeZone);

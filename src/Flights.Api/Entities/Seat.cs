@@ -18,7 +18,7 @@ public sealed class Seat
     public string SeatNumber { get; private set; }
     public SeatType SeatType { get; private set; }
     public bool IsAvailable { get; private set; }
-    // Public method to alter the IsAvailable property:
+    public Guid FlightId { get; set; }
     public void SetAvailability(bool isAvailable)
     {
         IsAvailable = isAvailable;
@@ -26,7 +26,6 @@ public sealed class Seat
     public static Seat Create(string seatNumber, SeatType seatType)
         => new(seatNumber, seatType);
 }
-
 public enum SeatType
 {
     Economy,

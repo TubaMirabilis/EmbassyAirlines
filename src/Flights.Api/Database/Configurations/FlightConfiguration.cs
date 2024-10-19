@@ -26,13 +26,7 @@ internal sealed class FlightConfiguration : IEntityTypeConfiguration<Flight>
             pricing.Property(p => p.BusinessPrice)
                    .IsRequired();
         });
-        builder.ComplexProperty(b => b.AvailableSeats, a =>
-        {
-            a.Property(a => a.Economy)
-             .IsRequired();
-            a.Property(a => a.Business)
-             .IsRequired();
-        });
+        builder.Navigation(f => f.Seats).AutoInclude();
     }
     private static void ConfigureSchedule(EntityTypeBuilder<Flight> builder)
     {

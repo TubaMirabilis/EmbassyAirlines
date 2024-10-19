@@ -17,7 +17,7 @@ public static class FlightExtensions
             flight.Schedule.ArrivalTime.ToDateTimeOffset(),
             flight.Pricing.EconomyPrice,
             flight.Pricing.BusinessPrice,
-            flight.AvailableSeats.Economy,
-            flight.AvailableSeats.Business
+            flight.Seats.Count(s => s.IsAvailable && s.SeatType == SeatType.Economy),
+            flight.Seats.Count(s => s.IsAvailable && s.SeatType == SeatType.Business)
         );
 }

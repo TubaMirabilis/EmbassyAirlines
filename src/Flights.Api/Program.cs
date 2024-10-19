@@ -1,6 +1,7 @@
 using System.Reflection;
 using Flights.Api.Database;
 using Flights.Api.Extensions;
+using Flights.Api.Services;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
@@ -23,6 +24,7 @@ services.AddDbContext<ApplicationDbContext>(options =>
            .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking));
 services.AddMediator(options => options.ServiceLifetime = ServiceLifetime.Scoped);
 services.AddValidatorsFromAssemblyContaining<Program>();
+services.AddSingleton<ISeatService, SeatService>();
 services.AddEndpoints(Assembly.GetExecutingAssembly());
 var app = builder.Build();
 if (app.Environment.IsDevelopment())
