@@ -19,13 +19,6 @@ internal sealed class FlightConfiguration : IEntityTypeConfiguration<Flight>
                .HasMaxLength(10)
                .IsUnicode(false);
         ConfigureSchedule(builder);
-        builder.ComplexProperty(b => b.Pricing, pricing =>
-        {
-            pricing.Property(p => p.EconomyPrice)
-                   .IsRequired();
-            pricing.Property(p => p.BusinessPrice)
-                   .IsRequired();
-        });
         builder.Navigation(f => f.Seats).AutoInclude();
     }
     private static void ConfigureSchedule(EntityTypeBuilder<Flight> builder)

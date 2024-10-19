@@ -5,7 +5,7 @@ namespace Flights.Api.Entities;
 public sealed class Flight
 {
     private readonly List<Seat> _seats = [];
-    private Flight(string flightNumber, FlightSchedule schedule, FlightPricing pricing, IEnumerable<Seat> seats)
+    private Flight(string flightNumber, FlightSchedule schedule, IEnumerable<Seat> seats)
     {
         if (!seats.All(s => s.IsAvailable))
         {
@@ -16,7 +16,6 @@ public sealed class Flight
         UpdatedAt = SystemClock.Instance.GetCurrentInstant();
         FlightNumber = flightNumber;
         Schedule = schedule;
-        Pricing = pricing;
         _seats.AddRange(seats);
     }
 #pragma warning disable CS8618
@@ -29,11 +28,13 @@ public sealed class Flight
     public Instant UpdatedAt { get; private set; }
     public string FlightNumber { get; private set; }
     public FlightSchedule Schedule { get; private set; }
-    public FlightPricing Pricing { get; private set; }
+    public decimal CheapestEconomyPrice => Seats.Where(s => s.SeatType == SeatType.Economy)
+                                                .Min(s => s.Price);
+    public decimal CheapestBusinessPrice => Seats.Where(s => s.SeatType == SeatType.Business)
+                                                 .Min(s => s.Price);
     public IReadOnlyList<Seat> Seats => _seats.AsReadOnly();
-    public static Flight Create(string flightNumber, FlightSchedule schedule,
-        FlightPricing pricing, IEnumerable<Seat> seats)
-        => new(flightNumber, schedule, pricing, seats);
+    public static Flight Create(string flightNumber, FlightSchedule schedule, IEnumerable<Seat> seats)
+        => new(flightNumber, schedule, seats);
 }
 public sealed record FlightSchedule
 {
@@ -42,5 +43,4 @@ public sealed record FlightSchedule
     public required ZonedDateTime DepartureTime { get; init; }
     public required ZonedDateTime ArrivalTime { get; init; }
 }
-public sealed record FlightPricing(decimal EconomyPrice, decimal BusinessPrice);
 public sealed record Airport(string IataCode, string TimeZone);

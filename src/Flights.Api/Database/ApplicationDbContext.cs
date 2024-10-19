@@ -10,6 +10,7 @@ public sealed class ApplicationDbContext : DbContext
     {
     }
     public DbSet<Flight> Flights { get; set; }
+    public DbSet<Seat> Seats { get; set; }
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         var assembly = typeof(ApplicationDbContext).Assembly;

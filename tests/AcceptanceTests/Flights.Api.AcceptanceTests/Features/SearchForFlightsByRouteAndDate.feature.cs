@@ -153,8 +153,8 @@ namespace Flights.Api.AcceptanceTests.Features
                             "DestinationAirportTimeZone",
                             "DepartureTime",
                             "ArrivalTime",
-                            "EconomyPrice",
-                            "BusinessPrice",
+                            "CheapestEconomyPrice",
+                            "CheapestBusinessPrice",
                             "AvailableEconomySeats",
                             "AvailableBusinessSeats"});
                 table2.AddRow(new string[] {
@@ -370,8 +370,8 @@ namespace Flights.Api.AcceptanceTests.Features
                             "DestinationAirportTimeZone",
                             "DepartureTime",
                             "ArrivalTime",
-                            "EconomyPrice",
-                            "BusinessPrice",
+                            "CheapestEconomyPrice",
+                            "CheapestBusinessPrice",
                             "AvailableEconomySeats",
                             "AvailableBusinessSeats"});
                 table6.AddRow(new string[] {
@@ -445,8 +445,8 @@ namespace Flights.Api.AcceptanceTests.Features
                             "DestinationAirportTimeZone",
                             "DepartureTime",
                             "ArrivalTime",
-                            "EconomyPrice",
-                            "BusinessPrice",
+                            "CheapestEconomyPrice",
+                            "CheapestBusinessPrice",
                             "AvailableEconomySeats",
                             "AvailableBusinessSeats"});
                 table8.AddRow(new string[] {
@@ -668,8 +668,8 @@ namespace Flights.Api.AcceptanceTests.Features
                             "DestinationAirportTimeZone",
                             "DepartureTime",
                             "ArrivalTime",
-                            "EconomyPrice",
-                            "BusinessPrice",
+                            "CheapestEconomyPrice",
+                            "CheapestBusinessPrice",
                             "AvailableEconomySeats",
                             "AvailableBusinessSeats"});
                 table11.AddRow(new string[] {

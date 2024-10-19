@@ -46,19 +46,6 @@ namespace Flights.Api.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("updated_at");
 
-                    b.ComplexProperty<Dictionary<string, object>>("Pricing", "Flights.Api.Entities.Flight.Pricing#FlightPricing", b1 =>
-                        {
-                            b1.IsRequired();
-
-                            b1.Property<decimal>("BusinessPrice")
-                                .HasColumnType("numeric")
-                                .HasColumnName("pricing_business_price");
-
-                            b1.Property<decimal>("EconomyPrice")
-                                .HasColumnType("numeric")
-                                .HasColumnName("pricing_economy_price");
-                        });
-
                     b.ComplexProperty<Dictionary<string, object>>("Schedule", "Flights.Api.Entities.Flight.Schedule#FlightSchedule", b1 =>
                         {
                             b1.IsRequired();
@@ -133,6 +120,10 @@ namespace Flights.Api.Migrations
                         .HasColumnType("boolean")
                         .HasColumnName("is_available");
 
+                    b.Property<decimal>("Price")
+                        .HasColumnType("numeric")
+                        .HasColumnName("price");
+
                     b.Property<string>("SeatNumber")
                         .IsRequired()
                         .HasColumnType("text")
@@ -143,12 +134,12 @@ namespace Flights.Api.Migrations
                         .HasColumnName("seat_type");
 
                     b.HasKey("Id")
-                        .HasName("pk_seat");
+                        .HasName("pk_seats");
 
                     b.HasIndex("FlightId")
-                        .HasDatabaseName("ix_seat_flight_id");
+                        .HasDatabaseName("ix_seats_flight_id");
 
-                    b.ToTable("seat", (string)null);
+                    b.ToTable("seats", (string)null);
                 });
 
             modelBuilder.Entity("Flights.Api.Entities.Seat", b =>
@@ -158,7 +149,7 @@ namespace Flights.Api.Migrations
                         .HasForeignKey("FlightId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
-                        .HasConstraintName("fk_seat_flights_flight_id");
+                        .HasConstraintName("fk_seats_flights_flight_id");
                 });
 
             modelBuilder.Entity("Flights.Api.Entities.Flight", b =>

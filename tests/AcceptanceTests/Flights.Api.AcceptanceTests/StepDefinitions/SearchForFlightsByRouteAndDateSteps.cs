@@ -104,7 +104,7 @@ public sealed class SearchForFlightsByRouteAndDateSteps : IDisposable
         var arrivalTime = DateTimeOffset.Parse(row["ArrivalTime"], CultureInfo.InvariantCulture);
         var economyPrice = decimal.Parse(row["EconomyPrice"], CultureInfo.InvariantCulture);
         var businessPrice = decimal.Parse(row["BusinessPrice"], CultureInfo.InvariantCulture);
-        var seats = new SeatService().CreateSeats("B78X");
+        var seats = new SeatService().CreateSeats("B78X", economyPrice, businessPrice);
         var departureAirport = new Airport(departureAirportIataCode, departureAirportTimeZone);
         var destinationAirport = new Airport(destinationAirportIataCode, destinationAirportTimeZone);
         var departureInstant = Instant.FromDateTimeOffset(departureTime);
@@ -120,8 +120,7 @@ public sealed class SearchForFlightsByRouteAndDateSteps : IDisposable
             DepartureTime = departureZdt,
             ArrivalTime = arrivalZdt
         };
-        var pricing = new FlightPricing(economyPrice, businessPrice);
-        return Flight.Create(flightNumber, schedule, pricing, seats);
+        return Flight.Create(flightNumber, schedule, seats);
     }
 
     private static IEnumerable<object> GetExpectedFlightsFromTable(Table table) => table.Rows.Select(row => new
@@ -131,8 +130,8 @@ public sealed class SearchForFlightsByRouteAndDateSteps : IDisposable
         Destination = row["DestinationAirportIataCode"],
         DepartureTime = DateTimeOffset.Parse(row["DepartureTime"], CultureInfo.InvariantCulture),
         ArrivalTime = DateTimeOffset.Parse(row["ArrivalTime"], CultureInfo.InvariantCulture),
-        EconomyPrice = decimal.Parse(row["EconomyPrice"], CultureInfo.InvariantCulture),
-        BusinessPrice = decimal.Parse(row["BusinessPrice"], CultureInfo.InvariantCulture),
+        CheapestEconomyPrice = decimal.Parse(row["CheapestEconomyPrice"], CultureInfo.InvariantCulture),
+        CheapestBusinessPrice = decimal.Parse(row["CheapestBusinessPrice"], CultureInfo.InvariantCulture),
         AvailableEconomySeats = int.Parse(row["AvailableEconomySeats"], CultureInfo.InvariantCulture),
         AvailableBusinessSeats = int.Parse(row["AvailableBusinessSeats"], CultureInfo.InvariantCulture)
     });
@@ -160,8 +159,8 @@ public sealed class SearchForFlightsByRouteAndDateSteps : IDisposable
             f.Destination,
             f.DepartureTime,
             f.ArrivalTime,
-            f.EconomyPrice,
-            f.BusinessPrice,
+            f.CheapestEconomyPrice,
+            f.CheapestBusinessPrice,
             f.AvailableEconomySeats,
             f.AvailableBusinessSeats
         });
