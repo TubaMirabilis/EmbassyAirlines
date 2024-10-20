@@ -1,3 +1,5 @@
+using NodaTime;
+
 namespace Flights.Api.Entities;
 
 public sealed class Seat
@@ -5,6 +7,8 @@ public sealed class Seat
     private Seat(string seatNumber, SeatType seatType, decimal price)
     {
         Id = Guid.NewGuid();
+        CreatedAt = SystemClock.Instance.GetCurrentInstant();
+        UpdatedAt = SystemClock.Instance.GetCurrentInstant();
         SeatNumber = seatNumber;
         SeatType = seatType;
         IsAvailable = true;
@@ -16,6 +20,8 @@ public sealed class Seat
     }
 #pragma warning restore CS8618
     public Guid Id { get; private set; }
+    public Instant CreatedAt { get; private set; }
+    public Instant UpdatedAt { get; private set; }
     public string SeatNumber { get; private set; }
     public SeatType SeatType { get; private set; }
     public bool IsAvailable { get; private set; }
@@ -24,6 +30,7 @@ public sealed class Seat
     public void SetAvailability(bool isAvailable)
     {
         IsAvailable = isAvailable;
+        UpdatedAt = SystemClock.Instance.GetCurrentInstant();
     }
     public static Seat Create(string seatNumber, SeatType seatType, decimal price)
         => new(seatNumber, seatType, price);

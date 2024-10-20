@@ -14,7 +14,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Flights.Api.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20241019141005_InitialCreate")]
+    [Migration("20241020052048_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -115,6 +115,10 @@ namespace Flights.Api.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
+                    b.Property<Instant>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
                     b.Property<Guid>("FlightId")
                         .HasColumnType("uuid")
                         .HasColumnName("flight_id");
@@ -129,12 +133,21 @@ namespace Flights.Api.Migrations
 
                     b.Property<string>("SeatNumber")
                         .IsRequired()
-                        .HasColumnType("text")
+                        .HasMaxLength(3)
+                        .IsUnicode(false)
+                        .HasColumnType("character varying(3)")
                         .HasColumnName("seat_number");
 
-                    b.Property<int>("SeatType")
-                        .HasColumnType("integer")
+                    b.Property<string>("SeatType")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .IsUnicode(false)
+                        .HasColumnType("character varying(20)")
                         .HasColumnName("seat_type");
+
+                    b.Property<Instant>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
 
                     b.HasKey("Id")
                         .HasName("pk_seats");
