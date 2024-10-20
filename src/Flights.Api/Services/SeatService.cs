@@ -48,7 +48,8 @@ public sealed class SeatService : ISeatService
         }
         return seats;
     }
-    private static IEnumerable<Seat> CreateRowOfSeats(int rowNumber, SeatType seatType, IEnumerable<char> seatLetters, decimal economyPrice, decimal businessPrice)
+    private static IEnumerable<Seat> CreateRowOfSeats(int rowNumber, SeatType seatType,
+        IEnumerable<char> seatLetters, decimal economyPrice, decimal businessPrice)
     {
         foreach (var seatLetter in seatLetters)
         {
