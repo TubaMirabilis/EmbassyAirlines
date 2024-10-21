@@ -1,13 +1,9 @@
 using System.Globalization;
 using System.Text.Json;
-using Flights.Api.Database;
-using Flights.Api.Entities;
-using Flights.Api.Services;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
-using NodaTime;
 using Shared.Contracts;
 using TechTalk.SpecFlow;
 
@@ -25,15 +21,6 @@ public sealed class SearchForFlightsByRouteAndDateSteps : IDisposable
         _client = factory.CreateClient();
         _scope = factory.Services.CreateScope();
         _options = _scope.ServiceProvider.GetRequiredService<JsonSerializerOptions>();
-    }
-
-    [Given(@"the following flights exist:")]
-    public async Task GivenTheFollowingFlightsExist(Table table)
-    {
-        var flights = ParseFlightsFromTable(table);
-        var dbContext = _scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-        dbContext.Flights.AddRange(flights);
-        await dbContext.SaveChangesAsync();
     }
 
     [When(@"I search for flights from (.*) to (.*) on (.*)")]
@@ -84,44 +71,6 @@ public sealed class SearchForFlightsByRouteAndDateSteps : IDisposable
     [Then(@"an error message is returned which states that the date parameter is required")]
     public async Task ThenAnErrorMessageIsReturnedWhichStatesThatTheDateParameterIsRequired()
         => await GetProblemDetailsFromResponseAndAssert("Date is required");
-
-    private static IEnumerable<Flight> ParseFlightsFromTable(Table table)
-    {
-        foreach (var row in table.Rows)
-        {
-            yield return CreateFlightFromRow(row);
-        }
-    }
-
-    private static Flight CreateFlightFromRow(TableRow row)
-    {
-        var flightNumber = row["FlightNumber"];
-        var departureAirportIataCode = row["DepartureAirportIataCode"];
-        var departureAirportTimeZone = row["DepartureAirportTimeZone"];
-        var destinationAirportIataCode = row["DestinationAirportIataCode"];
-        var destinationAirportTimeZone = row["DestinationAirportTimeZone"];
-        var departureTime = DateTimeOffset.Parse(row["DepartureTime"], CultureInfo.InvariantCulture);
-        var arrivalTime = DateTimeOffset.Parse(row["ArrivalTime"], CultureInfo.InvariantCulture);
-        var economyPrice = decimal.Parse(row["EconomyPrice"], CultureInfo.InvariantCulture);
-        var businessPrice = decimal.Parse(row["BusinessPrice"], CultureInfo.InvariantCulture);
-        var seats = new SeatService().CreateSeats("B78X", economyPrice, businessPrice);
-        var departureAirport = new Airport(departureAirportIataCode, departureAirportTimeZone);
-        var destinationAirport = new Airport(destinationAirportIataCode, destinationAirportTimeZone);
-        var departureInstant = Instant.FromDateTimeOffset(departureTime);
-        var arrivalInstant = Instant.FromDateTimeOffset(arrivalTime);
-        var departureDtz = DateTimeZoneProviders.Tzdb[departureAirportTimeZone];
-        var destinationDtz = DateTimeZoneProviders.Tzdb[destinationAirportTimeZone];
-        var departureZdt = new ZonedDateTime(departureInstant, departureDtz).WithZone(DateTimeZone.Utc);
-        var arrivalZdt = new ZonedDateTime(arrivalInstant, destinationDtz).WithZone(DateTimeZone.Utc);
-        var schedule = new FlightSchedule
-        {
-            DepartureAirport = departureAirport,
-            DestinationAirport = destinationAirport,
-            DepartureTime = departureZdt,
-            ArrivalTime = arrivalZdt
-        };
-        return Flight.Create(flightNumber, schedule, seats);
-    }
 
     private static IEnumerable<object> GetExpectedFlightsFromTable(Table table) => table.Rows.Select(row => new
     {

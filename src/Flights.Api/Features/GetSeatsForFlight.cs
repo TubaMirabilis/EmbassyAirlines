@@ -1,5 +1,6 @@
 ﻿using ErrorOr;
 using Flights.Api.Database;
+using Flights.Api.Entities;
 using Flights.Api.Extensions;
 using FluentValidation;
 using Mediator;
@@ -13,7 +14,7 @@ namespace Flights.Api.Features;
 
 public static class GetSeatsForFlight
 {
-    public sealed record Query(Guid FlightId) : IQuery<ErrorOr<IEnumerable<SeatDto>>>;
+    public sealed record Query(Guid FlightId, string? SeatType) : IQuery<ErrorOr<IEnumerable<SeatDto>>>;
     public sealed class Validator : AbstractValidator<Query>
     {
         public Validator()
@@ -39,16 +40,17 @@ public static class GetSeatsForFlight
             {
                 return Error.Validation("Query.ValidationFailed", formattedErrors);
             }
-            var flight = await _ctx.Flights
-                                   .FirstOrDefaultAsync(f => f.Id == query.FlightId, cancellationToken);
-            if (flight is null)
+            var seats = _ctx.Seats
+                            .Where(s => s.FlightId == query.FlightId);
+            if (Enum.TryParse<SeatType>(query.SeatType, true, out var seatType))
             {
-                return Error.NotFound("Flight.NotFound", "Flight not found");
+                seats = seats.Where(s => s.SeatType == seatType);
             }
-            return flight.Seats
-                         .Select(s => s.ToDto())
-                         .OrderBy(s => s.SeatNumber)
-                         .ToList();
+            var seatsList = await seats.AsSplitQuery()
+                                       .ToListAsync(cancellationToken);
+            return seatsList.Select(s => s.ToDto())
+                            .OrderBy(s => s.SeatNumber)
+                            .ToList();
         }
     }
 }
@@ -59,9 +61,9 @@ public sealed class GetSeatsForFlightEndpoint : IEndpoint
               .WithName("GetSeats")
               .WithOpenApi();
     private static async Task<IResult> GetSeats([FromServices] ISender sender,
-        [FromRoute] Guid flightId, CancellationToken ct)
+        [FromRoute] Guid flightId, [FromQuery] string? seatType, CancellationToken ct)
     {
-        var query = new GetSeatsForFlight.Query(flightId);
+        var query = new GetSeatsForFlight.Query(flightId, seatType);
         var result = await sender.Send(query, ct);
         return result.Match(
             seats => Results.Ok(seats),
