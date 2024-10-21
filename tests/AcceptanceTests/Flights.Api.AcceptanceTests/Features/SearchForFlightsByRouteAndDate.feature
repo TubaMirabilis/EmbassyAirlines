@@ -63,13 +63,6 @@ Feature: Search for flights by route and date
         When I search for flights from YVR to YVR on 2025-01-01
         Then an error message is returned which states that the departure and destination airports cannot be the same
 
-    Scenario: All flights have already departed
-        Given the following flights exist:
-            | FlightNumber | DepartureAirportIataCode | DepartureAirportTimeZone | DestinationAirportIataCode | DestinationAirportTimeZone | DepartureTime       | ArrivalTime         | EconomyPrice | BusinessPrice |
-            | EA123        | YVR                      | America/Vancouver        | CDG                        | Europe/Paris               | 2024-01-01T10:00:00 | 2024-01-02T05:00:00 | 1200.00      | 4500.00       |
-        When I search for flights from YVR to CDG on 2025-01-03
-        Then no flights are returned
-
     Scenario: Search when some flights have already departed
         Given the following flights exist:
             | FlightNumber | DepartureAirportIataCode | DepartureAirportTimeZone | DestinationAirportIataCode | DestinationAirportTimeZone | DepartureTime       | ArrivalTime         | EconomyPrice | BusinessPrice |

@@ -11,7 +11,7 @@ using TechTalk.SpecFlow;
 namespace Flights.Api.AcceptanceTests.StepDefinitions;
 
 [Binding]
-public sealed class GetSeatsForFlightSteps
+public sealed class GetSeatsForFlightSteps : IDisposable
 {
     private readonly HttpClient _client;
     private HttpResponseMessage? _response;
@@ -26,8 +26,10 @@ public sealed class GetSeatsForFlightSteps
     [When(@"I get the seats for flight (.*)")]
     public async Task WhenIGetTheSeatsForFlight(string flightNumber)
     {
-        var dbContext = _scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-        var flight = await dbContext.Flights.SingleAsync(f => f.FlightNumber == flightNumber);
+        using var dbContext = _scope.ServiceProvider
+                                    .GetRequiredService<ApplicationDbContext>();
+        var flight = await dbContext.Flights
+                                    .SingleAsync(f => f.FlightNumber == flightNumber);
         var id = flight.Id;
         var url = $"/flights/{id}/seats";
         _response = await _client.GetAsync(url);
@@ -51,5 +53,11 @@ public sealed class GetSeatsForFlightSteps
             group.Should().OnlyContain(s => s.Price == price);
             group.Count(s => s.IsAvailable).Should().Be(available);
         }
+    }
+    public void Dispose()
+    {
+        _response?.Dispose();
+        _scope.Dispose();
+        _client.Dispose();
     }
 }

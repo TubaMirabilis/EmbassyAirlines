@@ -8,12 +8,16 @@ using TechTalk.SpecFlow;
 namespace Flights.Api.AcceptanceTests.StepDefinitions;
 
 [Binding]
-public sealed class CommonSteps
+public sealed class CommonSteps : IDisposable
 {
     private readonly IServiceScope _scope;
     public CommonSteps(WebApplicationFactory<Program> factory)
     {
         _scope = factory.Services.CreateScope();
+    }
+    public void Dispose()
+    {
+        _scope.Dispose();
     }
     [Given(@"the following flights exist:")]
     public async Task GivenTheFollowingFlightsExist(Table table)
@@ -23,8 +27,10 @@ public sealed class CommonSteps
         {
             flights.Add(row.ParseFlight());
         }
-        var dbContext = _scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-        dbContext.Flights.AddRange(flights);
+        using var dbContext = _scope.ServiceProvider
+                                    .GetRequiredService<ApplicationDbContext>();
+        dbContext.Flights
+                 .AddRange(flights);
         await dbContext.SaveChangesAsync();
     }
 }
