@@ -99,7 +99,7 @@ namespace Flights.Api.AcceptanceTests.Features
             else
             {
                 this.ScenarioStart();
-                TechTalk.SpecFlow.Table table3 = new TechTalk.SpecFlow.Table(new string[] {
+                TechTalk.SpecFlow.Table table5 = new TechTalk.SpecFlow.Table(new string[] {
                             "FlightNumber",
                             "DepartureAirportIataCode",
                             "DepartureAirportTimeZone",
@@ -109,7 +109,7 @@ namespace Flights.Api.AcceptanceTests.Features
                             "ArrivalTime",
                             "EconomyPrice",
                             "BusinessPrice"});
-                table3.AddRow(new string[] {
+                table5.AddRow(new string[] {
                             "EA123",
                             "YVR",
                             "America/Vancouver",
@@ -119,7 +119,7 @@ namespace Flights.Api.AcceptanceTests.Features
                             "2025-01-02T05:00:00",
                             "1200.00",
                             "4500.00"});
-                table3.AddRow(new string[] {
+                table5.AddRow(new string[] {
                             "EA124",
                             "YVR",
                             "America/Vancouver",
@@ -129,7 +129,7 @@ namespace Flights.Api.AcceptanceTests.Features
                             "2025-01-02T09:00:00",
                             "1200.00",
                             "4500.00"});
-                table3.AddRow(new string[] {
+                table5.AddRow(new string[] {
                             "EA125",
                             "YVR",
                             "America/Vancouver",
@@ -140,12 +140,12 @@ namespace Flights.Api.AcceptanceTests.Features
                             "1000.00",
                             "4000.00"});
 #line 7
-        testRunner.Given("the following flights exist:", ((string)(null)), table3, "Given ");
+        testRunner.Given("the following flights exist:", ((string)(null)), table5, "Given ");
 #line hidden
 #line 12
         testRunner.When("I search for flights from YVR to CDG on 2025-01-01", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line hidden
-                TechTalk.SpecFlow.Table table4 = new TechTalk.SpecFlow.Table(new string[] {
+                TechTalk.SpecFlow.Table table6 = new TechTalk.SpecFlow.Table(new string[] {
                             "FlightNumber",
                             "DepartureAirportIataCode",
                             "DepartureAirportTimeZone",
@@ -157,7 +157,7 @@ namespace Flights.Api.AcceptanceTests.Features
                             "CheapestBusinessPrice",
                             "AvailableEconomySeats",
                             "AvailableBusinessSeats"});
-                table4.AddRow(new string[] {
+                table6.AddRow(new string[] {
                             "EA123",
                             "YVR",
                             "America/Vancouver",
@@ -169,7 +169,7 @@ namespace Flights.Api.AcceptanceTests.Features
                             "4500.00",
                             "301",
                             "36"});
-                table4.AddRow(new string[] {
+                table6.AddRow(new string[] {
                             "EA124",
                             "YVR",
                             "America/Vancouver",
@@ -182,7 +182,7 @@ namespace Flights.Api.AcceptanceTests.Features
                             "301",
                             "36"});
 #line 13
-        testRunner.Then("the following flights are returned:", ((string)(null)), table4, "Then ");
+        testRunner.Then("the following flights are returned:", ((string)(null)), table6, "Then ");
 #line hidden
             }
             this.ScenarioCleanup();
@@ -206,7 +206,7 @@ namespace Flights.Api.AcceptanceTests.Features
             else
             {
                 this.ScenarioStart();
-                TechTalk.SpecFlow.Table table5 = new TechTalk.SpecFlow.Table(new string[] {
+                TechTalk.SpecFlow.Table table7 = new TechTalk.SpecFlow.Table(new string[] {
                             "FlightNumber",
                             "DepartureAirportIataCode",
                             "DepartureAirportTimeZone",
@@ -216,7 +216,7 @@ namespace Flights.Api.AcceptanceTests.Features
                             "ArrivalTime",
                             "EconomyPrice",
                             "BusinessPrice"});
-                table5.AddRow(new string[] {
+                table7.AddRow(new string[] {
                             "EA123",
                             "YVR",
                             "America/Vancouver",
@@ -227,7 +227,7 @@ namespace Flights.Api.AcceptanceTests.Features
                             "1200.00",
                             "4500.00"});
 #line 19
-        testRunner.Given("the following flights exist:", ((string)(null)), table5, "Given ");
+        testRunner.Given("the following flights exist:", ((string)(null)), table7, "Given ");
 #line hidden
 #line 22
         testRunner.When("I search for flights from YVR to CDG on 2025-01-01", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
@@ -257,7 +257,7 @@ namespace Flights.Api.AcceptanceTests.Features
             else
             {
                 this.ScenarioStart();
-                TechTalk.SpecFlow.Table table6 = new TechTalk.SpecFlow.Table(new string[] {
+                TechTalk.SpecFlow.Table table8 = new TechTalk.SpecFlow.Table(new string[] {
                             "FlightNumber",
                             "DepartureAirportIataCode",
                             "DepartureAirportTimeZone",
@@ -267,7 +267,7 @@ namespace Flights.Api.AcceptanceTests.Features
                             "ArrivalTime",
                             "EconomyPrice",
                             "BusinessPrice"});
-                table6.AddRow(new string[] {
+                table8.AddRow(new string[] {
                             "EA123",
                             "YVR",
                             "America/Vancouver",
@@ -278,7 +278,7 @@ namespace Flights.Api.AcceptanceTests.Features
                             "1000.00",
                             "4000.00"});
 #line 26
-        testRunner.Given("the following flights exist:", ((string)(null)), table6, "Given ");
+        testRunner.Given("the following flights exist:", ((string)(null)), table8, "Given ");
 #line hidden
 #line 29
         testRunner.When("I search for flights from YVR to CDG on 2025-01-01", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
@@ -336,81 +336,6 @@ namespace Flights.Api.AcceptanceTests.Features
             else
             {
                 this.ScenarioStart();
-                TechTalk.SpecFlow.Table table7 = new TechTalk.SpecFlow.Table(new string[] {
-                            "FlightNumber",
-                            "DepartureAirportIataCode",
-                            "DepartureAirportTimeZone",
-                            "DestinationAirportIataCode",
-                            "DestinationAirportTimeZone",
-                            "DepartureTime",
-                            "ArrivalTime",
-                            "EconomyPrice",
-                            "BusinessPrice"});
-                table7.AddRow(new string[] {
-                            "EA123",
-                            "YVR",
-                            "America/Vancouver",
-                            "CDG",
-                            "Europe/Paris",
-                            "2025-01-01T10:00:00",
-                            "2025-01-02T05:00:00",
-                            "1200.00",
-                            "4500.00"});
-#line 37
-        testRunner.Given("the following flights exist:", ((string)(null)), table7, "Given ");
-#line hidden
-#line 40
-        testRunner.When("I search for flights from yvr to cdg on 2025-01-01", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
-#line hidden
-                TechTalk.SpecFlow.Table table8 = new TechTalk.SpecFlow.Table(new string[] {
-                            "FlightNumber",
-                            "DepartureAirportIataCode",
-                            "DepartureAirportTimeZone",
-                            "DestinationAirportIataCode",
-                            "DestinationAirportTimeZone",
-                            "DepartureTime",
-                            "ArrivalTime",
-                            "CheapestEconomyPrice",
-                            "CheapestBusinessPrice",
-                            "AvailableEconomySeats",
-                            "AvailableBusinessSeats"});
-                table8.AddRow(new string[] {
-                            "EA123",
-                            "YVR",
-                            "America/Vancouver",
-                            "CDG",
-                            "Europe/Paris",
-                            "2025-01-01T10:00:00",
-                            "2025-01-02T05:00:00",
-                            "1200.00",
-                            "4500.00",
-                            "301",
-                            "36"});
-#line 41
-        testRunner.Then("the following flights are returned:", ((string)(null)), table8, "Then ");
-#line hidden
-            }
-            this.ScenarioCleanup();
-        }
-        
-        [Xunit.SkippableFactAttribute(DisplayName="Search with mixed case airport codes")]
-        [Xunit.TraitAttribute("FeatureTitle", "Search for flights by route and date")]
-        [Xunit.TraitAttribute("Description", "Search with mixed case airport codes")]
-        public void SearchWithMixedCaseAirportCodes()
-        {
-            string[] tagsOfScenario = ((string[])(null));
-            System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Search with mixed case airport codes", null, tagsOfScenario, argumentsOfScenario, featureTags);
-#line 45
-    this.ScenarioInitialize(scenarioInfo);
-#line hidden
-            if ((TagHelper.ContainsIgnoreTag(tagsOfScenario) || TagHelper.ContainsIgnoreTag(featureTags)))
-            {
-                testRunner.SkipScenario();
-            }
-            else
-            {
-                this.ScenarioStart();
                 TechTalk.SpecFlow.Table table9 = new TechTalk.SpecFlow.Table(new string[] {
                             "FlightNumber",
                             "DepartureAirportIataCode",
@@ -431,11 +356,11 @@ namespace Flights.Api.AcceptanceTests.Features
                             "2025-01-02T05:00:00",
                             "1200.00",
                             "4500.00"});
-#line 46
+#line 37
         testRunner.Given("the following flights exist:", ((string)(null)), table9, "Given ");
 #line hidden
-#line 49
-        testRunner.When("I search for flights from YvR to CdG on 2025-01-01", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+#line 40
+        testRunner.When("I search for flights from yvr to cdg on 2025-01-01", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line hidden
                 TechTalk.SpecFlow.Table table10 = new TechTalk.SpecFlow.Table(new string[] {
                             "FlightNumber",
@@ -461,8 +386,83 @@ namespace Flights.Api.AcceptanceTests.Features
                             "4500.00",
                             "301",
                             "36"});
-#line 50
+#line 41
         testRunner.Then("the following flights are returned:", ((string)(null)), table10, "Then ");
+#line hidden
+            }
+            this.ScenarioCleanup();
+        }
+        
+        [Xunit.SkippableFactAttribute(DisplayName="Search with mixed case airport codes")]
+        [Xunit.TraitAttribute("FeatureTitle", "Search for flights by route and date")]
+        [Xunit.TraitAttribute("Description", "Search with mixed case airport codes")]
+        public void SearchWithMixedCaseAirportCodes()
+        {
+            string[] tagsOfScenario = ((string[])(null));
+            System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Search with mixed case airport codes", null, tagsOfScenario, argumentsOfScenario, featureTags);
+#line 45
+    this.ScenarioInitialize(scenarioInfo);
+#line hidden
+            if ((TagHelper.ContainsIgnoreTag(tagsOfScenario) || TagHelper.ContainsIgnoreTag(featureTags)))
+            {
+                testRunner.SkipScenario();
+            }
+            else
+            {
+                this.ScenarioStart();
+                TechTalk.SpecFlow.Table table11 = new TechTalk.SpecFlow.Table(new string[] {
+                            "FlightNumber",
+                            "DepartureAirportIataCode",
+                            "DepartureAirportTimeZone",
+                            "DestinationAirportIataCode",
+                            "DestinationAirportTimeZone",
+                            "DepartureTime",
+                            "ArrivalTime",
+                            "EconomyPrice",
+                            "BusinessPrice"});
+                table11.AddRow(new string[] {
+                            "EA123",
+                            "YVR",
+                            "America/Vancouver",
+                            "CDG",
+                            "Europe/Paris",
+                            "2025-01-01T10:00:00",
+                            "2025-01-02T05:00:00",
+                            "1200.00",
+                            "4500.00"});
+#line 46
+        testRunner.Given("the following flights exist:", ((string)(null)), table11, "Given ");
+#line hidden
+#line 49
+        testRunner.When("I search for flights from YvR to CdG on 2025-01-01", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+#line hidden
+                TechTalk.SpecFlow.Table table12 = new TechTalk.SpecFlow.Table(new string[] {
+                            "FlightNumber",
+                            "DepartureAirportIataCode",
+                            "DepartureAirportTimeZone",
+                            "DestinationAirportIataCode",
+                            "DestinationAirportTimeZone",
+                            "DepartureTime",
+                            "ArrivalTime",
+                            "CheapestEconomyPrice",
+                            "CheapestBusinessPrice",
+                            "AvailableEconomySeats",
+                            "AvailableBusinessSeats"});
+                table12.AddRow(new string[] {
+                            "EA123",
+                            "YVR",
+                            "America/Vancouver",
+                            "CDG",
+                            "Europe/Paris",
+                            "2025-01-01T10:00:00",
+                            "2025-01-02T05:00:00",
+                            "1200.00",
+                            "4500.00",
+                            "301",
+                            "36"});
+#line 50
+        testRunner.Then("the following flights are returned:", ((string)(null)), table12, "Then ");
 #line hidden
             }
             this.ScenarioCleanup();
@@ -573,7 +573,7 @@ namespace Flights.Api.AcceptanceTests.Features
             else
             {
                 this.ScenarioStart();
-                TechTalk.SpecFlow.Table table11 = new TechTalk.SpecFlow.Table(new string[] {
+                TechTalk.SpecFlow.Table table13 = new TechTalk.SpecFlow.Table(new string[] {
                             "FlightNumber",
                             "DepartureAirportIataCode",
                             "DepartureAirportTimeZone",
@@ -583,7 +583,7 @@ namespace Flights.Api.AcceptanceTests.Features
                             "ArrivalTime",
                             "EconomyPrice",
                             "BusinessPrice"});
-                table11.AddRow(new string[] {
+                table13.AddRow(new string[] {
                             "EA123",
                             "YVR",
                             "America/Vancouver",
@@ -593,7 +593,7 @@ namespace Flights.Api.AcceptanceTests.Features
                             "2024-01-02T05:00:00",
                             "1200.00",
                             "4500.00"});
-                table11.AddRow(new string[] {
+                table13.AddRow(new string[] {
                             "EA124",
                             "YVR",
                             "America/Vancouver",
@@ -604,12 +604,12 @@ namespace Flights.Api.AcceptanceTests.Features
                             "1200.00",
                             "4500.00"});
 #line 67
-        testRunner.Given("the following flights exist:", ((string)(null)), table11, "Given ");
+        testRunner.Given("the following flights exist:", ((string)(null)), table13, "Given ");
 #line hidden
 #line 71
         testRunner.When("I search for flights from YVR to CDG on 2025-01-01", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line hidden
-                TechTalk.SpecFlow.Table table12 = new TechTalk.SpecFlow.Table(new string[] {
+                TechTalk.SpecFlow.Table table14 = new TechTalk.SpecFlow.Table(new string[] {
                             "FlightNumber",
                             "DepartureAirportIataCode",
                             "DepartureAirportTimeZone",
@@ -621,7 +621,7 @@ namespace Flights.Api.AcceptanceTests.Features
                             "CheapestBusinessPrice",
                             "AvailableEconomySeats",
                             "AvailableBusinessSeats"});
-                table12.AddRow(new string[] {
+                table14.AddRow(new string[] {
                             "EA124",
                             "YVR",
                             "America/Vancouver",
@@ -634,7 +634,7 @@ namespace Flights.Api.AcceptanceTests.Features
                             "301",
                             "36"});
 #line 72
-        testRunner.Then("the following flights are returned:", ((string)(null)), table12, "Then ");
+        testRunner.Then("the following flights are returned:", ((string)(null)), table14, "Then ");
 #line hidden
             }
             this.ScenarioCleanup();

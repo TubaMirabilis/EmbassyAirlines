@@ -81,14 +81,14 @@ namespace Flights.Api.AcceptanceTests.Features
             this.TestTearDown();
         }
         
-        [Xunit.SkippableFactAttribute(DisplayName="Get seats for a flight with valid results")]
+        [Xunit.SkippableFactAttribute(DisplayName="Get seats for a flight without a seat type filter")]
         [Xunit.TraitAttribute("FeatureTitle", "Get Seats for a Flight")]
-        [Xunit.TraitAttribute("Description", "Get seats for a flight with valid results")]
-        public void GetSeatsForAFlightWithValidResults()
+        [Xunit.TraitAttribute("Description", "Get seats for a flight without a seat type filter")]
+        public void GetSeatsForAFlightWithoutASeatTypeFilter()
         {
             string[] tagsOfScenario = ((string[])(null));
             System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Get seats for a flight with valid results", null, tagsOfScenario, argumentsOfScenario, featureTags);
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Get seats for a flight without a seat type filter", null, tagsOfScenario, argumentsOfScenario, featureTags);
 #line 6
     this.ScenarioInitialize(scenarioInfo);
 #line hidden
@@ -141,7 +141,68 @@ namespace Flights.Api.AcceptanceTests.Features
                             "4500",
                             "36"});
 #line 11
-        testRunner.Then("a concatenation of the following seat groups is returned:", ((string)(null)), table2, "Then ");
+        testRunner.Then("the following seat groups are returned:", ((string)(null)), table2, "Then ");
+#line hidden
+            }
+            this.ScenarioCleanup();
+        }
+        
+        [Xunit.SkippableFactAttribute(DisplayName="Get seats for a flight filtered by seat type")]
+        [Xunit.TraitAttribute("FeatureTitle", "Get Seats for a Flight")]
+        [Xunit.TraitAttribute("Description", "Get seats for a flight filtered by seat type")]
+        public void GetSeatsForAFlightFilteredBySeatType()
+        {
+            string[] tagsOfScenario = ((string[])(null));
+            System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Get seats for a flight filtered by seat type", null, tagsOfScenario, argumentsOfScenario, featureTags);
+#line 16
+    this.ScenarioInitialize(scenarioInfo);
+#line hidden
+            if ((TagHelper.ContainsIgnoreTag(tagsOfScenario) || TagHelper.ContainsIgnoreTag(featureTags)))
+            {
+                testRunner.SkipScenario();
+            }
+            else
+            {
+                this.ScenarioStart();
+                TechTalk.SpecFlow.Table table3 = new TechTalk.SpecFlow.Table(new string[] {
+                            "FlightNumber",
+                            "DepartureAirportIataCode",
+                            "DepartureAirportTimeZone",
+                            "DestinationAirportIataCode",
+                            "DestinationAirportTimeZone",
+                            "DepartureTime",
+                            "ArrivalTime",
+                            "EconomyPrice",
+                            "BusinessPrice"});
+                table3.AddRow(new string[] {
+                            "EA123",
+                            "YVR",
+                            "America/Vancouver",
+                            "CDG",
+                            "Europe/Paris",
+                            "2025-01-01T10:00:00",
+                            "2025-01-02T05:00:00",
+                            "1200.00",
+                            "4500.00"});
+#line 17
+        testRunner.Given("the following flights exist:", ((string)(null)), table3, "Given ");
+#line hidden
+#line 20
+        testRunner.When("I get the economy seats for flight EA123", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+#line hidden
+                TechTalk.SpecFlow.Table table4 = new TechTalk.SpecFlow.Table(new string[] {
+                            "SeatType",
+                            "Count",
+                            "Price",
+                            "Available"});
+                table4.AddRow(new string[] {
+                            "Economy",
+                            "301",
+                            "1200",
+                            "301"});
+#line 21
+        testRunner.Then("the following seat groups are returned:", ((string)(null)), table4, "Then ");
 #line hidden
             }
             this.ScenarioCleanup();

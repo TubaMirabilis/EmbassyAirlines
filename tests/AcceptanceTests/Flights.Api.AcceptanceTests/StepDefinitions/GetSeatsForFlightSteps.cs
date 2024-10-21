@@ -17,25 +17,37 @@ public sealed class GetSeatsForFlightSteps : IDisposable
     private HttpResponseMessage? _response;
     private readonly IServiceScope _scope;
     private readonly JsonSerializerOptions _options;
+    private readonly ApplicationDbContext _dbContext;
     public GetSeatsForFlightSteps(WebApplicationFactory<Program> factory)
     {
         _client = factory.CreateClient();
         _scope = factory.Services.CreateScope();
         _options = _scope.ServiceProvider.GetRequiredService<JsonSerializerOptions>();
+        _dbContext = _scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
     }
+
     [When(@"I get the seats for flight (.*)")]
     public async Task WhenIGetTheSeatsForFlight(string flightNumber)
     {
-        using var dbContext = _scope.ServiceProvider
-                                    .GetRequiredService<ApplicationDbContext>();
-        var flight = await dbContext.Flights
-                                    .SingleAsync(f => f.FlightNumber == flightNumber);
+        var flight = await _dbContext.Flights
+                                     .SingleAsync(f => f.FlightNumber == flightNumber);
         var id = flight.Id;
         var url = $"/flights/{id}/seats";
         _response = await _client.GetAsync(url);
     }
-    [Then(@"a concatenation of the following seat groups is returned:")]
-    public async Task ThenAConcatenationOfTheFollowingSeatGroupsIsReturned(Table table)
+
+    [When(@"I get the (.*) seats for flight (.*)")]
+    public async Task WhenIGetTheSeatsForFlight(string seatType, string flightNumber)
+    {
+        var flight = await _dbContext.Flights
+                                     .SingleAsync(f => f.FlightNumber == flightNumber);
+        var id = flight.Id;
+        var url = $"/flights/{id}/seats?seatType={seatType}";
+        _response = await _client.GetAsync(url);
+    }
+
+    [Then(@"the following seat groups are returned:")]
+    public async Task ThenTheFollowingSeatGroupsAreReturned(Table table)
     {
         ArgumentNullException.ThrowIfNull(_response);
         _response.EnsureSuccessStatusCode();
@@ -59,5 +71,6 @@ public sealed class GetSeatsForFlightSteps : IDisposable
         _response?.Dispose();
         _scope.Dispose();
         _client.Dispose();
+        _dbContext.Dispose();
     }
 }
