@@ -19,6 +19,10 @@ internal sealed class FlightConfiguration : IEntityTypeConfiguration<Flight>
                .HasMaxLength(10)
                .IsUnicode(false);
         ConfigureSchedule(builder);
+        builder.HasMany(b => b.Seats)
+               .WithOne()
+               .HasForeignKey(s => s.FlightId)
+                .OnDelete(DeleteBehavior.Cascade);
         builder.Navigation(f => f.Seats).AutoInclude();
     }
     private static void ConfigureSchedule(EntityTypeBuilder<Flight> builder)

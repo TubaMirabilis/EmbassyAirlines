@@ -35,32 +35,25 @@ public sealed class SeatService : ISeatService
         {
             if (i < 50)
             {
-                seats.AddRange(CreateRowOfSeats(i, SeatType.Economy, config1, economyPrice, businessPrice));
+                seats.AddRange(CreateRowOfSeats(i, SeatType.Economy, config1, economyPrice));
             }
             if (i == 50)
             {
-                seats.AddRange(CreateRowOfSeats(i, SeatType.Economy, config2, economyPrice, businessPrice));
+                seats.AddRange(CreateRowOfSeats(i, SeatType.Economy, config2, economyPrice));
             }
             if (i > 50)
             {
-                seats.AddRange(CreateRowOfSeats(i, SeatType.Economy, config3, economyPrice, businessPrice));
+                seats.AddRange(CreateRowOfSeats(i, SeatType.Economy, config3, economyPrice));
             }
         }
         return seats;
     }
     private static IEnumerable<Seat> CreateRowOfSeats(int rowNumber, SeatType seatType,
-        IEnumerable<char> seatLetters, decimal economyPrice, decimal businessPrice)
+        IEnumerable<char> seatLetters, decimal price)
     {
         foreach (var seatLetter in seatLetters)
         {
-            if (seatType == SeatType.Economy)
-            {
-                yield return Seat.Create($"{rowNumber}{seatLetter}", seatType, economyPrice);
-            }
-            if (seatType == SeatType.Business)
-            {
-                yield return Seat.Create($"{rowNumber}{seatLetter}", seatType, businessPrice);
-            }
+            yield return Seat.Create($"{rowNumber}{seatLetter}", seatType, price);
         }
     }
 }
