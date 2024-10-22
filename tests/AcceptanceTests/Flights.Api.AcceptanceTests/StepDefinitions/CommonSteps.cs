@@ -1,6 +1,6 @@
 using Flights.Api.AcceptanceTests.Extensions;
 using Flights.Api.Database;
-using Flights.Api.Entities;
+using Flights.Api.Domain.Flights;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using TechTalk.SpecFlow;

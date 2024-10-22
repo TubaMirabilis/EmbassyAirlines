@@ -1,6 +1,4 @@
-using Flights.Api.Entities;
-
-namespace Flights.Api.Services;
+namespace Flights.Api.Domain.Seats;
 
 public interface ISeatService
 {

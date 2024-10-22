@@ -1,4 +1,4 @@
-using Flights.Api.Entities;
+using Flights.Api.Domain.Seats;
 
 namespace Flights.Api.Services;
 

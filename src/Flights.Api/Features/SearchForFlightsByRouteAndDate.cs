@@ -1,6 +1,6 @@
 ﻿using ErrorOr;
 using Flights.Api.Database;
-using Flights.Api.Entities;
+using Flights.Api.Domain.Flights;
 using Flights.Api.Extensions;
 using FluentValidation;
 using Mediator;

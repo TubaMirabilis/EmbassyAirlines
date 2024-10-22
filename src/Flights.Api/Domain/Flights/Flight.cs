@@ -1,6 +1,7 @@
+using Flights.Api.Domain.Seats;
 using NodaTime;
 
-namespace Flights.Api.Entities;
+namespace Flights.Api.Domain.Flights;
 
 public sealed class Flight
 {
@@ -36,11 +37,3 @@ public sealed class Flight
     public static Flight Create(string flightNumber, FlightSchedule schedule, IEnumerable<Seat> seats)
         => new(flightNumber, schedule, seats);
 }
-public sealed record FlightSchedule
-{
-    public required Airport DepartureAirport { get; init; }
-    public required Airport DestinationAirport { get; init; }
-    public required ZonedDateTime DepartureTime { get; init; }
-    public required ZonedDateTime ArrivalTime { get; init; }
-}
-public sealed record Airport(string IataCode, string TimeZone);

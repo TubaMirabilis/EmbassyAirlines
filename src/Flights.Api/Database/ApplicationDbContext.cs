@@ -1,4 +1,5 @@
-﻿using Flights.Api.Entities;
+﻿using Flights.Api.Domain.Flights;
+using Flights.Api.Domain.Seats;
 using Microsoft.EntityFrameworkCore;
 
 namespace Flights.Api.Database;

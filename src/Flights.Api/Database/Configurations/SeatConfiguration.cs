@@ -1,4 +1,4 @@
-using Flights.Api.Entities;
+using Flights.Api.Domain.Seats;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;

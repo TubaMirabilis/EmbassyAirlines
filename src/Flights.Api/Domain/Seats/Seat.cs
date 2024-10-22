@@ -1,6 +1,6 @@
 using NodaTime;
 
-namespace Flights.Api.Entities;
+namespace Flights.Api.Domain.Seats;
 
 public sealed class Seat
 {
@@ -34,9 +34,4 @@ public sealed class Seat
     }
     public static Seat Create(string seatNumber, SeatType seatType, decimal price)
         => new(seatNumber, seatType, price);
-}
-public enum SeatType
-{
-    Economy,
-    Business
 }

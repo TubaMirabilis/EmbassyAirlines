@@ -1,5 +1,5 @@
 using System.Globalization;
-using Flights.Api.Entities;
+using Flights.Api.Domain.Flights;
 using Flights.Api.Services;
 using NodaTime;
 using TechTalk.SpecFlow;

@@ -1,4 +1,4 @@
-using Flights.Api.Entities;
+using Flights.Api.Domain.Seats;
 using Shared.Contracts;
 
 namespace Flights.Api.Extensions;

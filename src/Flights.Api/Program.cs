@@ -1,5 +1,6 @@
 using System.Reflection;
 using Flights.Api.Database;
+using Flights.Api.Domain.Seats;
 using Flights.Api.Extensions;
 using Flights.Api.Services;
 using FluentValidation;

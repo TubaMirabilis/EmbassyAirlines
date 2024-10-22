@@ -1,4 +1,4 @@
-using Flights.Api.Entities;
+using Flights.Api.Domain.Flights;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
