@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Text.Json;
+using Flights.Api.AcceptanceTests.Extensions;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -88,7 +89,7 @@ public sealed class SearchForFlightsByRouteAndDateSteps : IDisposable
     private async Task GetProblemDetailsFromResponseAndAssert(string detail)
     {
         ArgumentNullException.ThrowIfNull(_response);
-        var expectedProblemDetails = CreateProblemDetails(detail);
+        var expectedProblemDetails = new ProblemDetails().WithValidationError(detail);
         var content = await _response.Content.ReadAsStreamAsync();
         var actualProblemDetails = await JsonSerializer.DeserializeAsync<ProblemDetails>(content, _options);
         actualProblemDetails.Should().BeEquivalentTo(expectedProblemDetails);
@@ -114,14 +115,6 @@ public sealed class SearchForFlightsByRouteAndDateSteps : IDisposable
             f.AvailableBusinessSeats
         });
     }
-
-    private static ProblemDetails CreateProblemDetails(string detail) => new ProblemDetails
-    {
-        Title = "Validation Error",
-        Status = 400,
-        Detail = detail,
-        Type = "https://tools.ietf.org/html/rfc9110#section-15.5.1"
-    };
 
     public void Dispose()
     {

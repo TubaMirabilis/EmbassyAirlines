@@ -1,4 +1,23 @@
 services:
+    flights-api:
+        build:
+            context: .
+            dockerfile: ./docker/flights-api.dockerfile
+        restart: always
+        environment:
+            ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT}
+            ASPNETCORE_URLS: ${ASPNETCORE_URLS}
+            FLIGHTS_ConnectionStrings__DefaultConnection: ${FLIGHTS_ConnectionStrings__DefaultConnection}
+        ports:
+            - "80"
+        depends_on:
+            flightsapi-database:
+                condition: service_healthy
+        logging:
+            driver: ${DOCKER_LOG_DRIVER}
+            options:
+                tag: flights-api
+
     flightsapi-database:
         image: postgres:latest
         container_name: flightsapi-database

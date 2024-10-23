@@ -40,14 +40,19 @@ public static class GetSeatsForFlight
             {
                 return Error.Validation("Query.ValidationFailed", formattedErrors);
             }
-            var seats = _ctx.Seats
-                            .Where(s => s.FlightId == query.FlightId);
+            var flight = await _ctx.Flights
+                                  .FirstOrDefaultAsync(f => f.Id == query.FlightId, cancellationToken);
+            if (flight is null)
+            {
+                return Error.NotFound("Flight.NotFound", $"Flight with id {query.FlightId} was not found");
+            }
+            var seats = flight.Seats
+                              .Where(s => s.FlightId == query.FlightId);
             if (Enum.TryParse<SeatType>(query.SeatType, true, out var seatType))
             {
                 seats = seats.Where(s => s.SeatType == seatType);
             }
-            var seatsList = await seats.AsSplitQuery()
-                                       .ToListAsync(cancellationToken);
+            var seatsList = seats.ToList();
             return seatsList.Select(s => s.ToDto())
                             .OrderBy(s => s.SeatNumber)
                             .ToList();
