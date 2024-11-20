@@ -134,7 +134,7 @@ csharp_style_expression_bodied_constructors = false:silent
 csharp_style_expression_bodied_indexers = true:error
 csharp_style_expression_bodied_lambdas = true:error
 csharp_style_expression_bodied_local_functions = true:error
-csharp_style_expression_bodied_methods = false:silent
+csharp_style_expression_bodied_methods = true:error
 csharp_style_expression_bodied_operators = true:error
 csharp_style_expression_bodied_properties = true:error
 

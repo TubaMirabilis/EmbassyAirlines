@@ -15,10 +15,7 @@ internal sealed class CommonSteps : IDisposable
     {
         _scope = factory.Services.CreateScope();
     }
-    public void Dispose()
-    {
-        _scope.Dispose();
-    }
+    public void Dispose() => _scope.Dispose();
     [Given(@"the following flights exist:")]
     public async Task GivenTheFollowingFlightsExist(Table table)
     {

@@ -4,14 +4,11 @@ namespace Flights.Api.Domain.Seats;
 
 internal sealed class SeatService : ISeatService
 {
-    public IEnumerable<Seat> CreateSeats(string equipmentType, decimal economyPrice, decimal businessPrice)
+    public IEnumerable<Seat> CreateSeats(string equipmentType, decimal economyPrice, decimal businessPrice) => equipmentType switch
     {
-        return equipmentType switch
-        {
-            "B78X" => CreateSeatsForB78X(economyPrice, businessPrice),
-            _ => throw new ArgumentException("Invalid equipment type")
-        };
-    }
+        "B78X" => CreateSeatsForB78X(economyPrice, businessPrice),
+        _ => throw new ArgumentException("Invalid equipment type")
+    };
     private static List<Seat> CreateSeatsForB78X(decimal economyPrice, decimal businessPrice)
     {
         var seats = new List<Seat>();
