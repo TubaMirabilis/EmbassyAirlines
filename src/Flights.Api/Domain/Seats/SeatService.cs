@@ -1,8 +1,8 @@
 using Flights.Api.Domain.Seats;
 
-namespace Flights.Api.Services;
+namespace Flights.Api.Domain.Seats;
 
-public sealed class SeatService : ISeatService
+internal sealed class SeatService : ISeatService
 {
     public IEnumerable<Seat> CreateSeats(string equipmentType, decimal economyPrice, decimal businessPrice)
     {

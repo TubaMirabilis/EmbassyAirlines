@@ -2,7 +2,7 @@ using FluentValidation.Results;
 
 namespace Flights.Api.Extensions;
 
-public static class ValidationResultExtensions
+internal static class ValidationResultExtensions
 {
     public static bool IsValid(this ValidationResult validationResult, out string formattedErrors)
     {

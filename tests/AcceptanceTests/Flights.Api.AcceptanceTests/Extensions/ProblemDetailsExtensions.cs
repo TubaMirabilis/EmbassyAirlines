@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Flights.Api.AcceptanceTests.Extensions;
 
-public static class ProblemDetailsExtensions
+internal static class ProblemDetailsExtensions
 {
     public static ProblemDetails WithValidationError(this ProblemDetails pd, string error)
     {

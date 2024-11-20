@@ -11,7 +11,7 @@ using TechTalk.SpecFlow;
 namespace Flights.Api.AcceptanceTests.StepDefinitions;
 
 [Binding]
-public sealed class GetSeatsForFlightSteps : IDisposable
+internal sealed class GetSeatsForFlightSteps : IDisposable
 {
     private readonly HttpClient _client;
     private HttpResponseMessage? _response;
@@ -32,8 +32,8 @@ public sealed class GetSeatsForFlightSteps : IDisposable
         var flight = await _dbContext.Flights
                                      .SingleAsync(f => f.FlightNumber == flightNumber);
         var id = flight.Id;
-        var url = $"/flights/{id}/seats";
-        _response = await _client.GetAsync(url);
+        var uri = new Uri($"/flights/{id}/seats", UriKind.Relative);
+        _response = await _client.GetAsync(uri);
     }
 
     [When(@"I get the (.*) seats for flight (.*)")]
@@ -42,8 +42,8 @@ public sealed class GetSeatsForFlightSteps : IDisposable
         var flight = await _dbContext.Flights
                                      .SingleAsync(f => f.FlightNumber == flightNumber);
         var id = flight.Id;
-        var url = $"/flights/{id}/seats?seatType={seatType}";
-        _response = await _client.GetAsync(url);
+        var uri = new Uri($"/flights/{id}/seats?seatType={seatType}", UriKind.Relative);
+        _response = await _client.GetAsync(uri);
     }
 
     [Then(@"the following seat groups are returned:")]

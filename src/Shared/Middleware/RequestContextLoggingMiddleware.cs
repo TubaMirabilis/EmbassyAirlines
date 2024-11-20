@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Primitives;
 using Serilog.Context;
 
 namespace Shared.Middleware;
@@ -22,9 +21,7 @@ public class RequestContextLoggingMiddleware
     }
     private static string GetCorrelationId(HttpContext context)
     {
-        context.Request.Headers.TryGetValue(
-            CorrelationIdHeaderName,
-            out StringValues correlationId);
+        var correlationId = context.Request.Headers[CorrelationIdHeaderName];
         return correlationId.FirstOrDefault() ?? context.TraceIdentifier;
     }
 }

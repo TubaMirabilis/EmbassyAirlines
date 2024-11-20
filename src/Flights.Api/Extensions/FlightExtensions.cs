@@ -4,10 +4,10 @@ using Shared.Contracts;
 
 namespace Flights.Api.Extensions;
 
-public static class FlightExtensions
+internal static class FlightExtensions
 {
     public static FlightDto ToDto(this Flight flight)
-        => new FlightDto(
+        => new(
             flight.Id,
             flight.CreatedAt.ToDateTimeOffset(),
             flight.UpdatedAt.ToDateTimeOffset(),

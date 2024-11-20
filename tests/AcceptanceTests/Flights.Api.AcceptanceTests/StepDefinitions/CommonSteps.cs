@@ -8,7 +8,7 @@ using TechTalk.SpecFlow;
 namespace Flights.Api.AcceptanceTests.StepDefinitions;
 
 [Binding]
-public sealed class CommonSteps : IDisposable
+internal sealed class CommonSteps : IDisposable
 {
     private readonly IServiceScope _scope;
     public CommonSteps(WebApplicationFactory<Program> factory)

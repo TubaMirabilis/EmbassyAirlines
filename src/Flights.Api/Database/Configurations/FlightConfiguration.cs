@@ -2,11 +2,11 @@ using Flights.Api.Domain.Flights;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace Flights.Api.Configurations;
+namespace Flights.Api.Database.Configurations;
 
 internal sealed class FlightConfiguration : IEntityTypeConfiguration<Flight>
 {
-    private const string _annotation = "Npgsql:CheckConstraint";
+    private const string Annotation = "Npgsql:CheckConstraint";
     public void Configure(EntityTypeBuilder<Flight> builder)
     {
         builder.HasKey(b => b.Id);
@@ -45,7 +45,7 @@ internal sealed class FlightConfiguration : IEntityTypeConfiguration<Flight>
                .IsRequired()
                .HasMaxLength(3)
                .IsUnicode(false)
-               .HasAnnotation(_annotation, "Departure = upper(Departure)");
+               .HasAnnotation(Annotation, "Departure = upper(Departure)");
         builder.Property(d => d.TimeZone)
                .IsRequired()
                .HasMaxLength(50)
@@ -57,7 +57,7 @@ internal sealed class FlightConfiguration : IEntityTypeConfiguration<Flight>
                .IsRequired()
                .HasMaxLength(3)
                .IsUnicode(false)
-               .HasAnnotation(_annotation, "Destination = upper(Destination)");
+               .HasAnnotation(Annotation, "Destination = upper(Destination)");
         builder.Property(d => d.TimeZone)
                 .IsRequired()
                 .HasMaxLength(50)

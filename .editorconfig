@@ -20,6 +20,8 @@ dotnet_diagnostic.CA1031.severity = none
 dotnet_diagnostic.CA1034.severity = none
 # CA1062: Validate arguments of public methods
 dotnet_diagnostic.CA1062.severity = none
+# CA1515: Type can be made internal
+dotnet_diagnostic.CA1515.severity = none
 # CA1707: Identifiers should not contain underscores
 dotnet_diagnostic.CA1707.severity = none
 # CA1716: Identifiers should not match keywords
@@ -34,17 +36,13 @@ dotnet_diagnostic.CA1812.severity = none
 dotnet_diagnostic.CA1848.severity = none
 # CA2007: Consider calling ConfigureAwait on the awaited task
 dotnet_diagnostic.CA2007.severity = none
-# CA2227: Collection properties should be read only
-dotnet_diagnostic.CA2227.severity = none
-# CA2234: Pass system uri objects instead of strings
-dotnet_diagnostic.CA2234.severity = none
 # CA5404: TokenValidationParameters.ValidateAudience should not be set to false as it disables important validationDo not use hardcoded, crypto-weak IVs
 # A great idea, with the best of intensions, but AWS Cognito does not support audience properties in JWT tokens.
 dotnet_diagnostic.CA5404.severity = none
-# RMG020:
-dotnet_diagnostic.RMG020.severity = none
-# S125: Sections of code should not be commented out
-dotnet_diagnostic.S125.severity = none
+# IDE0005: Using directive is unnecessary
+dotnet_diagnostic.IDE0005.severity = none
+# IDE0058: Expression value is never used
+dotnet_diagnostic.IDE0058.severity = none
 # S1118: Utility classes should not have public constructors
 dotnet_diagnostic.S1118.severity = none
 # S1135: Track uses of "TODO" tags

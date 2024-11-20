@@ -12,10 +12,10 @@ using Testcontainers.PostgreSql;
 namespace Flights.Api.AcceptanceTests.Hooks;
 
 [Binding]
-public class TestHooks : IAsyncDisposable
+internal sealed class TestHooks : IAsyncDisposable
 {
     private readonly IObjectContainer _objectContainer;
-    private readonly WebApplicationFactory<Program> _factory = new WebApplicationFactory<Program>();
+    private readonly WebApplicationFactory<Program> _factory = new();
     private readonly PostgreSqlContainer _dbContainer;
     public TestHooks(IObjectContainer objectContainer)
     {
@@ -34,7 +34,7 @@ public class TestHooks : IAsyncDisposable
             {
                 PropertyNameCaseInsensitive = true
             });
-            services.RemoveAll(typeof(DbContextOptions<ApplicationDbContext>));
+            services.RemoveAll<DbContextOptions<ApplicationDbContext>>();
             var connectionString = _dbContainer.GetConnectionString();
             services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseNpgsql(connectionString, o => o.UseNodaTime())

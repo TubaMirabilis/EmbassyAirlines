@@ -1,12 +1,12 @@
 using System.Globalization;
 using Flights.Api.Domain.Flights;
-using Flights.Api.Services;
+using Flights.Api.Domain.Seats;
 using NodaTime;
 using TechTalk.SpecFlow;
 
 namespace Flights.Api.AcceptanceTests.Extensions;
 
-public static class TableRowExtensions
+internal static class TableRowExtensions
 {
     public static Flight ParseFlight(this TableRow row)
     {

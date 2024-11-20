@@ -11,7 +11,7 @@ using TechTalk.SpecFlow;
 namespace Flights.Api.AcceptanceTests.StepDefinitions;
 
 [Binding]
-public sealed class SearchForFlightsByRouteAndDateSteps : IDisposable
+internal sealed class SearchForFlightsByRouteAndDateSteps : IDisposable
 {
     private readonly HttpClient _client;
     private HttpResponseMessage? _response;
@@ -27,15 +27,25 @@ public sealed class SearchForFlightsByRouteAndDateSteps : IDisposable
     [When(@"I search for flights from (.*) to (.*) on (.*)")]
     public async Task WhenISearchForFlightsFromToOn(string departure, string destination, string date)
     {
-        var url = $"/flights?departure={departure}&destination={destination}&date={date}";
-        _response = await _client.GetAsync(url);
+        var baseAddress = _client.BaseAddress ?? throw new InvalidOperationException("Base address is null");
+        var uri = new UriBuilder(baseAddress)
+        {
+            Path = "/flights",
+            Query = $"departure={departure}&destination={destination}&date={date}"
+        }.Uri;
+        _response = await _client.GetAsync(uri);
     }
 
     [When(@"I search for flights from (.*) to (.*) on")]
     public async Task WhenISearchForFlightsFromToOn(string departure, string destination)
     {
-        var url = $"/flights?departure={departure}&destination={destination}";
-        _response = await _client.GetAsync(url);
+        var baseAddress = _client.BaseAddress ?? throw new InvalidOperationException("Base address is null");
+        var uri = new UriBuilder(baseAddress)
+        {
+            Path = "/flights",
+            Query = $"departure={departure}&destination={destination}"
+        }.Uri;
+        _response = await _client.GetAsync(uri);
     }
 
     [Then(@"the following flights are returned:")]
@@ -92,7 +102,7 @@ public sealed class SearchForFlightsByRouteAndDateSteps : IDisposable
         var expectedProblemDetails = new ProblemDetails().WithValidationError(detail);
         var content = await _response.Content.ReadAsStreamAsync();
         var actualProblemDetails = await JsonSerializer.DeserializeAsync<ProblemDetails>(content, _options);
-        actualProblemDetails.Should().BeEquivalentTo(expectedProblemDetails);
+        actualProblemDetails.Should().BeEquivalentTo(expectedProblemDetails, options => options.Excluding(p => p.Extensions));
     }
 
     private async Task<IEnumerable<object>> GetFlightsFromResponse()

@@ -2,7 +2,6 @@ using System.Reflection;
 using Flights.Api.Database;
 using Flights.Api.Domain.Seats;
 using Flights.Api.Extensions;
-using Flights.Api.Services;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
@@ -38,4 +37,6 @@ app.UseSerilogRequestLogging();
 app.UseExceptionHandler();
 await app.RunAsync();
 
+#pragma warning disable CA1515
 public partial class Program { }
+#pragma warning restore CA1515

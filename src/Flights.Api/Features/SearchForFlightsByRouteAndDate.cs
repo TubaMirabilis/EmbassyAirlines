@@ -85,9 +85,11 @@ public static class SearchForFlightsByRouteAndDate
             return GetFlights(flights);
         }
         private static List<FlightDto> GetFlights(IEnumerable<Flight> flights)
-            => flights.Select(f => f.ToDto())
-                      .OrderBy(f => f.DepartureTime)
-                      .ToList();
+            =>
+            [..
+                flights.Select(f => f.ToDto())
+                       .OrderBy(f => f.DepartureTime)
+            ];
         private static bool AllFlightsDeparted(List<Flight> flights)
             => flights.TrueForAll(f => f.Schedule
                                         .DepartureTime

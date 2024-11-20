@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
-namespace Flights.Api.Configurations;
+namespace Flights.Api.Database.Configurations;
 
 internal sealed class SeatConfiguration : IEntityTypeConfiguration<Seat>
 {
