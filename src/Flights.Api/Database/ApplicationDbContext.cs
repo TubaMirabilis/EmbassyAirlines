@@ -10,8 +10,8 @@ public sealed class ApplicationDbContext : DbContext
         : base(options)
     {
     }
-    public DbSet<Flight> Flights { get; set; }
-    public DbSet<Seat> Seats { get; set; }
+    public required DbSet<Flight> Flights { get; set; }
+    public required DbSet<Seat> Seats { get; set; }
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         var assembly = typeof(ApplicationDbContext).Assembly;
