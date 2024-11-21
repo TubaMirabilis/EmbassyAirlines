@@ -72,6 +72,6 @@ public sealed class GetSeatsForFlightEndpoint : IEndpoint
         var result = await sender.Send(query, ct);
         return result.Match(
             seats => Results.Ok(seats),
-            errors => ErrorHandlingHelper.HandleProblems(errors));
+            ErrorHandlingHelper.HandleProblems);
     }
 }
