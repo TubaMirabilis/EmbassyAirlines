@@ -20,8 +20,10 @@ internal sealed class SearchForFlightsByRouteAndDateSteps : IDisposable
     public SearchForFlightsByRouteAndDateSteps(WebApplicationFactory<Program> factory)
     {
         _client = factory.CreateClient();
-        _scope = factory.Services.CreateScope();
-        _options = _scope.ServiceProvider.GetRequiredService<JsonSerializerOptions>();
+        _scope = factory.Services
+                        .CreateScope();
+        _options = _scope.ServiceProvider
+                         .GetRequiredService<JsonSerializerOptions>();
     }
 
     [When(@"I search for flights from (.*) to (.*) on (.*)")]
@@ -53,14 +55,16 @@ internal sealed class SearchForFlightsByRouteAndDateSteps : IDisposable
     {
         var expectedFlights = GetExpectedFlightsFromTable(table);
         var actualFlights = await GetFlightsFromResponse();
-        actualFlights.Should().BeEquivalentTo(expectedFlights);
+        actualFlights.Should()
+                     .BeEquivalentTo(expectedFlights);
     }
 
     [Then(@"no flights are returned")]
     public async Task ThenNoFlightsAreReturned()
     {
         var actualFlights = await GetFlightsFromResponse();
-        actualFlights.Should().BeEmpty();
+        actualFlights.Should()
+                     .BeEmpty();
     }
 
     [Then(@"an error message is returned which states that the departure and destination airports cannot be the same")]
@@ -100,7 +104,8 @@ internal sealed class SearchForFlightsByRouteAndDateSteps : IDisposable
     {
         ArgumentNullException.ThrowIfNull(_response);
         var expectedProblemDetails = new ProblemDetails().WithValidationError(detail);
-        var content = await _response.Content.ReadAsStreamAsync();
+        var content = await _response.Content
+                                     .ReadAsStreamAsync();
         var actualProblemDetails = await JsonSerializer.DeserializeAsync<ProblemDetails>(content, _options);
         actualProblemDetails.Should()
                             .BeEquivalentTo(expectedProblemDetails, options => options.Excluding(p => p.Extensions));
@@ -110,7 +115,8 @@ internal sealed class SearchForFlightsByRouteAndDateSteps : IDisposable
     {
         ArgumentNullException.ThrowIfNull(_response);
         _response.EnsureSuccessStatusCode();
-        var content = await _response.Content.ReadAsStreamAsync();
+        var content = await _response.Content
+                                     .ReadAsStreamAsync();
         var flights = await JsonSerializer.DeserializeAsync<IEnumerable<FlightDto>>(content, _options);
         ArgumentNullException.ThrowIfNull(flights);
         return flights.Select(f => new

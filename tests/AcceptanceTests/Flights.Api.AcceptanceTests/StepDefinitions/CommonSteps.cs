@@ -22,7 +22,8 @@ internal sealed class CommonSteps : IDisposable
         List<Flight> flights = [];
         foreach (var row in table.Rows)
         {
-            flights.Add(row.ParseFlight());
+            var flight = row.ParseFlight();
+            flights.Add(flight);
         }
         using var dbContext = _scope.ServiceProvider
                                     .GetRequiredService<ApplicationDbContext>();
