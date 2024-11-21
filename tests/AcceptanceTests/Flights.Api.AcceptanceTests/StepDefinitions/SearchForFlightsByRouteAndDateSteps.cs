@@ -102,7 +102,8 @@ internal sealed class SearchForFlightsByRouteAndDateSteps : IDisposable
         var expectedProblemDetails = new ProblemDetails().WithValidationError(detail);
         var content = await _response.Content.ReadAsStreamAsync();
         var actualProblemDetails = await JsonSerializer.DeserializeAsync<ProblemDetails>(content, _options);
-        actualProblemDetails.Should().BeEquivalentTo(expectedProblemDetails, options => options.Excluding(p => p.Extensions));
+        actualProblemDetails.Should()
+                            .BeEquivalentTo(expectedProblemDetails, options => options.Excluding(p => p.Extensions));
     }
 
     private async Task<IEnumerable<object>> GetFlightsFromResponse()

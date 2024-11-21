@@ -25,17 +25,18 @@ internal sealed class FlightConfiguration : IEntityTypeConfiguration<Flight>
                 .OnDelete(DeleteBehavior.Cascade);
         builder.Navigation(f => f.Seats).AutoInclude();
     }
-    private static void ConfigureSchedule(EntityTypeBuilder<Flight> builder) => builder.ComplexProperty(b => b.Schedule, schedule =>
-                                                                                     {
-                                                                                         schedule.ComplexProperty(schedule => schedule.DepartureAirport,
-                                                                                             departure => ConfigureDepartureAirport(departure));
-                                                                                         schedule.ComplexProperty(schedule => schedule.DestinationAirport,
-                                                                                             destination => ConfigureDestinationAirport(destination));
-                                                                                         schedule.Property(s => s.DepartureTime)
-                                                                                                 .IsRequired();
-                                                                                         schedule.Property(s => s.ArrivalTime)
-                                                                                                 .IsRequired();
-                                                                                     });
+    private static void ConfigureSchedule(EntityTypeBuilder<Flight> builder)
+        => builder.ComplexProperty(b => b.Schedule, schedule =>
+        {
+            schedule.ComplexProperty(schedule => schedule.DepartureAirport,
+                departure => ConfigureDepartureAirport(departure));
+            schedule.ComplexProperty(schedule => schedule.DestinationAirport,
+                destination => ConfigureDestinationAirport(destination));
+            schedule.Property(s => s.DepartureTime)
+                    .IsRequired();
+            schedule.Property(s => s.ArrivalTime)
+                    .IsRequired();
+        });
     private static void ConfigureDepartureAirport(ComplexPropertyBuilder<Airport> builder)
     {
         builder.Property(d => d.IataCode)
