@@ -1,5 +1,3 @@
-using Flights.Api.Domain.Seats;
-
 namespace Flights.Api.Domain.Seats;
 
 internal sealed class SeatService : ISeatService
