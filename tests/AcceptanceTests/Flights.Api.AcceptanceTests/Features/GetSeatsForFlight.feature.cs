@@ -115,8 +115,8 @@ namespace Flights.Api.AcceptanceTests.Features
                             "America/Vancouver",
                             "CDG",
                             "Europe/Paris",
-                            "2025-01-01T10:00:00",
-                            "2025-01-02T05:00:00",
+                            "2026-01-01T10:00:00",
+                            "2026-01-02T05:00:00",
                             "1200.00",
                             "4500.00"});
 #line 7
@@ -181,8 +181,8 @@ namespace Flights.Api.AcceptanceTests.Features
                             "America/Vancouver",
                             "CDG",
                             "Europe/Paris",
-                            "2025-01-01T10:00:00",
-                            "2025-01-02T05:00:00",
+                            "2026-01-01T10:00:00",
+                            "2026-01-02T05:00:00",
                             "1200.00",
                             "4500.00"});
 #line 17
