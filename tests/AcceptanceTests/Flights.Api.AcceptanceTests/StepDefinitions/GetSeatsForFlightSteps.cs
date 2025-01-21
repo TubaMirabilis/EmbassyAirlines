@@ -26,7 +26,7 @@ internal sealed class GetSeatsForFlightSteps : IDisposable
         _dbContext = _scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
     }
 
-    [When(@"I get the seats for flight (.*)")]
+    [When("I get the seats for flight (.*)")]
     public async Task WhenIGetTheSeatsForFlight(string flightNumber)
     {
         var flight = await _dbContext.Flights
@@ -36,7 +36,7 @@ internal sealed class GetSeatsForFlightSteps : IDisposable
         _response = await _client.GetAsync(uri);
     }
 
-    [When(@"I get the (.*) seats for flight (.*)")]
+    [When("I get the (.*) seats for flight (.*)")]
     public async Task WhenIGetTheSeatsForFlight(string seatType, string flightNumber)
     {
         var flight = await _dbContext.Flights
@@ -46,13 +46,13 @@ internal sealed class GetSeatsForFlightSteps : IDisposable
         _response = await _client.GetAsync(uri);
     }
 
-    [Then(@"the following seat groups are returned:")]
+    [Then("the following seat groups are returned:")]
     public async Task ThenTheFollowingSeatGroupsAreReturned(Table table)
     {
         ArgumentNullException.ThrowIfNull(_response);
         _response.EnsureSuccessStatusCode();
         var content = await _response.Content.ReadAsStreamAsync();
-        var seats = await JsonSerializer.DeserializeAsync<IEnumerable<SeatDto>>(content, _options);
+        var seats = await JsonSerializer.DeserializeAsync<List<SeatDto>>(content, _options);
         ArgumentNullException.ThrowIfNull(seats);
         foreach (var row in table.Rows)
         {

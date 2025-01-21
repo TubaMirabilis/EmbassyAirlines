@@ -62,6 +62,5 @@ internal sealed class TestHooks : IAsyncDisposable
         await _dbContainer.StopAsync();
         await _dbContainer.DisposeAsync();
         await _factory.DisposeAsync();
-        GC.SuppressFinalize(this);
     }
 }

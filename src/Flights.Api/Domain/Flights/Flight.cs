@@ -6,9 +6,9 @@ namespace Flights.Api.Domain.Flights;
 public sealed class Flight
 {
     private readonly List<Seat> _seats = [];
-    private Flight(string flightNumber, FlightSchedule schedule, IEnumerable<Seat> seats)
+    private Flight(string flightNumber, FlightSchedule schedule, List<Seat> seats)
     {
-        if (!seats.All(s => s.IsAvailable))
+        if (!seats.TrueForAll(s => s.IsAvailable))
         {
             throw new ArgumentException("All seats must be available when creating a flight");
         }
@@ -35,5 +35,5 @@ public sealed class Flight
                                                  .Min(s => s.Price);
     public IReadOnlyList<Seat> Seats => _seats.AsReadOnly();
     public static Flight Create(string flightNumber, FlightSchedule schedule, IEnumerable<Seat> seats)
-        => new(flightNumber, schedule, seats);
+        => new(flightNumber, schedule, seats.ToList());
 }

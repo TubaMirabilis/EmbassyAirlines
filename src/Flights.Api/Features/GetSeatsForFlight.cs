@@ -71,7 +71,7 @@ public sealed class GetSeatsForFlightEndpoint : IEndpoint
         var query = new GetSeatsForFlight.Query(flightId, seatType);
         var result = await sender.Send(query, ct);
         return result.Match(
-            seats => Results.Ok(seats),
+            Results.Ok,
             ErrorHandlingHelper.HandleProblems);
     }
 }

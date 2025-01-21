@@ -26,7 +26,7 @@ internal sealed class SearchForFlightsByRouteAndDateSteps : IDisposable
                          .GetRequiredService<JsonSerializerOptions>();
     }
 
-    [When(@"I search for flights from (.*) to (.*) on (.*)")]
+    [When("I search for flights from (.*) to (.*) on (.*)")]
     public async Task WhenISearchForFlightsFromToOn(string departure, string destination, string date)
     {
         var baseAddress = _client.BaseAddress ?? throw new InvalidOperationException("Base address is null");
@@ -38,7 +38,7 @@ internal sealed class SearchForFlightsByRouteAndDateSteps : IDisposable
         _response = await _client.GetAsync(uri);
     }
 
-    [When(@"I search for flights from (.*) to (.*) on")]
+    [When("I search for flights from (.*) to (.*) on")]
     public async Task WhenISearchForFlightsFromToOn(string departure, string destination)
     {
         var baseAddress = _client.BaseAddress ?? throw new InvalidOperationException("Base address is null");
@@ -50,7 +50,7 @@ internal sealed class SearchForFlightsByRouteAndDateSteps : IDisposable
         _response = await _client.GetAsync(uri);
     }
 
-    [Then(@"the following flights are returned:")]
+    [Then("the following flights are returned:")]
     public async Task ThenTheFollowingFlightsAreReturned(Table table)
     {
         var expectedFlights = GetExpectedFlightsFromTable(table);
@@ -59,7 +59,7 @@ internal sealed class SearchForFlightsByRouteAndDateSteps : IDisposable
                      .BeEquivalentTo(expectedFlights);
     }
 
-    [Then(@"no flights are returned")]
+    [Then("no flights are returned")]
     public async Task ThenNoFlightsAreReturned()
     {
         var actualFlights = await GetFlightsFromResponse();
@@ -67,38 +67,38 @@ internal sealed class SearchForFlightsByRouteAndDateSteps : IDisposable
                      .BeEmpty();
     }
 
-    [Then(@"an error message is returned which states that the departure and destination airports cannot be the same")]
+    [Then("an error message is returned which states that the departure and destination airports cannot be the same")]
     public async Task ThenAnErrorMessageIsReturnedWhichStatesThatTheDepartureAndDestinationAirportsCannotBeTheSame()
         => await GetProblemDetailsFromResponseAndAssert("Destination cannot be the same as departure");
 
-    [Then(@"an error message is returned which states that the destination airport code is required")]
+    [Then("an error message is returned which states that the destination airport code is required")]
     public async Task ThenAnErrorMessageIsReturnedWhichStatesThatTheDestinationAirportCodeIsRequired()
         => await GetProblemDetailsFromResponseAndAssert("Destination is required");
 
-    [Then(@"an error message is returned which states that the departure airport code is required")]
+    [Then("an error message is returned which states that the departure airport code is required")]
     public async Task ThenAnErrorMessageIsReturnedWhichStatesThatTheDepartureAirportCodeIsRequired()
         => await GetProblemDetailsFromResponseAndAssert("Departure is required");
 
-    [Then(@"an error message is returned which states that the date format is invalid")]
+    [Then("an error message is returned which states that the date format is invalid")]
     public async Task ThenAnErrorMessageIsReturnedWhichStatesThatTheDateFormatIsInvalid()
         => await GetProblemDetailsFromResponseAndAssert("Invalid date format. Please use yyyy-MM-dd");
 
-    [Then(@"an error message is returned which states that the date parameter is required")]
+    [Then("an error message is returned which states that the date parameter is required")]
     public async Task ThenAnErrorMessageIsReturnedWhichStatesThatTheDateParameterIsRequired()
         => await GetProblemDetailsFromResponseAndAssert("Date is required");
 
-    private static IEnumerable<object> GetExpectedFlightsFromTable(Table table) => table.Rows.Select(row => new
-    {
-        FlightNumber = row["FlightNumber"],
-        Departure = row["DepartureAirportIataCode"],
-        Destination = row["DestinationAirportIataCode"],
-        DepartureTime = DateTimeOffset.Parse(row["DepartureTime"], CultureInfo.InvariantCulture),
-        ArrivalTime = DateTimeOffset.Parse(row["ArrivalTime"], CultureInfo.InvariantCulture),
-        CheapestEconomyPrice = decimal.Parse(row["CheapestEconomyPrice"], CultureInfo.InvariantCulture),
-        CheapestBusinessPrice = decimal.Parse(row["CheapestBusinessPrice"], CultureInfo.InvariantCulture),
-        AvailableEconomySeats = int.Parse(row["AvailableEconomySeats"], CultureInfo.InvariantCulture),
-        AvailableBusinessSeats = int.Parse(row["AvailableBusinessSeats"], CultureInfo.InvariantCulture)
-    });
+    private static IEnumerable<FlightDto> GetExpectedFlightsFromTable(Table table) => table.Rows.Select(row => new FlightDto
+    (
+        row["FlightNumber"],
+        row["DepartureAirportIataCode"],
+        row["DestinationAirportIataCode"],
+        DateTimeOffset.Parse(row["DepartureTime"], CultureInfo.InvariantCulture),
+        DateTimeOffset.Parse(row["ArrivalTime"], CultureInfo.InvariantCulture),
+        decimal.Parse(row["CheapestEconomyPrice"], CultureInfo.InvariantCulture),
+        decimal.Parse(row["CheapestBusinessPrice"], CultureInfo.InvariantCulture),
+        int.Parse(row["AvailableEconomySeats"], CultureInfo.InvariantCulture),
+        int.Parse(row["AvailableBusinessSeats"], CultureInfo.InvariantCulture)
+    ));
 
     private async Task GetProblemDetailsFromResponseAndAssert(string detail)
     {
@@ -111,7 +111,7 @@ internal sealed class SearchForFlightsByRouteAndDateSteps : IDisposable
                             .BeEquivalentTo(expectedProblemDetails, options => options.Excluding(p => p.Extensions));
     }
 
-    private async Task<IEnumerable<object>> GetFlightsFromResponse()
+    private async Task<IEnumerable<FlightDto>> GetFlightsFromResponse()
     {
         ArgumentNullException.ThrowIfNull(_response);
         _response.EnsureSuccessStatusCode();
@@ -119,18 +119,7 @@ internal sealed class SearchForFlightsByRouteAndDateSteps : IDisposable
                                      .ReadAsStreamAsync();
         var flights = await JsonSerializer.DeserializeAsync<IEnumerable<FlightDto>>(content, _options);
         ArgumentNullException.ThrowIfNull(flights);
-        return flights.Select(f => new
-        {
-            f.FlightNumber,
-            f.Departure,
-            f.Destination,
-            f.DepartureTime,
-            f.ArrivalTime,
-            f.CheapestEconomyPrice,
-            f.CheapestBusinessPrice,
-            f.AvailableEconomySeats,
-            f.AvailableBusinessSeats
-        });
+        return flights;
     }
 
     public void Dispose()

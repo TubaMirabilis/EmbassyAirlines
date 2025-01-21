@@ -26,12 +26,7 @@ public sealed class Seat
     public SeatType SeatType { get; private set; }
     public bool IsAvailable { get; private set; }
     public decimal Price { get; private set; }
-    public Guid FlightId { get; set; }
-    public void SetAvailability(bool isAvailable)
-    {
-        IsAvailable = isAvailable;
-        UpdatedAt = SystemClock.Instance.GetCurrentInstant();
-    }
+    public Guid FlightId { get; init; }
     public static Seat Create(string seatNumber, SeatType seatType, decimal price)
         => new(seatNumber, seatType, price);
 }

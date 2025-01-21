@@ -110,7 +110,7 @@ public sealed class SearchForFlightsByRouteAndDateEndpoint : IEndpoint
         var query = new SearchForFlightsByRouteAndDate.Query(departure, destination, date);
         var result = await sender.Send(query, ct);
         return result.Match(
-            flights => Results.Ok(flights),
+            Results.Ok,
             ErrorHandlingHelper.HandleProblems);
     }
 }
