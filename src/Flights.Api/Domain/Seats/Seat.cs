@@ -11,7 +11,7 @@ public sealed class Seat
         UpdatedAt = SystemClock.Instance.GetCurrentInstant();
         SeatNumber = seatNumber;
         SeatType = seatType;
-        IsAvailable = true;
+        IsBooked = true;
         Price = price;
     }
 #pragma warning disable CS8618
@@ -24,9 +24,14 @@ public sealed class Seat
     public Instant UpdatedAt { get; private set; }
     public string SeatNumber { get; private set; }
     public SeatType SeatType { get; private set; }
-    public bool IsAvailable { get; private set; }
+    public bool IsBooked { get; private set; }
     public decimal Price { get; private set; }
     public Guid FlightId { get; init; }
+    public void MarkAsBooked()
+    {
+        IsBooked = false;
+        UpdatedAt = SystemClock.Instance.GetCurrentInstant();
+    }
     public static Seat Create(string seatNumber, SeatType seatType, decimal price)
         => new(seatNumber, seatType, price);
 }

@@ -9,7 +9,7 @@ internal static class SeatExtensions
         => new(
             seat.SeatNumber,
             seat.SeatType.ToString(),
-            seat.IsAvailable,
+            seat.IsBooked,
             seat.Price
         );
 }

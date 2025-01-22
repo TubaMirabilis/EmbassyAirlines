@@ -41,7 +41,7 @@ public static class GetSeatsForFlight
                 return Error.Validation("Query.ValidationFailed", formattedErrors);
             }
             var flight = await _ctx.Flights
-                                  .FirstOrDefaultAsync(f => f.Id == query.FlightId, cancellationToken);
+                                  .SingleOrDefaultAsync(f => f.Id == query.FlightId, cancellationToken);
             if (flight is null)
             {
                 return Error.NotFound("Flight.NotFound", $"Flight with id {query.FlightId} was not found");

@@ -1,4 +1,5 @@
-﻿using Flights.Api.Domain.Flights;
+﻿using Flights.Api.Domain.Bookings;
+using Flights.Api.Domain.Flights;
 using Flights.Api.Domain.Seats;
 using Microsoft.EntityFrameworkCore;
 
@@ -10,8 +11,9 @@ public sealed class ApplicationDbContext : DbContext
         : base(options)
     {
     }
-    public required DbSet<Flight> Flights { get; set; }
-    public required DbSet<Seat> Seats { get; set; }
+    public DbSet<Flight> Flights { get; set; } = null!;
+    public DbSet<Seat> Seats { get; set; } = null!;
+    public DbSet<Booking> Bookings { get; set; } = null!;
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         var assembly = typeof(ApplicationDbContext).Assembly;

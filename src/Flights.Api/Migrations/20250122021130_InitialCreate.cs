@@ -6,7 +6,7 @@ using NodaTime;
 namespace Flights.Api.Migrations;
 
 /// <inheritdoc />
-internal sealed partial class InitialCreate : Migration
+public partial class InitialCreate : Migration
 {
     /// <inheritdoc />
     protected override void Up(MigrationBuilder migrationBuilder)
@@ -37,7 +37,7 @@ internal sealed partial class InitialCreate : Migration
                 updated_at = table.Column<Instant>(type: "timestamp with time zone", nullable: false),
                 seat_number = table.Column<string>(type: "character varying(3)", unicode: false, maxLength: 3, nullable: false),
                 seat_type = table.Column<string>(type: "character varying(20)", unicode: false, maxLength: 20, nullable: false),
-                is_available = table.Column<bool>(type: "boolean", nullable: false),
+                is_booked = table.Column<bool>(type: "boolean", nullable: false),
                 price = table.Column<decimal>(type: "numeric", nullable: false),
                 flight_id = table.Column<Guid>(type: "uuid", nullable: false)
             },
@@ -52,6 +52,33 @@ internal sealed partial class InitialCreate : Migration
                     onDelete: ReferentialAction.Cascade);
             });
 
+        migrationBuilder.CreateTable(
+            name: "bookings",
+            columns: table => new
+            {
+                id = table.Column<Guid>(type: "uuid", nullable: false),
+                created_at = table.Column<Instant>(type: "timestamp with time zone", nullable: false),
+                updated_at = table.Column<Instant>(type: "timestamp with time zone", nullable: false),
+                seat_id = table.Column<Guid>(type: "uuid", nullable: false),
+                passenger_name = table.Column<string>(type: "text", nullable: false),
+                passenger_email = table.Column<string>(type: "text", nullable: true)
+            },
+            constraints: table =>
+            {
+                table.PrimaryKey("pk_bookings", x => x.id);
+                table.ForeignKey(
+                    name: "fk_bookings_seats_seat_id",
+                    column: x => x.seat_id,
+                    principalTable: "seats",
+                    principalColumn: "id",
+                    onDelete: ReferentialAction.Cascade);
+            });
+
+        migrationBuilder.CreateIndex(
+            name: "ix_bookings_seat_id",
+            table: "bookings",
+            column: "seat_id");
+
         migrationBuilder.CreateIndex(
             name: "ix_seats_flight_id",
             table: "seats",
@@ -61,6 +88,9 @@ internal sealed partial class InitialCreate : Migration
     /// <inheritdoc />
     protected override void Down(MigrationBuilder migrationBuilder)
     {
+        migrationBuilder.DropTable(
+            name: "bookings");
+
         migrationBuilder.DropTable(
             name: "seats");
 

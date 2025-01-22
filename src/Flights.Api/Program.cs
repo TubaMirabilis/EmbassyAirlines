@@ -8,6 +8,7 @@ using Serilog;
 using Shared;
 using Shared.Extensions;
 using Shared.Middleware;
+using Sqids;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Host.UseSerilog((context, loggerConfig) =>
@@ -25,6 +26,11 @@ services.AddDbContext<ApplicationDbContext>(options =>
 services.AddMediator(options => options.ServiceLifetime = ServiceLifetime.Scoped);
 services.AddValidatorsFromAssemblyContaining<Program>();
 services.AddSingleton<ISeatService, SeatService>();
+services.AddSingleton<SqidsEncoder<int>>(new SqidsEncoder<int>(new()
+{
+    Alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789",
+    MinLength = 6
+}));
 services.AddEndpoints(Assembly.GetExecutingAssembly());
 var app = builder.Build();
 if (app.Environment.IsDevelopment())

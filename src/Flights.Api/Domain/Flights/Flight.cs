@@ -8,7 +8,7 @@ public sealed class Flight
     private readonly List<Seat> _seats = [];
     private Flight(string flightNumber, FlightSchedule schedule, List<Seat> seats)
     {
-        if (!seats.TrueForAll(s => s.IsAvailable))
+        if (!seats.TrueForAll(s => s.IsBooked))
         {
             throw new ArgumentException("All seats must be available when creating a flight");
         }
