@@ -59,6 +59,7 @@ public partial class InitialCreate : Migration
                 id = table.Column<Guid>(type: "uuid", nullable: false),
                 created_at = table.Column<Instant>(type: "timestamp with time zone", nullable: false),
                 updated_at = table.Column<Instant>(type: "timestamp with time zone", nullable: false),
+                reference = table.Column<string>(type: "text", nullable: false),
                 seat_id = table.Column<Guid>(type: "uuid", nullable: false),
                 passenger_name = table.Column<string>(type: "text", nullable: false),
                 passenger_email = table.Column<string>(type: "text", nullable: true)

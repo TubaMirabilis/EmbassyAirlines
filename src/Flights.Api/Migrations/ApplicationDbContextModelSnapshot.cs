@@ -44,6 +44,11 @@ namespace Flights.Api.Migrations
                         .HasColumnType("text")
                         .HasColumnName("passenger_name");
 
+                    b.Property<string>("Reference")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("reference");
+
                     b.Property<Guid>("SeatId")
                         .HasColumnType("uuid")
                         .HasColumnName("seat_id");

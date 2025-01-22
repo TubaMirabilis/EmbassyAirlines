@@ -14,7 +14,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Flights.Api.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250122021130_InitialCreate")]
+    [Migration("20250122041957_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -46,6 +46,11 @@ namespace Flights.Api.Migrations
                         .IsRequired()
                         .HasColumnType("text")
                         .HasColumnName("passenger_name");
+
+                    b.Property<string>("Reference")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("reference");
 
                     b.Property<Guid>("SeatId")
                         .HasColumnType("uuid")
