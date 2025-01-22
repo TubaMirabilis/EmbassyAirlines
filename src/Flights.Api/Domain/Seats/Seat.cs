@@ -1,17 +1,18 @@
+using Flights.Api.Domain.Flights;
 using NodaTime;
 
 namespace Flights.Api.Domain.Seats;
 
 public sealed class Seat
 {
-    private Seat(string seatNumber, SeatType seatType, decimal price)
+    private Seat(SeatType seatType, string seatNumber, decimal price)
     {
         Id = Guid.NewGuid();
         CreatedAt = SystemClock.Instance.GetCurrentInstant();
         UpdatedAt = SystemClock.Instance.GetCurrentInstant();
         SeatNumber = seatNumber;
         SeatType = seatType;
-        IsBooked = true;
+        IsBooked = false;
         Price = price;
     }
 #pragma warning disable CS8618
@@ -26,12 +27,13 @@ public sealed class Seat
     public SeatType SeatType { get; private set; }
     public bool IsBooked { get; private set; }
     public decimal Price { get; private set; }
+    public Flight Flight { get; init; } = null!;
     public Guid FlightId { get; init; }
     public void MarkAsBooked()
     {
-        IsBooked = false;
+        IsBooked = true;
         UpdatedAt = SystemClock.Instance.GetCurrentInstant();
     }
-    public static Seat Create(string seatNumber, SeatType seatType, decimal price)
-        => new(seatNumber, seatType, price);
+    public static Seat Create(SeatType seatType, string seatNumber, decimal price)
+        => new(seatType, seatNumber, price);
 }

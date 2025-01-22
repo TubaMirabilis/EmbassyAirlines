@@ -21,8 +21,7 @@ services.AddProblemDetails();
 services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(config["ConnectionStrings:DefaultConnection"],
                o => o.UseNodaTime())
-           .UseSnakeCaseNamingConvention()
-           .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking));
+           .UseSnakeCaseNamingConvention());
 services.AddMediator(options => options.ServiceLifetime = ServiceLifetime.Scoped);
 services.AddValidatorsFromAssemblyContaining<Program>();
 services.AddSingleton<ISeatService, SeatService>();

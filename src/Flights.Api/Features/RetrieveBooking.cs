@@ -20,6 +20,7 @@ public static class RetrieveBooking
         public async ValueTask<ErrorOr<BookingDto>> Handle(Query query, CancellationToken cancellationToken)
         {
             var booking = await _ctx.Bookings
+                                    .AsNoTracking()
                                     .SingleOrDefaultAsync(b => b.Id == query.Id, cancellationToken);
             return booking is null
                 ? Error.NotFound("Booking.NotFound", $"Booking with id {query.Id} was not found")

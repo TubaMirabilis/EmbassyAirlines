@@ -18,13 +18,13 @@ internal sealed class SeatService : ISeatService
         {
             if (i % 2 != 0)
             {
-                seats.Add(Seat.Create($"{i}A", SeatType.Business, businessPrice));
-                seats.Add(Seat.Create($"{i}K", SeatType.Business, businessPrice));
+                seats.Add(Seat.Create(SeatType.Business, $"{i}A", businessPrice));
+                seats.Add(Seat.Create(SeatType.Business, $"{i}K", businessPrice));
             }
             if (i % 2 == 0)
             {
-                seats.Add(Seat.Create($"{i}D", SeatType.Business, businessPrice));
-                seats.Add(Seat.Create($"{i}F", SeatType.Business, businessPrice));
+                seats.Add(Seat.Create(SeatType.Business, $"{i}D", businessPrice));
+                seats.Add(Seat.Create(SeatType.Business, $"{i}F", businessPrice));
             }
         }
         for (var i = 19; i <= 52; i++)
@@ -44,12 +44,11 @@ internal sealed class SeatService : ISeatService
         }
         return seats;
     }
-    private static IEnumerable<Seat> CreateRowOfSeats(int rowNumber, SeatType seatType,
-        IEnumerable<char> seatLetters, decimal price)
+    private static IEnumerable<Seat> CreateRowOfSeats(int rowNumber, SeatType seatType, IEnumerable<char> seatLetters, decimal price)
     {
         foreach (var seatLetter in seatLetters)
         {
-            yield return Seat.Create($"{rowNumber}{seatLetter}", seatType, price);
+            yield return Seat.Create(seatType, $"{rowNumber}{seatLetter}", price);
         }
     }
 }

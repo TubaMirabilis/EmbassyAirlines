@@ -21,8 +21,12 @@ public static class BookSeatForFlight
         public Validator()
         {
             RuleFor(x => x.Request.SeatId).NotEmpty();
-            RuleFor(x => x.Request.PassengerName).NotEmpty();
-            RuleFor(x => x.Request.PassengerEmail).EmailAddress();
+            RuleFor(x => x.Request.PassengerName)
+                .NotEmpty()
+                .MaximumLength(100);
+            RuleFor(x => x.Request.PassengerEmail)
+                .EmailAddress()
+                .MaximumLength(100);
         }
     }
     public sealed class Handler : ICommandHandler<Command, ErrorOr<BookingDto>>
@@ -49,8 +53,13 @@ public static class BookSeatForFlight
             {
                 return Error.NotFound("Seat.NotFound", $"Seat with id {command.Request.SeatId} not found");
             }
+            if (seat.IsBooked)
+            {
+                return Error.Conflict("Seat.AlreadyBooked", $"Seat with id {command.Request.SeatId} is already booked");
+            }
             seat.MarkAsBooked();
             var count = await _ctx.Bookings
+                                  .AsNoTracking()
                                   .Include(b => b.Seat)
                                   .CountAsync(b => b.Seat.FlightId == seat.FlightId, cancellationToken);
             var reference = _sqids.Encode(count);

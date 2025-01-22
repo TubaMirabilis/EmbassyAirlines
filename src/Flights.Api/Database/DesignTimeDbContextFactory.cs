@@ -10,8 +10,7 @@ public class DesignTimeDbContextFactory : IDesignTimeDbContextFactory<Applicatio
         var builder = new DbContextOptionsBuilder<ApplicationDbContext>()
             .UseNpgsql("Host=127.0.0.1;Database=DummyDb;Username=FakeUser;Password=FakePassword",
                 o => o.UseNodaTime())
-            .UseSnakeCaseNamingConvention()
-            .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
+            .UseSnakeCaseNamingConvention();
         return new ApplicationDbContext(builder.Options);
     }
 }

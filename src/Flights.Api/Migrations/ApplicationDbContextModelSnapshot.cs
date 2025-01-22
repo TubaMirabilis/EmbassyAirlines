@@ -211,12 +211,14 @@ namespace Flights.Api.Migrations
 
             modelBuilder.Entity("Flights.Api.Domain.Seats.Seat", b =>
                 {
-                    b.HasOne("Flights.Api.Domain.Flights.Flight", null)
+                    b.HasOne("Flights.Api.Domain.Flights.Flight", "Flight")
                         .WithMany("Seats")
                         .HasForeignKey("FlightId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_seats_flights_flight_id");
+
+                    b.Navigation("Flight");
                 });
 
             modelBuilder.Entity("Flights.Api.Domain.Flights.Flight", b =>

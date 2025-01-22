@@ -14,6 +14,6 @@ internal static class FlightExtensions
         flight.Schedule.ArrivalTime.ToDateTimeOffset(),
         flight.CheapestEconomyPrice,
         flight.CheapestBusinessPrice,
-        flight.Seats.Count(s => s is { IsBooked: true, SeatType: SeatType.Economy }),
-        flight.Seats.Count(s => s is { IsBooked: true, SeatType: SeatType.Business }));
+        flight.Seats.Count(s => s is { IsBooked: false, SeatType: SeatType.Economy }),
+        flight.Seats.Count(s => s is { IsBooked: false, SeatType: SeatType.Business }));
 }

@@ -72,6 +72,7 @@ public static class SearchForFlightsByRouteAndDate
             }
             var localDate = parseResult.Value;
             var flights = await _ctx.Flights
+                                    .AsNoTracking()
                                     .Where(f =>
                                         f.Schedule.DepartureAirport.IataCode == query.Departure &&
                                         f.Schedule.DestinationAirport.IataCode == query.Destination &&

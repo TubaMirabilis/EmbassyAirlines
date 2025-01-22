@@ -14,7 +14,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Flights.Api.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250122041957_InitialCreate")]
+    [Migration("20250122092955_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -214,12 +214,14 @@ namespace Flights.Api.Migrations
 
             modelBuilder.Entity("Flights.Api.Domain.Seats.Seat", b =>
                 {
-                    b.HasOne("Flights.Api.Domain.Flights.Flight", null)
+                    b.HasOne("Flights.Api.Domain.Flights.Flight", "Flight")
                         .WithMany("Seats")
                         .HasForeignKey("FlightId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_seats_flights_flight_id");
+
+                    b.Navigation("Flight");
                 });
 
             modelBuilder.Entity("Flights.Api.Domain.Flights.Flight", b =>

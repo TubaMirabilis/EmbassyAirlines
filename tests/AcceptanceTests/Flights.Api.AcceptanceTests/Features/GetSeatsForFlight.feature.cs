@@ -99,7 +99,7 @@ namespace Flights.Api.AcceptanceTests.Features
             else
             {
                 this.ScenarioStart();
-                TechTalk.SpecFlow.Table table1 = new TechTalk.SpecFlow.Table(new string[] {
+                TechTalk.SpecFlow.Table table2 = new TechTalk.SpecFlow.Table(new string[] {
                             "FlightNumber",
                             "DepartureAirportIataCode",
                             "DepartureAirportTimeZone",
@@ -109,7 +109,7 @@ namespace Flights.Api.AcceptanceTests.Features
                             "ArrivalTime",
                             "EconomyPrice",
                             "BusinessPrice"});
-                table1.AddRow(new string[] {
+                table2.AddRow(new string[] {
                             "EA123",
                             "YVR",
                             "America/Vancouver",
@@ -120,28 +120,28 @@ namespace Flights.Api.AcceptanceTests.Features
                             "1200.00",
                             "4500.00"});
 #line 7
-        testRunner.Given("the following flights exist:", ((string)(null)), table1, "Given ");
+        testRunner.Given("the following flights exist:", ((string)(null)), table2, "Given ");
 #line hidden
 #line 10
         testRunner.When("I get the seats for flight EA123", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line hidden
-                TechTalk.SpecFlow.Table table2 = new TechTalk.SpecFlow.Table(new string[] {
+                TechTalk.SpecFlow.Table table3 = new TechTalk.SpecFlow.Table(new string[] {
                             "SeatType",
                             "Count",
                             "Price",
                             "Available"});
-                table2.AddRow(new string[] {
+                table3.AddRow(new string[] {
                             "Economy",
                             "301",
                             "1200",
                             "301"});
-                table2.AddRow(new string[] {
+                table3.AddRow(new string[] {
                             "Business",
                             "36",
                             "4500",
                             "36"});
 #line 11
-        testRunner.Then("the following seat groups are returned:", ((string)(null)), table2, "Then ");
+        testRunner.Then("the following seat groups are returned:", ((string)(null)), table3, "Then ");
 #line hidden
             }
             this.ScenarioCleanup();
@@ -165,7 +165,7 @@ namespace Flights.Api.AcceptanceTests.Features
             else
             {
                 this.ScenarioStart();
-                TechTalk.SpecFlow.Table table3 = new TechTalk.SpecFlow.Table(new string[] {
+                TechTalk.SpecFlow.Table table4 = new TechTalk.SpecFlow.Table(new string[] {
                             "FlightNumber",
                             "DepartureAirportIataCode",
                             "DepartureAirportTimeZone",
@@ -175,7 +175,7 @@ namespace Flights.Api.AcceptanceTests.Features
                             "ArrivalTime",
                             "EconomyPrice",
                             "BusinessPrice"});
-                table3.AddRow(new string[] {
+                table4.AddRow(new string[] {
                             "EA123",
                             "YVR",
                             "America/Vancouver",
@@ -186,23 +186,23 @@ namespace Flights.Api.AcceptanceTests.Features
                             "1200.00",
                             "4500.00"});
 #line 17
-        testRunner.Given("the following flights exist:", ((string)(null)), table3, "Given ");
+        testRunner.Given("the following flights exist:", ((string)(null)), table4, "Given ");
 #line hidden
 #line 20
         testRunner.When("I get the economy seats for flight EA123", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line hidden
-                TechTalk.SpecFlow.Table table4 = new TechTalk.SpecFlow.Table(new string[] {
+                TechTalk.SpecFlow.Table table5 = new TechTalk.SpecFlow.Table(new string[] {
                             "SeatType",
                             "Count",
                             "Price",
                             "Available"});
-                table4.AddRow(new string[] {
+                table5.AddRow(new string[] {
                             "Economy",
                             "301",
                             "1200",
                             "301"});
 #line 21
-        testRunner.Then("the following seat groups are returned:", ((string)(null)), table4, "Then ");
+        testRunner.Then("the following seat groups are returned:", ((string)(null)), table5, "Then ");
 #line hidden
             }
             this.ScenarioCleanup();

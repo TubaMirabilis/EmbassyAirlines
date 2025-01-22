@@ -63,7 +63,7 @@ internal sealed class GetSeatsForFlightSteps : IDisposable
             var group = seats.Where(s => s.SeatType == seatType).ToList();
             group.Should().HaveCount(count);
             group.Should().OnlyContain(s => s.Price == price);
-            group.Count(s => s.IsBooked).Should().Be(available);
+            group.Count(s => !s.IsBooked).Should().Be(available);
         }
     }
     public void Dispose()
