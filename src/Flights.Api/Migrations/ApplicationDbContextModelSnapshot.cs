@@ -35,23 +35,19 @@ namespace Flights.Api.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at");
 
-                    b.Property<string>("PassengerEmail")
-                        .HasColumnType("text")
-                        .HasColumnName("passenger_email");
-
-                    b.Property<string>("PassengerName")
+                    b.Property<string>("LeadPassengerEmail")
                         .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("passenger_name");
+                        .HasMaxLength(100)
+                        .IsUnicode(false)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("lead_passenger_email");
 
                     b.Property<string>("Reference")
                         .IsRequired()
-                        .HasColumnType("text")
+                        .HasMaxLength(10)
+                        .IsUnicode(false)
+                        .HasColumnType("character varying(10)")
                         .HasColumnName("reference");
-
-                    b.Property<Guid>("SeatId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("seat_id");
 
                     b.Property<Instant>("UpdatedAt")
                         .HasColumnType("timestamp with time zone")
@@ -59,9 +55,6 @@ namespace Flights.Api.Migrations
 
                     b.HasKey("Id")
                         .HasName("pk_bookings");
-
-                    b.HasIndex("SeatId")
-                        .HasDatabaseName("ix_bookings_seat_id");
 
                     b.ToTable("bookings", (string)null);
                 });
@@ -147,12 +140,56 @@ namespace Flights.Api.Migrations
                     b.ToTable("flights", (string)null);
                 });
 
+            modelBuilder.Entity("Flights.Api.Domain.Passengers.Passenger", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid>("BookingId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("booking_id");
+
+                    b.Property<Instant>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("FirstName")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("first_name");
+
+                    b.Property<string>("LastName")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("last_name");
+
+                    b.Property<Instant>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.HasKey("Id")
+                        .HasName("pk_passenger");
+
+                    b.HasIndex("BookingId")
+                        .HasDatabaseName("ix_passenger_booking_id");
+
+                    b.ToTable("passenger", (string)null);
+                });
+
             modelBuilder.Entity("Flights.Api.Domain.Seats.Seat", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
+
+                    b.Property<Guid>("BookingId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("booking_id");
 
                     b.Property<Instant>("CreatedAt")
                         .HasColumnType("timestamp with time zone")
@@ -161,10 +198,6 @@ namespace Flights.Api.Migrations
                     b.Property<Guid>("FlightId")
                         .HasColumnType("uuid")
                         .HasColumnName("flight_id");
-
-                    b.Property<bool>("IsBooked")
-                        .HasColumnType("boolean")
-                        .HasColumnName("is_booked");
 
                     b.Property<decimal>("Price")
                         .HasColumnType("numeric")
@@ -191,26 +224,34 @@ namespace Flights.Api.Migrations
                     b.HasKey("Id")
                         .HasName("pk_seats");
 
+                    b.HasIndex("BookingId")
+                        .HasDatabaseName("ix_seats_booking_id");
+
                     b.HasIndex("FlightId")
                         .HasDatabaseName("ix_seats_flight_id");
 
                     b.ToTable("seats", (string)null);
                 });
 
-            modelBuilder.Entity("Flights.Api.Domain.Bookings.Booking", b =>
+            modelBuilder.Entity("Flights.Api.Domain.Passengers.Passenger", b =>
                 {
-                    b.HasOne("Flights.Api.Domain.Seats.Seat", "Seat")
-                        .WithMany()
-                        .HasForeignKey("SeatId")
+                    b.HasOne("Flights.Api.Domain.Bookings.Booking", null)
+                        .WithMany("Passengers")
+                        .HasForeignKey("BookingId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
-                        .HasConstraintName("fk_bookings_seats_seat_id");
-
-                    b.Navigation("Seat");
+                        .HasConstraintName("fk_passenger_bookings_booking_id");
                 });
 
             modelBuilder.Entity("Flights.Api.Domain.Seats.Seat", b =>
                 {
+                    b.HasOne("Flights.Api.Domain.Bookings.Booking", null)
+                        .WithMany("Seats")
+                        .HasForeignKey("BookingId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_seats_bookings_booking_id");
+
                     b.HasOne("Flights.Api.Domain.Flights.Flight", "Flight")
                         .WithMany("Seats")
                         .HasForeignKey("FlightId")
@@ -219,6 +260,13 @@ namespace Flights.Api.Migrations
                         .HasConstraintName("fk_seats_flights_flight_id");
 
                     b.Navigation("Flight");
+                });
+
+            modelBuilder.Entity("Flights.Api.Domain.Bookings.Booking", b =>
+                {
+                    b.Navigation("Passengers");
+
+                    b.Navigation("Seats");
                 });
 
             modelBuilder.Entity("Flights.Api.Domain.Flights.Flight", b =>

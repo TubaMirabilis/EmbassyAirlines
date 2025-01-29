@@ -1,6 +1,7 @@
 ﻿using ErrorOr;
 using Flights.Api.Database;
 using Flights.Api.Domain.Bookings;
+using Flights.Api.Domain.Passengers;
 using Flights.Api.Extensions;
 using FluentValidation;
 using Mediator;
@@ -13,19 +14,18 @@ using Sqids;
 
 namespace Flights.Api.Features;
 
-public static class BookSeatForFlight
+public static class BookSeatsForFlight
 {
-    public sealed record Command(BookSeatRequest Request) : ICommand<ErrorOr<BookingDto>>;
+    public sealed record Command(CreateBookingDto Dto) : ICommand<ErrorOr<BookingDto>>;
     public sealed class Validator : AbstractValidator<Command>
     {
         public Validator()
         {
-            RuleFor(x => x.Request.SeatId).NotEmpty();
-            RuleFor(x => x.Request.PassengerName)
-                .NotEmpty()
-                .MaximumLength(100);
-            RuleFor(x => x.Request.PassengerEmail)
-                .EmailAddress()
+            RuleFor(x => x.Dto.FlightId)
+                .NotEmpty();
+            RuleFor(x => x.Dto.Seats)
+                .NotEmpty();
+            RuleFor(x => x.Dto.LeadPassengerEmail)
                 .MaximumLength(100);
         }
     }
@@ -47,23 +47,27 @@ public static class BookSeatForFlight
             {
                 return Error.Validation("Query.ValidationFailed", formattedErrors);
             }
-            var seat = await _ctx.Seats
-                                 .SingleOrDefaultAsync(s => s.Id == command.Request.SeatId, cancellationToken);
-            if (seat is null)
+            var flight = await _ctx.Flights
+                                   .Where(f => f.Id == command.Dto.FlightId)
+                                   .SingleOrDefaultAsync(cancellationToken);
+            if (flight is null)
             {
-                return Error.NotFound("Seat.NotFound", $"Seat with id {command.Request.SeatId} not found");
+                return Error.NotFound("Query.NotFound", "Flight not found");
             }
-            if (seat.IsBooked)
+            var seatIds = command.Dto.Seats.Keys;
+            var seats = flight.Seats.Where(s => seatIds.Contains(s.Id)).ToList();
+            if (seats.Count != seatIds.Count)
             {
-                return Error.Conflict("Seat.AlreadyBooked", $"Seat with id {command.Request.SeatId} is already booked");
+                return Error.Validation("Query.ValidationFailed", "One or more seats are invalid");
             }
-            seat.MarkAsBooked();
-            var count = await _ctx.Bookings
-                                  .AsNoTracking()
-                                  .Include(b => b.Seat)
-                                  .CountAsync(b => b.Seat.FlightId == seat.FlightId, cancellationToken);
+            if (seats.Any(s => s.IsBooked))
+            {
+                return Error.Validation("Query.ValidationFailed", "One or more seats are already booked");
+            }
+            var passengers = command.Dto.Seats.Select(s => Passenger.Create(s.Value.FirstName, s.Value.LastName)).ToList();
+            var count = flight.Seats.Count(s => s.IsBooked);
             var reference = _sqids.Encode(count);
-            var booking = Booking.Create(seat, reference, command.Request.PassengerName, command.Request.PassengerEmail);
+            var booking = Booking.Create(seats, passengers, reference, command.Dto.LeadPassengerEmail);
             _ctx.Bookings.Add(booking);
             await _ctx.SaveChangesAsync(cancellationToken);
             return booking.ToDto();
@@ -73,12 +77,12 @@ public static class BookSeatForFlight
 public sealed class BookSeatForFlightEndpoint : IEndpoint
 {
     public void MapEndpoint(IEndpointRouteBuilder app)
-        => app.MapPost("bookings", BookSeat)
-              .WithName("BookSeatForFlight")
+        => app.MapPost("bookings", BookSeats)
+              .WithName("BookSeatsForFlight")
               .WithOpenApi();
-    private static async Task<IResult> BookSeat([FromServices] ISender sender, [FromBody] BookSeatRequest request, CancellationToken ct)
+    private static async Task<IResult> BookSeats([FromServices] ISender sender, [FromBody] CreateBookingDto dto, CancellationToken ct)
     {
-        var command = new BookSeatForFlight.Command(request);
+        var command = new BookSeatsForFlight.Command(dto);
         var result = await sender.Send(command, ct);
         return result.Match(
             booking => Results.Created($"bookings/{booking.Reference}", booking),

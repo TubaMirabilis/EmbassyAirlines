@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
+﻿using System;
+using Microsoft.EntityFrameworkCore.Migrations;
 using NodaTime;
 
 #nullable disable
@@ -11,6 +12,18 @@ public partial class InitialCreate : Migration
     /// <inheritdoc />
     protected override void Up(MigrationBuilder migrationBuilder)
     {
+        migrationBuilder.CreateTable(
+            name: "bookings",
+            columns: table => new
+            {
+                id = table.Column<Guid>(type: "uuid", nullable: false),
+                created_at = table.Column<Instant>(type: "timestamp with time zone", nullable: false),
+                updated_at = table.Column<Instant>(type: "timestamp with time zone", nullable: false),
+                reference = table.Column<string>(type: "character varying(10)", unicode: false, maxLength: 10, nullable: false),
+                lead_passenger_email = table.Column<string>(type: "character varying(100)", unicode: false, maxLength: 100, nullable: false)
+            },
+            constraints: table => table.PrimaryKey("pk_bookings", x => x.id));
+
         migrationBuilder.CreateTable(
             name: "flights",
             columns: table => new
@@ -29,6 +42,28 @@ public partial class InitialCreate : Migration
             constraints: table => table.PrimaryKey("pk_flights", x => x.id));
 
         migrationBuilder.CreateTable(
+            name: "passenger",
+            columns: table => new
+            {
+                id = table.Column<Guid>(type: "uuid", nullable: false),
+                created_at = table.Column<Instant>(type: "timestamp with time zone", nullable: false),
+                updated_at = table.Column<Instant>(type: "timestamp with time zone", nullable: false),
+                first_name = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
+                last_name = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
+                booking_id = table.Column<Guid>(type: "uuid", nullable: false)
+            },
+            constraints: table =>
+            {
+                table.PrimaryKey("pk_passenger", x => x.id);
+                table.ForeignKey(
+                    name: "fk_passenger_bookings_booking_id",
+                    column: x => x.booking_id,
+                    principalTable: "bookings",
+                    principalColumn: "id",
+                    onDelete: ReferentialAction.Cascade);
+            });
+
+        migrationBuilder.CreateTable(
             name: "seats",
             columns: table => new
             {
@@ -37,13 +72,19 @@ public partial class InitialCreate : Migration
                 updated_at = table.Column<Instant>(type: "timestamp with time zone", nullable: false),
                 seat_number = table.Column<string>(type: "character varying(3)", unicode: false, maxLength: 3, nullable: false),
                 seat_type = table.Column<string>(type: "character varying(20)", unicode: false, maxLength: 20, nullable: false),
-                is_booked = table.Column<bool>(type: "boolean", nullable: false),
                 price = table.Column<decimal>(type: "numeric", nullable: false),
-                flight_id = table.Column<Guid>(type: "uuid", nullable: false)
+                flight_id = table.Column<Guid>(type: "uuid", nullable: false),
+                booking_id = table.Column<Guid>(type: "uuid", nullable: false)
             },
             constraints: table =>
             {
                 table.PrimaryKey("pk_seats", x => x.id);
+                table.ForeignKey(
+                    name: "fk_seats_bookings_booking_id",
+                    column: x => x.booking_id,
+                    principalTable: "bookings",
+                    principalColumn: "id",
+                    onDelete: ReferentialAction.Cascade);
                 table.ForeignKey(
                     name: "fk_seats_flights_flight_id",
                     column: x => x.flight_id,
@@ -52,33 +93,15 @@ public partial class InitialCreate : Migration
                     onDelete: ReferentialAction.Cascade);
             });
 
-        migrationBuilder.CreateTable(
-            name: "bookings",
-            columns: table => new
-            {
-                id = table.Column<Guid>(type: "uuid", nullable: false),
-                created_at = table.Column<Instant>(type: "timestamp with time zone", nullable: false),
-                updated_at = table.Column<Instant>(type: "timestamp with time zone", nullable: false),
-                reference = table.Column<string>(type: "text", nullable: false),
-                seat_id = table.Column<Guid>(type: "uuid", nullable: false),
-                passenger_name = table.Column<string>(type: "text", nullable: false),
-                passenger_email = table.Column<string>(type: "text", nullable: true)
-            },
-            constraints: table =>
-            {
-                table.PrimaryKey("pk_bookings", x => x.id);
-                table.ForeignKey(
-                    name: "fk_bookings_seats_seat_id",
-                    column: x => x.seat_id,
-                    principalTable: "seats",
-                    principalColumn: "id",
-                    onDelete: ReferentialAction.Cascade);
-            });
+        migrationBuilder.CreateIndex(
+            name: "ix_passenger_booking_id",
+            table: "passenger",
+            column: "booking_id");
 
         migrationBuilder.CreateIndex(
-            name: "ix_bookings_seat_id",
-            table: "bookings",
-            column: "seat_id");
+            name: "ix_seats_booking_id",
+            table: "seats",
+            column: "booking_id");
 
         migrationBuilder.CreateIndex(
             name: "ix_seats_flight_id",
@@ -90,10 +113,13 @@ public partial class InitialCreate : Migration
     protected override void Down(MigrationBuilder migrationBuilder)
     {
         migrationBuilder.DropTable(
-            name: "bookings");
+            name: "passenger");
 
         migrationBuilder.DropTable(
             name: "seats");
+
+        migrationBuilder.DropTable(
+            name: "bookings");
 
         migrationBuilder.DropTable(
             name: "flights");
