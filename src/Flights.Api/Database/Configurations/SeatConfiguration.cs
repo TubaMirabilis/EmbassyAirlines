@@ -10,8 +10,6 @@ internal sealed class SeatConfiguration : IEntityTypeConfiguration<Seat>
     public void Configure(EntityTypeBuilder<Seat> builder)
     {
         builder.HasKey(b => b.Id);
-        builder.Navigation(b => b.Flight)
-               .AutoInclude();
         builder.Property(b => b.CreatedAt)
                .IsRequired();
         builder.Property(b => b.UpdatedAt)
