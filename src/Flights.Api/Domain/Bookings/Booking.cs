@@ -8,13 +8,12 @@ public sealed class Booking
 {
     private readonly List<Seat> _seats = [];
     private readonly List<Passenger> _passengers = [];
-    private Booking(IEnumerable<Seat> seats, IEnumerable<Passenger> passengers, string reference, string? leadPassengerEmail)
+    private Booking(IEnumerable<Seat> seats, IEnumerable<Passenger> passengers, Guid itineraryId)
     {
         Id = Guid.NewGuid();
         CreatedAt = SystemClock.Instance.GetCurrentInstant();
         UpdatedAt = SystemClock.Instance.GetCurrentInstant();
-        Reference = reference;
-        LeadPassengerEmail = leadPassengerEmail ?? "";
+        ItineraryId = itineraryId;
         _seats.AddRange(seats);
         _passengers.AddRange(passengers);
     }
@@ -26,9 +25,8 @@ public sealed class Booking
     public Guid Id { get; init; }
     public Instant CreatedAt { get; init; }
     public Instant UpdatedAt { get; private set; }
-    public string Reference { get; init; }
-    public string LeadPassengerEmail { get; private set; }
+    public Guid ItineraryId { get; init; }
     public IReadOnlyList<Passenger> Passengers => _passengers.AsReadOnly();
     public IReadOnlyList<Seat> Seats => _seats.AsReadOnly();
-    public static Booking Create(IEnumerable<Seat> seats, IEnumerable<Passenger> passengers, string reference, string? leadPassengerEmail) => new(seats, passengers, reference, leadPassengerEmail);
+    public static Booking Create(IEnumerable<Seat> seats, IEnumerable<Passenger> passengers, Guid itineraryId) => new(seats, passengers, itineraryId);
 }

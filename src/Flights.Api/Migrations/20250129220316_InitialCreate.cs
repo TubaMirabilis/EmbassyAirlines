@@ -1,5 +1,4 @@
-﻿using System;
-using Microsoft.EntityFrameworkCore.Migrations;
+﻿using Microsoft.EntityFrameworkCore.Migrations;
 using NodaTime;
 
 #nullable disable
@@ -12,18 +11,6 @@ public partial class InitialCreate : Migration
     /// <inheritdoc />
     protected override void Up(MigrationBuilder migrationBuilder)
     {
-        migrationBuilder.CreateTable(
-            name: "bookings",
-            columns: table => new
-            {
-                id = table.Column<Guid>(type: "uuid", nullable: false),
-                created_at = table.Column<Instant>(type: "timestamp with time zone", nullable: false),
-                updated_at = table.Column<Instant>(type: "timestamp with time zone", nullable: false),
-                reference = table.Column<string>(type: "character varying(10)", unicode: false, maxLength: 10, nullable: false),
-                lead_passenger_email = table.Column<string>(type: "character varying(100)", unicode: false, maxLength: 100, nullable: false)
-            },
-            constraints: table => table.PrimaryKey("pk_bookings", x => x.id));
-
         migrationBuilder.CreateTable(
             name: "flights",
             columns: table => new
@@ -40,6 +27,38 @@ public partial class InitialCreate : Migration
                 schedule_destination_airport_time_zone = table.Column<string>(type: "character varying(50)", unicode: false, maxLength: 50, nullable: false)
             },
             constraints: table => table.PrimaryKey("pk_flights", x => x.id));
+
+        migrationBuilder.CreateTable(
+            name: "itineraries",
+            columns: table => new
+            {
+                id = table.Column<Guid>(type: "uuid", nullable: false),
+                created_at = table.Column<Instant>(type: "timestamp with time zone", nullable: false),
+                updated_at = table.Column<Instant>(type: "timestamp with time zone", nullable: false),
+                reference = table.Column<string>(type: "character varying(10)", unicode: false, maxLength: 10, nullable: false),
+                lead_passenger_email = table.Column<string>(type: "character varying(100)", unicode: false, maxLength: 100, nullable: false)
+            },
+            constraints: table => table.PrimaryKey("pk_itineraries", x => x.id));
+
+        migrationBuilder.CreateTable(
+            name: "bookings",
+            columns: table => new
+            {
+                id = table.Column<Guid>(type: "uuid", nullable: false),
+                created_at = table.Column<Instant>(type: "timestamp with time zone", nullable: false),
+                updated_at = table.Column<Instant>(type: "timestamp with time zone", nullable: false),
+                itinerary_id = table.Column<Guid>(type: "uuid", nullable: false)
+            },
+            constraints: table =>
+            {
+                table.PrimaryKey("pk_bookings", x => x.id);
+                table.ForeignKey(
+                    name: "fk_bookings_itineraries_itinerary_id",
+                    column: x => x.itinerary_id,
+                    principalTable: "itineraries",
+                    principalColumn: "id",
+                    onDelete: ReferentialAction.Cascade);
+            });
 
         migrationBuilder.CreateTable(
             name: "passenger",
@@ -94,6 +113,11 @@ public partial class InitialCreate : Migration
             });
 
         migrationBuilder.CreateIndex(
+            name: "ix_bookings_itinerary_id",
+            table: "bookings",
+            column: "itinerary_id");
+
+        migrationBuilder.CreateIndex(
             name: "ix_passenger_booking_id",
             table: "passenger",
             column: "booking_id");
@@ -123,5 +147,8 @@ public partial class InitialCreate : Migration
 
         migrationBuilder.DropTable(
             name: "flights");
+
+        migrationBuilder.DropTable(
+            name: "itineraries");
     }
 }

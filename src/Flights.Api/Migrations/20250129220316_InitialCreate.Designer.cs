@@ -14,7 +14,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Flights.Api.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250129120159_InitialCreate")]
+    [Migration("20250129220316_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -38,19 +38,9 @@ namespace Flights.Api.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at");
 
-                    b.Property<string>("LeadPassengerEmail")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .IsUnicode(false)
-                        .HasColumnType("character varying(100)")
-                        .HasColumnName("lead_passenger_email");
-
-                    b.Property<string>("Reference")
-                        .IsRequired()
-                        .HasMaxLength(10)
-                        .IsUnicode(false)
-                        .HasColumnType("character varying(10)")
-                        .HasColumnName("reference");
+                    b.Property<Guid>("ItineraryId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("itinerary_id");
 
                     b.Property<Instant>("UpdatedAt")
                         .HasColumnType("timestamp with time zone")
@@ -58,6 +48,9 @@ namespace Flights.Api.Migrations
 
                     b.HasKey("Id")
                         .HasName("pk_bookings");
+
+                    b.HasIndex("ItineraryId")
+                        .HasDatabaseName("ix_bookings_itinerary_id");
 
                     b.ToTable("bookings", (string)null);
                 });
@@ -141,6 +134,41 @@ namespace Flights.Api.Migrations
                         .HasName("pk_flights");
 
                     b.ToTable("flights", (string)null);
+                });
+
+            modelBuilder.Entity("Flights.Api.Domain.Itineraries.Itinerary", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Instant>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("LeadPassengerEmail")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .IsUnicode(false)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("lead_passenger_email");
+
+                    b.Property<string>("Reference")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .IsUnicode(false)
+                        .HasColumnType("character varying(10)")
+                        .HasColumnName("reference");
+
+                    b.Property<Instant>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.HasKey("Id")
+                        .HasName("pk_itineraries");
+
+                    b.ToTable("itineraries", (string)null);
                 });
 
             modelBuilder.Entity("Flights.Api.Domain.Passengers.Passenger", b =>
@@ -236,6 +264,16 @@ namespace Flights.Api.Migrations
                     b.ToTable("seats", (string)null);
                 });
 
+            modelBuilder.Entity("Flights.Api.Domain.Bookings.Booking", b =>
+                {
+                    b.HasOne("Flights.Api.Domain.Itineraries.Itinerary", null)
+                        .WithMany("Bookings")
+                        .HasForeignKey("ItineraryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_bookings_itineraries_itinerary_id");
+                });
+
             modelBuilder.Entity("Flights.Api.Domain.Passengers.Passenger", b =>
                 {
                     b.HasOne("Flights.Api.Domain.Bookings.Booking", null)
@@ -275,6 +313,11 @@ namespace Flights.Api.Migrations
             modelBuilder.Entity("Flights.Api.Domain.Flights.Flight", b =>
                 {
                     b.Navigation("Seats");
+                });
+
+            modelBuilder.Entity("Flights.Api.Domain.Itineraries.Itinerary", b =>
+                {
+                    b.Navigation("Bookings");
                 });
 #pragma warning restore 612, 618
         }
