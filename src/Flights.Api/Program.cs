@@ -25,7 +25,7 @@ services.AddDbContext<ApplicationDbContext>(options =>
 services.AddMediator(options => options.ServiceLifetime = ServiceLifetime.Scoped);
 services.AddValidatorsFromAssemblyContaining<Program>();
 services.AddSingleton<ISeatService, SeatService>();
-services.AddSingleton<SqidsEncoder<int>>(new SqidsEncoder<int>(new()
+services.AddSingleton(new SqidsEncoder<int>(new()
 {
     Alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789",
     MinLength = 6

@@ -8,7 +8,8 @@ public sealed class Flight
     private readonly List<Seat> _seats = [];
     private Flight(string flightNumber, FlightSchedule schedule, IEnumerable<Seat> seats)
     {
-        if (seats.Any(s => s.IsBooked))
+        var seatsList = seats.ToList();
+        if (seatsList.Any(s => s.IsBooked))
         {
             throw new ArgumentException("All seats must be available when creating a flight");
         }
@@ -17,7 +18,7 @@ public sealed class Flight
         UpdatedAt = SystemClock.Instance.GetCurrentInstant();
         FlightNumber = flightNumber;
         Schedule = schedule;
-        _seats.AddRange(seats);
+        _seats.AddRange(seatsList);
     }
 #pragma warning disable CS8618
     private Flight()
