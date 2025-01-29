@@ -1,9 +1,9 @@
 # Base image
-FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
+FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS base
 WORKDIR /app
 
 # Build image
-FROM mcr.microsoft.com/dotnet/sdk:8.0.402 AS build
+FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 COPY ./src/Flights.Api/ /src/Flights.Api/
 COPY ./src/Shared/ /src/Shared/
 
