@@ -35,6 +35,19 @@ public sealed class Flight
     public decimal CheapestBusinessPrice => Seats.Where(s => s.SeatType == SeatType.Business)
                                                  .Min(s => s.Price);
     public IReadOnlyList<Seat> Seats => _seats.AsReadOnly();
+    public void BookSeats(IEnumerable<Guid> seatIds)
+    {
+        foreach (var seatId in seatIds)
+        {
+            var seat = _seats.SingleOrDefault(s => s.Id == seatId);
+            ArgumentNullException.ThrowIfNull(seat);
+            if (seat.IsBooked)
+            {
+                throw new ArgumentException("One or more seats are already booked");
+            }
+            seat.Book(Id);
+        }
+    }
     public static Flight Create(string flightNumber, FlightSchedule schedule, IEnumerable<Seat> seats)
         => new(flightNumber, schedule, seats);
 }

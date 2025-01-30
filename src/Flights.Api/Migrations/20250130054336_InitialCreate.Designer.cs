@@ -14,7 +14,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Flights.Api.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250129220316_InitialCreate")]
+    [Migration("20250130054336_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -38,6 +38,10 @@ namespace Flights.Api.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at");
 
+                    b.Property<Guid>("FlightId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("flight_id");
+
                     b.Property<Guid>("ItineraryId")
                         .HasColumnType("uuid")
                         .HasColumnName("itinerary_id");
@@ -48,6 +52,9 @@ namespace Flights.Api.Migrations
 
                     b.HasKey("Id")
                         .HasName("pk_bookings");
+
+                    b.HasIndex("FlightId")
+                        .HasDatabaseName("ix_bookings_flight_id");
 
                     b.HasIndex("ItineraryId")
                         .HasDatabaseName("ix_bookings_itinerary_id");
@@ -266,12 +273,21 @@ namespace Flights.Api.Migrations
 
             modelBuilder.Entity("Flights.Api.Domain.Bookings.Booking", b =>
                 {
+                    b.HasOne("Flights.Api.Domain.Flights.Flight", "Flight")
+                        .WithMany()
+                        .HasForeignKey("FlightId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_bookings_flights_flight_id");
+
                     b.HasOne("Flights.Api.Domain.Itineraries.Itinerary", null)
                         .WithMany("Bookings")
                         .HasForeignKey("ItineraryId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_bookings_itineraries_itinerary_id");
+
+                    b.Navigation("Flight");
                 });
 
             modelBuilder.Entity("Flights.Api.Domain.Passengers.Passenger", b =>

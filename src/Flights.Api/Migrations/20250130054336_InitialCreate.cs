@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
+﻿using System;
+using Microsoft.EntityFrameworkCore.Migrations;
 using NodaTime;
 
 #nullable disable
@@ -47,11 +48,18 @@ public partial class InitialCreate : Migration
                 id = table.Column<Guid>(type: "uuid", nullable: false),
                 created_at = table.Column<Instant>(type: "timestamp with time zone", nullable: false),
                 updated_at = table.Column<Instant>(type: "timestamp with time zone", nullable: false),
+                flight_id = table.Column<Guid>(type: "uuid", nullable: false),
                 itinerary_id = table.Column<Guid>(type: "uuid", nullable: false)
             },
             constraints: table =>
             {
                 table.PrimaryKey("pk_bookings", x => x.id);
+                table.ForeignKey(
+                    name: "fk_bookings_flights_flight_id",
+                    column: x => x.flight_id,
+                    principalTable: "flights",
+                    principalColumn: "id",
+                    onDelete: ReferentialAction.Cascade);
                 table.ForeignKey(
                     name: "fk_bookings_itineraries_itinerary_id",
                     column: x => x.itinerary_id,
@@ -111,6 +119,11 @@ public partial class InitialCreate : Migration
                     principalColumn: "id",
                     onDelete: ReferentialAction.Cascade);
             });
+
+        migrationBuilder.CreateIndex(
+            name: "ix_bookings_flight_id",
+            table: "bookings",
+            column: "flight_id");
 
         migrationBuilder.CreateIndex(
             name: "ix_bookings_itinerary_id",

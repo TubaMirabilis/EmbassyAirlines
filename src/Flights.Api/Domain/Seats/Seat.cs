@@ -27,9 +27,9 @@ public sealed class Seat
     public decimal Price { get; private set; }
     public Flight Flight { get; init; } = null!;
     public Guid FlightId { get; init; }
-    public string FlightNumber => Flight.FlightNumber;
     public bool IsBooked => BookingId.HasValue;
-    public Guid? BookingId { get; init; }
+    public Guid? BookingId { get; private set; }
+    public void Book(Guid bookingId) => BookingId = bookingId;
     public static Seat Create(SeatType seatType, string seatNumber, decimal price)
         => new(seatType, seatNumber, price);
 }
