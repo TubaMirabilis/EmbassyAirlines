@@ -101,23 +101,22 @@ public partial class InitialCreate : Migration
                 seat_type = table.Column<string>(type: "character varying(20)", unicode: false, maxLength: 20, nullable: false),
                 price = table.Column<decimal>(type: "numeric", nullable: false),
                 flight_id = table.Column<Guid>(type: "uuid", nullable: false),
-                booking_id = table.Column<Guid>(type: "uuid", nullable: false)
+                passenger_id = table.Column<Guid>(type: "uuid", nullable: true)
             },
             constraints: table =>
             {
                 table.PrimaryKey("pk_seats", x => x.id);
-                table.ForeignKey(
-                    name: "fk_seats_bookings_booking_id",
-                    column: x => x.booking_id,
-                    principalTable: "bookings",
-                    principalColumn: "id",
-                    onDelete: ReferentialAction.Cascade);
                 table.ForeignKey(
                     name: "fk_seats_flights_flight_id",
                     column: x => x.flight_id,
                     principalTable: "flights",
                     principalColumn: "id",
                     onDelete: ReferentialAction.Cascade);
+                table.ForeignKey(
+                    name: "fk_seats_passenger_passenger_id",
+                    column: x => x.passenger_id,
+                    principalTable: "passenger",
+                    principalColumn: "id");
             });
 
         migrationBuilder.CreateIndex(
@@ -136,24 +135,24 @@ public partial class InitialCreate : Migration
             column: "booking_id");
 
         migrationBuilder.CreateIndex(
-            name: "ix_seats_booking_id",
-            table: "seats",
-            column: "booking_id");
-
-        migrationBuilder.CreateIndex(
             name: "ix_seats_flight_id",
             table: "seats",
             column: "flight_id");
+
+        migrationBuilder.CreateIndex(
+            name: "ix_seats_passenger_id",
+            table: "seats",
+            column: "passenger_id");
     }
 
     /// <inheritdoc />
     protected override void Down(MigrationBuilder migrationBuilder)
     {
         migrationBuilder.DropTable(
-            name: "passenger");
+            name: "seats");
 
         migrationBuilder.DropTable(
-            name: "seats");
+            name: "passenger");
 
         migrationBuilder.DropTable(
             name: "bookings");

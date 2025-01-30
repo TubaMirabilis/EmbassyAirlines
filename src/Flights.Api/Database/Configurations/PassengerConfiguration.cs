@@ -1,4 +1,5 @@
 using Flights.Api.Domain.Passengers;
+using Flights.Api.Domain.Seats;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 

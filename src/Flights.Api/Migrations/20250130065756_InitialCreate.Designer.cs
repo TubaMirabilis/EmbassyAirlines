@@ -14,7 +14,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Flights.Api.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250130054336_InitialCreate")]
+    [Migration("20250130065756_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -225,10 +225,6 @@ namespace Flights.Api.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
-                    b.Property<Guid>("BookingId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("booking_id");
-
                     b.Property<Instant>("CreatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at");
@@ -236,6 +232,10 @@ namespace Flights.Api.Migrations
                     b.Property<Guid>("FlightId")
                         .HasColumnType("uuid")
                         .HasColumnName("flight_id");
+
+                    b.Property<Guid?>("PassengerId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("passenger_id");
 
                     b.Property<decimal>("Price")
                         .HasColumnType("numeric")
@@ -262,11 +262,11 @@ namespace Flights.Api.Migrations
                     b.HasKey("Id")
                         .HasName("pk_seats");
 
-                    b.HasIndex("BookingId")
-                        .HasDatabaseName("ix_seats_booking_id");
-
                     b.HasIndex("FlightId")
                         .HasDatabaseName("ix_seats_flight_id");
+
+                    b.HasIndex("PassengerId")
+                        .HasDatabaseName("ix_seats_passenger_id");
 
                     b.ToTable("seats", (string)null);
                 });
@@ -302,13 +302,6 @@ namespace Flights.Api.Migrations
 
             modelBuilder.Entity("Flights.Api.Domain.Seats.Seat", b =>
                 {
-                    b.HasOne("Flights.Api.Domain.Bookings.Booking", null)
-                        .WithMany("Seats")
-                        .HasForeignKey("BookingId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_seats_bookings_booking_id");
-
                     b.HasOne("Flights.Api.Domain.Flights.Flight", "Flight")
                         .WithMany("Seats")
                         .HasForeignKey("FlightId")
@@ -316,14 +309,19 @@ namespace Flights.Api.Migrations
                         .IsRequired()
                         .HasConstraintName("fk_seats_flights_flight_id");
 
+                    b.HasOne("Flights.Api.Domain.Passengers.Passenger", "Passenger")
+                        .WithMany()
+                        .HasForeignKey("PassengerId")
+                        .HasConstraintName("fk_seats_passenger_passenger_id");
+
                     b.Navigation("Flight");
+
+                    b.Navigation("Passenger");
                 });
 
             modelBuilder.Entity("Flights.Api.Domain.Bookings.Booking", b =>
                 {
                     b.Navigation("Passengers");
-
-                    b.Navigation("Seats");
                 });
 
             modelBuilder.Entity("Flights.Api.Domain.Flights.Flight", b =>

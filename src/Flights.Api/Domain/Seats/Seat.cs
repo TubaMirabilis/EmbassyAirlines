@@ -1,4 +1,5 @@
 using Flights.Api.Domain.Flights;
+using Flights.Api.Domain.Passengers;
 using NodaTime;
 
 namespace Flights.Api.Domain.Seats;
@@ -27,9 +28,10 @@ public sealed class Seat
     public decimal Price { get; private set; }
     public Flight Flight { get; init; } = null!;
     public Guid FlightId { get; init; }
-    public bool IsBooked => BookingId.HasValue;
-    public Guid? BookingId { get; private set; }
-    public void Book(Guid bookingId) => BookingId = bookingId;
+    public bool IsBooked => PassengerId.HasValue;
+    public Passenger? Passenger { get; init; }
+    public Guid? PassengerId { get; private set; }
+    public void Book(Guid passengerId) => PassengerId = passengerId;
     public static Seat Create(SeatType seatType, string seatNumber, decimal price)
         => new(seatType, seatNumber, price);
 }

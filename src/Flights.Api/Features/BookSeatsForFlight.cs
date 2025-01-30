@@ -47,7 +47,6 @@ public static class BookSeatsForFlight
                 return Error.NotFound("Query.NotFound", "Flight not found");
             }
             var seatIds = command.Dto.Seats.Keys;
-            flight.BookSeats(seatIds);
             var seats = flight.Seats.Where(s => seatIds.Contains(s.Id)).ToList();
             if (seats.Count != seatIds.Count)
             {
@@ -57,8 +56,10 @@ public static class BookSeatsForFlight
             {
                 return Error.Validation("Query.ValidationFailed", "One or more seats are already booked");
             }
-            var passengers = command.Dto.Seats.Select(s => Passenger.Create(s.Value.FirstName, s.Value.LastName)).ToList();
-            var booking = Booking.Create(passengers, flight, command.Dto.ItineraryId);
+            var passengers = seatIds.Zip(command.Dto.Seats.Values, (seatId, passenger) => (seatId, passenger))
+                                    .ToDictionary(x => x.seatId, x => Passenger.Create(x.passenger.FirstName, x.passenger.LastName));
+            flight.BookSeats(passengers);
+            var booking = Booking.Create(passengers.Select(p => p.Value), flight, command.Dto.ItineraryId);
             _ctx.Bookings.Add(booking);
             await _ctx.SaveChangesAsync(cancellationToken);
             return booking.ToDto();

@@ -8,7 +8,7 @@ internal static class BookingExtensions
     public static BookingDto ToDto(this Booking booking)
     {
         var passengers = booking.Passengers;
-        var seats = booking.Seats;
+        var seats = booking.GetSeats();
         var details = new Dictionary<Guid, KeyValuePair<PassengerDto, SeatDto>>();
         for (var i = 0; i < passengers.Count; i++)
         {
