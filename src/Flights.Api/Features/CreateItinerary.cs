@@ -29,6 +29,10 @@ public static class CreateItinerary
         }
         public async ValueTask<ErrorOr<ItineraryDto>> Handle(Command command, CancellationToken cancellationToken)
         {
+            if (!command.Dto.Bookings.Any())
+            {
+                return Error.Validation("Itinerary.BookingsEmpty", "Please provide at least one booking request.");
+            }
             List<Booking> bookings = [];
             foreach (var bookingDto in command.Dto.Bookings)
             {
