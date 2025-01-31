@@ -1,5 +1,4 @@
-﻿using System;
-using Microsoft.EntityFrameworkCore.Migrations;
+﻿using Microsoft.EntityFrameworkCore.Migrations;
 using NodaTime;
 
 #nullable disable
@@ -48,6 +47,7 @@ public partial class InitialCreate : Migration
                 id = table.Column<Guid>(type: "uuid", nullable: false),
                 created_at = table.Column<Instant>(type: "timestamp with time zone", nullable: false),
                 updated_at = table.Column<Instant>(type: "timestamp with time zone", nullable: false),
+                flight_id1 = table.Column<Guid>(type: "uuid", nullable: false),
                 flight_id = table.Column<Guid>(type: "uuid", nullable: false),
                 itinerary_id = table.Column<Guid>(type: "uuid", nullable: false)
             },
@@ -57,6 +57,12 @@ public partial class InitialCreate : Migration
                 table.ForeignKey(
                     name: "fk_bookings_flights_flight_id",
                     column: x => x.flight_id,
+                    principalTable: "flights",
+                    principalColumn: "id",
+                    onDelete: ReferentialAction.Restrict);
+                table.ForeignKey(
+                    name: "fk_bookings_flights_flight_id1",
+                    column: x => x.flight_id1,
                     principalTable: "flights",
                     principalColumn: "id",
                     onDelete: ReferentialAction.Cascade);
@@ -125,6 +131,11 @@ public partial class InitialCreate : Migration
             column: "flight_id");
 
         migrationBuilder.CreateIndex(
+            name: "ix_bookings_flight_id1",
+            table: "bookings",
+            column: "flight_id1");
+
+        migrationBuilder.CreateIndex(
             name: "ix_bookings_itinerary_id",
             table: "bookings",
             column: "itinerary_id");
@@ -135,9 +146,17 @@ public partial class InitialCreate : Migration
             column: "booking_id");
 
         migrationBuilder.CreateIndex(
-            name: "ix_seats_flight_id",
+            name: "ix_seats_flight_id_passenger_id",
             table: "seats",
-            column: "flight_id");
+            columns: ["flight_id", "passenger_id"],
+            unique: true,
+            filter: "passenger_id IS NOT NULL");
+
+        migrationBuilder.CreateIndex(
+            name: "ix_seats_flight_id_seat_number",
+            table: "seats",
+            columns: ["flight_id", "seat_number"],
+            unique: true);
 
         migrationBuilder.CreateIndex(
             name: "ix_seats_passenger_id",

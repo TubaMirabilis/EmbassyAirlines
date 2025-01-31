@@ -39,6 +39,10 @@ namespace Flights.Api.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("flight_id");
 
+                    b.Property<Guid>("FlightId1")
+                        .HasColumnType("uuid")
+                        .HasColumnName("flight_id1");
+
                     b.Property<Guid>("ItineraryId")
                         .HasColumnType("uuid")
                         .HasColumnName("itinerary_id");
@@ -52,6 +56,9 @@ namespace Flights.Api.Migrations
 
                     b.HasIndex("FlightId")
                         .HasDatabaseName("ix_bookings_flight_id");
+
+                    b.HasIndex("FlightId1")
+                        .HasDatabaseName("ix_bookings_flight_id1");
 
                     b.HasIndex("ItineraryId")
                         .HasDatabaseName("ix_bookings_itinerary_id");
@@ -259,23 +266,36 @@ namespace Flights.Api.Migrations
                     b.HasKey("Id")
                         .HasName("pk_seats");
 
-                    b.HasIndex("FlightId")
-                        .HasDatabaseName("ix_seats_flight_id");
-
                     b.HasIndex("PassengerId")
                         .HasDatabaseName("ix_seats_passenger_id");
+
+                    b.HasIndex("FlightId", "PassengerId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_seats_flight_id_passenger_id")
+                        .HasFilter("passenger_id IS NOT NULL");
+
+                    b.HasIndex("FlightId", "SeatNumber")
+                        .IsUnique()
+                        .HasDatabaseName("ix_seats_flight_id_seat_number");
 
                     b.ToTable("seats", (string)null);
                 });
 
             modelBuilder.Entity("Flights.Api.Domain.Bookings.Booking", b =>
                 {
-                    b.HasOne("Flights.Api.Domain.Flights.Flight", "Flight")
+                    b.HasOne("Flights.Api.Domain.Flights.Flight", null)
                         .WithMany()
                         .HasForeignKey("FlightId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("fk_bookings_flights_flight_id");
+
+                    b.HasOne("Flights.Api.Domain.Flights.Flight", "Flight")
+                        .WithMany()
+                        .HasForeignKey("FlightId1")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_bookings_flights_flight_id1");
 
                     b.HasOne("Flights.Api.Domain.Itineraries.Itinerary", null)
                         .WithMany("Bookings")
