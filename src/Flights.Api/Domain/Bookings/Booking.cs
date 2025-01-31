@@ -26,17 +26,16 @@ public sealed class Booking
     public Guid Id { get; init; }
     public Instant CreatedAt { get; init; }
     public Instant UpdatedAt { get; private set; }
+    public decimal TotalPrice => GetSeats().Sum(s => s.Price);
     public Flight Flight { get; init; }
     public Guid FlightId { get; init; }
     public Guid ItineraryId { get; init; }
     public IReadOnlyList<Passenger> Passengers => _passengers.AsReadOnly();
-    public decimal TotalPrice => GetSeats().Sum(s => s.Price);
     public IEnumerable<Seat> GetSeats()
     {
         var passengerIds = _passengers.Select(p => (Guid?)p.Id).ToList();
         return Flight.Seats
-                     .Where(s => passengerIds.Contains(s.PassengerId))
-                     .ToList();
+                     .Where(s => passengerIds.Contains(s.PassengerId));
     }
     public static Booking Create(IEnumerable<Passenger> passengers, Flight flight, Guid itineraryId) => new(passengers, flight, itineraryId);
 }
