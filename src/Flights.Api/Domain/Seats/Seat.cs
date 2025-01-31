@@ -20,7 +20,7 @@ public sealed class Seat
     {
     }
 #pragma warning restore CS8618
-    public Guid Id { get; private set; }
+    public Guid Id { get; init; }
     public Instant CreatedAt { get; private set; }
     public Instant UpdatedAt { get; private set; }
     public string SeatNumber { get; private set; }

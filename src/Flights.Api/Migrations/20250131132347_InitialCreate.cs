@@ -12,21 +12,17 @@ public partial class InitialCreate : Migration
     protected override void Up(MigrationBuilder migrationBuilder)
     {
         migrationBuilder.CreateTable(
-            name: "flights",
+            name: "airport",
             columns: table => new
             {
                 id = table.Column<Guid>(type: "uuid", nullable: false),
                 created_at = table.Column<Instant>(type: "timestamp with time zone", nullable: false),
                 updated_at = table.Column<Instant>(type: "timestamp with time zone", nullable: false),
-                flight_number = table.Column<string>(type: "character varying(10)", unicode: false, maxLength: 10, nullable: false),
-                schedule_arrival_time = table.Column<ZonedDateTime>(type: "timestamp with time zone", nullable: false),
-                schedule_departure_time = table.Column<ZonedDateTime>(type: "timestamp with time zone", nullable: false),
-                schedule_departure_airport_iata_code = table.Column<string>(type: "character varying(3)", unicode: false, maxLength: 3, nullable: false),
-                schedule_departure_airport_time_zone = table.Column<string>(type: "character varying(50)", unicode: false, maxLength: 50, nullable: false),
-                schedule_destination_airport_iata_code = table.Column<string>(type: "character varying(3)", unicode: false, maxLength: 3, nullable: false),
-                schedule_destination_airport_time_zone = table.Column<string>(type: "character varying(50)", unicode: false, maxLength: 50, nullable: false)
+                name = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                iata_code = table.Column<string>(type: "character varying(3)", maxLength: 3, nullable: false),
+                time_zone_id = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false)
             },
-            constraints: table => table.PrimaryKey("pk_flights", x => x.id));
+            constraints: table => table.PrimaryKey("pk_airport", x => x.id));
 
         migrationBuilder.CreateTable(
             name: "itineraries",
@@ -39,6 +35,36 @@ public partial class InitialCreate : Migration
                 lead_passenger_email = table.Column<string>(type: "character varying(100)", unicode: false, maxLength: 100, nullable: false)
             },
             constraints: table => table.PrimaryKey("pk_itineraries", x => x.id));
+
+        migrationBuilder.CreateTable(
+            name: "flights",
+            columns: table => new
+            {
+                id = table.Column<Guid>(type: "uuid", nullable: false),
+                created_at = table.Column<Instant>(type: "timestamp with time zone", nullable: false),
+                updated_at = table.Column<Instant>(type: "timestamp with time zone", nullable: false),
+                flight_number = table.Column<string>(type: "character varying(10)", unicode: false, maxLength: 10, nullable: false),
+                departure_local_time = table.Column<LocalDateTime>(type: "timestamp without time zone", nullable: false),
+                arrival_local_time = table.Column<LocalDateTime>(type: "timestamp without time zone", nullable: false),
+                departure_airport_id = table.Column<Guid>(type: "uuid", nullable: false),
+                arrival_airport_id = table.Column<Guid>(type: "uuid", nullable: false)
+            },
+            constraints: table =>
+            {
+                table.PrimaryKey("pk_flights", x => x.id);
+                table.ForeignKey(
+                    name: "fk_flights_airport_arrival_airport_id",
+                    column: x => x.arrival_airport_id,
+                    principalTable: "airport",
+                    principalColumn: "id",
+                    onDelete: ReferentialAction.Cascade);
+                table.ForeignKey(
+                    name: "fk_flights_airport_departure_airport_id",
+                    column: x => x.departure_airport_id,
+                    principalTable: "airport",
+                    principalColumn: "id",
+                    onDelete: ReferentialAction.Cascade);
+            });
 
         migrationBuilder.CreateTable(
             name: "bookings",
@@ -129,6 +155,16 @@ public partial class InitialCreate : Migration
             column: "itinerary_id");
 
         migrationBuilder.CreateIndex(
+            name: "ix_flights_arrival_airport_id",
+            table: "flights",
+            column: "arrival_airport_id");
+
+        migrationBuilder.CreateIndex(
+            name: "ix_flights_departure_airport_id",
+            table: "flights",
+            column: "departure_airport_id");
+
+        migrationBuilder.CreateIndex(
             name: "ix_passenger_booking_id",
             table: "passenger",
             column: "booking_id");
@@ -169,5 +205,8 @@ public partial class InitialCreate : Migration
 
         migrationBuilder.DropTable(
             name: "itineraries");
+
+        migrationBuilder.DropTable(
+            name: "airport");
     }
 }

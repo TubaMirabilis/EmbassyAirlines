@@ -1,3 +1,4 @@
+using Flights.Api.Domain.Airports;
 using Flights.Api.Domain.Passengers;
 using Flights.Api.Domain.Seats;
 using NodaTime;
@@ -7,7 +8,7 @@ namespace Flights.Api.Domain.Flights;
 public sealed class Flight
 {
     private readonly List<Seat> _seats = [];
-    private Flight(string flightNumber, FlightSchedule schedule, IEnumerable<Seat> seats)
+    private Flight(string flightNumber, Airport departureAirport, Airport arrivalAirport, IEnumerable<Seat> seats)
     {
         var seatsList = seats.ToList();
         if (seatsList.Any(s => s.IsBooked))
@@ -18,7 +19,10 @@ public sealed class Flight
         CreatedAt = SystemClock.Instance.GetCurrentInstant();
         UpdatedAt = SystemClock.Instance.GetCurrentInstant();
         FlightNumber = flightNumber;
-        Schedule = schedule;
+        DepartureAirportId = departureAirport.Id;
+        DepartureAirport = departureAirport;
+        ArrivalAirportId = arrivalAirport.Id;
+        ArrivalAirport = arrivalAirport;
         _seats.AddRange(seatsList);
     }
 #pragma warning disable CS8618
@@ -26,11 +30,20 @@ public sealed class Flight
     {
     }
 #pragma warning restore CS8618
-    public Guid Id { get; private set; }
+    public Guid Id { get; init; }
     public Instant CreatedAt { get; private set; }
     public Instant UpdatedAt { get; private set; }
     public string FlightNumber { get; private set; }
-    public FlightSchedule Schedule { get; private set; }
+    public LocalDateTime DepartureLocalTime { get; set; }
+    public LocalDateTime ArrivalLocalTime { get; set; }
+    public Guid DepartureAirportId { get; set; }
+    public Airport DepartureAirport { get; set; }
+    public Guid ArrivalAirportId { get; set; }
+    public Airport ArrivalAirport { get; set; }
+    public ZonedDateTime ScheduledDeparture => DepartureLocalTime.InZoneLeniently(DepartureAirport.TimeZone);
+    public ZonedDateTime ScheduledArrival => ArrivalLocalTime.InZoneLeniently(ArrivalAirport.TimeZone);
+    public Instant DepartureInstant => ScheduledDeparture.ToInstant();
+    public Instant ArrivalInstant => ScheduledArrival.ToInstant();
     public decimal CheapestEconomyPrice => Seats.Where(s => s.SeatType == SeatType.Economy)
                                                 .Min(s => s.Price);
     public decimal CheapestBusinessPrice => Seats.Where(s => s.SeatType == SeatType.Business)
@@ -44,6 +57,6 @@ public sealed class Flight
             seat.Book(passenger.Id);
         }
     }
-    public static Flight Create(string flightNumber, FlightSchedule schedule, IEnumerable<Seat> seats)
-        => new(flightNumber, schedule, seats);
+    public static Flight Create(string flightNumber, Airport departureAirport, Airport arrivalAirport, IEnumerable<Seat> seats)
+        => new(flightNumber, departureAirport, arrivalAirport, seats);
 }

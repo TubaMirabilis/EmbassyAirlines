@@ -6,6 +6,7 @@ using FluentValidation;
 using Mediator;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using NodaTime;
 using NodaTime.Text;
 using Shared;
 using Shared.Contracts;
@@ -74,9 +75,9 @@ public static class SearchForFlightsByRouteAndDate
             var flights = await _ctx.Flights
                                     .AsNoTracking()
                                     .Where(f =>
-                                        f.Schedule.DepartureAirport.IataCode == query.Departure &&
-                                        f.Schedule.DestinationAirport.IataCode == query.Destination &&
-                                        f.Schedule.DepartureTime.Date == localDate)
+                                        f.DepartureAirport.IataCode == query.Departure &&
+                                        f.DepartureLocalTime.Date == localDate &&
+                                        f.ArrivalAirport.IataCode == query.Destination)
                                     .AsSplitQuery()
                                     .ToListAsync(cancellationToken);
             if (flights.Count != 0 && AllFlightsDeparted(flights))
@@ -92,9 +93,8 @@ public static class SearchForFlightsByRouteAndDate
                        .OrderBy(f => f.DepartureTime)
             ];
         private static bool AllFlightsDeparted(List<Flight> flights)
-            => flights.TrueForAll(f => f.Schedule
-                                        .DepartureTime
-                                        .ToDateTimeOffset() < DateTimeOffset.Now);
+            => flights.TrueForAll(f => f.DepartureInstant < SystemClock.Instance.GetCurrentInstant());
+
     }
 }
 public sealed class SearchForFlightsByRouteAndDateEndpoint : IEndpoint

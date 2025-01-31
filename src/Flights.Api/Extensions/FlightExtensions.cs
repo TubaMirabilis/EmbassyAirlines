@@ -8,10 +8,10 @@ internal static class FlightExtensions
 {
     public static FlightDto ToDto(this Flight flight) => new(
         flight.FlightNumber,
-        flight.Schedule.DepartureAirport.IataCode,
-        flight.Schedule.DestinationAirport.IataCode,
-        flight.Schedule.DepartureTime.ToDateTimeOffset(),
-        flight.Schedule.ArrivalTime.ToDateTimeOffset(),
+        flight.DepartureAirport.IataCode,
+        flight.ArrivalAirport.IataCode,
+        flight.ScheduledDeparture.ToDateTimeOffset(),
+        flight.ScheduledArrival.ToDateTimeOffset(),
         flight.CheapestEconomyPrice,
         flight.CheapestBusinessPrice,
         flight.Seats.Count(s => s is { IsBooked: false, SeatType: SeatType.Economy }),
