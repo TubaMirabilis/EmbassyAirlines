@@ -16,8 +16,7 @@ namespace Flights.Api.Features;
 
 public static class SearchForFlightsByRouteAndDate
 {
-    public sealed record Query(string? Departure, string? Destination, string? Date)
-        : IQuery<ErrorOr<IEnumerable<FlightDto>>>;
+    public sealed record Query(string? Departure, string? Destination, string? Date) : IQuery<ErrorOr<IEnumerable<FlightDto>>>;
     public sealed class Validator : AbstractValidator<Query>
     {
         public Validator()
