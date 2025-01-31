@@ -22,14 +22,9 @@ public static class RetrieveItinerary
             var itinerary = await _ctx.Itineraries
                                       .AsNoTracking()
                                       .SingleOrDefaultAsync(i => i.Id == query.Id, cancellationToken);
-            if (itinerary is null)
-            {
-                return Error.NotFound("Query.NotFound", "Itinerary not found");
-            }
-            var bookings = itinerary.Bookings
-                                    .Select(b => b.ToDto())
-                                    .ToList();
-            return new ItineraryDto(bookings, itinerary.Reference, itinerary.LeadPassengerEmail);
+            return itinerary is not null
+                ? itinerary.ToDto()
+                : Error.NotFound("Query.NotFound", "Itinerary not found");
         }
     }
     public sealed class RetrieveItineraryEndpoint : IEndpoint

@@ -12,7 +12,7 @@ namespace Flights.Api.Features;
 
 public static class BookSeatsForFlight
 {
-    public sealed record Command(CreateBookingDto Dto) : ICommand<ErrorOr<BookingDto>>;
+    public sealed record Command(CreateBookingDto Dto) : ICommand<ErrorOr<Booking>>;
     public sealed class Validator : AbstractValidator<Command>
     {
         public Validator()
@@ -23,7 +23,7 @@ public static class BookSeatsForFlight
                 .NotEmpty();
         }
     }
-    public sealed class Handler : ICommandHandler<Command, ErrorOr<BookingDto>>
+    public sealed class Handler : ICommandHandler<Command, ErrorOr<Booking>>
     {
         private readonly ApplicationDbContext _ctx;
         private readonly IValidator<Command> _validator;
@@ -32,7 +32,7 @@ public static class BookSeatsForFlight
             _ctx = ctx;
             _validator = validator;
         }
-        public async ValueTask<ErrorOr<BookingDto>> Handle(Command command, CancellationToken cancellationToken)
+        public async ValueTask<ErrorOr<Booking>> Handle(Command command, CancellationToken cancellationToken)
         {
             var validationResult = await _validator.ValidateAsync(command, cancellationToken);
             if (!validationResult.IsValid(out var formattedErrors))
@@ -60,9 +60,7 @@ public static class BookSeatsForFlight
                                     .ToDictionary(x => x.seatId, x => Passenger.Create(x.passenger.FirstName, x.passenger.LastName));
             flight.BookSeats(passengers);
             var booking = Booking.Create(passengers.Select(p => p.Value), flight, command.Dto.ItineraryId);
-            _ctx.Bookings.Add(booking);
-            await _ctx.SaveChangesAsync(cancellationToken);
-            return booking.ToDto();
+            return booking;
         }
     }
 }

@@ -30,11 +30,13 @@ public sealed class Booking
     public Guid FlightId { get; init; }
     public Guid ItineraryId { get; init; }
     public IReadOnlyList<Passenger> Passengers => _passengers.AsReadOnly();
-    public IReadOnlyList<Seat> GetSeats()
+    public decimal TotalPrice => GetSeats().Sum(s => s.Price);
+    public IEnumerable<Seat> GetSeats()
     {
         var passengerIds = _passengers.Select(p => (Guid?)p.Id).ToList();
-        return Flight.Seats.Where(s => passengerIds.Contains(s.PassengerId)).ToList();
+        return Flight.Seats
+                     .Where(s => passengerIds.Contains(s.PassengerId))
+                     .ToList();
     }
-
     public static Booking Create(IEnumerable<Passenger> passengers, Flight flight, Guid itineraryId) => new(passengers, flight, itineraryId);
 }
