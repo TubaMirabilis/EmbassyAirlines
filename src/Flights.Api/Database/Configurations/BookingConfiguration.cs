@@ -9,6 +9,11 @@ internal sealed class BookingConfiguration : IEntityTypeConfiguration<Booking>
     public void Configure(EntityTypeBuilder<Booking> builder)
     {
         builder.HasKey(b => b.Id);
+        builder.HasOne(b => b.Flight)
+               .WithMany()
+               .HasForeignKey(b => b.FlightId)
+               .IsRequired()
+               .OnDelete(DeleteBehavior.Restrict);
         builder.Property(b => b.CreatedAt)
                .IsRequired();
         builder.Property(b => b.UpdatedAt)

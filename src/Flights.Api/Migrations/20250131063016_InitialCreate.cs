@@ -47,7 +47,6 @@ public partial class InitialCreate : Migration
                 id = table.Column<Guid>(type: "uuid", nullable: false),
                 created_at = table.Column<Instant>(type: "timestamp with time zone", nullable: false),
                 updated_at = table.Column<Instant>(type: "timestamp with time zone", nullable: false),
-                flight_id1 = table.Column<Guid>(type: "uuid", nullable: false),
                 flight_id = table.Column<Guid>(type: "uuid", nullable: false),
                 itinerary_id = table.Column<Guid>(type: "uuid", nullable: false)
             },
@@ -60,12 +59,6 @@ public partial class InitialCreate : Migration
                     principalTable: "flights",
                     principalColumn: "id",
                     onDelete: ReferentialAction.Restrict);
-                table.ForeignKey(
-                    name: "fk_bookings_flights_flight_id1",
-                    column: x => x.flight_id1,
-                    principalTable: "flights",
-                    principalColumn: "id",
-                    onDelete: ReferentialAction.Cascade);
                 table.ForeignKey(
                     name: "fk_bookings_itineraries_itinerary_id",
                     column: x => x.itinerary_id,
@@ -105,7 +98,7 @@ public partial class InitialCreate : Migration
                 updated_at = table.Column<Instant>(type: "timestamp with time zone", nullable: false),
                 seat_number = table.Column<string>(type: "character varying(3)", unicode: false, maxLength: 3, nullable: false),
                 seat_type = table.Column<string>(type: "character varying(20)", unicode: false, maxLength: 20, nullable: false),
-                price = table.Column<decimal>(type: "numeric", nullable: false),
+                price = table.Column<decimal>(type: "numeric(9,2)", nullable: false),
                 flight_id = table.Column<Guid>(type: "uuid", nullable: false),
                 passenger_id = table.Column<Guid>(type: "uuid", nullable: true)
             },
@@ -129,11 +122,6 @@ public partial class InitialCreate : Migration
             name: "ix_bookings_flight_id",
             table: "bookings",
             column: "flight_id");
-
-        migrationBuilder.CreateIndex(
-            name: "ix_bookings_flight_id1",
-            table: "bookings",
-            column: "flight_id1");
 
         migrationBuilder.CreateIndex(
             name: "ix_bookings_itinerary_id",

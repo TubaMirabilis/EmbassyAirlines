@@ -14,7 +14,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Flights.Api.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250131051605_InitialCreate")]
+    [Migration("20250131063016_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -42,10 +42,6 @@ namespace Flights.Api.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("flight_id");
 
-                    b.Property<Guid>("FlightId1")
-                        .HasColumnType("uuid")
-                        .HasColumnName("flight_id1");
-
                     b.Property<Guid>("ItineraryId")
                         .HasColumnType("uuid")
                         .HasColumnName("itinerary_id");
@@ -59,9 +55,6 @@ namespace Flights.Api.Migrations
 
                     b.HasIndex("FlightId")
                         .HasDatabaseName("ix_bookings_flight_id");
-
-                    b.HasIndex("FlightId1")
-                        .HasDatabaseName("ix_bookings_flight_id1");
 
                     b.HasIndex("ItineraryId")
                         .HasDatabaseName("ix_bookings_itinerary_id");
@@ -245,7 +238,7 @@ namespace Flights.Api.Migrations
                         .HasColumnName("passenger_id");
 
                     b.Property<decimal>("Price")
-                        .HasColumnType("numeric")
+                        .HasColumnType("NUMERIC(9,2)")
                         .HasColumnName("price");
 
                     b.Property<string>("SeatNumber")
@@ -286,19 +279,12 @@ namespace Flights.Api.Migrations
 
             modelBuilder.Entity("Flights.Api.Domain.Bookings.Booking", b =>
                 {
-                    b.HasOne("Flights.Api.Domain.Flights.Flight", null)
+                    b.HasOne("Flights.Api.Domain.Flights.Flight", "Flight")
                         .WithMany()
                         .HasForeignKey("FlightId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("fk_bookings_flights_flight_id");
-
-                    b.HasOne("Flights.Api.Domain.Flights.Flight", "Flight")
-                        .WithMany()
-                        .HasForeignKey("FlightId1")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_bookings_flights_flight_id1");
 
                     b.HasOne("Flights.Api.Domain.Itineraries.Itinerary", null)
                         .WithMany("Bookings")
