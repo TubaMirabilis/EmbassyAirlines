@@ -12,7 +12,7 @@ namespace Flights.Api.Features;
 
 public static class RetrieveItinerary
 {
-    public sealed record Query(Guid Id) : IQuery<ErrorOr<ItineraryDto>>;
+    public sealed record Query(string Slug) : IQuery<ErrorOr<ItineraryDto>>;
     public sealed class Handler : IQueryHandler<Query, ErrorOr<ItineraryDto>>
     {
         private readonly ApplicationDbContext _ctx;
@@ -21,7 +21,7 @@ public static class RetrieveItinerary
         {
             var itinerary = await _ctx.Itineraries
                                       .AsNoTracking()
-                                      .SingleOrDefaultAsync(i => i.Id == query.Id, cancellationToken);
+                                      .SingleOrDefaultAsync(i => i.Reference == query.Slug, cancellationToken);
             return itinerary is not null
                 ? itinerary.ToDto()
                 : Error.NotFound("Query.NotFound", "Itinerary not found");
@@ -33,9 +33,9 @@ public static class RetrieveItinerary
             => app.MapGet("itineraries/{slug}", RetrieveItinerary)
                   .WithName("RetrieveItinerary")
                   .WithOpenApi();
-        private static async Task<IResult> RetrieveItinerary([FromServices] ISender sender, [FromRoute] Guid slug, CancellationToken ct)
+        private static async Task<IResult> RetrieveItinerary([FromServices] ISender sender, [FromRoute] string slug, CancellationToken ct)
         {
-            var query = new Query(slug);
+            var query = new RetrieveItinerary.Query(slug);
             var result = await sender.Send(query, ct);
             return result.Match(
                 Results.Ok,

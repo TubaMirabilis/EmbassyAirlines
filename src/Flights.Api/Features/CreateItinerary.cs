@@ -60,10 +60,10 @@ public static class CreateItinerary
                   .WithOpenApi();
         private static async Task<IResult> CreateItinerary([FromServices] ISender sender, [FromBody] CreateItineraryDto dto, CancellationToken ct)
         {
-            var command = new Command(dto);
+            var command = new CreateItinerary.Command(dto);
             var result = await sender.Send(command, ct);
             return result.Match(
-                res => Results.Created($"itineraries{res.Reference}", res),
+                res => Results.Created($"itineraries/{res.Reference}", res),
                 ErrorHandlingHelper.HandleProblems);
         }
     }
