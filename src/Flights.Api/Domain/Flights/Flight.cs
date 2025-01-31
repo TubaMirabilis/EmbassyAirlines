@@ -8,7 +8,7 @@ namespace Flights.Api.Domain.Flights;
 public sealed class Flight
 {
     private readonly List<Seat> _seats = [];
-    private Flight(string flightNumber, Airport departureAirport, Airport arrivalAirport, IEnumerable<Seat> seats)
+    private Flight(string flightNumber, Airport departureAirport, LocalDateTime departureLocalTime, Airport arrivalAirport, LocalDateTime arrivalLocalTime, IEnumerable<Seat> seats)
     {
         var seatsList = seats.ToList();
         if (seatsList.Any(s => s.IsBooked))
@@ -21,8 +21,10 @@ public sealed class Flight
         FlightNumber = flightNumber;
         DepartureAirportId = departureAirport.Id;
         DepartureAirport = departureAirport;
+        DepartureLocalTime = departureLocalTime;
         ArrivalAirportId = arrivalAirport.Id;
         ArrivalAirport = arrivalAirport;
+        ArrivalLocalTime = arrivalLocalTime;
         _seats.AddRange(seatsList);
     }
 #pragma warning disable CS8618
@@ -57,6 +59,6 @@ public sealed class Flight
             seat.Book(passenger.Id);
         }
     }
-    public static Flight Create(string flightNumber, Airport departureAirport, Airport arrivalAirport, IEnumerable<Seat> seats)
-        => new(flightNumber, departureAirport, arrivalAirport, seats);
+    public static Flight Create(string flightNumber, Airport departureAirport, LocalDateTime departureLocalTime, Airport arrivalAirport, LocalDateTime arrivalLocalTime, IEnumerable<Seat> seats)
+        => new(flightNumber, departureAirport, departureLocalTime, arrivalAirport, arrivalLocalTime, seats);
 }
