@@ -35,10 +35,4 @@
     <ProjectReference Include="..\Shared\Shared.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
-      <_Parameter1>Flights.Api.AcceptanceTests</_Parameter1>
-    </AssemblyAttribute>
-  </ItemGroup>
-
 </Project>

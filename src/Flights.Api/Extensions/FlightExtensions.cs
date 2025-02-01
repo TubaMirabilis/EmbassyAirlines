@@ -7,6 +7,7 @@ namespace Flights.Api.Extensions;
 internal static class FlightExtensions
 {
     public static FlightDto ToDto(this Flight flight) => new(
+        flight.Id,
         flight.FlightNumber,
         flight.DepartureAirport.IataCode,
         flight.ArrivalAirport.IataCode,

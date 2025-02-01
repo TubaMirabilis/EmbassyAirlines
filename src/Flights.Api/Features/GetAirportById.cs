@@ -1,6 +1,5 @@
 ﻿using ErrorOr;
 using Flights.Api.Database;
-using Flights.Api.Extensions;
 using Mediator;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;

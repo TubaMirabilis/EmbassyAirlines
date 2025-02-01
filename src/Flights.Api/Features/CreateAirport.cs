@@ -14,6 +14,21 @@ namespace Flights.Api.Features;
 public static class CreateAirport
 {
     public sealed record Command(CreateAirportDto Dto) : ICommand<ErrorOr<AirportDto>>;
+    public sealed class Validator : AbstractValidator<Command>
+    {
+        public Validator()
+        {
+            RuleFor(x => x.Dto.IataCode)
+                .NotEmpty()
+                .Length(3);
+            RuleFor(x => x.Dto.Name)
+                .NotEmpty()
+                .MaximumLength(100);
+            RuleFor(x => x.Dto.TimeZoneId)
+                .NotEmpty()
+                .MaximumLength(100);
+        }
+    }
     public sealed class Handler : ICommandHandler<Command, ErrorOr<AirportDto>>
     {
         private readonly ApplicationDbContext _ctx;
