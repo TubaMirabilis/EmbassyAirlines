@@ -32,7 +32,7 @@ services:
             options:
                 tag: flightsapi-database
         healthcheck:
-            test: [ "CMD-SHELL", "pg_isready -U ${FLIGHTSAPI_DATABASE_USER}" ]
+            test: ["CMD-SHELL", "pg_isready -U ${FLIGHTSAPI_DATABASE_USER}"]
             interval: 10s
             timeout: 5s
             retries: 5
