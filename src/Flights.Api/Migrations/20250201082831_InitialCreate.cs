@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
+﻿using System;
+using Microsoft.EntityFrameworkCore.Migrations;
 using NodaTime;
 
 #nullable disable
@@ -12,7 +13,7 @@ public partial class InitialCreate : Migration
     protected override void Up(MigrationBuilder migrationBuilder)
     {
         migrationBuilder.CreateTable(
-            name: "airport",
+            name: "airports",
             columns: table => new
             {
                 id = table.Column<Guid>(type: "uuid", nullable: false),
@@ -22,7 +23,7 @@ public partial class InitialCreate : Migration
                 iata_code = table.Column<string>(type: "character varying(3)", maxLength: 3, nullable: false),
                 time_zone_id = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false)
             },
-            constraints: table => table.PrimaryKey("pk_airport", x => x.id));
+            constraints: table => table.PrimaryKey("pk_airports", x => x.id));
 
         migrationBuilder.CreateTable(
             name: "itineraries",
@@ -53,15 +54,15 @@ public partial class InitialCreate : Migration
             {
                 table.PrimaryKey("pk_flights", x => x.id);
                 table.ForeignKey(
-                    name: "fk_flights_airport_arrival_airport_id",
+                    name: "fk_flights_airports_arrival_airport_id",
                     column: x => x.arrival_airport_id,
-                    principalTable: "airport",
+                    principalTable: "airports",
                     principalColumn: "id",
                     onDelete: ReferentialAction.Cascade);
                 table.ForeignKey(
-                    name: "fk_flights_airport_departure_airport_id",
+                    name: "fk_flights_airports_departure_airport_id",
                     column: x => x.departure_airport_id,
-                    principalTable: "airport",
+                    principalTable: "airports",
                     principalColumn: "id",
                     onDelete: ReferentialAction.Cascade);
             });
@@ -207,6 +208,6 @@ public partial class InitialCreate : Migration
             name: "itineraries");
 
         migrationBuilder.DropTable(
-            name: "airport");
+            name: "airports");
     }
 }

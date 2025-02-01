@@ -30,7 +30,7 @@ public static class GetAirportById
     {
         public void MapEndpoint(IEndpointRouteBuilder app)
             => app.MapGet("airports/{id}", GetAirportById)
-                  .WithName("GetAirportById")
+                  .WithName("getAirportById")
                   .WithOpenApi();
         private static async Task<IResult> GetAirportById([FromServices] ISender sender, [FromRoute] Guid id, CancellationToken ct)
         {

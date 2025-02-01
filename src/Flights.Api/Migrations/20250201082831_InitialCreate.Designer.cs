@@ -13,7 +13,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Flights.Api.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250131132347_InitialCreate")]
+    [Migration("20250201082831_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -60,9 +60,9 @@ namespace Flights.Api.Migrations
                         .HasColumnName("updated_at");
 
                     b.HasKey("Id")
-                        .HasName("pk_airport");
+                        .HasName("pk_airports");
 
-                    b.ToTable("airport", (string)null);
+                    b.ToTable("airports", (string)null);
                 });
 
             modelBuilder.Entity("Flights.Api.Domain.Bookings.Booking", b =>
@@ -310,14 +310,14 @@ namespace Flights.Api.Migrations
                         .HasForeignKey("ArrivalAirportId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
-                        .HasConstraintName("fk_flights_airport_arrival_airport_id");
+                        .HasConstraintName("fk_flights_airports_arrival_airport_id");
 
                     b.HasOne("Flights.Api.Domain.Airports.Airport", "DepartureAirport")
                         .WithMany()
                         .HasForeignKey("DepartureAirportId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
-                        .HasConstraintName("fk_flights_airport_departure_airport_id");
+                        .HasConstraintName("fk_flights_airports_departure_airport_id");
 
                     b.Navigation("ArrivalAirport");
 

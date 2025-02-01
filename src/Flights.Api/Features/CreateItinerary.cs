@@ -56,7 +56,8 @@ public static class CreateItinerary
     {
         public void MapEndpoint(IEndpointRouteBuilder app)
             => app.MapPost("itineraries", CreateItinerary)
-                  .WithName("CreateItinerary")
+                  .WithName("createItinerary")
+                  .Produces(StatusCodes.Status201Created)
                   .WithOpenApi();
         private static async Task<IResult> CreateItinerary([FromServices] ISender sender, [FromBody] CreateItineraryDto dto, CancellationToken ct)
         {

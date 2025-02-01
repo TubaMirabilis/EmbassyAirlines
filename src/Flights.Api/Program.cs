@@ -16,6 +16,7 @@ builder.Host.UseSerilog((context, loggerConfig) =>
 var config = builder.Configuration;
 config.AddEnvironmentVariables(prefix: "FLIGHTS_");
 var services = builder.Services;
+services.AddOpenApi();
 services.AddExceptionHandler<GlobalExceptionHandler>();
 services.AddProblemDetails();
 services.AddDbContext<ApplicationDbContext>(options =>
@@ -36,6 +37,7 @@ if (app.Environment.IsDevelopment())
 {
     await app.ApplyMigrationsAsync();
 }
+app.MapOpenApi();
 app.MapEndpoints();
 app.UseMiddleware<RequestContextLoggingMiddleware>();
 app.UseSerilogRequestLogging();

@@ -97,7 +97,8 @@ public static class ScheduleFlight
     {
         public void MapEndpoint(IEndpointRouteBuilder app)
             => app.MapPost("flights", ScheduleFlight)
-                  .WithName("ScheduleFlight")
+                  .WithName("scheduleFlight")
+                  .Produces(StatusCodes.Status201Created)
                   .WithOpenApi();
         private static async Task<IResult> ScheduleFlight([FromServices] ISender sender, [FromBody] ScheduleFlightDto dto, CancellationToken ct)
         {

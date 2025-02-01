@@ -100,7 +100,7 @@ public sealed class SearchForFlightsByRouteAndDateEndpoint : IEndpoint
 {
     public void MapEndpoint(IEndpointRouteBuilder app)
         => app.MapGet("flights", SearchForFlightsByRouteAndDate)
-              .WithName("Get flights")
+              .WithName("getFlights")
               .WithOpenApi();
     private static async Task<IResult> SearchForFlightsByRouteAndDate([FromServices] ISender sender,
         [FromQuery] string? departure, string? destination, string? date, CancellationToken ct)

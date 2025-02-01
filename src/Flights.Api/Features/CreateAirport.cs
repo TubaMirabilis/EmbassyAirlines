@@ -54,11 +54,12 @@ public static class CreateAirport
             return new AirportDto(airport.Id, airport.Name, airport.IataCode, airport.TimeZoneId);
         }
     }
-    public sealed class CreateItineraryEndpoint : IEndpoint
+    public sealed class CreateAirportEndpoint : IEndpoint
     {
         public void MapEndpoint(IEndpointRouteBuilder app)
             => app.MapPost("airports", CreateAirport)
-                  .WithName("CreateAirport")
+                  .WithName("createAirport")
+                  .Produces(StatusCodes.Status201Created)
                   .WithOpenApi();
         private static async Task<IResult> CreateAirport([FromServices] ISender sender, [FromBody] CreateAirportDto dto, CancellationToken ct)
         {

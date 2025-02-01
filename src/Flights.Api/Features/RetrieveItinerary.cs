@@ -31,7 +31,7 @@ public static class RetrieveItinerary
     {
         public void MapEndpoint(IEndpointRouteBuilder app)
             => app.MapGet("itineraries/{slug}", RetrieveItinerary)
-                  .WithName("RetrieveItinerary")
+                  .WithName("retrieveItinerary")
                   .WithOpenApi();
         private static async Task<IResult> RetrieveItinerary([FromServices] ISender sender, [FromRoute] string slug, CancellationToken ct)
         {

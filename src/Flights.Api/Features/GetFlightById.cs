@@ -31,7 +31,7 @@ public static class GetFlightById
     {
         public void MapEndpoint(IEndpointRouteBuilder app)
             => app.MapGet("flights/{id}", GetFlightById)
-                  .WithName("GetFlightById")
+                  .WithName("getFlightById")
                   .WithOpenApi();
         private static async Task<IResult> GetFlightById([FromServices] ISender sender, [FromRoute] Guid id, CancellationToken ct)
         {

@@ -9,7 +9,7 @@ services:
             ASPNETCORE_URLS: ${ASPNETCORE_URLS}
             FLIGHTS_ConnectionStrings__DefaultConnection: ${FLIGHTS_ConnectionStrings__DefaultConnection}
         ports:
-            - "80"
+            - ${FLIGHTSAPI_PORT}:${FLIGHTSAPI_PORT}
         depends_on:
             flightsapi-database:
                 condition: service_healthy
@@ -27,6 +27,15 @@ services:
             POSTGRES_USER: ${FLIGHTSAPI_DATABASE_USER}
             POSTGRES_PASSWORD: ${FLIGHTSAPI_DATABASE_PASSWORD}
             POSTGRES_DB: ${FLIGHTSAPI_DATABASE_NAME}
+        logging:
+            driver: ${DOCKER_LOG_DRIVER}
+            options:
+                tag: flightsapi-database
+        healthcheck:
+            test: [ "CMD-SHELL", "pg_isready -U ${FLIGHTSAPI_DATABASE_USER}" ]
+            interval: 10s
+            timeout: 5s
+            retries: 5
         volumes:
             - flightsapi-database:/var/lib/postgresql/data
 volumes:

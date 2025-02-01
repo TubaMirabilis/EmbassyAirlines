@@ -64,7 +64,7 @@ public sealed class GetSeatsForFlightEndpoint : IEndpoint
 {
     public void MapEndpoint(IEndpointRouteBuilder app)
         => app.MapGet("flights/{flightId}/seats", GetSeats)
-              .WithName("GetSeats")
+              .WithName("getSeatsForFlight")
               .WithOpenApi();
     private static async Task<IResult> GetSeats([FromServices] ISender sender,
         [FromRoute] Guid flightId, [FromQuery] string? seatType, CancellationToken ct)
