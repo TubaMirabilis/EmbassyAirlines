@@ -23,7 +23,7 @@ public static class GetAirportById
                                     .SingleOrDefaultAsync(a => a.Id == query.Id, cancellationToken);
             return airport is not null
                 ? new AirportDto(airport.Id, airport.Name, airport.IataCode, airport.TimeZoneId)
-                : Error.NotFound("Query.NotFound", "Itinerary not found");
+                : Error.NotFound("Query.NotFound", $"Airport with id {query.Id} was not found.");
         }
     }
     public sealed class GetAirportByIdEndpoint : IEndpoint
