@@ -5,6 +5,7 @@ using Flights.Api.Extensions;
 using FluentValidation;
 using Mediator;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Shared;
 using Shared.Contracts;
 using Shared.Endpoints;
@@ -47,6 +48,12 @@ public static class CreateAirport
             {
                 _logger.LogWarning("Validation failed for {Command}. Errors: {Errors}", command, formattedErrors);
                 return Error.Validation("Command.ValidationFailed", formattedErrors);
+            }
+            var airportsWithSameIataCode = await _ctx.Airports.CountAsync(x => x.IataCode == command.Dto.IataCode, cancellationToken);
+            if (airportsWithSameIataCode > 0)
+            {
+                _logger.LogWarning("Airport with IATA code {IataCode} already exists", command.Dto.IataCode);
+                return Error.Conflict("Airport.Conflict", $"Airport with IATA code {command.Dto.IataCode} already exists");
             }
             var airport = Airport.Create(command.Dto.IataCode, command.Dto.Name, command.Dto.TimeZoneId);
             _ctx.Airports

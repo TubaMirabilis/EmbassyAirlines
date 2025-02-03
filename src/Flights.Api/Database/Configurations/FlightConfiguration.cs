@@ -25,8 +25,11 @@ internal sealed class FlightConfiguration : IEntityTypeConfiguration<Flight>
                .IsRequired()
                .HasMaxLength(10)
                .IsUnicode(false);
-        builder.Navigation(f => f.Seats).AutoInclude();
-        builder.Navigation(f => f.DepartureAirport).AutoInclude();
-        builder.Navigation(f => f.ArrivalAirport).AutoInclude();
+        builder.Navigation(f => f.Seats)
+               .AutoInclude();
+        builder.Navigation(f => f.DepartureAirport)
+               .AutoInclude();
+        builder.Navigation(f => f.ArrivalAirport)
+               .AutoInclude();
     }
 }
