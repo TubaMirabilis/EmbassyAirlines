@@ -16,7 +16,7 @@ namespace Flights.Api.Features;
 
 public static class SearchForFlightsByRouteAndDate
 {
-    public sealed record Query(string? Departure, string? Destination, string? Date) : IQuery<ErrorOr<IEnumerable<FlightDto>>>;
+    public sealed record Query(string Departure, string Destination, string Date) : IQuery<ErrorOr<JourneyListDto>>;
     public sealed class Validator : AbstractValidator<Query>
     {
         public Validator()
@@ -47,21 +47,23 @@ public static class SearchForFlightsByRouteAndDate
                 .WithMessage("Destination cannot be the same as departure");
         }
     }
-    public sealed class Handler : IQueryHandler<Query, ErrorOr<IEnumerable<FlightDto>>>
+    public sealed class Handler : IQueryHandler<Query, ErrorOr<JourneyListDto>>
     {
         private readonly ApplicationDbContext _ctx;
+        private readonly ILogger<Handler> _logger;
         private readonly IValidator<Query> _validator;
-        public Handler(ApplicationDbContext ctx, IValidator<Query> validator)
+        public Handler(ApplicationDbContext ctx, IValidator<Query> validator, ILogger<Handler> logger)
         {
             _ctx = ctx;
+            _logger = logger;
             _validator = validator;
         }
-        public async ValueTask<ErrorOr<IEnumerable<FlightDto>>> Handle(
-            Query query, CancellationToken cancellationToken)
+        public async ValueTask<ErrorOr<JourneyListDto>> Handle(Query query, CancellationToken cancellationToken)
         {
             var validationResult = await _validator.ValidateAsync(query, cancellationToken);
             if (!validationResult.IsValid(out var formattedErrors))
             {
+                _logger.LogWarning("Validation failed for query: {Query}. Errors: {Errors}", query, formattedErrors);
                 return Error.Validation("Query.ValidationFailed", formattedErrors);
             }
             var parseResult = LocalDatePattern.Iso
@@ -71,42 +73,57 @@ public static class SearchForFlightsByRouteAndDate
                 return Error.Validation("Query.ValidationFailed", "Invalid date format. Please use yyyy-MM-dd");
             }
             var localDate = parseResult.Value;
-            var flights = await _ctx.Flights
-                                    .AsNoTracking()
-                                    .Where(f =>
-                                        f.DepartureAirport.IataCode == query.Departure &&
-                                        f.DepartureLocalTime.Date == localDate &&
-                                        f.ArrivalAirport.IataCode == query.Destination)
-                                    .AsSplitQuery()
-                                    .ToListAsync(cancellationToken);
-            if (flights.Count != 0 && AllFlightsDeparted(flights))
+            var flights = await _ctx.Flights.Where(f => f.ScheduledDeparture.Date >= localDate).ToListAsync(cancellationToken);
+            var directFlights = flights.Where(f => f.DepartureAirport.IataCode == query.Departure && f.ArrivalAirport.IataCode == query.Destination && f.ScheduledDeparture.Date == localDate).ToList();
+            if (directFlights.Count == 0)
             {
-                return Error.Validation("Query.NoMoreFlights", "All flights have already departed");
+                return GetThreeFastestMultiLegItineraries(flights, query.Departure, query.Destination, localDate);
             }
-            return GetFlights(flights);
+            var journeys = directFlights.Select(df => new FlightDto[] { df.ToDto() });
+            return new JourneyListDto(journeys);
         }
-        private static List<FlightDto> GetFlights(IEnumerable<Flight> flights)
-            =>
-            [..
-                flights.Select(f => f.ToDto())
-                       .OrderBy(f => f.DepartureTime)
-            ];
-        private static bool AllFlightsDeparted(List<Flight> flights)
-            => flights.TrueForAll(f => f.DepartureInstant < SystemClock.Instance.GetCurrentInstant());
-
+        private static JourneyListDto GetThreeFastestMultiLegItineraries(List<Flight> flights, string departure, string destination, LocalDate localDate)
+        {
+            var allFlights = flights.Where(f => f.DepartureAirport.IataCode == departure && f.ScheduledDeparture.Date == localDate).ToList();
+            var journeys = new List<FlightDto[]>();
+            foreach (var flight in allFlights)
+            {
+                var nextFlights = flights.Where(f => f.DepartureAirport.IataCode == flight.ArrivalAirport.IataCode && f.DepartureInstant > flight.ArrivalInstant.Plus(Duration.FromMinutes(30))).ToList();
+                foreach (var nextFlight in nextFlights)
+                {
+                    if (nextFlight.ArrivalAirport.IataCode == destination)
+                    {
+                        journeys.Add(new FlightDto[] { flight.ToDto(), nextFlight.ToDto() });
+                    }
+                    else
+                    {
+                        var finalFlights = flights.Where(f => f.DepartureAirport.IataCode == nextFlight.ArrivalAirport.IataCode && f.DepartureInstant > nextFlight.ArrivalInstant.Plus(Duration.FromMinutes(30))).ToList();
+                        foreach (var finalFlight in finalFlights)
+                        {
+                            if (finalFlight.ArrivalAirport.IataCode == destination)
+                            {
+                                journeys.Add(new FlightDto[] { flight.ToDto(), nextFlight.ToDto(), finalFlight.ToDto() });
+                            }
+                        }
+                    }
+                }
+            }
+            var sortedJourneys = journeys.OrderBy(j => j[^1].ArrivalTime).Take(3).ToList();
+            return new JourneyListDto(sortedJourneys);
+        }
     }
 }
 public sealed class SearchForFlightsByRouteAndDateEndpoint : IEndpoint
 {
     public void MapEndpoint(IEndpointRouteBuilder app)
-        => app.MapGet("flights", SearchForFlightsByRouteAndDate)
-              .WithName("getFlights")
+        => app.MapGet("journeys", SearchForFlightsByRouteAndDate)
+              .WithName("searchForFlightsByRouteAndDate")
               .WithOpenApi();
     private static async Task<IResult> SearchForFlightsByRouteAndDate([FromServices] ISender sender,
-        [FromQuery] string? departure, string? destination, string? date, CancellationToken ct)
+        [FromQuery] string departure, string destination, string date, CancellationToken ct)
     {
-        departure = departure?.ToUpperInvariant();
-        destination = destination?.ToUpperInvariant();
+        departure = departure.ToUpperInvariant();
+        destination = destination.ToUpperInvariant();
         var query = new SearchForFlightsByRouteAndDate.Query(departure, destination, date);
         var result = await sender.Send(query, ct);
         return result.Match(

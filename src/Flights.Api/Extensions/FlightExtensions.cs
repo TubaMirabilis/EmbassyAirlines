@@ -13,6 +13,7 @@ internal static class FlightExtensions
         flight.ArrivalAirport.IataCode,
         flight.ScheduledDeparture.ToDateTimeOffset(),
         flight.ScheduledArrival.ToDateTimeOffset(),
+        flight.ArrivalInstant.Minus(flight.DepartureInstant).ToTimeSpan(),
         flight.CheapestEconomyPrice,
         flight.CheapestBusinessPrice,
         flight.Seats.Count(s => s is { IsBooked: false, SeatType: SeatType.Economy }),
