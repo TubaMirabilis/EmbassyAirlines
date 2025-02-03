@@ -73,7 +73,10 @@ public static class SearchForFlightsByRouteAndDate
                 return Error.Validation("Query.ValidationFailed", "Invalid date format. Please use yyyy-MM-dd");
             }
             var localDate = parseResult.Value;
-            var flights = await _ctx.Flights.Where(f => f.ScheduledDeparture.Date >= localDate).ToListAsync(cancellationToken);
+            var flights = await _ctx.Flights.Where(f => f.ScheduledDeparture.Date >= localDate && f.ScheduledDeparture.Date <= localDate.PlusDays(7))
+                                            .Include(f => f.DepartureAirport)
+                                            .Include(f => f.ArrivalAirport)
+                                            .ToListAsync(cancellationToken);
             var directFlights = flights.Where(f => f.DepartureAirport.IataCode == query.Departure && f.ArrivalAirport.IataCode == query.Destination && f.ScheduledDeparture.Date == localDate).ToList();
             if (directFlights.Count == 0)
             {
@@ -84,25 +87,40 @@ public static class SearchForFlightsByRouteAndDate
         }
         private static JourneyListDto GetThreeFastestMultiLegItineraries(List<Flight> flights, string departure, string destination, LocalDate localDate)
         {
-            var allFlights = flights.Where(f => f.DepartureAirport.IataCode == departure && f.ScheduledDeparture.Date == localDate).ToList();
+            var flightsByDeparture = flights.GroupBy(f => f.DepartureAirport.IataCode)
+                                            .ToDictionary(g => g.Key, g => g.OrderBy(x => x.DepartureInstant).ToList());
+            if (!flightsByDeparture.TryGetValue(departure, out var initialFlights))
+            {
+                return new JourneyListDto(Array.Empty<FlightDto[]>());
+            }
+            var allFlights = initialFlights.Where(f => f.ScheduledDeparture.Date == localDate)
+    .ToList();
             var journeys = new List<FlightDto[]>();
             foreach (var flight in allFlights)
             {
-                var nextFlights = flights.Where(f => f.DepartureAirport.IataCode == flight.ArrivalAirport.IataCode && f.DepartureInstant > flight.ArrivalInstant.Plus(Duration.FromMinutes(30))).ToList();
-                foreach (var nextFlight in nextFlights)
+                if (flightsByDeparture.TryGetValue(flight.ArrivalAirport.IataCode, out var nextFlightCandidates))
                 {
-                    if (nextFlight.ArrivalAirport.IataCode == destination)
+                    var nextFlights = nextFlightCandidates.Where(f => f.DepartureInstant > flight.ArrivalInstant.Plus(Duration.FromMinutes(30)))
+                                                          .ToList();
+                    foreach (var nextFlight in nextFlights)
                     {
-                        journeys.Add(new FlightDto[] { flight.ToDto(), nextFlight.ToDto() });
-                    }
-                    else
-                    {
-                        var finalFlights = flights.Where(f => f.DepartureAirport.IataCode == nextFlight.ArrivalAirport.IataCode && f.DepartureInstant > nextFlight.ArrivalInstant.Plus(Duration.FromMinutes(30))).ToList();
-                        foreach (var finalFlight in finalFlights)
+                        if (nextFlight.ArrivalAirport.IataCode == destination)
                         {
-                            if (finalFlight.ArrivalAirport.IataCode == destination)
+                            journeys.Add(new[] { flight.ToDto(), nextFlight.ToDto() });
+                        }
+                        else
+                        {
+                            if (flightsByDeparture.TryGetValue(nextFlight.ArrivalAirport.IataCode, out var finalFlightCandidates))
                             {
-                                journeys.Add(new FlightDto[] { flight.ToDto(), nextFlight.ToDto(), finalFlight.ToDto() });
+                                var finalFlights = finalFlightCandidates.Where(f => f.DepartureInstant > nextFlight.ArrivalInstant.Plus(Duration.FromMinutes(30)))
+                                                                        .ToList();
+                                foreach (var finalFlight in finalFlights)
+                                {
+                                    if (finalFlight.ArrivalAirport.IataCode == destination)
+                                    {
+                                        journeys.Add(new[] { flight.ToDto(), nextFlight.ToDto(), finalFlight.ToDto() });
+                                    }
+                                }
                             }
                         }
                     }
