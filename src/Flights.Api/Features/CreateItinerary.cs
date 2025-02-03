@@ -47,7 +47,8 @@ public static class CreateItinerary
             var count = await _ctx.Itineraries.CountAsync(cancellationToken);
             var reference = _sqids.Encode(count);
             var itinerary = Itinerary.Create(bookings, reference, command.Dto.LeadPassengerEmail);
-            _ctx.Itineraries.Add(itinerary);
+            _ctx.Itineraries
+                .Add(itinerary);
             await _ctx.SaveChangesAsync(cancellationToken);
             return itinerary.ToDto();
         }

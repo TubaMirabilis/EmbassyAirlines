@@ -49,7 +49,8 @@ public static class CreateAirport
                 return Error.Validation("Command.ValidationFailed", formattedErrors);
             }
             var airport = Airport.Create(command.Dto.IataCode, command.Dto.Name, command.Dto.TimeZoneId);
-            _ctx.Airports.Add(airport);
+            _ctx.Airports
+                .Add(airport);
             await _ctx.SaveChangesAsync(cancellationToken);
             return new AirportDto(airport.Id, airport.Name, airport.IataCode, airport.TimeZoneId);
         }

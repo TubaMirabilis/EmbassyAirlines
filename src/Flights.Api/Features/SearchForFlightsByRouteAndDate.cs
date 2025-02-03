@@ -73,10 +73,12 @@ public static class SearchForFlightsByRouteAndDate
                 return Error.Validation("Query.ValidationFailed", "Invalid date format. Please use yyyy-MM-dd");
             }
             var localDate = parseResult.Value;
-            var flights = await _ctx.Flights.Where(f => f.ScheduledDeparture.Date >= localDate && f.ScheduledDeparture.Date <= localDate.PlusDays(7))
-                                            .Include(f => f.DepartureAirport)
-                                            .Include(f => f.ArrivalAirport)
-                                            .ToListAsync(cancellationToken);
+            var flights = await _ctx.Flights
+                                    .AsNoTracking()
+                                    .Where(f => f.ScheduledDeparture.Date >= localDate && f.ScheduledDeparture.Date <= localDate.PlusDays(7))
+                                    .Include(f => f.DepartureAirport)
+                                    .Include(f => f.ArrivalAirport)
+                                    .ToListAsync(cancellationToken);
             var directFlights = flights.Where(f => f.DepartureAirport.IataCode == query.Departure && f.ArrivalAirport.IataCode == query.Destination && f.ScheduledDeparture.Date == localDate).ToList();
             if (directFlights.Count == 0)
             {

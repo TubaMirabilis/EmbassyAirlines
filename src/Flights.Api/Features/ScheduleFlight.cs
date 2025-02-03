@@ -60,13 +60,17 @@ public static class ScheduleFlight
                 _logger.LogWarning("Validation failed. Errors: {Errors}", formattedErrors);
                 return Error.Validation("Command.ValidationFailed", formattedErrors);
             }
-            var departureAirport = await _ctx.Airports.Where(a => a.Id == command.Dto.DepartureAirportId).SingleOrDefaultAsync(cancellationToken);
+            var departureAirport = await _ctx.Airports
+                                             .Where(a => a.Id == command.Dto.DepartureAirportId)
+                                             .SingleOrDefaultAsync(cancellationToken);
             if (departureAirport == null)
             {
                 _logger.LogWarning("Departure airport with id {Id} not found.", command.Dto.DepartureAirportId);
                 return Error.NotFound("DepartureAirport.NotFound", $"Departure airport with id {command.Dto.DepartureAirportId} not found.");
             }
-            var arrivalAirport = await _ctx.Airports.Where(a => a.Id == command.Dto.ArrivalAirportId).SingleOrDefaultAsync(cancellationToken);
+            var arrivalAirport = await _ctx.Airports
+                                           .Where(a => a.Id == command.Dto.ArrivalAirportId)
+                                           .SingleOrDefaultAsync(cancellationToken);
             if (arrivalAirport == null)
             {
                 _logger.LogWarning("Arrival airport with id {Id} not found.", command.Dto.ArrivalAirportId);
@@ -88,7 +92,8 @@ public static class ScheduleFlight
             }
             var seats = _seatService.CreateSeats(command.Dto.EquipmentType, command.Dto.EconomyPrice, command.Dto.BusinessPrice);
             var flight = Flight.Create(command.Dto.FlightNumber, departureAirport, departureTime, arrivalAirport, arrivalTime, seats);
-            _ctx.Flights.Add(flight);
+            _ctx.Flights
+                .Add(flight);
             await _ctx.SaveChangesAsync(cancellationToken);
             return flight.ToDto();
         }
