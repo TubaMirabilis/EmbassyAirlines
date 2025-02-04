@@ -20,14 +20,18 @@ public static class CreateAirport
         public Validator()
         {
             RuleFor(x => x.Dto.IataCode)
-                .NotEmpty()
-                .Length(3);
+                .Length(3)
+                    .WithMessage("IATA Code must be 3 characters in length.");
             RuleFor(x => x.Dto.Name)
                 .NotEmpty()
-                .MaximumLength(100);
+                    .WithMessage("Name is required.")
+                .MaximumLength(100)
+                    .WithMessage("Name must not exceed 100 characters in length.");
             RuleFor(x => x.Dto.TimeZoneId)
                 .NotEmpty()
-                .MaximumLength(100);
+                    .WithMessage("Time zone is required.")
+                .MaximumLength(100)
+                    .WithMessage("Time zone must not exceed 100 characters in length.");
         }
     }
     public sealed class Handler : ICommandHandler<Command, ErrorOr<AirportDto>>

@@ -1,4 +1,5 @@
-﻿using Flights.Api.Database;
+﻿using System.Text.Json;
+using Flights.Api.Database;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
@@ -19,6 +20,10 @@ public class FunctionalTestWebAppFactory : WebApplicationFactory<Program>, IAsyn
         .Build();
     protected override void ConfigureWebHost(IWebHostBuilder builder) => builder.ConfigureTestServices(services =>
                                                                               {
+                                                                                  services.AddScoped<JsonSerializerOptions>(_ => new JsonSerializerOptions
+                                                                                  {
+                                                                                      PropertyNameCaseInsensitive = true
+                                                                                  });
                                                                                   services.RemoveAll<DbContextOptions<ApplicationDbContext>>();
                                                                                   services.AddDbContext<ApplicationDbContext>(options =>
                                                                                       options
