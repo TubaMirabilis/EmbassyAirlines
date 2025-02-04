@@ -230,4 +230,23 @@ public class ScheduleFlightTests : BaseFunctionalTest
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
         await GetProblemDetailsFromResponseAndAssert(response, error);
     }
+
+    [Fact]
+    public async Task Should_ReturnBadRequest_WhenArrivalTimeIsBeforeDepartureTime()
+    {
+        // Arrange
+        var departureAirport = await SeedAirportAsync(new CreateAirportDto("YYC", "Calgary International Airport", "America/Edmonton"));
+        var departureAirportId = departureAirport.Id;
+        var arrivalAirport = await SeedAirportAsync(new CreateAirportDto("DEN", "Denver International Airport", "America/Denver"));
+        var arrivalAirportId = arrivalAirport.Id;
+        var request = new ScheduleFlightDto("EX252", departureAirportId, DateTime.Now.AddDays(1), arrivalAirportId, DateTime.Now, 1000, 2000, "B78X");
+        var error = "Arrival time is before departure time.";
+
+        // Act
+        var response = await HttpClient.PostAsJsonAsync("flights", request);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        await GetProblemDetailsFromResponseAndAssert(response, error);
+    }
 }
