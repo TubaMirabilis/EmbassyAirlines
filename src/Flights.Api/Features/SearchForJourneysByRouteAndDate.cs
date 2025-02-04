@@ -14,7 +14,7 @@ using Shared.Endpoints;
 
 namespace Flights.Api.Features;
 
-public static class SearchForFlightsByRouteAndDate
+public static class SearchForJourneysByRouteAndDate
 {
     public sealed record Query(string Departure, string Destination, string Date) : IQuery<ErrorOr<JourneyListDto>>;
     public sealed class Validator : AbstractValidator<Query>
@@ -22,11 +22,11 @@ public static class SearchForFlightsByRouteAndDate
         public Validator()
         {
             RuleFor(x => x.Departure)
-                .NotEmpty()
-                .WithMessage("Departure is required");
+                .Matches("^[A-Z]{3}$")
+                .WithMessage("IATA Code must consist of 3 uppercase letters only.");
             RuleFor(x => x.Destination)
-                .NotEmpty()
-                .WithMessage("Destination is required");
+                .Matches("^[A-Z]{3}$")
+                .WithMessage("IATA Code must consist of 3 uppercase letters only.");
             RuleFor(x => x.Date)
                 .Custom((date, context) =>
                 {
@@ -131,18 +131,18 @@ public static class SearchForFlightsByRouteAndDate
         }
     }
 }
-public sealed class SearchForFlightsByRouteAndDateEndpoint : IEndpoint
+public sealed class SearchForJourneysByRouteAndDateEndpoint : IEndpoint
 {
     public void MapEndpoint(IEndpointRouteBuilder app)
-        => app.MapGet("journeys", SearchForFlightsByRouteAndDate)
-              .WithName("searchForFlightsByRouteAndDate")
+        => app.MapGet("journeys", SearchForJourneysByRouteAndDate)
+              .WithName("searchForJourneysByRouteAndDate")
               .WithOpenApi();
-    private static async Task<IResult> SearchForFlightsByRouteAndDate([FromServices] ISender sender,
+    private static async Task<IResult> SearchForJourneysByRouteAndDate([FromServices] ISender sender,
         [FromQuery] string departure, string destination, string date, CancellationToken ct)
     {
         departure = departure.ToUpperInvariant();
         destination = destination.ToUpperInvariant();
-        var query = new SearchForFlightsByRouteAndDate.Query(departure, destination, date);
+        var query = new SearchForJourneysByRouteAndDate.Query(departure, destination, date);
         var result = await sender.Send(query, ct);
         return result.Match(
             Results.Ok,
