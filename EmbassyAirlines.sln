@@ -9,6 +9,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shared", "src\Shared\Shared
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Flights.Api", "src\Flights.Api\Flights.Api.csproj", "{BEC31BC2-5A82-447F-B6B4-C85DC8E88EF6}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{22D5E595-544D-4748-B1C1-5235E2AFB8F3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Flights.Api.FunctionalTests", "tests\Flights.Api.FunctionalTests\Flights.Api.FunctionalTests.csproj", "{82FF211F-1B9A-4542-9E95-D766B5D777F0}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -26,9 +30,14 @@ Global
 		{BEC31BC2-5A82-447F-B6B4-C85DC8E88EF6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BEC31BC2-5A82-447F-B6B4-C85DC8E88EF6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BEC31BC2-5A82-447F-B6B4-C85DC8E88EF6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{82FF211F-1B9A-4542-9E95-D766B5D777F0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{82FF211F-1B9A-4542-9E95-D766B5D777F0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{82FF211F-1B9A-4542-9E95-D766B5D777F0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{82FF211F-1B9A-4542-9E95-D766B5D777F0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{77375BCF-B02F-4812-AF01-03A2FBD3C3D0} = {C47261A2-5A4D-4BF2-9467-DC400889441C}
 		{BEC31BC2-5A82-447F-B6B4-C85DC8E88EF6} = {C47261A2-5A4D-4BF2-9467-DC400889441C}
+		{82FF211F-1B9A-4542-9E95-D766B5D777F0} = {22D5E595-544D-4748-B1C1-5235E2AFB8F3}
 	EndGlobalSection
 EndGlobal
