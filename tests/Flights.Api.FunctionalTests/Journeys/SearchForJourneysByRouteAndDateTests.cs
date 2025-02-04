@@ -11,7 +11,7 @@ public class SearchForJourneysByRouteAndDateTests : BaseFunctionalTest
     }
 
     [Fact]
-    public async Task Should_ReturnBadRequest_WhenDepartureIsEmpty()
+    public async Task Should_ReturnBadRequest_WhenDepartureIsMissing()
     {
         // Arrange
         var error = "IATA Code must consist of 3 uppercase letters only.";
@@ -26,13 +26,28 @@ public class SearchForJourneysByRouteAndDateTests : BaseFunctionalTest
     }
 
     [Fact]
-    public async Task Should_ReturnBadRequest_WhenDestinationIsEmpty()
+    public async Task Should_ReturnBadRequest_WhenDestinationIsMissing()
     {
         // Arrange
         var error = "IATA Code must consist of 3 uppercase letters only.";
 
         // Act
         var uri = new Uri("journeys?departure=CDG&destination=&date=2022-01-01", UriKind.Relative);
+        var response = await HttpClient.GetAsync(uri);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        await GetProblemDetailsFromResponseAndAssert(response, error);
+    }
+
+    [Fact]
+    public async Task Should_ReturnBadRequest_WhenDateIsMissing()
+    {
+        // Arrange
+        var error = "Date is required.";
+
+        // Act
+        var uri = new Uri("journeys?departure=CDG&destination=JFK&date=", UriKind.Relative);
         var response = await HttpClient.GetAsync(uri);
 
         // Assert

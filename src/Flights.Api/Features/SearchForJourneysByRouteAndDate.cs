@@ -32,7 +32,7 @@ public static class SearchForJourneysByRouteAndDate
                 {
                     if (string.IsNullOrWhiteSpace(date))
                     {
-                        context.AddFailure("Date is required");
+                        context.AddFailure("Date is required.");
                         return;
                     }
                     var parseResult = LocalDatePattern.Iso
