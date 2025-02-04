@@ -1,3 +1,4 @@
+using System.Globalization;
 using Flights.Api.Domain.Flights;
 using Flights.Api.Domain.Seats;
 using Shared.Contracts;
@@ -11,8 +12,8 @@ internal static class FlightExtensions
         flight.FlightNumber,
         flight.DepartureAirport.IataCode,
         flight.ArrivalAirport.IataCode,
-        flight.ScheduledDeparture.ToDateTimeOffset(),
-        flight.ScheduledArrival.ToDateTimeOffset(),
+        flight.ScheduledDeparture.ToDateTimeOffset().ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture),
+        flight.ScheduledArrival.ToDateTimeOffset().ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture),
         flight.ArrivalInstant.Minus(flight.DepartureInstant).ToTimeSpan(),
         flight.CheapestEconomyPrice,
         flight.CheapestBusinessPrice,

@@ -75,7 +75,8 @@ public static class SearchForJourneysByRouteAndDate
             var localDate = parseResult.Value;
             var flights = await _ctx.Flights
                                     .AsNoTracking()
-                                    .Where(f => f.ScheduledDeparture.Date >= localDate && f.ScheduledDeparture.Date <= localDate.PlusDays(7))
+                                    .Where(f => f.DepartureLocalTime.InZoneLeniently(DateTimeZoneProviders.Tzdb[f.DepartureAirport.TimeZoneId]).Date >= localDate &&
+                                                f.DepartureLocalTime.InZoneLeniently(DateTimeZoneProviders.Tzdb[f.DepartureAirport.TimeZoneId]).Date <= localDate.PlusDays(7))
                                     .ToListAsync(cancellationToken);
             var directFlights = flights.Where(f => f.DepartureAirport.IataCode == query.Departure && f.ArrivalAirport.IataCode == query.Destination && f.ScheduledDeparture.Date == localDate).ToList();
             if (directFlights.Count == 0)
