@@ -101,4 +101,49 @@ public class ScheduleFlightTests : BaseFunctionalTest
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
         await GetProblemDetailsFromResponseAndAssert(response, error);
     }
+
+    [Fact]
+    public async Task Should_ReturnBadRequest_WhenBusinessPriceIsNegative()
+    {
+        // Arrange
+        var request = new ScheduleFlightDto("EX252", Guid.NewGuid(), DateTime.Now.AddDays(1), Guid.NewGuid(), DateTime.Now.AddDays(1).AddHours(17).AddMinutes(25), 1000, decimal.MinValue, "B78X");
+        var error = "Business price must be greater than 0.";
+
+        // Act
+        var response = await HttpClient.PostAsJsonAsync("flights", request);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        await GetProblemDetailsFromResponseAndAssert(response, error);
+    }
+
+    [Fact]
+    public async Task Should_ReturnBadRequest_WhenEquipmentTypeIsEmpty()
+    {
+        // Arrange
+        var request = new ScheduleFlightDto("EX252", Guid.NewGuid(), DateTime.Now.AddDays(1), Guid.NewGuid(), DateTime.Now.AddDays(1).AddHours(17).AddMinutes(25), 1000, 2000, "");
+        var error = "Equipment type is required.";
+
+        // Act
+        var response = await HttpClient.PostAsJsonAsync("flights", request);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        await GetProblemDetailsFromResponseAndAssert(response, error);
+    }
+
+    [Fact]
+    public async Task Should_ReturnBadRequest_WhenEquipmentTypeIsTooLong()
+    {
+        // Arrange
+        var request = new ScheduleFlightDto("EX252", Guid.NewGuid(), DateTime.Now.AddDays(1), Guid.NewGuid(), DateTime.Now.AddDays(1).AddHours(17).AddMinutes(25), 1000, 2000, LongString);
+        var error = "Equipment type must be 4 characters or less.";
+
+        // Act
+        var response = await HttpClient.PostAsJsonAsync("flights", request);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        await GetProblemDetailsFromResponseAndAssert(response, error);
+    }
 }

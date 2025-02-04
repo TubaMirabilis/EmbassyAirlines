@@ -41,9 +41,13 @@ public static class ScheduleFlight
                 .GreaterThan(0)
                     .WithMessage("Economy price must be greater than 0.");
             RuleFor(x => x.Dto.BusinessPrice)
-                .GreaterThan(0);
+                .GreaterThan(0)
+                    .WithMessage("Business price must be greater than 0.");
             RuleFor(x => x.Dto.EquipmentType)
-                .NotEmpty();
+                .NotEmpty()
+                    .WithMessage("Equipment type is required.")
+                .MaximumLength(4)
+                    .WithMessage("Equipment type must be 4 characters or less.");
         }
     }
     public sealed class Handler : ICommandHandler<Command, ErrorOr<FlightDto>>
