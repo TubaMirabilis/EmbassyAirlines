@@ -126,9 +126,9 @@ namespace Flights.Api.Migrations
 
                     b.Property<string>("FlightNumber")
                         .IsRequired()
-                        .HasMaxLength(10)
+                        .HasMaxLength(6)
                         .IsUnicode(false)
-                        .HasColumnType("character varying(10)")
+                        .HasColumnType("character varying(6)")
                         .HasColumnName("flight_number");
 
                     b.Property<Instant>("UpdatedAt")

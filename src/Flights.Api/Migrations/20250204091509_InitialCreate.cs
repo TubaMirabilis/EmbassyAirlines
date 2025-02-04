@@ -43,7 +43,7 @@ public partial class InitialCreate : Migration
                 id = table.Column<Guid>(type: "uuid", nullable: false),
                 created_at = table.Column<Instant>(type: "timestamp with time zone", nullable: false),
                 updated_at = table.Column<Instant>(type: "timestamp with time zone", nullable: false),
-                flight_number = table.Column<string>(type: "character varying(10)", unicode: false, maxLength: 10, nullable: false),
+                flight_number = table.Column<string>(type: "character varying(6)", unicode: false, maxLength: 6, nullable: false),
                 departure_local_time = table.Column<LocalDateTime>(type: "timestamp without time zone", nullable: false),
                 arrival_local_time = table.Column<LocalDateTime>(type: "timestamp without time zone", nullable: false),
                 departure_airport_id = table.Column<Guid>(type: "uuid", nullable: false),

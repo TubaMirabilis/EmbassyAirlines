@@ -22,17 +22,24 @@ public static class ScheduleFlight
         public Validator()
         {
             RuleFor(x => x.Dto.FlightNumber)
-                .NotEmpty();
+                .MaximumLength(6)
+                    .WithMessage("Flight number must be 6 characters or less.")
+                .Matches("^[A-Z0-9]+$")
+                    .WithMessage("Flight number must be alphanumeric.");
             RuleFor(x => x.Dto.DepartureAirportId)
-                .NotEmpty();
+                .NotEmpty()
+                    .WithMessage("Departure airport id is required.");
             RuleFor(x => x.Dto.ArrivalAirportId)
-                .NotEmpty();
+                .NotEmpty()
+                    .WithMessage("Arrival airport id is required.");
             RuleFor(x => x.Dto.DepartureLocalTime)
-                .NotEmpty();
+                .NotEmpty()
+                    .WithMessage("Departure time is required.");
             RuleFor(x => x.Dto.ArrivalLocalTime)
                 .NotEmpty();
             RuleFor(x => x.Dto.EconomyPrice)
-                .GreaterThan(0);
+                .GreaterThan(0)
+                    .WithMessage("Economy price must be greater than 0.");
             RuleFor(x => x.Dto.BusinessPrice)
                 .GreaterThan(0);
             RuleFor(x => x.Dto.EquipmentType)

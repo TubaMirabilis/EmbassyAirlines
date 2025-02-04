@@ -13,7 +13,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Flights.Api.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250201082831_InitialCreate")]
+    [Migration("20250204091509_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -129,9 +129,9 @@ namespace Flights.Api.Migrations
 
                     b.Property<string>("FlightNumber")
                         .IsRequired()
-                        .HasMaxLength(10)
+                        .HasMaxLength(6)
                         .IsUnicode(false)
-                        .HasColumnType("character varying(10)")
+                        .HasColumnType("character varying(6)")
                         .HasColumnName("flight_number");
 
                     b.Property<Instant>("UpdatedAt")

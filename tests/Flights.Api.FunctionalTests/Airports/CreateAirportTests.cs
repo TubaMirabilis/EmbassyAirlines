@@ -8,18 +8,46 @@ namespace Flights.Api.FunctionalTests.Airports;
 
 public class CreateAirportTests : BaseFunctionalTest
 {
-    private readonly string _longString;
     public CreateAirportTests(FunctionalTestWebAppFactory factory) : base(factory)
     {
-        _longString = new string('A', 101);
+    }
+
+    [Fact]
+    public async Task Should_ReturnBadRequest_WhenIataCodeIsEmpty()
+    {
+        // Arrange
+        var request = new CreateAirportDto("", "Vancouver International Airport", "America/Vancouver");
+        var error = "IATA Code must consist of 3 uppercase letters only.";
+
+        // Act
+        var response = await HttpClient.PostAsJsonAsync("airports", request);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        await GetProblemDetailsFromResponseAndAssert(response, error);
+    }
+
+    [Fact]
+    public async Task Should_ReturnBadRequest_WhenIataCodeIsTooLong()
+    {
+        // Arrange
+        var request = new CreateAirportDto(LongString, "Vancouver International Airport", "America/Vancouver");
+        var error = "IATA Code must consist of 3 uppercase letters only.";
+
+        // Act
+        var response = await HttpClient.PostAsJsonAsync("airports", request);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        await GetProblemDetailsFromResponseAndAssert(response, error);
     }
 
     [Fact]
     public async Task Should_ReturnBadRequest_WhenIataCodeIsInvalid()
     {
         // Arrange
-        var request = new CreateAirportDto("", "Vancouver International Airport", "America/Vancouver");
-        var error = "IATA Code must be 3 characters in length.";
+        var request = new CreateAirportDto("3/a", "Vancouver International Airport", "America/Vancouver");
+        var error = "IATA Code must consist of 3 uppercase letters only.";
 
         // Act
         var response = await HttpClient.PostAsJsonAsync("airports", request);
@@ -48,7 +76,7 @@ public class CreateAirportTests : BaseFunctionalTest
     public async Task Should_ReturnBadRequest_WhenNameIsTooLong()
     {
         // Arrange
-        var request = new CreateAirportDto("YVR", _longString, "America/Vancouver");
+        var request = new CreateAirportDto("YVR", LongString, "America/Vancouver");
         var error = "Name must not exceed 100 characters in length.";
 
         // Act
@@ -78,7 +106,7 @@ public class CreateAirportTests : BaseFunctionalTest
     public async Task Should_ReturnBadRequest_WhenTimeZoneIdIsTooLong()
     {
         // Arrange
-        var request = new CreateAirportDto("YVR", "Vancouver International Airport", _longString);
+        var request = new CreateAirportDto("YVR", "Vancouver International Airport", LongString);
         var error = "Time zone must not exceed 100 characters in length.";
 
         // Act

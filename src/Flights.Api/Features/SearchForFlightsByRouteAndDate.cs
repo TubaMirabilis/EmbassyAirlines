@@ -106,7 +106,7 @@ public static class SearchForFlightsByRouteAndDate
                     {
                         if (nextFlight.ArrivalAirport.IataCode == destination)
                         {
-                            journeys.Add(new[] { flight.ToDto(), nextFlight.ToDto() });
+                            journeys.Add([flight.ToDto(), nextFlight.ToDto()]);
                         }
                         else
                         {
@@ -118,7 +118,7 @@ public static class SearchForFlightsByRouteAndDate
                                 {
                                     if (finalFlight.ArrivalAirport.IataCode == destination)
                                     {
-                                        journeys.Add(new[] { flight.ToDto(), nextFlight.ToDto(), finalFlight.ToDto() });
+                                        journeys.Add([flight.ToDto(), nextFlight.ToDto(), finalFlight.ToDto()]);
                                     }
                                 }
                             }

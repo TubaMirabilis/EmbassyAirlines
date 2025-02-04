@@ -20,8 +20,8 @@ public static class CreateAirport
         public Validator()
         {
             RuleFor(x => x.Dto.IataCode)
-                .Length(3)
-                    .WithMessage("IATA Code must be 3 characters in length.");
+                .Matches("^[A-Z]{3}$")
+                    .WithMessage("IATA Code must consist of 3 uppercase letters only.");
             RuleFor(x => x.Dto.Name)
                 .NotEmpty()
                     .WithMessage("Name is required.")

@@ -23,7 +23,7 @@ internal sealed class FlightConfiguration : IEntityTypeConfiguration<Flight>
                .IsRequired();
         builder.Property(b => b.FlightNumber)
                .IsRequired()
-               .HasMaxLength(10)
+               .HasMaxLength(6)
                .IsUnicode(false);
         builder.Navigation(f => f.Seats)
                .AutoInclude();
