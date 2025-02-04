@@ -1,4 +1,5 @@
-﻿using System.Net.Http.Json;
+﻿using System.Net;
+using System.Net.Http.Json;
 using System.Text.Json;
 using Flights.Api.FunctionalTests.Extensions;
 using FluentAssertions;
@@ -23,7 +24,12 @@ public abstract class BaseFunctionalTest : IClassFixture<FunctionalTestWebAppFac
     protected string LongString { get; }
     protected async Task GetProblemDetailsFromResponseAndAssert(HttpResponseMessage response, string detail)
     {
-        var expectedProblemDetails = new ProblemDetails().WithValidationError(detail);
+        var expectedProblemDetails = response.StatusCode switch
+        {
+            HttpStatusCode.BadRequest => new ProblemDetails().WithValidationError(detail),
+            HttpStatusCode.NotFound => new ProblemDetails().WithQueryError(detail),
+            _ => throw new ArgumentOutOfRangeException("response.StatusCode", response.StatusCode, "Unexpected status code")
+        };
         var content = await response.Content
                                     .ReadAsStreamAsync();
         var actualProblemDetails = await JsonSerializer.DeserializeAsync<ProblemDetails>(content, _options);

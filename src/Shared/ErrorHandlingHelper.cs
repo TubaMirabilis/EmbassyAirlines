@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using ErrorOr;
 using Microsoft.AspNetCore.Http;
 
@@ -5,6 +6,11 @@ namespace Shared;
 
 public static class ErrorHandlingHelper
 {
+    public static readonly ReadOnlyDictionary<int, string> ErrorMessages = new Dictionary<int, string>
+    {
+        { 400, "Validation Error" },
+        { 404, "Query Error" }
+    }.AsReadOnly();
     public static IResult HandleProblems(IEnumerable<Error> errors)
     {
         var errorsList = errors.ToList();
@@ -38,7 +44,14 @@ public static class ErrorHandlingHelper
         {
             return Results.Problem(
                 statusCode: statusCode,
-                title: "Validation Error",
+                title: ErrorMessages[statusCode],
+                detail: error.Description);
+        }
+        if (error.Type == ErrorType.NotFound)
+        {
+            return Results.Problem(
+                statusCode: statusCode,
+                title: ErrorMessages[statusCode],
                 detail: error.Description);
         }
         return Results.Problem(

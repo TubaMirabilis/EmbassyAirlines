@@ -146,4 +146,20 @@ public class ScheduleFlightTests : BaseFunctionalTest
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
         await GetProblemDetailsFromResponseAndAssert(response, error);
     }
+
+    [Fact]
+    public async Task Should_ReturnNotFound_WhenDepartureAirportDoesNotExist()
+    {
+        // Arrange
+        var airportId = Guid.NewGuid();
+        var request = new ScheduleFlightDto("EX252", airportId, DateTime.Now.AddDays(1), Guid.NewGuid(), DateTime.Now.AddDays(1).AddHours(17).AddMinutes(25), 1000, 2000, "B78X");
+        var error = $"Departure airport with id {airportId} not found.";
+
+        // Act
+        var response = await HttpClient.PostAsJsonAsync("flights", request);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        await GetProblemDetailsFromResponseAndAssert(response, error);
+    }
 }
