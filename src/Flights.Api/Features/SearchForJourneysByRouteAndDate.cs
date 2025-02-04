@@ -39,7 +39,7 @@ public static class SearchForJourneysByRouteAndDate
                                                       .Parse(date);
                     if (!parseResult.Success)
                     {
-                        context.AddFailure("Invalid date format. Please use yyyy-MM-dd");
+                        context.AddFailure("Invalid date format. Please use yyyy-MM-dd.");
                     }
                 });
             RuleFor(x => x)

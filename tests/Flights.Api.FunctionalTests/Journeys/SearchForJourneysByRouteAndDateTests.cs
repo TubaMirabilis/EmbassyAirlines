@@ -54,4 +54,19 @@ public class SearchForJourneysByRouteAndDateTests : BaseFunctionalTest
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
         await GetProblemDetailsFromResponseAndAssert(response, error);
     }
+
+    [Fact]
+    public async Task Should_ReturnBadRequest_WhenDateIsInWrongFormat()
+    {
+        // Arrange
+        var error = "Invalid date format. Please use yyyy-MM-dd.";
+
+        // Act
+        var uri = new Uri("journeys?departure=CDG&destination=JFK&date=2022-01-32", UriKind.Relative);
+        var response = await HttpClient.GetAsync(uri);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        await GetProblemDetailsFromResponseAndAssert(response, error);
+    }
 }
