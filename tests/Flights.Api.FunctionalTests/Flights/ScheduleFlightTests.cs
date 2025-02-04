@@ -249,4 +249,29 @@ public class ScheduleFlightTests : BaseFunctionalTest
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
         await GetProblemDetailsFromResponseAndAssert(response, error);
     }
+
+    [Fact]
+    public async Task Should_ReturnCreated_WhenRequestIsValid()
+    {
+        // Arrange
+        var departureAirport = await SeedAirportAsync(new CreateAirportDto("CDG", "Charles de Gaulle Airport", "Europe/Paris"));
+        var departureAirportId = departureAirport.Id;
+        var arrivalAirport = await SeedAirportAsync(new CreateAirportDto("IAD", "Washington Dulles International Airport", "America/New_York"));
+        var arrivalAirportId = arrivalAirport.Id;
+        var now = DateTime.Now;
+        var request = new ScheduleFlightDto("EX252", departureAirportId, now.AddDays(1), arrivalAirportId, now.AddDays(1).AddHours(2).AddMinutes(51), 1000, 2000, "B78X");
+
+        // Act
+        var response = await SeedFlightAsync(request);
+
+        // Assert
+        response.FlightNumber.Should().Be(request.FlightNumber);
+        response.Departure.Should().Be("CDG");
+        response.Destination.Should().Be("IAD");
+        response.CheapestEconomyPrice.Should().Be(request.EconomyPrice);
+        response.CheapestBusinessPrice.Should().Be(request.BusinessPrice);
+        response.Duration.Should().Be(TimeSpan.FromMinutes(531));
+        response.AvailableEconomySeats.Should().Be(301);
+        response.AvailableBusinessSeats.Should().Be(36);
+    }
 }

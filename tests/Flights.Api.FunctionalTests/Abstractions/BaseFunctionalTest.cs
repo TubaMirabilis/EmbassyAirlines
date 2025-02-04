@@ -46,5 +46,14 @@ public abstract class BaseFunctionalTest : IClassFixture<FunctionalTestWebAppFac
         var dto = await JsonSerializer.DeserializeAsync<AirportDto>(content, _options) ?? throw new JsonException();
         return dto;
     }
+    protected async Task<FlightDto> SeedFlightAsync(ScheduleFlightDto request)
+    {
+        var response = await HttpClient.PostAsJsonAsync("flights", request);
+        response.EnsureSuccessStatusCode();
+        var content = await response.Content
+                                    .ReadAsStreamAsync();
+        var dto = await JsonSerializer.DeserializeAsync<FlightDto>(content, _options) ?? throw new JsonException();
+        return dto;
+    }
     public void Dispose() => _scope.Dispose();
 }
