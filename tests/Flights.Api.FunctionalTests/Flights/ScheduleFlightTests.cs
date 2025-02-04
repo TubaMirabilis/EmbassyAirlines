@@ -162,4 +162,22 @@ public class ScheduleFlightTests : BaseFunctionalTest
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
         await GetProblemDetailsFromResponseAndAssert(response, error);
     }
+
+    [Fact]
+    public async Task Should_ReturnNotFound_WhenArrivalAirportDoesNotExist()
+    {
+        // Arrange
+        var departureAirport = await SeedAirportAsync(new CreateAirportDto("JFK", "John F. Kennedy International Airport", "America/New_York"));
+        var departureAirportId = departureAirport.Id;
+        var arrivalAirportId = Guid.NewGuid();
+        var request = new ScheduleFlightDto("EX252", departureAirportId, DateTime.Now.AddDays(1), arrivalAirportId, DateTime.Now.AddDays(1).AddHours(17).AddMinutes(25), 1000, 2000, "B78X");
+        var error = $"Arrival airport with id {arrivalAirportId} not found.";
+
+        // Act
+        var response = await HttpClient.PostAsJsonAsync("flights", request);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        await GetProblemDetailsFromResponseAndAssert(response, error);
+    }
 }
