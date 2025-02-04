@@ -88,6 +88,36 @@ public class ScheduleFlightTests : BaseFunctionalTest
     }
 
     [Fact]
+    public async Task Should_ReturnBadRequest_WhenDepartureTimeIsEmpty()
+    {
+        // Arrange
+        var request = new ScheduleFlightDto("EX252", Guid.NewGuid(), DateTime.MinValue, Guid.NewGuid(), DateTime.Now.AddDays(1).AddHours(17).AddMinutes(25), 1000, 2000, "B78X");
+        var error = "Departure time is required.";
+
+        // Act
+        var response = await HttpClient.PostAsJsonAsync("flights", request);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        await GetProblemDetailsFromResponseAndAssert(response, error);
+    }
+
+    [Fact]
+    public async Task Should_ReturnBadRequest_WhenArrivalTimeIsEmpty()
+    {
+        // Arrange
+        var request = new ScheduleFlightDto("EX252", Guid.NewGuid(), DateTime.Now.AddDays(1), Guid.NewGuid(), DateTime.MinValue, 1000, 2000, "B78X");
+        var error = "Arrival time is required.";
+
+        // Act
+        var response = await HttpClient.PostAsJsonAsync("flights", request);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        await GetProblemDetailsFromResponseAndAssert(response, error);
+    }
+
+    [Fact]
     public async Task Should_ReturnBadRequest_WhenEconomyPriceIsNegative()
     {
         // Arrange
@@ -178,6 +208,26 @@ public class ScheduleFlightTests : BaseFunctionalTest
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        await GetProblemDetailsFromResponseAndAssert(response, error);
+    }
+
+    [Fact]
+    public async Task Should_ReturnBadRequest_WhenDepartureTimeIsInThePast()
+    {
+        // Arrange
+        var departureAirport = await SeedAirportAsync(new CreateAirportDto("YYZ", "Toronto Pearson International Airport", "America/Toronto"));
+        var departureAirportId = departureAirport.Id;
+        var arrivalAirport = await SeedAirportAsync(new CreateAirportDto("LAX", "Los Angeles International Airport", "America/Los_Angeles"));
+        var arrivalAirportId = arrivalAirport.Id;
+        var departureTime = DateTime.Now.Subtract(TimeSpan.FromDays(7));
+        var request = new ScheduleFlightDto("EX252", departureAirportId, departureTime, arrivalAirportId, DateTime.Now.AddDays(1).AddHours(17).AddMinutes(25), 1000, 2000, "B78X");
+        var error = "Departure time is in the past.";
+
+        // Act
+        var response = await HttpClient.PostAsJsonAsync("flights", request);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
         await GetProblemDetailsFromResponseAndAssert(response, error);
     }
 }

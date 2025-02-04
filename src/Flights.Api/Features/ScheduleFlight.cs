@@ -36,7 +36,8 @@ public static class ScheduleFlight
                 .NotEmpty()
                     .WithMessage("Departure time is required.");
             RuleFor(x => x.Dto.ArrivalLocalTime)
-                .NotEmpty();
+                .NotEmpty()
+                    .WithMessage("Arrival time is required.");
             RuleFor(x => x.Dto.EconomyPrice)
                 .GreaterThan(0)
                     .WithMessage("Economy price must be greater than 0.");
