@@ -109,4 +109,29 @@ public class SearchForJourneysByRouteAndDateTests : BaseFunctionalTest
         ArgumentNullException.ThrowIfNull(journeyListWrapper);
         journeyListWrapper.Journeys.First().Should().BeEquivalentTo(new FlightDto[] { flightResult });
     }
+
+    [Fact]
+    public async Task Should_ReturnOk_WhenJourneyWithTwoFlightsExists()
+    {
+        // Arrange
+        var dxb = await SeedAirportAsync(new CreateAirportDto("DXB", "Dubai International Airport", "Asia/Dubai"));
+        var ist = await SeedAirportAsync(new CreateAirportDto("IST", "Istanbul Airport", "Europe/Istanbul"));
+        var ams = await SeedAirportAsync(new CreateAirportDto("AMS", "Amsterdam Airport Schiphol", "Europe/Amsterdam"));
+        var now = DateTime.Now;
+        var date = now.AddDays(1).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+        var firstFlightRequest = new ScheduleFlightDto("EX254", dxb.Id, now.AddDays(1), ist.Id, now.AddDays(1).AddHours(4).AddMinutes(10), 1000, 2000, "B78X");
+        var firstFlightResult = await SeedFlightAsync(firstFlightRequest);
+        var secondFlightRequest = new ScheduleFlightDto("EX255", ist.Id, now.AddDays(1).AddHours(5).AddMinutes(10), ams.Id, now.AddDays(1).AddHours(6).AddMinutes(55), 1000, 2000, "B78X");
+        var secondFlightResult = await SeedFlightAsync(secondFlightRequest);
+
+        // Act
+        var uri = new Uri($"journeys?departure={dxb.IataCode}&destination={ams.IataCode}&date={date}", UriKind.Relative);
+        var response = await HttpClient.GetAsync(uri);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var journeyListWrapper = await response.Content.ReadFromJsonAsync<JourneyListDto>();
+        ArgumentNullException.ThrowIfNull(journeyListWrapper);
+        journeyListWrapper.Journeys.First().Should().BeEquivalentTo(new FlightDto[] { firstFlightResult, secondFlightResult });
+    }
 }
