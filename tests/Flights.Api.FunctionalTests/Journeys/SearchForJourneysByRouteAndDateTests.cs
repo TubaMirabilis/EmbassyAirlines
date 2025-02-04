@@ -69,4 +69,19 @@ public class SearchForJourneysByRouteAndDateTests : BaseFunctionalTest
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
         await GetProblemDetailsFromResponseAndAssert(response, error);
     }
+
+    [Fact]
+    public async Task Should_ReturnBadRequest_WhenDepartureAndDestinationAreTheSame()
+    {
+        // Arrange
+        var error = "Destination cannot be the same as departure.";
+
+        // Act
+        var uri = new Uri("journeys?departure=CDG&destination=CDG&date=2022-01-01", UriKind.Relative);
+        var response = await HttpClient.GetAsync(uri);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        await GetProblemDetailsFromResponseAndAssert(response, error);
+    }
 }

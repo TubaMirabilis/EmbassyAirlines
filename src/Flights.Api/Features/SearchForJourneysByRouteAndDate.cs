@@ -44,7 +44,7 @@ public static class SearchForJourneysByRouteAndDate
                 });
             RuleFor(x => x)
                 .Must(x => x.Departure != x.Destination)
-                .WithMessage("Destination cannot be the same as departure");
+                .WithMessage("Destination cannot be the same as departure.");
         }
     }
     public sealed class Handler : IQueryHandler<Query, ErrorOr<JourneyListDto>>
