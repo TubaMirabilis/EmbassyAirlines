@@ -59,7 +59,7 @@ public static class BookSeatsForFlight
             var passengers = seatIds.Zip(command.Dto.Seats.Values, (seatId, passenger) => (seatId, passenger))
                                     .ToDictionary(x => x.seatId, x => Passenger.Create(x.passenger.FirstName, x.passenger.LastName));
             flight.BookSeats(passengers);
-            var booking = Booking.Create(passengers.Select(p => p.Value), flight, command.Dto.ItineraryId);
+            var booking = Booking.Create(passengers.Select(p => p.Value), flight);
             return booking;
         }
     }

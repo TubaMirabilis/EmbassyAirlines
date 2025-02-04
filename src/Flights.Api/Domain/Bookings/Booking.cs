@@ -8,14 +8,13 @@ namespace Flights.Api.Domain.Bookings;
 public sealed class Booking
 {
     private readonly List<Passenger> _passengers = [];
-    private Booking(IEnumerable<Passenger> passengers, Flight flight, Guid itineraryId)
+    private Booking(IEnumerable<Passenger> passengers, Flight flight)
     {
         Id = Guid.NewGuid();
         CreatedAt = SystemClock.Instance.GetCurrentInstant();
         UpdatedAt = SystemClock.Instance.GetCurrentInstant();
         Flight = flight;
         FlightId = flight.Id;
-        ItineraryId = itineraryId;
         _passengers.AddRange(passengers);
     }
 #pragma warning disable CS8618
@@ -29,7 +28,7 @@ public sealed class Booking
     public decimal TotalPrice => GetSeats().Sum(s => s.Price);
     public Flight Flight { get; init; }
     public Guid FlightId { get; init; }
-    public Guid ItineraryId { get; init; }
+    public Guid ItineraryId { get; set; }
     public IReadOnlyList<Passenger> Passengers => _passengers.AsReadOnly();
     public IEnumerable<Seat> GetSeats()
     {
@@ -37,5 +36,5 @@ public sealed class Booking
         return Flight.Seats
                      .Where(s => passengerIds.Contains(s.PassengerId));
     }
-    public static Booking Create(IEnumerable<Passenger> passengers, Flight flight, Guid itineraryId) => new(passengers, flight, itineraryId);
+    public static Booking Create(IEnumerable<Passenger> passengers, Flight flight) => new(passengers, flight);
 }
