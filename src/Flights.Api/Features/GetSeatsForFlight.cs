@@ -21,7 +21,7 @@ public static class GetSeatsForFlight
         {
             RuleFor(x => x.FlightId)
                 .NotEmpty()
-                .WithMessage("FlightId is required");
+                .WithMessage("FlightId is required.");
         }
     }
     public sealed class Handler : IQueryHandler<Query, ErrorOr<IEnumerable<SeatDto>>>
