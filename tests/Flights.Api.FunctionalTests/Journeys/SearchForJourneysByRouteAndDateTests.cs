@@ -184,4 +184,32 @@ public class SearchForJourneysByRouteAndDateTests : BaseFunctionalTest
         ArgumentNullException.ThrowIfNull(journeyListWrapper);
         journeyListWrapper.Journeys.First().Should().BeEquivalentTo(new FlightDto[] { firstFlightResult, secondFlightResult });
     }
+
+    [Fact]
+    public async Task Should_ReturnOk_WhenJourneyWithThreeFlightsExists()
+    {
+        // Arrange
+        var muc = await SeedAirportAsync(new CreateAirportDto("MUC", "Munich Airport", "Europe/Berlin"));
+        var tlv = await SeedAirportAsync(new CreateAirportDto("TLV", "Ben Gurion Airport", "Asia/Jerusalem"));
+        var auh = await SeedAirportAsync(new CreateAirportDto("AUH", "Abu Dhabi International Airport", "Asia/Dubai"));
+        var bkk = await SeedAirportAsync(new CreateAirportDto("BKK", "Suvarnabhumi Airport", "Asia/Bangkok"));
+        var now = DateTime.Now;
+        var date = now.AddDays(1).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+        var firstFlightRequest = new ScheduleFlightDto("EX354", muc.Id, now.AddDays(1), tlv.Id, now.AddDays(1).AddHours(4).AddMinutes(45), 1000, 2000, "B78X");
+        var firstFlightResult = await SeedFlightAsync(firstFlightRequest);
+        var secondFlightRequest = new ScheduleFlightDto("EX355", tlv.Id, now.AddDays(1).AddHours(5).AddMinutes(45), auh.Id, now.AddDays(1).AddHours(10).AddMinutes(45), 1000, 2000, "B78X");
+        var secondFlightResult = await SeedFlightAsync(secondFlightRequest);
+        var thirdFlightRequest = new ScheduleFlightDto("EX385", auh.Id, now.AddDays(1).AddHours(11).AddMinutes(45), bkk.Id, now.AddDays(1).AddHours(20).AddMinutes(50), 1000, 2000, "B78X");
+        var thirdFlightResult = await SeedFlightAsync(thirdFlightRequest);
+
+        // Act
+        var uri = new Uri($"journeys?departure={muc.IataCode}&destination={bkk.IataCode}&date={date}", UriKind.Relative);
+        var response = await HttpClient.GetAsync(uri);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var journeyListWrapper = await response.Content.ReadFromJsonAsync<JourneyListDto>();
+        ArgumentNullException.ThrowIfNull(journeyListWrapper);
+        journeyListWrapper.Journeys.First().Should().BeEquivalentTo(new FlightDto[] { firstFlightResult, secondFlightResult, thirdFlightResult });
+    }
 }
