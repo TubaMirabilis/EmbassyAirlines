@@ -25,4 +25,20 @@ public class GetSeatsForFlightTests : BaseFunctionalTest
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
         await GetProblemDetailsFromResponseAndAssert(response, error);
     }
+
+    [Fact]
+    public async Task Should_ReturnNotFound_WhenFlightDoesNotExist()
+    {
+        // Arrange
+        var id = Guid.NewGuid();
+        var error = $"Flight with id {id} was not found.";
+
+        // Act
+        var uri = new Uri($"flights/{id}/seats", UriKind.Relative);
+        var response = await HttpClient.GetAsync(uri);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        await GetProblemDetailsFromResponseAndAssert(response, error);
+    }
 }

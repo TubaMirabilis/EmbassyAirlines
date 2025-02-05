@@ -45,7 +45,7 @@ public static class GetSeatsForFlight
                                   .SingleOrDefaultAsync(f => f.Id == query.FlightId, cancellationToken);
             if (flight is null)
             {
-                return Error.NotFound("Flight.NotFound", $"Flight with id {query.FlightId} was not found");
+                return Error.NotFound("Flight.NotFound", $"Flight with id {query.FlightId} was not found.");
             }
             var seats = flight.Seats
                               .Where(s => s.FlightId == query.FlightId);
