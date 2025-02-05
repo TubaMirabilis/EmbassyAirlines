@@ -78,7 +78,7 @@ public static class SearchForJourneysByRouteAndDate
                                     .Where(f => f.DepartureLocalTime.InZoneLeniently(DateTimeZoneProviders.Tzdb[f.DepartureAirport.TimeZoneId]).Date >= localDate &&
                                                 f.DepartureLocalTime.InZoneLeniently(DateTimeZoneProviders.Tzdb[f.DepartureAirport.TimeZoneId]).Date <= localDate.PlusDays(7))
                                     .ToListAsync(cancellationToken);
-            var directFlights = flights.Where(f => f.DepartureAirport.IataCode == query.Departure && f.ArrivalAirport.IataCode == query.Destination && f.ScheduledDeparture.Date == localDate).ToList();
+            var directFlights = flights.Where(f => f.DepartureAirport.IataCode == query.Departure && f.ArrivalAirport.IataCode == query.Destination && f.DepartureLocalTime.Date == localDate).ToList();
             if (directFlights.Count == 0)
             {
                 return GetThreeFastestMultiLegItineraries(flights, query.Departure, query.Destination, localDate);
@@ -94,7 +94,7 @@ public static class SearchForJourneysByRouteAndDate
             {
                 return new JourneyListDto(Array.Empty<FlightDto[]>());
             }
-            var allFlights = initialFlights.Where(f => f.ScheduledDeparture.Date == localDate)
+            var allFlights = initialFlights.Where(f => f.DepartureLocalTime.Date == localDate)
     .ToList();
             var journeys = new List<FlightDto[]>();
             foreach (var flight in allFlights)

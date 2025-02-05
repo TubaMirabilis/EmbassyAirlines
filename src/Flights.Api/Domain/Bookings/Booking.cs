@@ -28,7 +28,6 @@ public sealed class Booking
     public decimal TotalPrice => GetSeats().Sum(s => s.Price);
     public Flight Flight { get; init; }
     public Guid FlightId { get; init; }
-    public Guid ItineraryId { get; set; }
     public IReadOnlyList<Passenger> Passengers => _passengers.AsReadOnly();
     public IEnumerable<Seat> GetSeats()
     {

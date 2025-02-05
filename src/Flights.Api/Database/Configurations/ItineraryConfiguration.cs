@@ -15,7 +15,7 @@ internal sealed class ItineraryConfiguration : IEntityTypeConfiguration<Itinerar
                .IsRequired();
         builder.HasMany(b => b.Bookings)
                .WithOne()
-               .HasForeignKey(p => p.ItineraryId)
+               .HasForeignKey("ItineraryId")
                .IsRequired()
                .OnDelete(DeleteBehavior.Cascade);
         builder.Property(b => b.LeadPassengerEmail)

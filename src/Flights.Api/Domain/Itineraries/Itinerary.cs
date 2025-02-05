@@ -13,10 +13,6 @@ public sealed class Itinerary
         UpdatedAt = SystemClock.Instance.GetCurrentInstant();
         Reference = reference;
         LeadPassengerEmail = leadPassengerEmail ?? "";
-        foreach (var booking in bookings)
-        {
-            booking.ItineraryId = Id;
-        }
         _bookings.AddRange(bookings);
     }
 #pragma warning disable CS8618
