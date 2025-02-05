@@ -46,7 +46,7 @@ public static class BookSeatsForFlight
                                    .SingleOrDefaultAsync(cancellationToken);
             if (flight is null)
             {
-                return Error.NotFound("Query.NotFound", "Flight not found");
+                return Error.NotFound("Query.NotFound", "Flight not found.");
             }
             var seatIds = command.Dto.Seats.Keys;
             var seats = flight.Seats.Where(s => seatIds.Contains(s.Id)).ToList();

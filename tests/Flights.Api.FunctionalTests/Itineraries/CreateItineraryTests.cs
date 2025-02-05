@@ -65,6 +65,26 @@ public class CreateItineraryTests : BaseFunctionalTest
     }
 
     [Fact]
+    public async Task Should_ReturnNotFound_WhenFlightDoesNotExist()
+    {
+        // Arrange
+        var dic = new Dictionary<Guid, PassengerDto>
+        {
+            { Guid.NewGuid(), new PassengerDto("Mark", "Zuckerberg") }
+        };
+        var booking = new CreateBookingDto(dic, Guid.NewGuid());
+        var request = new CreateItineraryDto([booking], null);
+        var error = "Flight not found.";
+
+        // Act
+        var response = await HttpClient.PostAsJsonAsync("itineraries", request);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        await GetProblemDetailsFromResponseAndAssert(response, error);
+    }
+
+    [Fact]
     public async Task Should_ReturnCreated_WhenRequestIsValid()
     {
         // Arrange
