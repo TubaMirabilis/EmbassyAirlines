@@ -56,7 +56,7 @@ public static class BookSeatsForFlight
             }
             if (seats.Any(s => s.IsBooked))
             {
-                return Error.Validation("Query.ValidationFailed", "One or more seats are already booked");
+                return Error.Validation("Query.ValidationFailed", "One or more seats are already booked.");
             }
             var passengers = seatIds.Zip(command.Dto.Seats.Values, (seatId, passenger) => (seatId, passenger))
                                     .ToDictionary(x => x.seatId, x => Passenger.Create(x.passenger.FirstName, x.passenger.LastName));

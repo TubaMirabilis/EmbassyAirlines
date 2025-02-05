@@ -115,4 +115,36 @@ public class CreateItineraryTests : BaseFunctionalTest
         response.LeadPassengerEmail.Should().BeEmpty();
         response.TotalPrice.Should().Be(2000);
     }
+
+    [Fact]
+    public async Task Should_ReturnBadRequest_WhenSeatIsAlreadyBooked()
+    {
+        // Arrange
+        var departureAirport = await SeedAirportAsync(new CreateAirportDto("HGH", "Hangzhou Xiaoshan International Airport", "Asia/Shanghai"));
+        var departureAirportId = departureAirport.Id;
+        var arrivalAirport = await SeedAirportAsync(new CreateAirportDto("TPE", "Taiwan Taoyuan International Airport", "Asia/Taipei"));
+        var arrivalAirportId = arrivalAirport.Id;
+        var now = DateTime.Now;
+        var flightRequest = new ScheduleFlightDto("EX212", departureAirportId, now.AddDays(1), arrivalAirportId, now.AddDays(1).AddHours(2).AddMinutes(1), 1000, 2000, "B78X");
+        var flightResult = await SeedFlightAsync(flightRequest);
+        var flightId = flightResult.Id;
+        var seats = await HttpClient.GetFromJsonAsync<IEnumerable<SeatDto>>($"flights/{flightId}/seats");
+        var seatId = seats?.Skip(1).Take(1).FirstOrDefault()?.Id ?? throw new InvalidOperationException("No seats found");
+        var passenger = new PassengerDto("Mark", "Zuckerberg");
+        var passengers = new Dictionary<Guid, PassengerDto>()
+        {
+            { seatId, passenger }
+        };
+        var booking = new CreateBookingDto(passengers, flightId);
+        var itinerary = new CreateItineraryDto([booking], null);
+        await SeedItineraryAsync(itinerary);
+        var error = "One or more seats are already booked.";
+
+        // Act
+        var response = await HttpClient.PostAsJsonAsync("itineraries", itinerary);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        await GetProblemDetailsFromResponseAndAssert(response, error);
+    }
 }
