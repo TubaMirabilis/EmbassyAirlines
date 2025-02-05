@@ -89,6 +89,21 @@ public class SearchForJourneysByRouteAndDateTests : BaseFunctionalTest
     }
 
     [Fact]
+    public async Task Should_ReturnEmptyList_WhenDepartureAirportHasNoFlights()
+    {
+        // Arrange
+        // Act
+        var uri = new Uri("journeys?departure=CDG&destination=IST&date=2022-01-01", UriKind.Relative);
+        var response = await HttpClient.GetAsync(uri);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var journeyListWrapper = await response.Content.ReadFromJsonAsync<JourneyListDto>();
+        ArgumentNullException.ThrowIfNull(journeyListWrapper);
+        journeyListWrapper.Journeys.Should().BeEmpty();
+    }
+
+    [Fact]
     public async Task Should_ReturnOk_WhenDirectFlightExists()
     {
         // Arrange
