@@ -89,11 +89,46 @@ public class SearchForJourneysByRouteAndDateTests : BaseFunctionalTest
     }
 
     [Fact]
+    public async Task Should_ReturnNotFound_WhenDepartureAirportDoesNotExist()
+    {
+        // Arrange
+        var error = "Airport with IATA code CDG not found.";
+
+        // Act
+        var uri = new Uri("journeys?departure=CDG&destination=ICN&date=2022-01-01", UriKind.Relative);
+        var response = await HttpClient.GetAsync(uri);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        await GetProblemDetailsFromResponseAndAssert(response, error);
+    }
+
+    [Fact]
+    public async Task Should_ReturnBadRequest_WhenDateIsInThePast()
+    {
+        // Arrange
+        await SeedAirportAsync(new CreateAirportDto("EMA", "East Midlands Airport", "Europe/London"));
+        var error = "Departure date cannot be in the past.";
+
+        // Act
+        var uri = new Uri("journeys?departure=EMA&destination=ICN&date=2022-01-01", UriKind.Relative);
+        var response = await HttpClient.GetAsync(uri);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        await GetProblemDetailsFromResponseAndAssert(response, error);
+    }
+
+    [Fact]
     public async Task Should_ReturnEmptyList_WhenDepartureAirportHasNoFlights()
     {
         // Arrange
+        var now = DateTime.Now;
+        var date = now.AddDays(1).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+        await SeedAirportAsync(new CreateAirportDto("NCL", "Newcastle Airport", "Europe/London"));
+
         // Act
-        var uri = new Uri("journeys?departure=CDG&destination=IST&date=2022-01-01", UriKind.Relative);
+        var uri = new Uri($"journeys?departure=NCL&destination=IST&date={date}", UriKind.Relative);
         var response = await HttpClient.GetAsync(uri);
 
         // Assert

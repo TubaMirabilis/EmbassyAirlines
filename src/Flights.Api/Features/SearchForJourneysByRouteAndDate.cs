@@ -73,6 +73,19 @@ public static class SearchForJourneysByRouteAndDate
                 return Error.Validation("Query.ValidationFailed", "Invalid date format. Please use yyyy-MM-dd");
             }
             var localDate = parseResult.Value;
+            var departureAirport = await _ctx.Airports
+                                             .AsNoTracking()
+                                             .SingleOrDefaultAsync(a => a.IataCode == query.Departure, cancellationToken);
+            if (departureAirport is null)
+            {
+                return Error.NotFound("Airport.NotFound", $"Airport with IATA code {query.Departure} not found.");
+            }
+            var now = SystemClock.Instance.GetCurrentInstant();
+            var nowLocal = now.InZone(DateTimeZoneProviders.Tzdb[departureAirport.TimeZoneId]).LocalDateTime;
+            if (nowLocal.Date > localDate)
+            {
+                return Error.Validation("Query.ValidationFailed", "Departure date cannot be in the past.");
+            }
             var flights = await _ctx.Flights
                                     .AsNoTracking()
                                     .Where(f => f.DepartureLocalTime.InZoneLeniently(DateTimeZoneProviders.Tzdb[f.DepartureAirport.TimeZoneId]).Date >= localDate &&
