@@ -7,6 +7,7 @@ internal static class SeatExtensions
 {
     public static SeatDto ToDto(this Seat seat)
         => new(
+            seat.Id,
             seat.SeatNumber,
             seat.SeatType.ToString(),
             seat.IsBooked,

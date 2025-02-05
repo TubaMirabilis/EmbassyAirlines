@@ -40,7 +40,7 @@ public abstract class BaseFunctionalTest : IClassFixture<FunctionalTestWebAppFac
     protected async Task<AirportDto> SeedAirportAsync(CreateAirportDto request)
     {
         var response = await HttpClient.PostAsJsonAsync("airports", request);
-        response.EnsureSuccessStatusCode();
+        response.StatusCode.Should().Be(HttpStatusCode.Created);
         var content = await response.Content
                                     .ReadAsStreamAsync();
         var dto = await JsonSerializer.DeserializeAsync<AirportDto>(content, _options) ?? throw new JsonException();
@@ -49,10 +49,19 @@ public abstract class BaseFunctionalTest : IClassFixture<FunctionalTestWebAppFac
     protected async Task<FlightDto> SeedFlightAsync(ScheduleFlightDto request)
     {
         var response = await HttpClient.PostAsJsonAsync("flights", request);
-        response.EnsureSuccessStatusCode();
+        response.StatusCode.Should().Be(HttpStatusCode.Created);
         var content = await response.Content
                                     .ReadAsStreamAsync();
         var dto = await JsonSerializer.DeserializeAsync<FlightDto>(content, _options) ?? throw new JsonException();
+        return dto;
+    }
+    protected async Task<ItineraryDto> SeedItineraryAsync(CreateItineraryDto request)
+    {
+        var response = await HttpClient.PostAsJsonAsync("itineraries", request);
+        response.StatusCode.Should().Be(HttpStatusCode.Created);
+        var content = await response.Content
+                                    .ReadAsStreamAsync();
+        var dto = await JsonSerializer.DeserializeAsync<ItineraryDto>(content, _options) ?? throw new JsonException();
         return dto;
     }
     public void Dispose() => _scope.Dispose();
