@@ -4,7 +4,7 @@ using Flights.Api.FunctionalTests.Abstractions;
 using FluentAssertions;
 using Shared.Contracts;
 
-namespace Flights.Api.FunctionalTests.Airports;
+namespace Flights.Api.FunctionalTests.Itinaries;
 
 public class CreateItineraryTests : BaseFunctionalTest
 {
@@ -18,6 +18,43 @@ public class CreateItineraryTests : BaseFunctionalTest
         // Arrange
         var request = new CreateItineraryDto([], null);
         var error = "Please provide at least one booking request.";
+
+        // Act
+        var response = await HttpClient.PostAsJsonAsync("itineraries", request);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        await GetProblemDetailsFromResponseAndAssert(response, error);
+    }
+
+    [Fact]
+    public async Task Should_ReturnBadRequest_WhenBookingHasNoSeats()
+    {
+        // Arrange
+        var dic = new Dictionary<Guid, PassengerDto>();
+        var booking = new CreateBookingDto(dic, Guid.NewGuid());
+        var request = new CreateItineraryDto([booking], null);
+        var error = "Please provide at least one seat for each booking.";
+
+        // Act
+        var response = await HttpClient.PostAsJsonAsync("itineraries", request);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        await GetProblemDetailsFromResponseAndAssert(response, error);
+    }
+
+    [Fact]
+    public async Task Should_ReturnBadRequest_WhenBookingFlightIdIsEmpty()
+    {
+        // Arrange
+        var dic = new Dictionary<Guid, PassengerDto>
+        {
+            { Guid.NewGuid(), new PassengerDto("Mark", "Zuckerberg") }
+        };
+        var booking = new CreateBookingDto(dic, Guid.Empty);
+        var request = new CreateItineraryDto([booking], null);
+        var error = "FlightId is required.";
 
         // Act
         var response = await HttpClient.PostAsJsonAsync("itineraries", request);

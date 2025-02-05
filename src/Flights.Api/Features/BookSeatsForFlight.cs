@@ -18,9 +18,11 @@ public static class BookSeatsForFlight
         public Validator()
         {
             RuleFor(x => x.Dto.FlightId)
-                .NotEmpty();
+                .NotEmpty()
+                    .WithMessage("FlightId is required.");
             RuleFor(x => x.Dto.Seats)
-                .NotEmpty();
+                .NotEmpty()
+                    .WithMessage("Please provide at least one seat for each booking.");
         }
     }
     public sealed class Handler : ICommandHandler<Command, ErrorOr<Booking>>
