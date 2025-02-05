@@ -27,19 +27,19 @@ public static class RetrieveItinerary
                 : Error.NotFound("Query.NotFound", "Itinerary not found.");
         }
     }
-    public sealed class RetrieveItineraryEndpoint : IEndpoint
+}
+public sealed class RetrieveItineraryEndpoint : IEndpoint
+{
+    public void MapEndpoint(IEndpointRouteBuilder app)
+        => app.MapGet("itineraries/{slug}", RetrieveItinerary)
+              .WithName("retrieveItinerary")
+              .WithOpenApi();
+    private static async Task<IResult> RetrieveItinerary([FromServices] ISender sender, [FromRoute] string slug, CancellationToken ct)
     {
-        public void MapEndpoint(IEndpointRouteBuilder app)
-            => app.MapGet("itineraries/{slug}", RetrieveItinerary)
-                  .WithName("retrieveItinerary")
-                  .WithOpenApi();
-        private static async Task<IResult> RetrieveItinerary([FromServices] ISender sender, [FromRoute] string slug, CancellationToken ct)
-        {
-            var query = new RetrieveItinerary.Query(slug);
-            var result = await sender.Send(query, ct);
-            return result.Match(
-                Results.Ok,
-                ErrorHandlingHelper.HandleProblems);
-        }
+        var query = new RetrieveItinerary.Query(slug);
+        var result = await sender.Send(query, ct);
+        return result.Match(
+            Results.Ok,
+            ErrorHandlingHelper.HandleProblems);
     }
 }

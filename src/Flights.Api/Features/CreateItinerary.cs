@@ -53,20 +53,20 @@ public static class CreateItinerary
             return itinerary.ToDto();
         }
     }
-    public sealed class CreateItineraryEndpoint : IEndpoint
+}
+public sealed class CreateItineraryEndpoint : IEndpoint
+{
+    public void MapEndpoint(IEndpointRouteBuilder app)
+        => app.MapPost("itineraries", CreateItinerary)
+              .WithName("createItinerary")
+              .Produces(StatusCodes.Status201Created)
+              .WithOpenApi();
+    private static async Task<IResult> CreateItinerary([FromServices] ISender sender, [FromBody] CreateItineraryDto dto, CancellationToken ct)
     {
-        public void MapEndpoint(IEndpointRouteBuilder app)
-            => app.MapPost("itineraries", CreateItinerary)
-                  .WithName("createItinerary")
-                  .Produces(StatusCodes.Status201Created)
-                  .WithOpenApi();
-        private static async Task<IResult> CreateItinerary([FromServices] ISender sender, [FromBody] CreateItineraryDto dto, CancellationToken ct)
-        {
-            var command = new CreateItinerary.Command(dto);
-            var result = await sender.Send(command, ct);
-            return result.Match(
-                res => Results.Created($"itineraries/{res.Reference}", res),
-                ErrorHandlingHelper.HandleProblems);
-        }
+        var command = new CreateItinerary.Command(dto);
+        var result = await sender.Send(command, ct);
+        return result.Match(
+            res => Results.Created($"itineraries/{res.Reference}", res),
+            ErrorHandlingHelper.HandleProblems);
     }
 }

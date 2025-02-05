@@ -110,20 +110,20 @@ public static class ScheduleFlight
             return flight.ToDto();
         }
     }
-    public sealed class ScheduleFlightEndpoint : IEndpoint
+}
+public sealed class ScheduleFlightEndpoint : IEndpoint
+{
+    public void MapEndpoint(IEndpointRouteBuilder app)
+        => app.MapPost("flights", ScheduleFlight)
+              .WithName("scheduleFlight")
+              .Produces(StatusCodes.Status201Created)
+              .WithOpenApi();
+    private static async Task<IResult> ScheduleFlight([FromServices] ISender sender, [FromBody] ScheduleFlightDto dto, CancellationToken ct)
     {
-        public void MapEndpoint(IEndpointRouteBuilder app)
-            => app.MapPost("flights", ScheduleFlight)
-                  .WithName("scheduleFlight")
-                  .Produces(StatusCodes.Status201Created)
-                  .WithOpenApi();
-        private static async Task<IResult> ScheduleFlight([FromServices] ISender sender, [FromBody] ScheduleFlightDto dto, CancellationToken ct)
-        {
-            var command = new ScheduleFlight.Command(dto);
-            var result = await sender.Send(command, ct);
-            return result.Match(
-                res => Results.Created($"flights/{res.Id}", res),
-                ErrorHandlingHelper.HandleProblems);
-        }
+        var command = new ScheduleFlight.Command(dto);
+        var result = await sender.Send(command, ct);
+        return result.Match(
+            res => Results.Created($"flights/{res.Id}", res),
+            ErrorHandlingHelper.HandleProblems);
     }
 }

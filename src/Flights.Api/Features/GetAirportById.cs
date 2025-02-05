@@ -26,19 +26,19 @@ public static class GetAirportById
                 : Error.NotFound("Query.NotFound", $"Airport with id {query.Id} was not found.");
         }
     }
-    public sealed class GetAirportByIdEndpoint : IEndpoint
+}
+public sealed class GetAirportByIdEndpoint : IEndpoint
+{
+    public void MapEndpoint(IEndpointRouteBuilder app)
+        => app.MapGet("airports/{id}", GetAirportById)
+              .WithName("getAirportById")
+              .WithOpenApi();
+    private static async Task<IResult> GetAirportById([FromServices] ISender sender, [FromRoute] Guid id, CancellationToken ct)
     {
-        public void MapEndpoint(IEndpointRouteBuilder app)
-            => app.MapGet("airports/{id}", GetAirportById)
-                  .WithName("getAirportById")
-                  .WithOpenApi();
-        private static async Task<IResult> GetAirportById([FromServices] ISender sender, [FromRoute] Guid id, CancellationToken ct)
-        {
-            var query = new GetAirportById.Query(id);
-            var result = await sender.Send(query, ct);
-            return result.Match(
-                Results.Ok,
-                ErrorHandlingHelper.HandleProblems);
-        }
+        var query = new GetAirportById.Query(id);
+        var result = await sender.Send(query, ct);
+        return result.Match(
+            Results.Ok,
+            ErrorHandlingHelper.HandleProblems);
     }
 }

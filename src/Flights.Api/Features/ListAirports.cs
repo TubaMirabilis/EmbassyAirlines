@@ -23,17 +23,17 @@ public static class ListAirports
                            .ToList();
         }
     }
-    public sealed class ListAirportsEndpoint : IEndpoint
+}
+public sealed class ListAirportsEndpoint : IEndpoint
+{
+    public void MapEndpoint(IEndpointRouteBuilder app)
+        => app.MapGet("airports", ListAirports)
+              .WithName("listAirports")
+              .WithOpenApi();
+    private static async Task<IResult> ListAirports([FromServices] ISender sender, CancellationToken ct)
     {
-        public void MapEndpoint(IEndpointRouteBuilder app)
-            => app.MapGet("airports", ListAirports)
-                  .WithName("listAirports")
-                  .WithOpenApi();
-        private static async Task<IResult> ListAirports([FromServices] ISender sender, CancellationToken ct)
-        {
-            var query = new ListAirports.Query();
-            var result = await sender.Send(query, ct);
-            return Results.Ok(result);
-        }
+        var query = new ListAirports.Query();
+        var result = await sender.Send(query, ct);
+        return Results.Ok(result);
     }
 }

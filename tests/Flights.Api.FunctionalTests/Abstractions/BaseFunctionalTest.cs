@@ -28,7 +28,7 @@ public abstract class BaseFunctionalTest : IClassFixture<FunctionalTestWebAppFac
         {
             HttpStatusCode.BadRequest => new ProblemDetails().WithValidationError(detail),
             HttpStatusCode.NotFound => new ProblemDetails().WithQueryError(detail),
-            _ => throw new ArgumentOutOfRangeException("response.StatusCode", response.StatusCode, "Unexpected status code")
+            _ => throw new InvalidOperationException()
         };
         var content = await response.Content
                                     .ReadAsStreamAsync();

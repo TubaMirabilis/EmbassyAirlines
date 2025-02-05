@@ -17,6 +17,6 @@ internal static class BookingExtensions
             var seat = seats[i];
             details.Add(passenger.Id, new KeyValuePair<PassengerDto, SeatDto>(passenger.ToDto(), seat.ToDto()));
         }
-        return new BookingDto(booking.Id, booking.Flight.FlightNumber, details);
+        return new BookingDto(booking.Flight.FlightNumber, details);
     }
 }

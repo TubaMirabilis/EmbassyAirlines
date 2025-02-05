@@ -124,7 +124,8 @@ public class CreateItineraryTests : BaseFunctionalTest
         var flightResult = await SeedFlightAsync(flightRequest);
         var flightId = flightResult.Id;
         var seats = await HttpClient.GetFromJsonAsync<IEnumerable<SeatDto>>($"flights/{flightId}/seats");
-        var seatId = seats?.FirstOrDefault()?.Id ?? throw new InvalidOperationException("No seats found");
+        var seat = seats?.FirstOrDefault() ?? throw new InvalidOperationException("No seats found");
+        var seatId = seat.Id;
         var passenger = new PassengerDto("Mark", "Zuckerberg");
         var passengers = new Dictionary<Guid, PassengerDto>()
         {

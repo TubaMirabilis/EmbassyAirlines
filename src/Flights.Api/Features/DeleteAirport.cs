@@ -23,19 +23,19 @@ public static class DeleteAirport
                 : Unit.Value;
         }
     }
-    public sealed class DeleteAirportEndpoint : IEndpoint
+}
+public sealed class DeleteAirportEndpoint : IEndpoint
+{
+    public void MapEndpoint(IEndpointRouteBuilder app)
+        => app.MapDelete("airports/{id}", DeleteAirport)
+              .WithName("deleteAirport")
+              .WithOpenApi();
+    private static async Task<IResult> DeleteAirport([FromServices] ISender sender, [FromRoute] Guid id, CancellationToken ct)
     {
-        public void MapEndpoint(IEndpointRouteBuilder app)
-            => app.MapDelete("airports/{id}", DeleteAirport)
-                  .WithName("deleteAirport")
-                  .WithOpenApi();
-        private static async Task<IResult> DeleteAirport([FromServices] ISender sender, [FromRoute] Guid id, CancellationToken ct)
-        {
-            var command = new DeleteAirport.Command(id);
-            var result = await sender.Send(command, ct);
-            return result.Match(
-                _ => Results.NoContent(),
-                ErrorHandlingHelper.HandleProblems);
-        }
+        var command = new DeleteAirport.Command(id);
+        var result = await sender.Send(command, ct);
+        return result.Match(
+            _ => Results.NoContent(),
+            ErrorHandlingHelper.HandleProblems);
     }
 }

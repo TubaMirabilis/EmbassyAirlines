@@ -63,7 +63,7 @@ public class GetSeatsForFlightTests : BaseFunctionalTest
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
-        var seats = await response.Content.ReadFromJsonAsync<IEnumerable<SeatDto>>() ?? throw new InvalidOperationException("No seats found");
+        var seats = await response.Content.ReadFromJsonAsync<List<SeatDto>>() ?? throw new InvalidOperationException("No seats found");
         seats.Should().HaveCount(36);
         seats.Should().OnlyContain(s => s.SeatType == "Business");
         seats.Should().OnlyContain(s => s.Price == 2000);

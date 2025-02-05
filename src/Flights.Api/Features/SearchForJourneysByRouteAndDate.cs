@@ -67,7 +67,7 @@ public static class SearchForJourneysByRouteAndDate
                 return Error.Validation("Query.ValidationFailed", formattedErrors);
             }
             var parseResult = LocalDatePattern.Iso
-                                              .Parse(query.Date!);
+                                              .Parse(query.Date);
             if (!parseResult.Success)
             {
                 return Error.Validation("Query.ValidationFailed", "Invalid date format. Please use yyyy-MM-dd");

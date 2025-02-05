@@ -157,7 +157,7 @@ public class SearchForJourneysByRouteAndDateTests : BaseFunctionalTest
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var journeyListWrapper = await response.Content.ReadFromJsonAsync<JourneyListDto>();
         ArgumentNullException.ThrowIfNull(journeyListWrapper);
-        journeyListWrapper.Journeys.First().Should().BeEquivalentTo(new FlightDto[] { flightResult });
+        journeyListWrapper.Journeys.First().Should().BeEquivalentTo([flightResult]);
     }
 
     [Fact]
@@ -182,7 +182,7 @@ public class SearchForJourneysByRouteAndDateTests : BaseFunctionalTest
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var journeyListWrapper = await response.Content.ReadFromJsonAsync<JourneyListDto>();
         ArgumentNullException.ThrowIfNull(journeyListWrapper);
-        journeyListWrapper.Journeys.First().Should().BeEquivalentTo(new FlightDto[] { firstFlightResult, secondFlightResult });
+        journeyListWrapper.Journeys.First().Should().BeEquivalentTo([firstFlightResult, secondFlightResult]);
     }
 
     [Fact]
@@ -210,6 +210,6 @@ public class SearchForJourneysByRouteAndDateTests : BaseFunctionalTest
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var journeyListWrapper = await response.Content.ReadFromJsonAsync<JourneyListDto>();
         ArgumentNullException.ThrowIfNull(journeyListWrapper);
-        journeyListWrapper.Journeys.First().Should().BeEquivalentTo(new FlightDto[] { firstFlightResult, secondFlightResult, thirdFlightResult });
+        journeyListWrapper.Journeys.First().Should().BeEquivalentTo([firstFlightResult, secondFlightResult, thirdFlightResult]);
     }
 }

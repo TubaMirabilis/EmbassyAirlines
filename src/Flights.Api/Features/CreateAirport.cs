@@ -66,20 +66,20 @@ public static class CreateAirport
             return new AirportDto(airport.Id, airport.Name, airport.IataCode, airport.TimeZoneId);
         }
     }
-    public sealed class CreateAirportEndpoint : IEndpoint
+}
+public sealed class CreateAirportEndpoint : IEndpoint
+{
+    public void MapEndpoint(IEndpointRouteBuilder app)
+        => app.MapPost("airports", CreateAirport)
+              .WithName("createAirport")
+              .Produces(StatusCodes.Status201Created)
+              .WithOpenApi();
+    private static async Task<IResult> CreateAirport([FromServices] ISender sender, [FromBody] CreateAirportDto dto, CancellationToken ct)
     {
-        public void MapEndpoint(IEndpointRouteBuilder app)
-            => app.MapPost("airports", CreateAirport)
-                  .WithName("createAirport")
-                  .Produces(StatusCodes.Status201Created)
-                  .WithOpenApi();
-        private static async Task<IResult> CreateAirport([FromServices] ISender sender, [FromBody] CreateAirportDto dto, CancellationToken ct)
-        {
-            var command = new CreateAirport.Command(dto);
-            var result = await sender.Send(command, ct);
-            return result.Match(
-                res => Results.Created($"airports/{res.Id}", res),
-                ErrorHandlingHelper.HandleProblems);
-        }
+        var command = new CreateAirport.Command(dto);
+        var result = await sender.Send(command, ct);
+        return result.Match(
+            res => Results.Created($"airports/{res.Id}", res),
+            ErrorHandlingHelper.HandleProblems);
     }
 }

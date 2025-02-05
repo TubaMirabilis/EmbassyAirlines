@@ -27,19 +27,19 @@ public static class GetFlightById
                 : Error.NotFound("Query.NotFound", $"Flight with id {query.Id} was not found.");
         }
     }
-    public sealed class GetFlightByIdEndpoint : IEndpoint
+}
+public sealed class GetFlightByIdEndpoint : IEndpoint
+{
+    public void MapEndpoint(IEndpointRouteBuilder app)
+        => app.MapGet("flights/{id}", GetFlightById)
+              .WithName("getFlightById")
+              .WithOpenApi();
+    private static async Task<IResult> GetFlightById([FromServices] ISender sender, [FromRoute] Guid id, CancellationToken ct)
     {
-        public void MapEndpoint(IEndpointRouteBuilder app)
-            => app.MapGet("flights/{id}", GetFlightById)
-                  .WithName("getFlightById")
-                  .WithOpenApi();
-        private static async Task<IResult> GetFlightById([FromServices] ISender sender, [FromRoute] Guid id, CancellationToken ct)
-        {
-            var query = new GetFlightById.Query(id);
-            var result = await sender.Send(query, ct);
-            return result.Match(
-                Results.Ok,
-                ErrorHandlingHelper.HandleProblems);
-        }
+        var query = new GetFlightById.Query(id);
+        var result = await sender.Send(query, ct);
+        return result.Match(
+            Results.Ok,
+            ErrorHandlingHelper.HandleProblems);
     }
 }
