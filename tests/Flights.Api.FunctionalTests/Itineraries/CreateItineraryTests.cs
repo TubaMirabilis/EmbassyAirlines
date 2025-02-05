@@ -140,6 +140,7 @@ public class CreateItineraryTests : BaseFunctionalTest
         // Assert
         response.Bookings.Should().HaveCount(1);
         response.Bookings.First().FlightNumber.Should().Be("EX262");
+        response.Bookings.First().Passengers.Should().HaveCount(1);
         response.Reference.Length.Should().BeGreaterThanOrEqualTo(6);
         response.LeadPassengerEmail.Should().BeEmpty();
         response.TotalPrice.Should().Be(2000);
