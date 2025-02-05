@@ -58,5 +58,7 @@ public class RetrieveItineraryTests : BaseFunctionalTest
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var result = await response.Content.ReadFromJsonAsync<ItineraryDto>() ?? throw new InvalidOperationException("No content found");
+        result.Bookings.Should().HaveCount(1);
     }
 }

@@ -9,6 +9,8 @@ internal sealed class ItineraryConfiguration : IEntityTypeConfiguration<Itinerar
     public void Configure(EntityTypeBuilder<Itinerary> builder)
     {
         builder.HasKey(b => b.Id);
+        builder.Navigation(b => b.Bookings)
+               .AutoInclude();
         builder.Property(b => b.CreatedAt)
                .IsRequired();
         builder.Property(b => b.UpdatedAt)
