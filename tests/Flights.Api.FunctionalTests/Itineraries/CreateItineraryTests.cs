@@ -85,6 +85,33 @@ public class CreateItineraryTests : BaseFunctionalTest
     }
 
     [Fact]
+    public async Task Should_ReturnBadRequest_WhenSeatIdIsInvalid()
+    {
+        // Arrange
+        var departureAirport = await SeedAirportAsync(new CreateAirportDto("FRA", "Frankfurt Airport", "Europe/Berlin"));
+        var departureAirportId = departureAirport.Id;
+        var arrivalAirport = await SeedAirportAsync(new CreateAirportDto("ORD", "O'Hare International Airport", "America/Chicago"));
+        var arrivalAirportId = arrivalAirport.Id;
+        var now = DateTime.Now;
+        var flightRequest = new ScheduleFlightDto("EX862", departureAirportId, now.AddDays(1), arrivalAirportId, now.AddDays(1).AddHours(1).AddMinutes(35), 1000, 2000, "B78X");
+        var flightResult = await SeedFlightAsync(flightRequest);
+        var flightId = flightResult.Id;
+        var passenger = new PassengerDto("Mark", "Zuckerberg");
+        var passengers = new Dictionary<Guid, PassengerDto>()
+        {
+            { Guid.NewGuid(), passenger }
+        };
+        var booking = new CreateBookingDto(passengers, flightId);
+        var itinerary = new CreateItineraryDto([booking], null);
+
+        // Act
+        var response = await HttpClient.PostAsJsonAsync("itineraries", itinerary);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
     public async Task Should_ReturnCreated_WhenRequestIsValid()
     {
         // Arrange
