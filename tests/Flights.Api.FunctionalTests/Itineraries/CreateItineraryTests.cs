@@ -1,3 +1,4 @@
+using System.Net;
 using System.Net.Http.Json;
 using Flights.Api.FunctionalTests.Abstractions;
 using FluentAssertions;
@@ -9,6 +10,21 @@ public class CreateItineraryTests : BaseFunctionalTest
 {
     public CreateItineraryTests(FunctionalTestWebAppFactory factory) : base(factory)
     {
+    }
+
+    [Fact]
+    public async Task Should_ReturnBadRequest_WhenBookingsIsEmpty()
+    {
+        // Arrange
+        var request = new CreateItineraryDto([], null);
+        var error = "Please provide at least one booking request.";
+
+        // Act
+        var response = await HttpClient.PostAsJsonAsync("itineraries", request);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        await GetProblemDetailsFromResponseAndAssert(response, error);
     }
 
     [Fact]
