@@ -20,7 +20,7 @@ public abstract class BaseFunctionalTest : IClassFixture<FunctionalTestWebAppFac
         HttpClient = factory.CreateClient();
         LongString = new string('A', 101);
     }
-    protected HttpClient HttpClient { get; set; }
+    protected HttpClient HttpClient { get; }
     protected string LongString { get; }
     protected async Task GetProblemDetailsFromResponseAndAssert(HttpResponseMessage response, string detail)
     {

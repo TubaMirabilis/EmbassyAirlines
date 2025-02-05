@@ -4,7 +4,7 @@ using Flights.Api.FunctionalTests.Abstractions;
 using FluentAssertions;
 using Shared.Contracts;
 
-namespace Flights.Api.FunctionalTests.Itinaries;
+namespace Flights.Api.FunctionalTests.Itineraries;
 
 public class CreateItineraryTests : BaseFunctionalTest
 {
@@ -138,6 +138,7 @@ public class CreateItineraryTests : BaseFunctionalTest
 
         // Assert
         response.Bookings.Should().HaveCount(1);
+        response.Bookings.First().FlightNumber.Should().Be("EX262");
         response.Reference.Length.Should().BeGreaterThanOrEqualTo(6);
         response.LeadPassengerEmail.Should().BeEmpty();
         response.TotalPrice.Should().Be(2000);

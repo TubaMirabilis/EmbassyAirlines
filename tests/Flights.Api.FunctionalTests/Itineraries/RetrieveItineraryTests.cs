@@ -4,7 +4,7 @@ using Flights.Api.FunctionalTests.Abstractions;
 using FluentAssertions;
 using Shared.Contracts;
 
-namespace Flights.Api.FunctionalTests.Itinaries;
+namespace Flights.Api.FunctionalTests.Itineraries;
 
 public class RetrieveItineraryTests : BaseFunctionalTest
 {
