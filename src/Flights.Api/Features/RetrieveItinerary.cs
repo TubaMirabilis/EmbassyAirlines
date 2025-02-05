@@ -24,7 +24,7 @@ public static class RetrieveItinerary
                                       .SingleOrDefaultAsync(i => i.Reference == query.Slug, cancellationToken);
             return itinerary is not null
                 ? itinerary.ToDto()
-                : Error.NotFound("Query.NotFound", "Itinerary not found");
+                : Error.NotFound("Query.NotFound", "Itinerary not found.");
         }
     }
     public sealed class RetrieveItineraryEndpoint : IEndpoint
