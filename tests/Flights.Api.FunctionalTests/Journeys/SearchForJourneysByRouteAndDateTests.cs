@@ -171,7 +171,8 @@ public class SearchForJourneysByRouteAndDateTests : BaseFunctionalTest
         var date = now.AddDays(1).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
         var firstFlightRequest = new ScheduleFlightDto("EX254", dxb.Id, now.AddDays(1), ist.Id, now.AddDays(1).AddHours(4).AddMinutes(10), 1000, 2000, "B78X");
         var firstFlightResult = await SeedFlightAsync(firstFlightRequest);
-        var secondFlightRequest = new ScheduleFlightDto("EX255", ist.Id, now.AddDays(1).AddHours(5).AddMinutes(10), ams.Id, now.AddDays(1).AddHours(6).AddMinutes(55), 1000, 2000, "B78X");
+        var secondFlightRequest = new ScheduleFlightDto("EX255", ist.Id, now.AddDays(1).AddHours(5).AddMinutes(10),
+            ams.Id, now.AddDays(1).AddHours(6).AddMinutes(55), 1000, 2000, "B78X");
         var secondFlightResult = await SeedFlightAsync(secondFlightRequest);
 
         // Act
@@ -197,9 +198,11 @@ public class SearchForJourneysByRouteAndDateTests : BaseFunctionalTest
         var date = now.AddDays(1).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
         var firstFlightRequest = new ScheduleFlightDto("EX354", muc.Id, now.AddDays(1), tlv.Id, now.AddDays(1).AddHours(4).AddMinutes(45), 1000, 2000, "B78X");
         var firstFlightResult = await SeedFlightAsync(firstFlightRequest);
-        var secondFlightRequest = new ScheduleFlightDto("EX355", tlv.Id, now.AddDays(1).AddHours(5).AddMinutes(45), auh.Id, now.AddDays(1).AddHours(10).AddMinutes(45), 1000, 2000, "B78X");
+        var secondFlightRequest = new ScheduleFlightDto("EX355", tlv.Id, now.AddDays(1).AddHours(5).AddMinutes(45),
+            auh.Id, now.AddDays(1).AddHours(10).AddMinutes(45), 1000, 2000, "B78X");
         var secondFlightResult = await SeedFlightAsync(secondFlightRequest);
-        var thirdFlightRequest = new ScheduleFlightDto("EX385", auh.Id, now.AddDays(1).AddHours(11).AddMinutes(45), bkk.Id, now.AddDays(1).AddHours(20).AddMinutes(50), 1000, 2000, "B78X");
+        var thirdFlightRequest = new ScheduleFlightDto("EX385", auh.Id, now.AddDays(1).AddHours(11).AddMinutes(45),
+            bkk.Id, now.AddDays(1).AddHours(20).AddMinutes(50), 1000, 2000, "B78X");
         var thirdFlightResult = await SeedFlightAsync(thirdFlightRequest);
 
         // Act

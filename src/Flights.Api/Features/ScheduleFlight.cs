@@ -103,7 +103,16 @@ public static class ScheduleFlight
                 return Error.Validation("ArrivalTime.Invalid", "Arrival time is before departure time.");
             }
             var seats = _seatService.CreateSeats(command.Dto.EquipmentType, command.Dto.EconomyPrice, command.Dto.BusinessPrice);
-            var flight = Flight.Create(command.Dto.FlightNumber, departureAirport, departureTime, arrivalAirport, arrivalTime, seats);
+            var args = new FlightCreationArgs
+            {
+                ArrivalAirport = arrivalAirport,
+                ArrivalLocalTime = arrivalTime,
+                DepartureAirport = departureAirport,
+                DepartureLocalTime = departureTime,
+                FlightNumber = command.Dto.FlightNumber,
+                Seats = seats
+            };
+            var flight = Flight.Create(args);
             _ctx.Flights
                 .Add(flight);
             await _ctx.SaveChangesAsync(cancellationToken);

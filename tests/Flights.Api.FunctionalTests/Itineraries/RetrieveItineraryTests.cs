@@ -37,7 +37,8 @@ public class RetrieveItineraryTests : BaseFunctionalTest
         var arrivalAirport = await SeedAirportAsync(new CreateAirportDto("LGW", "London Gatwick Airport", "Europe/London"));
         var arrivalAirportId = arrivalAirport.Id;
         var now = DateTime.Now;
-        var flightRequest = new ScheduleFlightDto("EX62", departureAirportId, now.AddDays(1), arrivalAirportId, now.AddDays(1).AddHours(1).AddMinutes(46), 1000, 2000, "B78X");
+        var flightRequest = new ScheduleFlightDto("EX62", departureAirportId, now.AddDays(1),
+            arrivalAirportId, now.AddDays(1).AddHours(1).AddMinutes(46), 1000, 2000, "B78X");
         var flightResult = await SeedFlightAsync(flightRequest);
         var flightId = flightResult.Id;
         var seats = await HttpClient.GetFromJsonAsync<IEnumerable<SeatDto>>($"flights/{flightId}/seats");

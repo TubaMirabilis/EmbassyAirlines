@@ -53,7 +53,8 @@ public class GetSeatsForFlightTests : BaseFunctionalTest
         var arrivalAirport = await SeedAirportAsync(new CreateAirportDto("KIX", "Kansai International Airport", "Asia/Tokyo"));
         var arrivalAirportId = arrivalAirport.Id;
         var now = DateTime.Now;
-        var flightRequest = new ScheduleFlightDto("EX462", departureAirportId, now.AddDays(1), arrivalAirportId, now.AddDays(1).AddHours(1).AddMinutes(1), 1000, 2000, "B78X");
+        var flightRequest = new ScheduleFlightDto("EX462", departureAirportId, now.AddDays(1),
+            arrivalAirportId, now.AddDays(1).AddHours(1).AddMinutes(1), 1000, 2000, "B78X");
         var flightResult = await SeedFlightAsync(flightRequest);
         var id = flightResult.Id;
 

@@ -8,9 +8,9 @@ namespace Flights.Api.Domain.Flights;
 public sealed class Flight
 {
     private readonly List<Seat> _seats = [];
-    private Flight(string flightNumber, Airport departureAirport, LocalDateTime departureLocalTime, Airport arrivalAirport, LocalDateTime arrivalLocalTime, IEnumerable<Seat> seats)
+    private Flight(FlightCreationArgs args)
     {
-        var seatsList = seats.ToList();
+        var seatsList = args.Seats.ToList();
         if (seatsList.Any(s => s.IsBooked))
         {
             throw new ArgumentException("All seats must be available when creating a flight");
@@ -18,13 +18,13 @@ public sealed class Flight
         Id = Guid.NewGuid();
         CreatedAt = SystemClock.Instance.GetCurrentInstant();
         UpdatedAt = SystemClock.Instance.GetCurrentInstant();
-        FlightNumber = flightNumber;
-        DepartureAirportId = departureAirport.Id;
-        DepartureAirport = departureAirport;
-        DepartureLocalTime = departureLocalTime;
-        ArrivalAirportId = arrivalAirport.Id;
-        ArrivalAirport = arrivalAirport;
-        ArrivalLocalTime = arrivalLocalTime;
+        FlightNumber = args.FlightNumber;
+        DepartureAirportId = args.DepartureAirport.Id;
+        DepartureAirport = args.DepartureAirport;
+        DepartureLocalTime = args.DepartureLocalTime;
+        ArrivalAirportId = args.ArrivalAirport.Id;
+        ArrivalAirport = args.ArrivalAirport;
+        ArrivalLocalTime = args.ArrivalLocalTime;
         _seats.AddRange(seatsList);
     }
 #pragma warning disable CS8618
@@ -59,6 +59,5 @@ public sealed class Flight
             seat.Book(passenger.Id);
         }
     }
-    public static Flight Create(string flightNumber, Airport departureAirport, LocalDateTime departureLocalTime, Airport arrivalAirport, LocalDateTime arrivalLocalTime, IEnumerable<Seat> seats)
-        => new(flightNumber, departureAirport, departureLocalTime, arrivalAirport, arrivalLocalTime, seats);
+    public static Flight Create(FlightCreationArgs args) => new(args);
 }

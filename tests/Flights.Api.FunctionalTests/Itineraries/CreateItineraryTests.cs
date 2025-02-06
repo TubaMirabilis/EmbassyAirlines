@@ -93,7 +93,8 @@ public class CreateItineraryTests : BaseFunctionalTest
         var arrivalAirport = await SeedAirportAsync(new CreateAirportDto("ORD", "O'Hare International Airport", "America/Chicago"));
         var arrivalAirportId = arrivalAirport.Id;
         var now = DateTime.Now;
-        var flightRequest = new ScheduleFlightDto("EX862", departureAirportId, now.AddDays(1), arrivalAirportId, now.AddDays(1).AddHours(1).AddMinutes(35), 1000, 2000, "B78X");
+        var flightRequest = new ScheduleFlightDto("EX862", departureAirportId, now.AddDays(1),
+            arrivalAirportId, now.AddDays(1).AddHours(1).AddMinutes(35), 1000, 2000, "B78X");
         var flightResult = await SeedFlightAsync(flightRequest);
         var flightId = flightResult.Id;
         var passenger = new PassengerDto("Mark", "Zuckerberg");
@@ -120,7 +121,8 @@ public class CreateItineraryTests : BaseFunctionalTest
         var arrivalAirport = await SeedAirportAsync(new CreateAirportDto("DPS", "Ngurah Rai International Airport", "Asia/Makassar"));
         var arrivalAirportId = arrivalAirport.Id;
         var now = DateTime.Now;
-        var flightRequest = new ScheduleFlightDto("EX262", departureAirportId, now.AddDays(1), arrivalAirportId, now.AddDays(1).AddHours(5).AddMinutes(47), 1000, 2000, "B78X");
+        var flightRequest = new ScheduleFlightDto("EX262", departureAirportId, now.AddDays(1),
+            arrivalAirportId, now.AddDays(1).AddHours(5).AddMinutes(47), 1000, 2000, "B78X");
         var flightResult = await SeedFlightAsync(flightRequest);
         var flightId = flightResult.Id;
         var seats = await HttpClient.GetFromJsonAsync<IEnumerable<SeatDto>>($"flights/{flightId}/seats");
@@ -155,7 +157,8 @@ public class CreateItineraryTests : BaseFunctionalTest
         var arrivalAirport = await SeedAirportAsync(new CreateAirportDto("TPE", "Taiwan Taoyuan International Airport", "Asia/Taipei"));
         var arrivalAirportId = arrivalAirport.Id;
         var now = DateTime.Now;
-        var flightRequest = new ScheduleFlightDto("EX212", departureAirportId, now.AddDays(1), arrivalAirportId, now.AddDays(1).AddHours(2).AddMinutes(1), 1000, 2000, "B78X");
+        var flightRequest = new ScheduleFlightDto("EX212", departureAirportId, now.AddDays(1),
+            arrivalAirportId, now.AddDays(1).AddHours(2).AddMinutes(1), 1000, 2000, "B78X");
         var flightResult = await SeedFlightAsync(flightRequest);
         var flightId = flightResult.Id;
         var seats = await HttpClient.GetFromJsonAsync<IEnumerable<SeatDto>>($"flights/{flightId}/seats");
