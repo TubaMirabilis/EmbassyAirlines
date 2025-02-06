@@ -15,7 +15,9 @@ builder.Host.UseSerilog((context, loggerConfig) =>
     loggerConfig.ReadFrom.Configuration(context.Configuration));
 var config = builder.Configuration;
 config.AddEnvironmentVariables(prefix: "FLIGHTS_");
+var awsOptions = config.GetAWSOptions();
 var services = builder.Services;
+services.AddDefaultAWSOptions(awsOptions);
 services.AddOpenApi();
 services.AddExceptionHandler<GlobalExceptionHandler>();
 services.AddProblemDetails();
@@ -36,8 +38,8 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     await app.ApplyMigrationsAsync();
+    app.MapOpenApi();
 }
-app.MapOpenApi();
 app.MapEndpoints();
 app.UseMiddleware<RequestContextLoggingMiddleware>();
 app.UseSerilogRequestLogging();
