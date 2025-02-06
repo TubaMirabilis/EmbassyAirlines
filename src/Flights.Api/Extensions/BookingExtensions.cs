@@ -1,3 +1,4 @@
+using System.Globalization;
 using Flights.Api.Domain.Bookings;
 using Shared.Contracts;
 
@@ -17,6 +18,13 @@ internal static class BookingExtensions
             var seat = seats[i];
             details.Add(passenger.Id, new KeyValuePair<PassengerDto, SeatDto>(passenger.ToDto(), seat.ToDto()));
         }
-        return new BookingDto(booking.Flight.FlightNumber, details);
+        return new BookingDto(
+            booking.Flight.FlightNumber,
+            booking.Flight.DepartureLocalTime.ToString("yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture),
+            booking.Flight.DepartureAirport.Name,
+            booking.Flight.ArrivalAirport.Name,
+            booking.Flight.DepartureAirport.IataCode,
+            booking.Flight.ArrivalAirport.IataCode,
+            details);
     }
 }

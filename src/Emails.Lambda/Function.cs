@@ -104,6 +104,8 @@ public class Functions : IDisposable
             sb.AppendLine(booking.GetSummary());
         }
         sb.AppendLine();
+        sb.AppendLine(CultureInfo.InvariantCulture, $"Total Price: {itinerary.TotalPrice:C2}");
+        sb.AppendLine();
         sb.AppendLine("We look forward to welcoming you on board.");
         sb.AppendLine();
         sb.AppendLine("Kind regards,");
