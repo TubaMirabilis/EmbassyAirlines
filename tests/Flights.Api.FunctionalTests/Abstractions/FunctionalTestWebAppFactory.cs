@@ -1,5 +1,7 @@
 ﻿using System.Text.Json;
 using Flights.Api.Database;
+using Flights.Api.FunctionalTests.Extensions;
+using MassTransit;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
@@ -24,6 +26,13 @@ public class FunctionalTestWebAppFactory : WebApplicationFactory<Program>, IAsyn
                                                                                   {
                                                                                       PropertyNameCaseInsensitive = true
                                                                                   });
+                                                                                  var descriptors = services.Where(d => d.IsMassTransitService())
+                            .ToList();
+                                                                                  foreach (var d in descriptors)
+                                                                                  {
+                                                                                      services.Remove(d);
+                                                                                  }
+                                                                                  services.AddMassTransitTestHarness();
                                                                                   services.RemoveAll<DbContextOptions<ApplicationDbContext>>();
                                                                                   services.AddDbContext<ApplicationDbContext>(options =>
                                                                                       options

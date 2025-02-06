@@ -3,6 +3,7 @@ using Flights.Api.Database;
 using Flights.Api.Domain.Bookings;
 using Flights.Api.Domain.Itineraries;
 using Flights.Api.Extensions;
+using MassTransit;
 using Mediator;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -19,11 +20,13 @@ public static class CreateItinerary
     public sealed class Handler : ICommandHandler<Command, ErrorOr<ItineraryDto>>
     {
         private readonly ApplicationDbContext _ctx;
+        private readonly IBus _bus;
         private readonly ISender _sender;
         private readonly SqidsEncoder<int> _sqids;
-        public Handler(ApplicationDbContext ctx, ISender sender, SqidsEncoder<int> sqids)
+        public Handler(ApplicationDbContext ctx, IBus bus, ISender sender, SqidsEncoder<int> sqids)
         {
             _ctx = ctx;
+            _bus = bus;
             _sender = sender;
             _sqids = sqids;
         }
@@ -50,7 +53,9 @@ public static class CreateItinerary
             _ctx.Itineraries
                 .Add(itinerary);
             await _ctx.SaveChangesAsync(cancellationToken);
-            return itinerary.ToDto();
+            var dto = itinerary.ToDto();
+            await _bus.Publish(new ItineraryCreatedEvent(dto.Bookings, dto.Reference, dto.LeadPassengerEmail, dto.TotalPrice), cancellationToken);
+            return dto;
         }
     }
 }
