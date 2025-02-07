@@ -29,9 +29,18 @@ public sealed class Seat
     public Flight Flight { get; init; } = null!;
     public Guid FlightId { get; init; }
     public bool IsBooked => PassengerId.HasValue;
-    public Passenger? Passenger { get; init; }
+    public Passenger? Passenger { get; private set; }
     public Guid? PassengerId { get; private set; }
     public void Book(Guid passengerId) => PassengerId = passengerId;
-    public static Seat Create(SeatType seatType, string seatNumber, decimal price)
-        => new(seatType, seatNumber, price);
+    public void CancelBooking()
+    {
+        if (!IsBooked)
+        {
+            throw new InvalidOperationException("Seat is not booked");
+        }
+        Passenger = null;
+        PassengerId = null;
+    }
+
+    public static Seat Create(SeatType seatType, string seatNumber, decimal price) => new(seatType, seatNumber, price);
 }

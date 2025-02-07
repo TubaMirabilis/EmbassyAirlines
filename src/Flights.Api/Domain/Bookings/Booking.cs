@@ -29,6 +29,17 @@ public sealed class Booking
     public Flight Flight { get; init; }
     public Guid FlightId { get; init; }
     public IReadOnlyList<Passenger> Passengers => _passengers.AsReadOnly();
+    public void RemovePassenger(Guid passengerId)
+    {
+        if (!_passengers.Any(p => p.Id == passengerId))
+        {
+            throw new InvalidOperationException("Passenger not found in booking");
+        }
+        var seats = Flight.Seats.Where(s => s.PassengerId == passengerId).ToList();
+        seats.ForEach(s => s.CancelBooking());
+        _passengers.RemoveAll(p => p.Id == passengerId);
+        UpdatedAt = SystemClock.Instance.GetCurrentInstant();
+    }
     public IEnumerable<Seat> GetSeats()
     {
         var passengerIds = _passengers.Select(p => (Guid?)p.Id).ToList();
