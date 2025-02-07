@@ -1,5 +1,6 @@
 using System.Reflection;
 using Flights.Api.Database;
+using Flights.Api.Domain.Journeys;
 using Flights.Api.Domain.Seats;
 using Flights.Api.Extensions;
 using FluentValidation;
@@ -27,6 +28,7 @@ services.AddDbContext<ApplicationDbContext>(options =>
            .UseSnakeCaseNamingConvention());
 services.AddMediator(options => options.ServiceLifetime = ServiceLifetime.Scoped);
 services.AddValidatorsFromAssemblyContaining<Program>();
+services.AddSingleton<IJourneyService, JourneyService>();
 services.AddSingleton<ISeatService, SeatService>();
 services.AddSingleton(new SqidsEncoder<int>(new()
 {
