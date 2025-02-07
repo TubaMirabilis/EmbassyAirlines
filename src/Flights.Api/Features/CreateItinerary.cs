@@ -54,7 +54,10 @@ public static class CreateItinerary
                 .Add(itinerary);
             await _ctx.SaveChangesAsync(cancellationToken);
             var dto = itinerary.ToDto();
-            await _bus.Publish(new ItineraryCreatedEvent(dto.Bookings, dto.Reference, dto.LeadPassengerEmail, dto.TotalPrice), cancellationToken);
+            if (!string.IsNullOrWhiteSpace(dto.LeadPassengerEmail))
+            {
+                await _bus.Publish(new ItineraryCreatedEvent(dto.Bookings, dto.Reference, dto.LeadPassengerEmail, dto.TotalPrice), cancellationToken);
+            }
             return dto;
         }
     }
