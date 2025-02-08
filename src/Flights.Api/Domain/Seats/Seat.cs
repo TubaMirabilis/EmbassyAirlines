@@ -33,6 +33,10 @@ public sealed class Seat
     public Guid? PassengerId { get; private set; }
     public void Book(Guid passengerId)
     {
+        if (IsBooked)
+        {
+            throw new InvalidOperationException("Seat is already booked");
+        }
         PassengerId = passengerId;
         UpdatedAt = SystemClock.Instance.GetCurrentInstant();
     }
@@ -45,6 +49,5 @@ public sealed class Seat
         Passenger = null;
         PassengerId = null;
     }
-
     public static Seat Create(SeatType seatType, string seatNumber, decimal price) => new(seatType, seatNumber, price);
 }
