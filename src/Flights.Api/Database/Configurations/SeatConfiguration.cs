@@ -10,6 +10,7 @@ internal sealed class SeatConfiguration : IEntityTypeConfiguration<Seat>
     public void Configure(EntityTypeBuilder<Seat> builder)
     {
         builder.HasKey(b => b.Id);
+        builder.Property<byte[]>("Version").IsRowVersion();
         builder.HasIndex(b => new { b.FlightId, b.SeatNumber })
                .IsUnique();
         builder.HasIndex(b => new { b.FlightId, b.PassengerId })

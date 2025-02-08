@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
+﻿using System;
+using Microsoft.EntityFrameworkCore.Migrations;
 using NodaTime;
 
 #nullable disable
@@ -126,7 +127,8 @@ public partial class InitialCreate : Migration
                 seat_type = table.Column<string>(type: "character varying(20)", unicode: false, maxLength: 20, nullable: false),
                 price = table.Column<decimal>(type: "numeric(9,2)", nullable: false),
                 flight_id = table.Column<Guid>(type: "uuid", nullable: false),
-                passenger_id = table.Column<Guid>(type: "uuid", nullable: true)
+                passenger_id = table.Column<Guid>(type: "uuid", nullable: true),
+                version = table.Column<byte[]>(type: "bytea", rowVersion: true, nullable: true)
             },
             constraints: table =>
             {

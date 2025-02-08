@@ -13,7 +13,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Flights.Api.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250204091509_InitialCreate")]
+    [Migration("20250208114009_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -265,6 +265,12 @@ namespace Flights.Api.Migrations
                     b.Property<Instant>("UpdatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("updated_at");
+
+                    b.Property<byte[]>("Version")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("bytea")
+                        .HasColumnName("version");
 
                     b.HasKey("Id")
                         .HasName("pk_seats");
