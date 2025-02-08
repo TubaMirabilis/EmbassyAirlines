@@ -17,10 +17,14 @@ public static class CancelBooking
         public Handler(ApplicationDbContext ctx) => _ctx = ctx;
         public async ValueTask<ErrorOr<Unit>> Handle(Command command, CancellationToken cancellationToken)
         {
-            var rowsAffected = await _ctx.Bookings.Where(a => a.Id == command.Id).ExecuteDeleteAsync(cancellationToken);
-            return rowsAffected == 0
-                ? Error.NotFound("Booking.NotFound", "Booking not found.")
-                : Unit.Value;
+            var booking = await _ctx.Bookings.Where(b => b.Id == command.Id).SingleOrDefaultAsync(cancellationToken);
+            if (booking is null)
+            {
+                return Error.NotFound("Booking.NotFound", $"Booking with id {command.Id} was not found.");
+            }
+            booking.Cancel();
+            await _ctx.SaveChangesAsync(cancellationToken);
+            return Unit.Value;
         }
     }
 }

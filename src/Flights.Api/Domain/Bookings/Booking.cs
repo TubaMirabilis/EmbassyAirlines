@@ -13,6 +13,7 @@ public sealed class Booking
         Id = Guid.NewGuid();
         CreatedAt = SystemClock.Instance.GetCurrentInstant();
         UpdatedAt = SystemClock.Instance.GetCurrentInstant();
+        IsCancelled = false;
         Flight = flight;
         FlightId = flight.Id;
         _passengers.AddRange(passengers);
@@ -25,10 +26,23 @@ public sealed class Booking
     public Guid Id { get; init; }
     public Instant CreatedAt { get; init; }
     public Instant UpdatedAt { get; private set; }
+    public bool IsCancelled { get; private set; }
     public decimal TotalPrice => GetSeats().Sum(s => s.Price);
     public Flight Flight { get; init; }
     public Guid FlightId { get; init; }
     public IReadOnlyList<Passenger> Passengers => _passengers.AsReadOnly();
+    public void Cancel()
+    {
+        if (IsCancelled)
+        {
+            throw new InvalidOperationException("Booking is already cancelled");
+        }
+        Flight.Seats.Where(s => _passengers.Any(p => p.Id == s.PassengerId))
+                    .ToList()
+                    .ForEach(s => s.CancelBooking());
+        IsCancelled = true;
+        UpdatedAt = SystemClock.Instance.GetCurrentInstant();
+    }
     public void RemovePassenger(Guid passengerId)
     {
         if (!_passengers.Any(p => p.Id == passengerId))

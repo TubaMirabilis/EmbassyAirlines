@@ -77,6 +77,10 @@ namespace Flights.Api.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("flight_id");
 
+                    b.Property<bool>("IsCancelled")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_cancelled");
+
                     b.Property<Guid>("ItineraryId")
                         .HasColumnType("uuid")
                         .HasColumnName("itinerary_id");

@@ -74,6 +74,7 @@ public partial class InitialCreate : Migration
                 id = table.Column<Guid>(type: "uuid", nullable: false),
                 created_at = table.Column<Instant>(type: "timestamp with time zone", nullable: false),
                 updated_at = table.Column<Instant>(type: "timestamp with time zone", nullable: false),
+                is_cancelled = table.Column<bool>(type: "boolean", nullable: false),
                 flight_id = table.Column<Guid>(type: "uuid", nullable: false),
                 itinerary_id = table.Column<Guid>(type: "uuid", nullable: false)
             },

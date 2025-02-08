@@ -13,7 +13,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Flights.Api.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250208114009_InitialCreate")]
+    [Migration("20250208120106_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -79,6 +79,10 @@ namespace Flights.Api.Migrations
                     b.Property<Guid>("FlightId")
                         .HasColumnType("uuid")
                         .HasColumnName("flight_id");
+
+                    b.Property<bool>("IsCancelled")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_cancelled");
 
                     b.Property<Guid>("ItineraryId")
                         .HasColumnType("uuid")
