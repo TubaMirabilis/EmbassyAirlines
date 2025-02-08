@@ -1,4 +1,5 @@
 using System.Reflection;
+using Flights.Api;
 using Flights.Api.Database;
 using Flights.Api.Domain.Journeys;
 using Flights.Api.Domain.Seats;
@@ -35,6 +36,7 @@ services.AddSingleton(new SqidsEncoder<int>(new()
     Alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789",
     MinLength = 6
 }));
+services.AddMassTransit(config);
 services.AddEndpoints(Assembly.GetExecutingAssembly());
 var app = builder.Build();
 if (app.Environment.IsDevelopment())
