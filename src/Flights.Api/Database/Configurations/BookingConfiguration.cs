@@ -11,6 +11,8 @@ internal sealed class BookingConfiguration : IEntityTypeConfiguration<Booking>
         builder.HasKey(b => b.Id);
         builder.Navigation(b => b.Flight)
                .AutoInclude();
+        builder.Navigation(b => b.Passengers)
+               .AutoInclude();
         builder.HasOne(b => b.Flight)
                .WithMany()
                .HasForeignKey(b => b.FlightId)

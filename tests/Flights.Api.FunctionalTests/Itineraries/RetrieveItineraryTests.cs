@@ -43,10 +43,10 @@ public class RetrieveItineraryTests : BaseFunctionalTest
         var flightId = flightResult.Id;
         var seats = await HttpClient.GetFromJsonAsync<IEnumerable<SeatDto>>($"flights/{flightId}/seats");
         var seatId = seats?.FirstOrDefault()?.Id ?? throw new InvalidOperationException("No seats found");
-        var passenger = new PassengerDto("Mark", "Zuckerberg");
+        var newPassenger = new PassengerDto("Mark", "Zuckerberg");
         var passengers = new Dictionary<Guid, PassengerDto>()
         {
-            { seatId, passenger }
+            { seatId, newPassenger }
         };
         var booking = new CreateBookingDto(passengers, flightId);
         var itinerary = new CreateItineraryDto([booking], null);
@@ -61,5 +61,6 @@ public class RetrieveItineraryTests : BaseFunctionalTest
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var result = await response.Content.ReadFromJsonAsync<ItineraryDto>() ?? throw new InvalidOperationException("No content found");
         result.Bookings.Should().HaveCount(1);
+        result.Bookings.First().Passengers.First().Value.Key.Should().BeEquivalentTo(newPassenger);
     }
 }
