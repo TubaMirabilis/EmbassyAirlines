@@ -99,7 +99,7 @@ public static class SearchForJourneysByRouteAndDate
                                                    f.DepartureLocalTime.Date == localDate).ToList();
             if (directFlights.Count == 0)
             {
-                var multiLegJourneys = _js.GetThreeFastestMultiLegJourneys(flights, query.Departure, query.Destination, localDate);
+                var multiLegJourneys = _js.GetMultiLegJourneysOrderedByArrivalTime(flights, query.Departure, query.Destination, localDate, 3);
                 var list = new List<List<FlightDto>>();
                 foreach (var journey in multiLegJourneys)
                 {

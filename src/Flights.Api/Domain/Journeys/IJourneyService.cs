@@ -5,5 +5,5 @@ namespace Flights.Api.Domain.Journeys;
 
 public interface IJourneyService
 {
-    IEnumerable<IEnumerable<Flight>> GetThreeFastestMultiLegJourneys(IEnumerable<Flight> flights, string departure, string destination, LocalDate localDate);
+    IEnumerable<IEnumerable<Flight>> GetMultiLegJourneysOrderedByArrivalTime(IEnumerable<Flight> flights, string departure, string destination, LocalDate localDate, int count);
 }

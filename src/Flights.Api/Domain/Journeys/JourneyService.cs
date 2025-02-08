@@ -5,7 +5,7 @@ namespace Flights.Api.Domain.Journeys;
 
 public sealed class JourneyService : IJourneyService
 {
-    public IEnumerable<IEnumerable<Flight>> GetThreeFastestMultiLegJourneys(IEnumerable<Flight> flights, string departure, string destination, LocalDate localDate)
+    public IEnumerable<IEnumerable<Flight>> GetMultiLegJourneysOrderedByArrivalTime(IEnumerable<Flight> flights, string departure, string destination, LocalDate localDate, int count)
     {
         var flightsByDeparture = flights.GroupBy(f => f.DepartureAirport.IataCode)
                                         .ToDictionary(g => g.Key, g => g.OrderBy(x => x.DepartureInstant).ToList());
@@ -47,7 +47,7 @@ public sealed class JourneyService : IJourneyService
             }
         }
         return journeys.OrderBy(j => j[^1].ArrivalLocalTime)
-                       .Take(3)
+                       .Take(count)
                        .ToList();
     }
 }
