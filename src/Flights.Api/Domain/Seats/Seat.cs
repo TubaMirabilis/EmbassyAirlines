@@ -31,7 +31,11 @@ public sealed class Seat
     public bool IsBooked => PassengerId.HasValue;
     public Passenger? Passenger { get; private set; }
     public Guid? PassengerId { get; private set; }
-    public void Book(Guid passengerId) => PassengerId = passengerId;
+    public void Book(Guid passengerId)
+    {
+        PassengerId = passengerId;
+        UpdatedAt = SystemClock.Instance.GetCurrentInstant();
+    }
     public void CancelBooking()
     {
         if (!IsBooked)
