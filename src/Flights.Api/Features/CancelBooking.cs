@@ -8,7 +8,7 @@ using Shared.Endpoints;
 
 namespace Flights.Api.Features;
 
-public static class DeleteAirport
+public static class CancelBooking
 {
     public sealed record Command(Guid Id) : ICommand<ErrorOr<Unit>>;
     public sealed class Handler : ICommandHandler<Command, ErrorOr<Unit>>
@@ -17,22 +17,22 @@ public static class DeleteAirport
         public Handler(ApplicationDbContext ctx) => _ctx = ctx;
         public async ValueTask<ErrorOr<Unit>> Handle(Command command, CancellationToken cancellationToken)
         {
-            var rowsAffected = await _ctx.Airports.Where(a => a.Id == command.Id).ExecuteDeleteAsync(cancellationToken);
+            var rowsAffected = await _ctx.Bookings.Where(a => a.Id == command.Id).ExecuteDeleteAsync(cancellationToken);
             return rowsAffected == 0
-                ? Error.NotFound("Airport.NotFound", "Airport not found.")
+                ? Error.NotFound("Booking.NotFound", "Booking not found.")
                 : Unit.Value;
         }
     }
 }
-public sealed class DeleteAirportEndpoint : IEndpoint
+public sealed class CancelBookingEndpoint : IEndpoint
 {
     public void MapEndpoint(IEndpointRouteBuilder app)
-        => app.MapDelete("airports/{id}", DeleteAirport)
-              .WithName("deleteAirport")
+        => app.MapDelete("itineraries/{itineraryId}/bookings/{bookingId}", CancelBooking)
+              .WithName("cancelBooking")
               .WithOpenApi();
-    private static async Task<IResult> DeleteAirport([FromServices] ISender sender, [FromRoute] Guid id, CancellationToken ct)
+    private static async Task<IResult> CancelBooking([FromServices] ISender sender, [FromRoute] Guid bookingId, CancellationToken ct)
     {
-        var command = new DeleteAirport.Command(id);
+        var command = new CancelBooking.Command(bookingId);
         var result = await sender.Send(command, ct);
         return result.Match(
             _ => Results.NoContent(),
