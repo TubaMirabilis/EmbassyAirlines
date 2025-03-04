@@ -1,0 +1,48 @@
+name: Test Suite
+
+on:
+    pull_request:
+        branches:
+            - "*"
+    push:
+        branches:
+            - "*"
+
+env:
+    DOTNET_VERSION: "9.0.x"
+
+jobs:
+    Terraform:
+        name: Terraform Check
+        runs-on: ubuntu-22.04
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+            - name: Terraform Check
+              run: terraform fmt -check=true -recursive
+
+    Prettier:
+        name: Prettier Check
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4.2.0
+            - name: Prettier Check
+              run: npx prettier --check .
+
+    DotNet:
+        name: DotNet Build and Test
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4.2.0
+            - name: Setup .NET
+              uses: actions/setup-dotnet@v4
+              with:
+                  dotnet-version: ${{ env.DOTNET_VERSION }}
+            - name: DotNet Format
+              run: dotnet format --verify-no-changes
+            - name: DotNet Build
+              run: dotnet build --configuration Release --no-restore
+            - name: DotNet Test
+              run: dotnet test --configuration Release --no-restore --no-build

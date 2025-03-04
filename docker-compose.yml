@@ -1,0 +1,46 @@
+services:
+    flights-api:
+        build:
+            context: .
+            dockerfile: ./docker/flights-api.dockerfile
+        restart: always
+        environment:
+            ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT}
+            ASPNETCORE_URLS: ${ASPNETCORE_URLS}
+            AWS_ACCESS_KEY_ID: ${awsaccesskey}
+            AWS_SECRET_ACCESS_KEY: ${awssecretkey}
+            AWS_REGION: ${region}
+            FLIGHTS_ConnectionStrings__DefaultConnection: ${FLIGHTS_ConnectionStrings__DefaultConnection}
+            FLIGHTS_MassTransit__Scope: ${scope}
+        ports:
+            - ${FLIGHTSAPI_PORT}:${FLIGHTSAPI_PORT}
+        depends_on:
+            flightsapi-database:
+                condition: service_healthy
+        logging:
+            driver: ${DOCKER_LOG_DRIVER}
+            options:
+                tag: flights-api
+
+    flightsapi-database:
+        image: postgres:latest
+        container_name: flightsapi-database
+        ports:
+            - 5432:5432
+        environment:
+            POSTGRES_USER: ${FLIGHTSAPI_DATABASE_USER}
+            POSTGRES_PASSWORD: ${FLIGHTSAPI_DATABASE_PASSWORD}
+            POSTGRES_DB: ${FLIGHTSAPI_DATABASE_NAME}
+        logging:
+            driver: ${DOCKER_LOG_DRIVER}
+            options:
+                tag: flightsapi-database
+        healthcheck:
+            test: ["CMD-SHELL", "pg_isready -U ${FLIGHTSAPI_DATABASE_USER}"]
+            interval: 10s
+            timeout: 5s
+            retries: 5
+        volumes:
+            - flightsapi-database:/var/lib/postgresql/data
+volumes:
+    flightsapi-database:
