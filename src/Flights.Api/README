@@ -1,0 +1,189 @@
+This API exposes endpoints for managing **flight booking**, **itineraries**, **airports**, and **flights** using **CQRS (Command Query Responsibility Segregation)** with **ErrorOr for error handling**. Below is an explanation of the key components.
+
+**1. Overview**
+- **CQRS pattern** is used:
+  - **Commands** for modifying data (Create, Update, Delete).
+  - **Queries** for retrieving data.
+- Uses **ErrorOr<T>** for error handling instead of throwing exceptions.
+- Uses **FluentValidation** for request validation.
+- Uses **Entity Framework Core (ApplicationDbContext) for database access**.
+- Uses **record types** for immutability.
+- Uses **dependency injection** (`[FromServices]`) for cleaner architecture.
+- Uses **Minimal API (`MapPost`, `MapGet`, `MapDelete`)** for defining API routes.
+
+## **2. Explanation of Key Features**
+
+### **Cancel Booking**
+#### **Command: CancelBooking**
+- Handles cancellation of a booking given a `Guid Id`.
+- Fetches the booking from **ApplicationDbContext**.
+- If booking exists, calls `booking.Cancel()` and saves changes.
+- Returns `Error.NotFound` if the booking does not exist.
+
+#### **API Endpoint: CancelBookingEndpoint**
+- Defines a **DELETE** route: `"itineraries/{itineraryId}/bookings/{bookingId}"`.
+- Calls **CancelBooking.Command** via `ISender.Send()`.
+- Returns:
+  - `204 NoContent` if successful.
+  - Error response using `ErrorHandlingHelper.HandleProblems`.
+
+### **Create Airport**
+#### **Command: CreateAirport**
+- **Validator:**
+  - Ensures `IataCode` has **exactly 3 uppercase letters**.
+  - Validates `Name` and `TimeZoneId` constraints.
+- **Handler:**
+  - Validates input.
+  - Checks if an airport with the same `IataCode` already exists.
+  - Creates an **Airport** and saves it in the database.
+
+#### **API Endpoint: CreateAirportEndpoint**
+- Defines a **POST** route: `"airports"`.
+- Calls `CreateAirport.Command` via `ISender.Send()`.
+- Returns:
+  - `201 Created` with airport details.
+  - Validation errors if input is incorrect.
+
+### **Create Itinerary**
+#### **Command: CreateItinerary**
+- Ensures **at least one booking request is provided**.
+- Iterates through the list of **booking requests**:
+  - Calls `BookSeatsForFlight.Command` for each booking.
+- Generates an **itinerary reference using SqidsEncoder** (for readable IDs).
+- Creates **Itinerary entity** and saves it.
+- Publishes **ItineraryCreatedEvent** if an email is provided.
+
+#### **API Endpoint: CreateItineraryEndpoint**
+- Defines a **POST** route: `"itineraries"`.
+- Calls `CreateItinerary.Command` via `ISender.Send()`.
+- Returns:
+  - `201 Created` with itinerary reference.
+  - Error if **no bookings** were provided.
+
+### **Delete Airport**
+#### **Command: DeleteAirport**
+- Deletes an airport by `Id`.
+- Uses `ExecuteDeleteAsync()` for **efficient deletion**.
+- Returns:
+  - `Error.NotFound` if airport does not exist.
+  - `Unit.Value` if deletion is successful.
+
+#### **API Endpoint: DeleteAirportEndpoint**
+- Defines a **DELETE** route: `"airports/{id}"`.
+- Calls `DeleteAirport.Command` via `ISender.Send()`.
+- Returns:
+  - `204 NoContent` if successful.
+  - Error if the airport is not found.
+
+### **Retrieve Airport by ID**
+#### **Query: GetAirportById**
+- Fetches **AirportDto** by `Id`.
+- Uses `AsNoTracking()` for **read-only performance**.
+- Returns `Error.NotFound` if the airport does not exist.
+
+#### **API Endpoint: GetAirportByIdEndpoint**
+- Defines a **GET** route: `"airports/{id}"`.
+- Calls `GetAirportById.Query` via `ISender.Send()`.
+- Returns:
+  - `200 OK` with airport details.
+  - `404 Not Found` if the airport is missing.
+
+### **Retrieve Flight by ID**
+#### **Query: GetFlightById**
+- Fetches **FlightDto** by `Id`.
+- Uses `AsNoTracking()` for **read optimization**.
+
+#### **API Endpoint: GetFlightByIdEndpoint**
+- Defines a **GET** route: `"flights/{id}"`.
+- Calls `GetFlightById.Query` via `ISender.Send()`.
+- Returns:
+  - `200 OK` with flight details.
+  - `404 Not Found` if flight is missing.
+
+### **Retrieve Available Seats for a Flight**
+#### **Query: GetSeatsForFlight**
+- Validates `FlightId` using **FluentValidation**.
+- Fetches seats **filtered by seat type (if provided)**.
+
+#### **API Endpoint: GetSeatsForFlightEndpoint**
+- Defines a **GET** route: `"flights/{flightId}/seats"`.
+- Calls `GetSeatsForFlight.Query` via `ISender.Send()`.
+- Returns:
+  - `200 OK` with available seats.
+  - `404 Not Found` if the flight does not exist.
+
+### **List All Airports**
+#### **Query: ListAirports**
+- Fetches all **Airports** and converts them to `AirportDto`.
+
+#### **API Endpoint: ListAirportsEndpoint**
+- Defines a **GET** route: `"airports"`.
+- Calls `ListAirports.Query` via `ISender.Send()`.
+- Returns:
+  - `200 OK` with a list of airports.
+
+### **Remove Passenger from Booking**
+#### **Command: RemovePassengerFromBooking**
+- Fetches **booking** and calls `booking.RemovePassenger()`.
+- Saves changes to the database.
+
+#### **API Endpoint: RemovePassengerFromBookingEndpoint**
+- Defines a **DELETE** route: `"itineraries/{itineraryId}/bookings/{bookingId}/passengers/{passengerId}"`.
+- Calls `RemovePassengerFromBooking.Command` via `ISender.Send()`.
+- Returns:
+  - `204 NoContent` if successful.
+  - `404 Not Found` if booking is missing.
+
+### **Retrieve Itinerary by Slug**
+#### **Query: RetrieveItinerary**
+- Fetches itinerary by **Reference (Slug)**.
+
+#### **API Endpoint: RetrieveItineraryEndpoint**
+- Defines a **GET** route: `"itineraries/{slug}"`.
+- Calls `RetrieveItinerary.Query` via `ISender.Send()`.
+- Returns:
+  - `200 OK` with itinerary details.
+  - `404 Not Found` if missing.
+
+### **Schedule a Flight**
+#### **Command: ScheduleFlight**
+- **Validator:**
+  - Ensures **FlightNumber**, **Departure**, **Arrival**, and **Price** are valid.
+- **Handler:**
+  - Validates input.
+  - Checks if airports exist.
+  - Converts **times to the correct time zone**.
+  - Uses `_seatService.CreateSeats()` to generate seat availability.
+  - Saves the flight to the database.
+
+#### **API Endpoint: ScheduleFlightEndpoint**
+- Defines a **POST** route: `"flights"`.
+- Calls `ScheduleFlight.Command` via `ISender.Send()`.
+- Returns:
+  - `201 Created` with flight details.
+  - Validation errors if input is incorrect.
+
+### **Search for Journeys by Route and Date**
+#### **Query: SearchForJourneysByRouteAndDate**
+- **Validator:**
+  - Ensures IATA codes are **3 uppercase letters**.
+  - Ensures **departure != destination**.
+  - Validates date format.
+- **Handler:**
+  - Finds **direct flights**.
+  - If no direct flights, searches for **multi-leg flights**.
+
+#### **API Endpoint: SearchForJourneysByRouteAndDateEndpoint**
+- Defines a **GET** route: `"journeys"` with query params.
+- Calls `SearchForJourneysByRouteAndDate.Query` via `ISender.Send()`.
+- Returns:
+  - `200 OK` with available journeys.
+  - `400 Bad Request` if input is invalid.
+
+## **3. Summary**
+- Implements **CQRS using Commands and Queries**.
+- Uses **Minimal APIs** for lightweight routing.
+- Uses **Entity Framework Core** for database operations.
+- Uses **FluentValidation** for validation.
+- Uses **ErrorOr<T>** for structured error handling.
+- **Efficient queries using `AsNoTracking()` and `ExecuteDeleteAsync()`**.
