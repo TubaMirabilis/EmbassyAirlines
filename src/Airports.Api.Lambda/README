@@ -74,7 +74,6 @@ These events are published to Amazon SQS via **MassTransit**.
 
 ## Known issues
 
-- Currently the Dockerfile does not have a dotnet publish step.
 - Currently there are no tests for the project.
 - Other services and their tests need to be updated to integrate with the new event-driven architecture.
 - Currently the image needs to be pushed to the Elastic Container Registry manually.
