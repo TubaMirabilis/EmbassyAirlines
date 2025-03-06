@@ -24,31 +24,32 @@ This API exposes endpoints for managing airports, using **AWS DynamoDB** for sto
    Make sure that your AWS IAM role has the correct permissions to publish and subscribe to SQS queues/topics.
 
 2. **Configure Environment Variables:**
-In addition to the AWS configuration, the application will require you to set the AIRPORTS_DynamoDb__TableName and AIRPORTS_MassTransit__Scope environment variables.
+   In addition to the AWS configuration, the application will require you to set the AIRPORTS_DynamoDb**TableName and AIRPORTS_MassTransit**Scope environment variables.
 
 3. **Run the application locally:**
 
-   ```bash
-   dotnet run
-   ```
-   This will start the local ASP.NET Core server.
+    ```bash
+    dotnet run
+    ```
+
+    This will start the local ASP.NET Core server.
 
 4. **Test the API** (assuming the local server is listening on `http://localhost:5000`):
-   - **GET** all airports: `GET http://localhost:5000/airports`
-   - **GET** a single airport by ID: `GET http://localhost:5000/airports/{id}`
-   - **POST** (create) an airport: `POST http://localhost:5000/airports`
-   - **PUT** (update) an airport: `PUT http://localhost:5000/airports/{id}`
-   - **DELETE** an airport: `DELETE http://localhost:5000/airports/{id}`
+    - **GET** all airports: `GET http://localhost:5000/airports`
+    - **GET** a single airport by ID: `GET http://localhost:5000/airports/{id}`
+    - **POST** (create) an airport: `POST http://localhost:5000/airports`
+    - **PUT** (update) an airport: `PUT http://localhost:5000/airports/{id}`
+    - **DELETE** an airport: `DELETE http://localhost:5000/airports/{id}`
 
 ## Endpoints
 
-| Method | Endpoint                | Description                                        | Request Body           |
-|--------|-------------------------|----------------------------------------------------|------------------------|
-| GET    | `/airports`            | Retrieves all airports in DynamoDB.               | *None*                |
-| GET    | `/airports/{id}`       | Retrieves a specific airport by its `Guid` ID.    | *None*                |
-| POST   | `/airports`            | Creates a new airport record.                     | `CreateAirportDto`    |
-| PUT    | `/airports/{id}`       | Updates an existing airport.                      | `UpdateAirportDto`    |
-| DELETE | `/airports/{id}`       | Deletes an airport by its `Guid` ID.              | *None*                |
+| Method | Endpoint         | Description                                    | Request Body       |
+| ------ | ---------------- | ---------------------------------------------- | ------------------ |
+| GET    | `/airports`      | Retrieves all airports in DynamoDB.            | _None_             |
+| GET    | `/airports/{id}` | Retrieves a specific airport by its `Guid` ID. | _None_             |
+| POST   | `/airports`      | Creates a new airport record.                  | `CreateAirportDto` |
+| PUT    | `/airports/{id}` | Updates an existing airport.                   | `UpdateAirportDto` |
+| DELETE | `/airports/{id}` | Deletes an airport by its `Guid` ID.           | _None_             |
 
 ### Request/Response DTOs
 
