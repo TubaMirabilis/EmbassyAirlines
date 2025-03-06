@@ -1,0 +1,80 @@
+# Airport Management Service
+
+This API exposes endpoints for managing airports, using **AWS DynamoDB** for storage, **Amazon SQS** (via MassTransit) for publishing domain events, and **AWS Lambda** for hosting.
+
+## Features
+
+- **AWS Lambda Integration** – Easily deploy as a serverless function using `AddAWSLambdaHosting`.
+- **CRUD Endpoints** – Create, read, update, and delete airport data stored in DynamoDB.
+- **MassTransit & Amazon SQS** – Publish domain events (airport created, updated, deleted) to Amazon SQS topics/queues.
+- **Global Exception Handling** – Unified error responses (via `ProblemDetails`) and centralized exception handling.
+
+## Prerequisites
+
+- .NET SDK
+- An AWS account with permissions to use DynamoDB and SQS
+- A configured AWS Credential Profile or environment variables for AWS (`AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`)
+
+## Getting Started
+
+1. **Configure AWS settings:**
+   Make sure that you have your AWS credentials set up.
+   Make sure that a DynamoDB table has been provisioned.
+   Make sure that your AWS IAM role has the correct permissions to perform CRUD operations on the DynamoDB table.
+   Make sure that your AWS IAM role has the correct permissions to publish and subscribe to SQS queues/topics.
+
+2. **Configure Environment Variables:**
+In addition to the AWS configuration, the application will require you to set the AIRPORTS_DynamoDb__TableName and AIRPORTS_MassTransit__Scope environment variables.
+
+3. **Run the application locally:**
+
+   ```bash
+   dotnet run
+   ```
+   This will start the local ASP.NET Core server.
+
+4. **Test the API** (assuming the local server is listening on `http://localhost:5000`):
+   - **GET** all airports: `GET http://localhost:5000/airports`
+   - **GET** a single airport by ID: `GET http://localhost:5000/airports/{id}`
+   - **POST** (create) an airport: `POST http://localhost:5000/airports`
+   - **PUT** (update) an airport: `PUT http://localhost:5000/airports/{id}`
+   - **DELETE** an airport: `DELETE http://localhost:5000/airports/{id}`
+
+## Endpoints
+
+| Method | Endpoint                | Description                                        | Request Body           |
+|--------|-------------------------|----------------------------------------------------|------------------------|
+| GET    | `/airports`            | Retrieves all airports in DynamoDB.               | *None*                |
+| GET    | `/airports/{id}`       | Retrieves a specific airport by its `Guid` ID.    | *None*                |
+| POST   | `/airports`            | Creates a new airport record.                     | `CreateAirportDto`    |
+| PUT    | `/airports/{id}`       | Updates an existing airport.                      | `UpdateAirportDto`    |
+| DELETE | `/airports/{id}`       | Deletes an airport by its `Guid` ID.              | *None*                |
+
+### Request/Response DTOs
+
+- **CreateAirportDto** – Typically contains properties: `IataCode`, `Name`, `TimeZoneId`.
+- **UpdateAirportDto** – Contains updatable fields: `IataCode`, `Name`, `TimeZoneId`.
+- **AirportDto** – The read model returned by GET endpoints, e.g. `{ Id, IataCode, Name, TimeZoneId }`.
+
+## Events and MassTransit
+
+The application publishes domain events when airports are created, updated, or deleted:
+
+- **AirportCreatedEvent** – Fired after a new airport is successfully created.
+- **AirportUpdatedEvent** – Fired after an existing airport is updated.
+- **AirportDeletedEvent** – Fired after an airport is deleted.
+
+These events are published to Amazon SQS via **MassTransit**.
+
+## Error Handling
+
+- **GlobalExceptionHandler** – Registered as a middleware to capture and handle exceptions in a centralized manner.
+- **ProblemDetails** – Follows the [RFC 7807](https://datatracker.ietf.org/doc/html/rfc7807) specification to provide machine-readable error responses.
+
+## Known issues
+
+- Currently the Dockerfile does not have a dotnet publish step.
+- Currently there are no tests for the project.
+- Other services and their tests need to be updated to integrate with the new event-driven architecture.
+- Currently the image needs to be pushed to the Elastic Container Registry manually.
+- Currently none of the endpoints require authorization. My proposal for rectifying this involves provisioning a user pool in Cognito for members of the operations team and using the access tokens to authenticate requests.
