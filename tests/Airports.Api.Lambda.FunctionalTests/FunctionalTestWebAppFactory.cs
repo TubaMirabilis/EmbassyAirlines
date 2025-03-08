@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Amazon.DynamoDBv2;
+using Amazon.Runtime;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
@@ -30,12 +31,13 @@ public class FunctionalTestWebAppFactory : WebApplicationFactory<Program>, IAsyn
             {
                 PropertyNameCaseInsensitive = true
             });
+            var credentials = new BasicAWSCredentials("test-access-key", "test-secret-key");
             services.RemoveAll<IAmazonDynamoDB>();
             var config = new AmazonDynamoDBConfig
             {
                 ServiceURL = _dynamoDbContainer.GetConnectionString()
             };
-            services.AddSingleton<IAmazonDynamoDB>(_ => new AmazonDynamoDBClient(config));
+            services.AddSingleton<IAmazonDynamoDB>(_ => new AmazonDynamoDBClient(credentials, config));
         });
     }
     public Task InitializeAsync() => _dynamoDbContainer.StartAsync();
