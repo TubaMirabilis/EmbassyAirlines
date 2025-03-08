@@ -71,10 +71,3 @@ These events are published to Amazon SQS via **MassTransit**.
 
 - **GlobalExceptionHandler** – Registered as a middleware to capture and handle exceptions in a centralized manner.
 - **ProblemDetails** – Follows the [RFC 7807](https://datatracker.ietf.org/doc/html/rfc7807) specification to provide machine-readable error responses.
-
-## Known issues
-
-- Currently there are no tests for the project.
-- Other services and their tests need to be updated to integrate with the new event-driven architecture.
-- Currently the image needs to be pushed to the Elastic Container Registry manually.
-- Currently none of the endpoints require authorization. My proposal for rectifying this involves provisioning a user pool in Cognito for members of the operations team and using the access tokens to authenticate requests.

@@ -1,8 +1,8 @@
 using FluentValidation.Results;
 
-namespace Flights.Api.Extensions;
+namespace Shared.Extensions;
 
-internal static class ValidationResultExtensions
+public static class ValidationResultExtensions
 {
     public static bool IsValid(this ValidationResult validationResult, out string formattedErrors)
     {

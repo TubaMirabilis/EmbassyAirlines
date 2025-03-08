@@ -27,7 +27,7 @@ public static class ErrorHandlingHelper
         }
         return HandleProblem(errorsList[0]);
     }
-    private static IResult HandleProblem(Error error)
+    public static IResult HandleProblem(Error error)
     {
         var statusCode = error.Type switch
         {
