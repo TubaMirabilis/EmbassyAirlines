@@ -1,5 +1,7 @@
 using System.Text.Json;
+using Amazon;
 using Amazon.DynamoDBv2;
+using Amazon.Extensions.NETCore.Setup;
 using Amazon.Runtime;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -30,6 +32,13 @@ public class FunctionalTestWebAppFactory : WebApplicationFactory<Program>, IAsyn
             services.AddScoped<JsonSerializerOptions>(_ => new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true
+            });
+            services.RemoveAll<AWSOptions>();
+            services.AddDefaultAWSOptions(new AWSOptions
+            {
+                Credentials = new BasicAWSCredentials("test-access-key", "test-secret-key"),
+                DefaultClientConfig = { ServiceURL = _dynamoDbContainer.GetConnectionString() },
+                Region = RegionEndpoint.EUWest2
             });
             var credentials = new BasicAWSCredentials("test-access-key", "test-secret-key");
             services.RemoveAll<IAmazonDynamoDB>();
