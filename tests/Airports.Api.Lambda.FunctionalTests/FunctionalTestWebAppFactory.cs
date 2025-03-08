@@ -1,8 +1,9 @@
 using System.Text.Json;
+using Airports.Api.Lambda.FunctionalTests.Extensions;
 using Amazon;
 using Amazon.DynamoDBv2;
-using Amazon.Extensions.NETCore.Setup;
 using Amazon.Runtime;
+using MassTransit;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
@@ -29,18 +30,18 @@ public class FunctionalTestWebAppFactory : WebApplicationFactory<Program>, IAsyn
         });
         builder.ConfigureTestServices(services =>
         {
+            var credentials = new BasicAWSCredentials("test-access-key", "test-secret-key");
             services.AddScoped<JsonSerializerOptions>(_ => new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true
             });
-            services.RemoveAll<AWSOptions>();
-            services.AddDefaultAWSOptions(new AWSOptions
+            var descriptors = services.Where(d => d.IsMassTransitService())
+.ToList();
+            foreach (var d in descriptors)
             {
-                Credentials = new BasicAWSCredentials("test-access-key", "test-secret-key"),
-                DefaultClientConfig = { ServiceURL = _dynamoDbContainer.GetConnectionString() },
-                Region = RegionEndpoint.EUWest2
-            });
-            var credentials = new BasicAWSCredentials("test-access-key", "test-secret-key");
+                services.Remove(d);
+            }
+            services.AddMassTransitTestHarness();
             services.RemoveAll<IAmazonDynamoDB>();
             var config = new AmazonDynamoDBConfig
             {
