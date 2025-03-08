@@ -45,4 +45,4 @@ jobs:
             - name: DotNet Build
               run: dotnet build --configuration Release --no-restore
             - name: DotNet Test
-              run: dotnet test --configuration Release --no-restore --no-build
+              run: dotnet test -v d --configuration Release --no-restore --no-build
