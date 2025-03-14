@@ -42,28 +42,32 @@ public abstract class BaseFunctionalTest : IClassFixture<FunctionalTestWebAppFac
     }
     protected async Task<AirportDto> SeedAirportAsync(CreateOrUpdateAirportDto request)
     {
-        var tables = await _dynamoDbClient.ListTablesAsync();
-        if (!tables.TableNames.Contains("airports"))
-        {
-            await _dynamoDbClient.CreateTableAsync(new CreateTableRequest
-            {
-                TableName = "airports",
-                AttributeDefinitions = new List<AttributeDefinition>
-            {
-                new AttributeDefinition("Id", ScalarAttributeType.S)
-            },
-                KeySchema = new List<KeySchemaElement>
-            {
-                new KeySchemaElement("Id", KeyType.HASH)
-            },
-                ProvisionedThroughput = new ProvisionedThroughput(1, 1)
-            });
-        }
+        await EnsureDynamoDbTableCreatedAsync();
         var response = await HttpClient.PostAsJsonAsync("airports", request);
         response.StatusCode.Should().Be(HttpStatusCode.Created);
         var content = await response.Content
                                     .ReadAsStreamAsync();
         var dto = await JsonSerializer.DeserializeAsync<AirportDto>(content, _options) ?? throw new JsonException();
         return dto;
+    }
+    protected async Task EnsureDynamoDbTableCreatedAsync()
+    {
+        var tables = await _dynamoDbClient.ListTablesAsync();
+        if (!tables.TableNames.Contains("airports"))
+        {
+            await _dynamoDbClient.CreateTableAsync(new CreateTableRequest
+            {
+                TableName = "airports",
+                AttributeDefinitions =
+            [
+                new("Id", ScalarAttributeType.S)
+            ],
+                KeySchema =
+            [
+                new("Id", KeyType.HASH)
+            ],
+                ProvisionedThroughput = new ProvisionedThroughput(1, 1)
+            });
+        }
     }
 }
