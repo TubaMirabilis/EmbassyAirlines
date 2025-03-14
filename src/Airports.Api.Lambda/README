@@ -1,19 +1,19 @@
 # Airport Management Service
 
-This API exposes endpoints for managing airports, using **AWS DynamoDB** for storage, **Amazon SQS** (via MassTransit) for publishing domain events, and **AWS Lambda** for hosting.
+The Airport Management Service is a serverless ASP.NET Core application that manages airport data in an AWS DynamoDB table and publishes domain events (create, update, delete) via MassTransit on Amazon SQS. It is designed to run on AWS Lambda using the built-in support from `AddAWSLambdaHosting`.
 
 ## Features
 
-- **AWS Lambda Integration** – Easily deploy as a serverless function using `AddAWSLambdaHosting`.
-- **CRUD Endpoints** – Create, read, update, and delete airport data stored in DynamoDB.
-- **MassTransit & Amazon SQS** – Publish domain events (airport created, updated, deleted) to Amazon SQS topics/queues.
-- **Global Exception Handling** – Unified error responses (via `ProblemDetails`) and centralized exception handling.
+-   **AWS Lambda Integration** – Easily deploy as a serverless function using `AddAWSLambdaHosting`.
+-   **CRUD Endpoints** – Create, read, update, and delete airport data stored in DynamoDB.
+-   **MassTransit & Amazon SQS** – Publish domain events (airport created, updated, deleted) to Amazon SQS topics/queues.
+-   **Global Exception Handling** – Unified error responses (via `ProblemDetails`) and centralized exception handling.
 
 ## Prerequisites
 
-- .NET SDK
-- An AWS account with permissions to use DynamoDB and SQS
-- A configured AWS Credential Profile or environment variables for AWS (`AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`)
+-   .NET SDK
+-   An AWS account with permissions to use DynamoDB and SQS
+-   A configured AWS Credential Profile or environment variables for AWS (`AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`)
 
 ## Getting Started
 
@@ -53,21 +53,21 @@ This API exposes endpoints for managing airports, using **AWS DynamoDB** for sto
 
 ### Request/Response DTOs
 
-- **CreateAirportDto** – Typically contains properties: `IataCode`, `Name`, `TimeZoneId`.
-- **UpdateAirportDto** – Contains updatable fields: `IataCode`, `Name`, `TimeZoneId`.
-- **AirportDto** – The read model returned by GET endpoints, e.g. `{ Id, IataCode, Name, TimeZoneId }`.
+-   **CreateAirportDto** – Typically contains properties: `IataCode`, `Name`, `TimeZoneId`.
+-   **UpdateAirportDto** – Contains updatable fields: `IataCode`, `Name`, `TimeZoneId`.
+-   **AirportDto** – The read model returned by GET endpoints, e.g. `{ Id, IataCode, Name, TimeZoneId }`.
 
 ## Events and MassTransit
 
 The application publishes domain events when airports are created, updated, or deleted:
 
-- **AirportCreatedEvent** – Fired after a new airport is successfully created.
-- **AirportUpdatedEvent** – Fired after an existing airport is updated.
-- **AirportDeletedEvent** – Fired after an airport is deleted.
+-   **AirportCreatedEvent** – Fired after a new airport is successfully created.
+-   **AirportUpdatedEvent** – Fired after an existing airport is updated.
+-   **AirportDeletedEvent** – Fired after an airport is deleted.
 
 These events are published to Amazon SQS via **MassTransit**.
 
 ## Error Handling
 
-- **GlobalExceptionHandler** – Registered as a middleware to capture and handle exceptions in a centralized manner.
-- **ProblemDetails** – Follows the [RFC 7807](https://datatracker.ietf.org/doc/html/rfc7807) specification to provide machine-readable error responses.
+-   **GlobalExceptionHandler** – Registered as a middleware to capture and handle exceptions in a centralized manner.
+-   **ProblemDetails** – Follows the [RFC 7807](https://datatracker.ietf.org/doc/html/rfc7807) specification to provide machine-readable error responses.
