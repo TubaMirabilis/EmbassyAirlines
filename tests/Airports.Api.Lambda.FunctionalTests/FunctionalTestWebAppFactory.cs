@@ -1,6 +1,5 @@
 using System.Text.Json;
 using Airports.Api.Lambda.FunctionalTests.Extensions;
-using Amazon;
 using Amazon.DynamoDBv2;
 using Amazon.Runtime;
 using MassTransit;
