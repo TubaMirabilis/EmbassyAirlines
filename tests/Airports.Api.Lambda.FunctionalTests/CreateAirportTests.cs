@@ -1,16 +1,14 @@
 using System.Net;
 using System.Net.Http.Json;
-using Amazon.DynamoDBv2;
-using Amazon.DynamoDBv2.Model;
 using FluentAssertions;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Airports.Api.Lambda.FunctionalTests;
 
 public class CreateAirportTests : BaseFunctionalTest
 {
-    private readonly IAmazonDynamoDB _dynamoDbClient;
-    public CreateAirportTests(FunctionalTestWebAppFactory factory) : base(factory) => _dynamoDbClient = factory.Services.GetRequiredService<IAmazonDynamoDB>();
+    public CreateAirportTests(FunctionalTestWebAppFactory factory) : base(factory)
+    {
+    }
 
     [Fact]
     public async Task Should_ReturnBadRequest_WhenIataCodeIsEmpty()
@@ -121,19 +119,6 @@ public class CreateAirportTests : BaseFunctionalTest
     public async Task Should_ReturnCreated_WhenRequestIsValid()
     {
         // Arrange
-        await _dynamoDbClient.CreateTableAsync(new CreateTableRequest
-        {
-            TableName = "airports",
-            AttributeDefinitions = new List<AttributeDefinition>
-            {
-                new AttributeDefinition("Id", ScalarAttributeType.S)
-            },
-            KeySchema = new List<KeySchemaElement>
-            {
-                new KeySchemaElement("Id", KeyType.HASH)
-            },
-            ProvisionedThroughput = new ProvisionedThroughput(1, 1)
-        });
         var request = new CreateOrUpdateAirportDto("LHR", "London Heathrow Airport", "Europe/London");
 
         // Act

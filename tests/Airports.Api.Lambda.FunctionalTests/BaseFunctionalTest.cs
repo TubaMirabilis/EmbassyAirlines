@@ -2,6 +2,8 @@ using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
 using Airports.Api.Lambda.FunctionalTests.Extensions;
+using Amazon.DynamoDBv2;
+using Amazon.DynamoDBv2.Model;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
@@ -11,11 +13,13 @@ namespace Airports.Api.Lambda.FunctionalTests;
 
 public abstract class BaseFunctionalTest : IClassFixture<FunctionalTestWebAppFactory>
 {
+    private readonly IAmazonDynamoDB _dynamoDbClient;
     private readonly JsonSerializerOptions _options;
     protected BaseFunctionalTest(FunctionalTestWebAppFactory factory)
     {
         using var scope = factory.Services.CreateScope();
         _options = scope.ServiceProvider.GetRequiredService<JsonSerializerOptions>();
+        _dynamoDbClient = factory.Services.GetRequiredService<IAmazonDynamoDB>();
         HttpClient = factory.CreateClient();
         LongString = new string('A', 101);
     }
@@ -38,6 +42,23 @@ public abstract class BaseFunctionalTest : IClassFixture<FunctionalTestWebAppFac
     }
     protected async Task<AirportDto> SeedAirportAsync(CreateOrUpdateAirportDto request)
     {
+        var tables = await _dynamoDbClient.ListTablesAsync();
+        if (!tables.TableNames.Contains("airports"))
+        {
+            await _dynamoDbClient.CreateTableAsync(new CreateTableRequest
+            {
+                TableName = "airports",
+                AttributeDefinitions = new List<AttributeDefinition>
+            {
+                new AttributeDefinition("Id", ScalarAttributeType.S)
+            },
+                KeySchema = new List<KeySchemaElement>
+            {
+                new KeySchemaElement("Id", KeyType.HASH)
+            },
+                ProvisionedThroughput = new ProvisionedThroughput(1, 1)
+            });
+        }
         var response = await HttpClient.PostAsJsonAsync("airports", request);
         response.StatusCode.Should().Be(HttpStatusCode.Created);
         var content = await response.Content
