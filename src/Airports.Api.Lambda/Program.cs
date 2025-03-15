@@ -59,7 +59,7 @@ app.MapGet("airports/{id}", async ([FromServices] IAmazonDynamoDB dynamoDb, [Fro
         Key = key
     };
     var response = await dynamoDb.GetItemAsync(getItemRequest);
-    if (response.Item is null)
+    if (!response.IsItemSet)
     {
         var error = Error.NotFound("Airport.NotFound", $"Airport with id {id} not found");
         return ErrorHandlingHelper.HandleProblem(error);
