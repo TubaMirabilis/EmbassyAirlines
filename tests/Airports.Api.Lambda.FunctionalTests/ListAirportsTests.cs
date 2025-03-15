@@ -15,7 +15,7 @@ public class ListAirportsTests : BaseFunctionalTest
     public async Task Should_ReturnOk_WhenListIsEmpty()
     {
         // Arrange
-        await EnsureDynamoDbTableCreatedAsync();
+        await EnsureDynamoDbTableEmptyAsync();
 
         // Act
         var uri = new Uri("airports", UriKind.Relative);
@@ -25,5 +25,22 @@ public class ListAirportsTests : BaseFunctionalTest
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var list = await response.Content.ReadFromJsonAsync<IEnumerable<AirportDto>>();
         list.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task Should_ReturnOk_WhenListIsNotEmpty()
+    {
+        // Arrange
+        var request = new CreateOrUpdateAirportDto("VIE", "Vienna International Airport", "Europe/Vienna");
+        await SeedAirportAsync(request);
+
+        // Act
+        var uri = new Uri("airports", UriKind.Relative);
+        var response = await HttpClient.GetAsync(uri);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var list = await response.Content.ReadFromJsonAsync<IEnumerable<AirportDto>>();
+        list.Should().HaveCount(1);
     }
 }

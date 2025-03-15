@@ -70,4 +70,22 @@ public abstract class BaseFunctionalTest : IClassFixture<FunctionalTestWebAppFac
             });
         }
     }
+    protected async Task EnsureDynamoDbTableEmptyAsync()
+    {
+        var response = await _dynamoDbClient.ScanAsync(new ScanRequest
+        {
+            TableName = "airports"
+        });
+        foreach (var item in response.Items)
+        {
+            await _dynamoDbClient.DeleteItemAsync(new DeleteItemRequest
+            {
+                TableName = "airports",
+                Key = new Dictionary<string, AttributeValue>
+                {
+                    ["Id"] = item["Id"]
+                }
+            });
+        }
+    }
 }
