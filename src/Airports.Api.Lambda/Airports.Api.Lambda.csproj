@@ -9,7 +9,7 @@
   <ItemGroup>
     <PackageReference Include="Amazon.Lambda.AspNetCoreServer.Hosting" Version="1.7.4" />
     <PackageReference Include="AWSSDK.DynamoDBv2" Version="3.7.406.1" />
-    <PackageReference Include="MassTransit.AmazonSQS" Version="8.3.7" />
+    <PackageReference Include="MassTransit.AmazonSQS" Version="8.4.0" />
   </ItemGroup>
 
   <ItemGroup>
