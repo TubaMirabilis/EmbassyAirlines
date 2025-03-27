@@ -1,6 +1,8 @@
 using System.Net;
 using System.Net.Http.Json;
+using System.Text.Json;
 using FluentAssertions;
+using Shared.Contracts;
 
 namespace Airports.Api.Lambda.FunctionalTests;
 
@@ -130,5 +132,26 @@ public class UpdateAirportTests : BaseFunctionalTest
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
         await GetProblemDetailsFromResponseAndAssert(response, expectedError);
+    }
+
+    [Fact]
+    public async Task Should_UpdateAirport_WhenAirportExists()
+    {
+        // Arrange
+        var createRequest = new CreateOrUpdateAirportDto("YVR", "Vancouver International Airport", "America/Vancouver");
+        var createResponse = await HttpClient.PostAsJsonAsync("airports", createRequest);
+        createResponse.EnsureSuccessStatusCode();
+        var createResponseContent = await createResponse.Content.ReadFromJsonAsync<Airport>() ?? throw new JsonException("Expected airport object not returned");
+        var updateRequest = new CreateOrUpdateAirportDto("YVR", "Vancouver Intercontinental Airport", "America/Vancouver");
+        var expected = new AirportDto(createResponseContent.Id, "Vancouver Intercontinental Airport", "YVR", "America/Vancouver");
+
+        // Act
+        var updateResponse = await HttpClient.PutAsJsonAsync($"airports/{createResponseContent.Id}", updateRequest);
+        updateResponse.EnsureSuccessStatusCode();
+        var updateResponseContent = await updateResponse.Content.ReadFromJsonAsync<Airport>() ?? throw new JsonException("Expected airport object not returned");
+
+        // Assert
+        updateResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        updateResponseContent.Should().BeEquivalentTo(expected);
     }
 }
