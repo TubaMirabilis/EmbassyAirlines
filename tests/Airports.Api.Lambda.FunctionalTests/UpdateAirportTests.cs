@@ -114,4 +114,21 @@ public class UpdateAirportTests : BaseFunctionalTest
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
         await GetProblemDetailsFromResponseAndAssert(response, error);
     }
+
+    [Fact]
+    public async Task Should_ReturnNotFound_WhenAirportDoesNotExist()
+    {
+        // Arrange
+        await EnsureDynamoDbTableCreatedAsync();
+        var nonExistentId = Guid.NewGuid();
+        var request = new CreateOrUpdateAirportDto("YVR", "Vancouver International Airport", "America/Vancouver");
+        var expectedError = $"Airport with id {nonExistentId} not found";
+
+        // Act
+        var response = await HttpClient.PutAsJsonAsync($"airports/{nonExistentId}", request);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        await GetProblemDetailsFromResponseAndAssert(response, expectedError);
+    }
 }

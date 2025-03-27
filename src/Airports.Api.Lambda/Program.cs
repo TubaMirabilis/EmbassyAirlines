@@ -130,7 +130,7 @@ app.MapPut("airports/{id}", async ([FromServices] IAmazonDynamoDB dynamoDb, IBus
         Key = key
     };
     var getItemResponse = await dynamoDb.GetItemAsync(getItemRequest);
-    if (getItemResponse.Item is null)
+    if (!getItemResponse.IsItemSet)
     {
         var error = Error.NotFound("Airport.NotFound", $"Airport with id {id} not found");
         return ErrorHandlingHelper.HandleProblem(error);
@@ -147,6 +147,7 @@ app.MapPut("airports/{id}", async ([FromServices] IAmazonDynamoDB dynamoDb, IBus
     var updatedAirportAsJson = JsonSerializer.Serialize(airport);
     var updatedAirportAsDocument = Document.FromJson(updatedAirportAsJson);
     var updatedAirportAsAttributes = updatedAirportAsDocument.ToAttributeMap();
+    updatedAirportAsAttributes.Remove("Id");
     var updateItemRequest = new UpdateItemRequest
     {
         TableName = config["DynamoDb:TableName"],

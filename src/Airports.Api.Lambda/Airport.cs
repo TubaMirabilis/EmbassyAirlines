@@ -1,4 +1,6 @@
-﻿namespace Airports.Api.Lambda;
+﻿using System.Text.Json.Serialization;
+
+namespace Airports.Api.Lambda;
 
 public sealed class Airport
 {
@@ -12,6 +14,7 @@ public sealed class Airport
         TimeZoneId = timeZoneId;
     }
 #pragma warning disable CS8618
+    [JsonConstructor]
     private Airport()
     {
     }
