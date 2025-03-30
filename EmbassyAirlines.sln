@@ -13,6 +13,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{4289E37E
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Airports.Api.Lambda.FunctionalTests", "tests\Airports.Api.Lambda.FunctionalTests\Airports.Api.Lambda.FunctionalTests.csproj", "{423B2128-9EC2-4006-A4FC-E658C0F29F6C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Aircraft.Api.Lambda", "src\Aircraft.Api.Lambda\Aircraft.Api.Lambda.csproj", "{4BD5BA16-E075-435B-B632-A03AFFEE7B30}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -34,10 +36,15 @@ Global
 		{423B2128-9EC2-4006-A4FC-E658C0F29F6C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{423B2128-9EC2-4006-A4FC-E658C0F29F6C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{423B2128-9EC2-4006-A4FC-E658C0F29F6C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4BD5BA16-E075-435B-B632-A03AFFEE7B30}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4BD5BA16-E075-435B-B632-A03AFFEE7B30}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4BD5BA16-E075-435B-B632-A03AFFEE7B30}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4BD5BA16-E075-435B-B632-A03AFFEE7B30}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{F9ADD7DB-B0EC-46CE-B00B-6951DC87D5FA} = {46FD65DC-E510-4582-90F6-FA4BB2C94D0C}
 		{180FFF23-C909-4139-BAF6-E1B56C68AF65} = {46FD65DC-E510-4582-90F6-FA4BB2C94D0C}
 		{423B2128-9EC2-4006-A4FC-E658C0F29F6C} = {4289E37E-85A5-407F-BF54-449945E21615}
+		{4BD5BA16-E075-435B-B632-A03AFFEE7B30} = {46FD65DC-E510-4582-90F6-FA4BB2C94D0C}
 	EndGlobalSection
 EndGlobal
