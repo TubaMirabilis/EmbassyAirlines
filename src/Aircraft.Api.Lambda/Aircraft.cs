@@ -1,4 +1,5 @@
 ﻿using System.Text.Json.Serialization;
+using Shared;
 
 namespace Aircraft.Api.Lambda;
 
@@ -6,6 +7,13 @@ public sealed class Aircraft
 {
     private Aircraft(string tailNumber, string equipmentCode, int dryOperatingWeight, int maximumTakeoffWeight, int maximumLandingWeight, int maximumZeroFuelWeight, int maximumFuelWeight)
     {
+        Ensure.NotNullOrEmpty(tailNumber);
+        Ensure.NotNullOrEmpty(equipmentCode);
+        Ensure.GreaterThanZero(dryOperatingWeight);
+        Ensure.GreaterThanZero(maximumTakeoffWeight);
+        Ensure.GreaterThanZero(maximumLandingWeight);
+        Ensure.GreaterThanZero(maximumZeroFuelWeight);
+        Ensure.GreaterThanZero(maximumFuelWeight);
         Id = Guid.NewGuid();
         CreatedAt = DateTime.UtcNow;
         UpdatedAt = DateTime.UtcNow;

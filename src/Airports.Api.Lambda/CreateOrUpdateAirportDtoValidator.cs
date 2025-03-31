@@ -6,6 +6,9 @@ public sealed class CreateOrUpdateAirportDtoValidator : AbstractValidator<Create
 {
     public CreateOrUpdateAirportDtoValidator()
     {
+        RuleFor(x => x.IcaoCode)
+            .Matches("^[A-Z]{4}$")
+                .WithMessage("ICAO Code must consist of 4 uppercase letters only.");
         RuleFor(x => x.IataCode)
             .Matches("^[A-Z]{3}$")
                 .WithMessage("IATA Code must consist of 3 uppercase letters only.");

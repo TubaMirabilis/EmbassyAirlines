@@ -13,7 +13,7 @@ public class DeleteAirportTests : BaseFunctionalTest
     public async Task Should_ReturnNoContent_WhenRequestIsValid()
     {
         // Arrange
-        var airport = await SeedAirportAsync(new CreateOrUpdateAirportDto("VIE", "Vienna International Airport", "Europe/Vienna"));
+        var airport = await SeedAirportAsync(new CreateOrUpdateAirportDto("LOWW", "VIE", "Vienna International Airport", "Europe/Vienna"));
 
         // Act
         var uri = new Uri($"/airports/{airport.Id}", UriKind.Relative);

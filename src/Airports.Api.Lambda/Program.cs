@@ -93,7 +93,7 @@ app.MapPost("airports", async ([FromServices] IAmazonDynamoDB dynamoDb, IBus bus
         var error = Error.Conflict("Airport.Conflict", $"Airport with IATA code {dto.IataCode} already exists");
         return ErrorHandlingHelper.HandleProblem(error);
     }
-    var airport = Airport.Create(dto.IataCode, dto.Name, dto.TimeZoneId);
+    var airport = Airport.Create(dto.IcaoCode, dto.IataCode, dto.Name, dto.TimeZoneId);
     var airportAsJson = JsonSerializer.Serialize(airport);
     var itemAsDocument = Document.FromJson(airportAsJson);
     var itemAsAttributes = itemAsDocument.ToAttributeMap();
@@ -108,7 +108,7 @@ app.MapPost("airports", async ([FromServices] IAmazonDynamoDB dynamoDb, IBus bus
         var error = Error.Failure("Airport.Create", "Failed to create airport");
         return ErrorHandlingHelper.HandleProblem(error);
     }
-    await bus.Publish(new AirportCreatedEvent(airport.Id, airport.Name, airport.IataCode, airport.TimeZoneId));
+    await bus.Publish(new AirportCreatedEvent(airport.Id, airport.Name, airport.IcaoCode, airport.IataCode, airport.TimeZoneId));
     return Results.Created($"/airports/{airport.Id}", airport);
 });
 app.MapPut("airports/{id}", async ([FromServices] IAmazonDynamoDB dynamoDb, IBus bus, [FromRoute] Guid id, IValidator<CreateOrUpdateAirportDto> validator,
@@ -143,7 +143,7 @@ app.MapPut("airports/{id}", async ([FromServices] IAmazonDynamoDB dynamoDb, IBus
         var error = Error.Failure("Airport.Update", "Failed to deserialize airport");
         return ErrorHandlingHelper.HandleProblem(error);
     }
-    airport.Update(dto.IataCode, dto.Name, dto.TimeZoneId);
+    airport.Update(dto.IcaoCode, dto.IataCode, dto.Name, dto.TimeZoneId);
     var updatedAirportAsJson = JsonSerializer.Serialize(airport);
     var updatedAirportAsDocument = Document.FromJson(updatedAirportAsJson);
     var updatedAirportAsAttributes = updatedAirportAsDocument.ToAttributeMap();
@@ -160,8 +160,8 @@ app.MapPut("airports/{id}", async ([FromServices] IAmazonDynamoDB dynamoDb, IBus
         var error = Error.Failure("Airport.Update", "Failed to update airport");
         return ErrorHandlingHelper.HandleProblem(error);
     }
-    await bus.Publish(new AirportUpdatedEvent(airport.Id, airport.Name, airport.IataCode, airport.TimeZoneId));
-    var response = new AirportDto(airport.Id, airport.Name, airport.IataCode, airport.TimeZoneId);
+    await bus.Publish(new AirportUpdatedEvent(airport.Id, airport.Name, airport.IcaoCode, airport.IataCode, airport.TimeZoneId));
+    var response = new AirportDto(airport.Id, airport.Name, airport.IcaoCode, airport.IataCode, airport.TimeZoneId);
     return Results.Ok(response);
 });
 app.MapDelete("airports/{id}", async ([FromServices] IAmazonDynamoDB dynamoDb, IBus bus, [FromRoute] Guid id) =>

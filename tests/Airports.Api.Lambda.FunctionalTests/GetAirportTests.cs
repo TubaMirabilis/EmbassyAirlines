@@ -31,7 +31,7 @@ public class GetAirportTests : BaseFunctionalTest
     public async Task Should_ReturnOk_WhenAirportExists()
     {
         // Arrange
-        var airport = await SeedAirportAsync(new CreateOrUpdateAirportDto("EWR", "Newark Liberty International Airport", "America/New_York"));
+        var airport = await SeedAirportAsync(new CreateOrUpdateAirportDto("KEWR", "EWR", "Newark Liberty International Airport", "America/New_York"));
         var id = airport.Id;
 
         // Act

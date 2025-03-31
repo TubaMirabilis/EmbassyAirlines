@@ -31,7 +31,7 @@ public class ListAirportsTests : BaseFunctionalTest
     public async Task Should_ReturnOk_WhenListIsNotEmpty()
     {
         // Arrange
-        var request = new CreateOrUpdateAirportDto("VIE", "Vienna International Airport", "Europe/Vienna");
+        var request = new CreateOrUpdateAirportDto("LOWW", "VIE", "Vienna International Airport", "Europe/Vienna");
         await SeedAirportAsync(request);
 
         // Act
