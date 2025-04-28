@@ -1,66 +1,44 @@
-﻿using System.Text.Json.Serialization;
-using Shared;
+﻿using Shared;
 
 namespace Aircraft.Api.Lambda;
 
 public sealed class Aircraft
 {
-    private Aircraft(string tailNumber, string equipmentCode, int dryOperatingWeight, int maximumTakeoffWeight, int maximumLandingWeight, int maximumZeroFuelWeight, int maximumFuelWeight)
+    private readonly List<Seat> _seats = [];
+    private Aircraft(AircraftCreationArgs args)
     {
-        Ensure.NotNullOrEmpty(tailNumber);
-        Ensure.NotNullOrEmpty(equipmentCode);
-        Ensure.GreaterThanZero(dryOperatingWeight);
-        Ensure.GreaterThanZero(maximumTakeoffWeight);
-        Ensure.GreaterThanZero(maximumLandingWeight);
-        Ensure.GreaterThanZero(maximumZeroFuelWeight);
-        Ensure.GreaterThanZero(maximumFuelWeight);
+        Ensure.NotNullOrEmpty(args.TailNumber);
+        Ensure.NotNullOrEmpty(args.EquipmentCode);
+        Ensure.GreaterThanZero(args.DryOperatingWeight);
+        Ensure.GreaterThanZero(args.MaximumTakeoffWeight);
+        Ensure.GreaterThanZero(args.MaximumLandingWeight);
+        Ensure.GreaterThanZero(args.MaximumZeroFuelWeight);
+        Ensure.GreaterThanZero(args.MaximumFuelWeight);
         Id = Guid.NewGuid();
         CreatedAt = DateTime.UtcNow;
-        UpdatedAt = DateTime.UtcNow;
-        TailNumber = tailNumber;
-        EquipmentCode = equipmentCode;
-        DryOperatingWeight = dryOperatingWeight;
-        MaximumTakeoffWeight = maximumTakeoffWeight;
-        MaximumLandingWeight = maximumLandingWeight;
-        MaximumZeroFuelWeight = maximumZeroFuelWeight;
-        MaximumFuelWeight = maximumFuelWeight;
+        TailNumber = args.TailNumber;
+        EquipmentCode = args.EquipmentCode;
+        DryOperatingWeight = args.DryOperatingWeight;
+        MaximumTakeoffWeight = args.MaximumTakeoffWeight;
+        MaximumLandingWeight = args.MaximumLandingWeight;
+        MaximumZeroFuelWeight = args.MaximumZeroFuelWeight;
+        MaximumFuelWeight = args.MaximumFuelWeight;
+        _seats.AddRange(args.Seats);
     }
 #pragma warning disable CS8618
-    [JsonConstructor]
     private Aircraft()
     {
     }
 #pragma warning restore CS8618
-    [JsonInclude]
     public Guid Id { get; init; }
-    [JsonInclude]
     public DateTime CreatedAt { get; init; }
-    [JsonInclude]
-    public DateTime UpdatedAt { get; private set; }
-    [JsonInclude]
     public string TailNumber { get; private set; }
-    [JsonInclude]
     public string EquipmentCode { get; private set; }
-    [JsonInclude]
     public int DryOperatingWeight { get; private set; }
-    [JsonInclude]
     public int MaximumTakeoffWeight { get; private set; }
-    [JsonInclude]
     public int MaximumLandingWeight { get; private set; }
-    [JsonInclude]
     public int MaximumZeroFuelWeight { get; private set; }
-    [JsonInclude]
     public int MaximumFuelWeight { get; private set; }
-    public static Aircraft Create(string tailNumber, string equipmentCode, int dryOperatingWeight, int maximumTakeoffWeight, int maximumLandingWeight, int maximumZeroFuelWeight, int maximumFuelWeight) => new(tailNumber, equipmentCode, dryOperatingWeight, maximumTakeoffWeight, maximumLandingWeight, maximumZeroFuelWeight, maximumFuelWeight);
-    public void Update(string tailNumber, string equipmentCode, int dryOperatingWeight, int maximumTakeoffWeight, int maximumLandingWeight, int maximumZeroFuelWeight, int maximumFuelWeight)
-    {
-        TailNumber = tailNumber;
-        EquipmentCode = equipmentCode;
-        DryOperatingWeight = dryOperatingWeight;
-        MaximumTakeoffWeight = maximumTakeoffWeight;
-        MaximumLandingWeight = maximumLandingWeight;
-        MaximumZeroFuelWeight = maximumZeroFuelWeight;
-        MaximumFuelWeight = maximumFuelWeight;
-        UpdatedAt = DateTime.UtcNow;
-    }
+    public IReadOnlyList<Seat> Seats => _seats.AsReadOnly();
+    public static Aircraft Create(AircraftCreationArgs args) => new(args);
 }
