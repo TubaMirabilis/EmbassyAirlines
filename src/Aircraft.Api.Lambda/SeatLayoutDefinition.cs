@@ -22,4 +22,60 @@ public sealed class SeatLayoutDefinition
             kvp => RowRange.Parse(kvp.Key),
             kvp => kvp.Value
         );
+    public IEnumerable<Seat> ToSeatsCollection()
+    {
+        var seats = new List<Seat>();
+        foreach (var kvp in BusinessRows)
+        {
+            var range = kvp.Key;
+            var sections = kvp.Value;
+            foreach (var row in range)
+            {
+                foreach (var section in sections)
+                {
+                    var includeThisSection = section.EveryNthRowOnly is not int n || n <= 0 || (row - range.Start) % n == 0;
+                    if (!includeThisSection)
+                    {
+                        continue;
+                    }
+                    foreach (var letter in section.Seats)
+                    {
+                        seats.Add(new Seat
+                        {
+                            Id = Guid.NewGuid(),
+                            CreatedAt = DateTime.UtcNow,
+                            RowNumber = (byte)row,
+                            Letter = letter,
+                            Type = section.SeatType
+                        });
+                    }
+                }
+            }
+        }
+        foreach (var kvp in EconomyRows)
+        {
+            var range = kvp.Key;
+            var section = kvp.Value;
+            foreach (var row in range)
+            {
+                var includeThisSection = section.EveryNthRowOnly is not int n || n <= 0 || (row - range.Start) % n == 0;
+                if (!includeThisSection)
+                {
+                    continue;
+                }
+                foreach (var letter in section.Seats)
+                {
+                    seats.Add(new Seat
+                    {
+                        Id = Guid.NewGuid(),
+                        CreatedAt = DateTime.UtcNow,
+                        RowNumber = (byte)row,
+                        Letter = letter,
+                        Type = section.SeatType
+                    });
+                }
+            }
+        }
+        return seats;
+    }
 }
