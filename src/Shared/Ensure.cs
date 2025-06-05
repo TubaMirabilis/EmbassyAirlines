@@ -6,8 +6,8 @@ namespace Shared;
 public static class Ensure
 {
     public static void NotNullOrEmpty(
-        [NotNull] string? value,
-        [CallerArgumentExpression(nameof(value))] string? paramName = null)
+            [NotNull] string? value,
+            [CallerArgumentExpression(nameof(value))] string? paramName = null)
     {
         if (value is null)
         {
@@ -25,6 +25,16 @@ public static class Ensure
         if (value <= 0)
         {
             throw new ArgumentOutOfRangeException(paramName);
+        }
+    }
+    public static void LessThanOrEqualTo(
+        int value,
+        int maxValue,
+        [CallerArgumentExpression(nameof(value))] string? paramName = null)
+    {
+        if (value > maxValue)
+        {
+            throw new ArgumentOutOfRangeException(paramName, $"Value must be less than or equal to {maxValue}.");
         }
     }
 }

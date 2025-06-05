@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Globalization;
+using Shared;
 
 namespace Aircraft.Api.Lambda;
 
@@ -9,6 +10,9 @@ public readonly struct RowRange : IEnumerable<int>, IEquatable<RowRange>
     public int End { get; }
     public RowRange(int start, int end)
     {
+        Ensure.GreaterThanZero(start);
+        Ensure.GreaterThanZero(end);
+        Ensure.LessThanOrEqualTo(start, end);
         Start = start;
         End = end;
     }
