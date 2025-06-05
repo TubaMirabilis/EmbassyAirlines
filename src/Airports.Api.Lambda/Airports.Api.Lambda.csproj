@@ -9,7 +9,7 @@
   <ItemGroup>
     <PackageReference Include="Amazon.Lambda.AspNetCoreServer.Hosting" Version="1.8.0" />
     <PackageReference Include="AWSSDK.DynamoDBv2" Version="3.7.407.1" />
-    <PackageReference Include="MassTransit.AmazonSQS" Version="8.4.0" />
+    <PackageReference Include="MassTransit.AmazonSQS" Version="8.4.1" />
   </ItemGroup>
 
   <ItemGroup>
@@ -17,7 +17,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Update="SonarAnalyzer.CSharp" Version="10.8.0.113526" />
+    <PackageReference Update="SonarAnalyzer.CSharp" Version="10.10.0.116381" />
   </ItemGroup>
 
 </Project>
