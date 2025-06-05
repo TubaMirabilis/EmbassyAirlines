@@ -45,7 +45,7 @@ app.MapGet("airports", async ([FromServices] IAmazonDynamoDB dynamoDb) =>
         var airportAsJson = itemAsDocument.ToJson();
         return JsonSerializer.Deserialize<AirportDto>(airportAsJson);
     });
-    return Results.Ok(airports);
+    return TypedResults.Ok(airports);
 });
 app.MapGet("airports/{id}", async ([FromServices] IAmazonDynamoDB dynamoDb, [FromRoute] Guid id) =>
 {
@@ -67,7 +67,7 @@ app.MapGet("airports/{id}", async ([FromServices] IAmazonDynamoDB dynamoDb, [Fro
     var itemAsDocument = Document.FromAttributeMap(response.Item);
     var airportAsJson = itemAsDocument.ToJson();
     var airport = JsonSerializer.Deserialize<AirportDto>(airportAsJson);
-    return Results.Ok(airport);
+    return TypedResults.Ok(airport);
 });
 app.MapPost("airports", async ([FromServices] IAmazonDynamoDB dynamoDb, IBus bus, IValidator<CreateOrUpdateAirportDto> validator,
                                [FromBody] CreateOrUpdateAirportDto dto) =>
@@ -109,7 +109,7 @@ app.MapPost("airports", async ([FromServices] IAmazonDynamoDB dynamoDb, IBus bus
         return ErrorHandlingHelper.HandleProblem(error);
     }
     await bus.Publish(new AirportCreatedEvent(airport.Id, airport.Name, airport.IcaoCode, airport.IataCode, airport.TimeZoneId));
-    return Results.Created($"/airports/{airport.Id}", airport);
+    return TypedResults.Created($"/airports/{airport.Id}", airport);
 });
 app.MapPut("airports/{id}", async ([FromServices] IAmazonDynamoDB dynamoDb, IBus bus, [FromRoute] Guid id, IValidator<CreateOrUpdateAirportDto> validator,
                                    [FromBody] CreateOrUpdateAirportDto dto) =>
@@ -162,7 +162,7 @@ app.MapPut("airports/{id}", async ([FromServices] IAmazonDynamoDB dynamoDb, IBus
     }
     await bus.Publish(new AirportUpdatedEvent(airport.Id, airport.Name, airport.IcaoCode, airport.IataCode, airport.TimeZoneId));
     var response = new AirportDto(airport.Id, airport.Name, airport.IcaoCode, airport.IataCode, airport.TimeZoneId);
-    return Results.Ok(response);
+    return TypedResults.Ok(response);
 });
 app.MapDelete("airports/{id}", async ([FromServices] IAmazonDynamoDB dynamoDb, IBus bus, [FromRoute] Guid id) =>
 {
@@ -182,7 +182,7 @@ app.MapDelete("airports/{id}", async ([FromServices] IAmazonDynamoDB dynamoDb, I
         return ErrorHandlingHelper.HandleProblem(error);
     }
     await bus.Publish(new AirportDeletedEvent(id));
-    return Results.NoContent();
+    return TypedResults.NoContent();
 });
 app.UseExceptionHandler();
 await app.RunAsync();
