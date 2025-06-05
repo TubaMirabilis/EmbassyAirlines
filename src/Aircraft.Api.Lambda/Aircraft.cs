@@ -9,11 +9,6 @@ public sealed class Aircraft
     {
         Ensure.NotNullOrEmpty(args.TailNumber);
         Ensure.NotNullOrEmpty(args.EquipmentCode);
-        Ensure.GreaterThanZero(args.DryOperatingWeight);
-        Ensure.GreaterThanZero(args.MaximumTakeoffWeight);
-        Ensure.GreaterThanZero(args.MaximumLandingWeight);
-        Ensure.GreaterThanZero(args.MaximumZeroFuelWeight);
-        Ensure.GreaterThanZero(args.MaximumFuelWeight);
         Id = Guid.NewGuid();
         CreatedAt = DateTime.UtcNow;
         TailNumber = args.TailNumber;
@@ -34,11 +29,11 @@ public sealed class Aircraft
     public DateTime CreatedAt { get; init; }
     public string TailNumber { get; private set; }
     public string EquipmentCode { get; private set; }
-    public int DryOperatingWeight { get; private set; }
-    public int MaximumTakeoffWeight { get; private set; }
-    public int MaximumLandingWeight { get; private set; }
-    public int MaximumZeroFuelWeight { get; private set; }
-    public int MaximumFuelWeight { get; private set; }
+    public Weight DryOperatingWeight { get; private set; }
+    public Weight MaximumTakeoffWeight { get; private set; }
+    public Weight MaximumLandingWeight { get; private set; }
+    public Weight MaximumZeroFuelWeight { get; private set; }
+    public Weight MaximumFuelWeight { get; private set; }
     public IReadOnlyList<Seat> Seats => _seats.AsReadOnly();
     public static Aircraft Create(AircraftCreationArgs args) => new(args);
 }
