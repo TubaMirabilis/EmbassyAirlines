@@ -24,58 +24,29 @@ public sealed class SeatLayoutDefinition
         );
     public IEnumerable<Seat> ToSeatsCollection()
     {
-        var seats = new List<Seat>();
-        foreach (var kvp in BusinessRows)
+        var business = BusinessRows.SelectMany(kvp => kvp.Value.Select(section => (Range: kvp.Key, Section: section)));
+        var economy = EconomyRows.Select(kvp => (Range: kvp.Key, Section: kvp.Value));
+        var all = business.Concat(economy);
+        foreach (var (range, section) in all)
         {
-            var range = kvp.Key;
-            var sections = kvp.Value;
             foreach (var row in range)
             {
-                foreach (var section in sections)
-                {
-                    var includeThisSection = section.EveryNthRowOnly is not int n || n <= 0 || (row - range.Start) % n == 0;
-                    if (!includeThisSection)
-                    {
-                        continue;
-                    }
-                    foreach (var letter in section.Seats)
-                    {
-                        seats.Add(new Seat
-                        {
-                            Id = Guid.NewGuid(),
-                            CreatedAt = DateTime.UtcNow,
-                            RowNumber = (byte)row,
-                            Letter = letter,
-                            Type = section.SeatType
-                        });
-                    }
-                }
-            }
-        }
-        foreach (var kvp in EconomyRows)
-        {
-            var range = kvp.Key;
-            var section = kvp.Value;
-            foreach (var row in range)
-            {
-                var includeThisSection = section.EveryNthRowOnly is not int n || n <= 0 || (row - range.Start) % n == 0;
-                if (!includeThisSection)
+                if (section.EveryNthRowOnly is int n && n > 0 && (row - range.Start) % n != 0)
                 {
                     continue;
                 }
                 foreach (var letter in section.Seats)
                 {
-                    seats.Add(new Seat
+                    yield return new Seat
                     {
                         Id = Guid.NewGuid(),
                         CreatedAt = DateTime.UtcNow,
                         RowNumber = (byte)row,
                         Letter = letter,
                         Type = section.SeatType
-                    });
+                    };
                 }
             }
         }
-        return seats;
     }
 }
