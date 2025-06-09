@@ -6,6 +6,8 @@
     <OutputType>Exe</OutputType>
     <RootNamespace>Airports.Api.Lambda.FunctionalTests</RootNamespace>
     <TargetFramework>net9.0</TargetFramework>
+    <TestingPlatformDotnetTestSupport>true</TestingPlatformDotnetTestSupport>
+    <UseMicrosoftTestingPlatformRunner>true</UseMicrosoftTestingPlatformRunner>
   </PropertyGroup>
 
   <ItemGroup>
@@ -14,8 +16,6 @@
 
   <ItemGroup>
     <Using Include="Xunit" />
-    <TestingPlatformDotnetTestSupport>true</TestingPlatformDotnetTestSupport>
-    <UseMicrosoftTestingPlatformRunner>true</UseMicrosoftTestingPlatformRunner>
   </ItemGroup>
 
   <ItemGroup>
