@@ -15,6 +15,7 @@ public class GetAirportTests : BaseFunctionalTest
     public async Task Should_ReturnNotFound_WhenAirportDoesNotExist()
     {
         // Arrange
+        await EnsureDynamoDbTableCreatedAsync();
         var id = Guid.NewGuid();
         var error = $"Airport with id {id} not found";
 

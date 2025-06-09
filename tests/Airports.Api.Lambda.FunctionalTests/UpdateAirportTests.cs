@@ -183,6 +183,7 @@ public class UpdateAirportTests : BaseFunctionalTest
     public async Task Should_UpdateAirport_WhenAirportExists()
     {
         // Arrange
+        await EnsureDynamoDbTableCreatedAsync();
         var createRequest = new CreateOrUpdateAirportDto("CYVR", "YVR", "Vancouver International Airport", "America/Vancouver");
         var createResponse = await HttpClient.PostAsJsonAsync("airports", createRequest, TestContext.Current.CancellationToken);
         createResponse.EnsureSuccessStatusCode();
