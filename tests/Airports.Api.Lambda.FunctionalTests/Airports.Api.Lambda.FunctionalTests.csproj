@@ -14,6 +14,8 @@
 
   <ItemGroup>
     <Using Include="Xunit" />
+    <TestingPlatformDotnetTestSupport>true</TestingPlatformDotnetTestSupport>
+    <UseMicrosoftTestingPlatformRunner>true</UseMicrosoftTestingPlatformRunner>
   </ItemGroup>
 
   <ItemGroup>

@@ -15,6 +15,7 @@ public class ListAirportsTests : BaseFunctionalTest
     public async Task Should_ReturnOk_WhenListIsEmpty()
     {
         // Arrange
+        await EnsureDynamoDbTableCreatedAsync();
         await EnsureDynamoDbTableEmptyAsync();
 
         // Act
