@@ -20,7 +20,7 @@ public class GetAirportTests : BaseFunctionalTest
 
         // Act
         var uri = new Uri($"airports/{id}", UriKind.Relative);
-        var response = await HttpClient.GetAsync(uri);
+        var response = await HttpClient.GetAsync(uri, TestContext.Current.CancellationToken);
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
@@ -36,11 +36,11 @@ public class GetAirportTests : BaseFunctionalTest
 
         // Act
         var uri = new Uri($"airports/{id}", UriKind.Relative);
-        var response = await HttpClient.GetAsync(uri);
+        var response = await HttpClient.GetAsync(uri, TestContext.Current.CancellationToken);
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
-        var airportDto = await response.Content.ReadFromJsonAsync<AirportDto>();
+        var airportDto = await response.Content.ReadFromJsonAsync<AirportDto>(TestContext.Current.CancellationToken);
         airportDto.Should().BeEquivalentTo(airport);
     }
 }

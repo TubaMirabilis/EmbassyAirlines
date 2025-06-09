@@ -19,11 +19,11 @@ public class ListAirportsTests : BaseFunctionalTest
 
         // Act
         var uri = new Uri("airports", UriKind.Relative);
-        var response = await HttpClient.GetAsync(uri);
+        var response = await HttpClient.GetAsync(uri, TestContext.Current.CancellationToken);
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
-        var list = await response.Content.ReadFromJsonAsync<IEnumerable<AirportDto>>();
+        var list = await response.Content.ReadFromJsonAsync<IEnumerable<AirportDto>>(TestContext.Current.CancellationToken);
         list.Should().BeEmpty();
     }
 
@@ -36,11 +36,11 @@ public class ListAirportsTests : BaseFunctionalTest
 
         // Act
         var uri = new Uri("airports", UriKind.Relative);
-        var response = await HttpClient.GetAsync(uri);
+        var response = await HttpClient.GetAsync(uri, TestContext.Current.CancellationToken);
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
-        var list = await response.Content.ReadFromJsonAsync<IEnumerable<AirportDto>>();
+        var list = await response.Content.ReadFromJsonAsync<IEnumerable<AirportDto>>(TestContext.Current.CancellationToken);
         list.Should().HaveCount(1);
     }
 }

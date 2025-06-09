@@ -49,7 +49,7 @@ public class FunctionalTestWebAppFactory : WebApplicationFactory<Program>, IAsyn
             services.AddSingleton<IAmazonDynamoDB>(_ => new AmazonDynamoDBClient(credentials, config));
         });
     }
-    public Task InitializeAsync() => _dynamoDbContainer.StartAsync();
+    public async ValueTask InitializeAsync() => await _dynamoDbContainer.StartAsync();
     public new async Task DisposeAsync()
     {
         await _dynamoDbContainer.StopAsync();

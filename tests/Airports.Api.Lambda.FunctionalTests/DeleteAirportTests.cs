@@ -17,7 +17,7 @@ public class DeleteAirportTests : BaseFunctionalTest
 
         // Act
         var uri = new Uri($"/airports/{airport.Id}", UriKind.Relative);
-        var response = await HttpClient.DeleteAsync(uri);
+        var response = await HttpClient.DeleteAsync(uri, TestContext.Current.CancellationToken);
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.NoContent);

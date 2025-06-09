@@ -18,7 +18,7 @@ public class CreateAirportTests : BaseFunctionalTest
         var error = "ICAO Code must consist of 4 uppercase letters only.";
 
         // Act
-        var response = await HttpClient.PostAsJsonAsync("airports", request);
+        var response = await HttpClient.PostAsJsonAsync("airports", request, TestContext.Current.CancellationToken);
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
@@ -33,7 +33,7 @@ public class CreateAirportTests : BaseFunctionalTest
         var error = "ICAO Code must consist of 4 uppercase letters only.";
 
         // Act
-        var response = await HttpClient.PostAsJsonAsync("airports", request);
+        var response = await HttpClient.PostAsJsonAsync("airports", request, TestContext.Current.CancellationToken);
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
@@ -48,7 +48,7 @@ public class CreateAirportTests : BaseFunctionalTest
         var error = "ICAO Code must consist of 4 uppercase letters only.";
 
         // Act
-        var response = await HttpClient.PostAsJsonAsync("airports", request);
+        var response = await HttpClient.PostAsJsonAsync("airports", request, TestContext.Current.CancellationToken);
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
@@ -63,7 +63,7 @@ public class CreateAirportTests : BaseFunctionalTest
         var error = "IATA Code must consist of 3 uppercase letters only.";
 
         // Act
-        var response = await HttpClient.PostAsJsonAsync("airports", request);
+        var response = await HttpClient.PostAsJsonAsync("airports", request, TestContext.Current.CancellationToken);
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
@@ -78,7 +78,7 @@ public class CreateAirportTests : BaseFunctionalTest
         var error = "IATA Code must consist of 3 uppercase letters only.";
 
         // Act
-        var response = await HttpClient.PostAsJsonAsync("airports", request);
+        var response = await HttpClient.PostAsJsonAsync("airports", request, TestContext.Current.CancellationToken);
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
@@ -93,7 +93,7 @@ public class CreateAirportTests : BaseFunctionalTest
         var error = "IATA Code must consist of 3 uppercase letters only.";
 
         // Act
-        var response = await HttpClient.PostAsJsonAsync("airports", request);
+        var response = await HttpClient.PostAsJsonAsync("airports", request, TestContext.Current.CancellationToken);
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
@@ -108,7 +108,7 @@ public class CreateAirportTests : BaseFunctionalTest
         var error = "Name is required.";
 
         // Act
-        var response = await HttpClient.PostAsJsonAsync("airports", request);
+        var response = await HttpClient.PostAsJsonAsync("airports", request, TestContext.Current.CancellationToken);
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
@@ -123,7 +123,7 @@ public class CreateAirportTests : BaseFunctionalTest
         var error = "Name must not exceed 100 characters in length.";
 
         // Act
-        var response = await HttpClient.PostAsJsonAsync("airports", request);
+        var response = await HttpClient.PostAsJsonAsync("airports", request, TestContext.Current.CancellationToken);
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
@@ -138,7 +138,7 @@ public class CreateAirportTests : BaseFunctionalTest
         var error = "Time zone is required.";
 
         // Act
-        var response = await HttpClient.PostAsJsonAsync("airports", request);
+        var response = await HttpClient.PostAsJsonAsync("airports", request, TestContext.Current.CancellationToken);
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
@@ -153,7 +153,7 @@ public class CreateAirportTests : BaseFunctionalTest
         var error = "Time zone must not exceed 100 characters in length.";
 
         // Act
-        var response = await HttpClient.PostAsJsonAsync("airports", request);
+        var response = await HttpClient.PostAsJsonAsync("airports", request, TestContext.Current.CancellationToken);
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
@@ -183,7 +183,7 @@ public class CreateAirportTests : BaseFunctionalTest
         await SeedAirportAsync(request);
 
         // Act
-        var response = await HttpClient.PostAsJsonAsync("airports", request);
+        var response = await HttpClient.PostAsJsonAsync("airports", request, TestContext.Current.CancellationToken);
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.Conflict);

@@ -20,7 +20,7 @@ public class UpdateAirportTests : BaseFunctionalTest
         var error = "ICAO Code must consist of 4 uppercase letters only.";
 
         // Act
-        var response = await HttpClient.PutAsJsonAsync($"airports/{Guid.NewGuid()}", request);
+        var response = await HttpClient.PutAsJsonAsync($"airports/{Guid.NewGuid()}", request, TestContext.Current.CancellationToken);
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
@@ -35,7 +35,7 @@ public class UpdateAirportTests : BaseFunctionalTest
         var error = "ICAO Code must consist of 4 uppercase letters only.";
 
         // Act
-        var response = await HttpClient.PutAsJsonAsync($"airports/{Guid.NewGuid()}", request);
+        var response = await HttpClient.PutAsJsonAsync($"airports/{Guid.NewGuid()}", request, TestContext.Current.CancellationToken);
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
@@ -50,7 +50,7 @@ public class UpdateAirportTests : BaseFunctionalTest
         var error = "ICAO Code must consist of 4 uppercase letters only.";
 
         // Act
-        var response = await HttpClient.PutAsJsonAsync($"airports/{Guid.NewGuid()}", request);
+        var response = await HttpClient.PutAsJsonAsync($"airports/{Guid.NewGuid()}", request, TestContext.Current.CancellationToken);
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
@@ -65,7 +65,7 @@ public class UpdateAirportTests : BaseFunctionalTest
         var error = "IATA Code must consist of 3 uppercase letters only.";
 
         // Act
-        var response = await HttpClient.PutAsJsonAsync($"airports/{Guid.NewGuid()}", request);
+        var response = await HttpClient.PutAsJsonAsync($"airports/{Guid.NewGuid()}", request, TestContext.Current.CancellationToken);
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
@@ -80,7 +80,7 @@ public class UpdateAirportTests : BaseFunctionalTest
         var error = "IATA Code must consist of 3 uppercase letters only.";
 
         // Act
-        var response = await HttpClient.PutAsJsonAsync($"airports/{Guid.NewGuid()}", request);
+        var response = await HttpClient.PutAsJsonAsync($"airports/{Guid.NewGuid()}", request, TestContext.Current.CancellationToken);
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
@@ -95,7 +95,7 @@ public class UpdateAirportTests : BaseFunctionalTest
         var error = "IATA Code must consist of 3 uppercase letters only.";
 
         // Act
-        var response = await HttpClient.PutAsJsonAsync($"airports/{Guid.NewGuid()}", request);
+        var response = await HttpClient.PutAsJsonAsync($"airports/{Guid.NewGuid()}", request, TestContext.Current.CancellationToken);
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
@@ -110,7 +110,7 @@ public class UpdateAirportTests : BaseFunctionalTest
         var error = "Name is required.";
 
         // Act
-        var response = await HttpClient.PutAsJsonAsync($"airports/{Guid.NewGuid()}", request);
+        var response = await HttpClient.PutAsJsonAsync($"airports/{Guid.NewGuid()}", request, TestContext.Current.CancellationToken);
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
@@ -125,7 +125,7 @@ public class UpdateAirportTests : BaseFunctionalTest
         var error = "Name must not exceed 100 characters in length.";
 
         // Act
-        var response = await HttpClient.PutAsJsonAsync($"airports/{Guid.NewGuid()}", request);
+        var response = await HttpClient.PutAsJsonAsync($"airports/{Guid.NewGuid()}", request, TestContext.Current.CancellationToken);
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
@@ -140,7 +140,7 @@ public class UpdateAirportTests : BaseFunctionalTest
         var error = "Time zone is required.";
 
         // Act
-        var response = await HttpClient.PutAsJsonAsync($"airports/{Guid.NewGuid()}", request);
+        var response = await HttpClient.PutAsJsonAsync($"airports/{Guid.NewGuid()}", request, TestContext.Current.CancellationToken);
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
@@ -155,7 +155,7 @@ public class UpdateAirportTests : BaseFunctionalTest
         var error = "Time zone must not exceed 100 characters in length.";
 
         // Act
-        var response = await HttpClient.PutAsJsonAsync($"airports/{Guid.NewGuid()}", request);
+        var response = await HttpClient.PutAsJsonAsync($"airports/{Guid.NewGuid()}", request, TestContext.Current.CancellationToken);
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
@@ -172,7 +172,7 @@ public class UpdateAirportTests : BaseFunctionalTest
         var expectedError = $"Airport with id {nonExistentId} not found";
 
         // Act
-        var response = await HttpClient.PutAsJsonAsync($"airports/{nonExistentId}", request);
+        var response = await HttpClient.PutAsJsonAsync($"airports/{nonExistentId}", request, TestContext.Current.CancellationToken);
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
@@ -184,16 +184,16 @@ public class UpdateAirportTests : BaseFunctionalTest
     {
         // Arrange
         var createRequest = new CreateOrUpdateAirportDto("CYVR", "YVR", "Vancouver International Airport", "America/Vancouver");
-        var createResponse = await HttpClient.PostAsJsonAsync("airports", createRequest);
+        var createResponse = await HttpClient.PostAsJsonAsync("airports", createRequest, TestContext.Current.CancellationToken);
         createResponse.EnsureSuccessStatusCode();
-        var createResponseContent = await createResponse.Content.ReadFromJsonAsync<Airport>() ?? throw new JsonException("Expected airport object not returned");
+        var createResponseContent = await createResponse.Content.ReadFromJsonAsync<Airport>(TestContext.Current.CancellationToken) ?? throw new JsonException("Expected airport object not returned");
         var updateRequest = new CreateOrUpdateAirportDto("CYVR", "YVR", "Vancouver Intercontinental Airport", "America/Vancouver");
         var expected = new AirportDto(createResponseContent.Id, "Vancouver Intercontinental Airport", "CYVR", "YVR", "America/Vancouver");
 
         // Act
-        var updateResponse = await HttpClient.PutAsJsonAsync($"airports/{createResponseContent.Id}", updateRequest);
+        var updateResponse = await HttpClient.PutAsJsonAsync($"airports/{createResponseContent.Id}", updateRequest, TestContext.Current.CancellationToken);
         updateResponse.EnsureSuccessStatusCode();
-        var updateResponseContent = await updateResponse.Content.ReadFromJsonAsync<Airport>() ?? throw new JsonException("Expected airport object not returned");
+        var updateResponseContent = await updateResponse.Content.ReadFromJsonAsync<Airport>(TestContext.Current.CancellationToken) ?? throw new JsonException("Expected airport object not returned");
 
         // Assert
         updateResponse.StatusCode.Should().Be(HttpStatusCode.OK);
