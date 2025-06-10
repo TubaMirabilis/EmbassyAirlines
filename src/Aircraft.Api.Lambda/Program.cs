@@ -60,13 +60,18 @@ app.MapPost("aircraft", async ([FromServices] ApplicationDbContext ctx, IAmazonS
         var aircraft = Aircraft.Api.Lambda.Aircraft.Create(args);
         ctx.Aircraft.Add(aircraft);
         await ctx.SaveChangesAsync();
-        return TypedResults.Created($"/aircraft/{aircraft.Id}", aircraft);
+        return TypedResults.Created($"/aircraft/{aircraft.Id}", aircraft.ToDto());
     }
     catch (AmazonS3Exception e)
     {
         var error = e.StatusCode == HttpStatusCode.NotFound
             ? Error.Validation("Aircraft.SeatLayoutDefinition", $"Seat layout definition for {equipmentCode} not found")
             : Error.Failure("Aircraft.SeatLayoutDefinition", $"Error retrieving seat layout definition for {equipmentCode}: {e.Message}");
+        return ErrorHandlingHelper.HandleProblem(error);
+    }
+    catch (InvalidOperationException e)
+    {
+        var error = Error.Validation("Aircraft.SeatLayoutDefinition", e.Message);
         return ErrorHandlingHelper.HandleProblem(error);
     }
 });

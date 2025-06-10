@@ -1,3 +1,3 @@
-namespace Shared.Contracts;
+namespace Aircraft.Api.Lambda;
 
-public sealed record SeatDto(Guid Id, string SeatNumber, string SeatType, bool IsBooked, decimal Price);
+public sealed record SeatDto(Guid Id, Guid AircraftId, byte RowNumber, char Letter, string Type);
