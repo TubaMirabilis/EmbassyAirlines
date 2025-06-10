@@ -22,7 +22,7 @@ public sealed class SeatLayoutDefinition
             kvp => RowRange.Parse(kvp.Key),
             kvp => kvp.Value
         );
-    public IEnumerable<Seat> ToSeatsCollection()
+    public IEnumerable<Seat> ToSeatsCollection(Guid aircraftId)
     {
         var business = BusinessRows.SelectMany(kvp => kvp.Value.Select(section => (Range: kvp.Key, Section: section)));
         var economy = EconomyRows.Select(kvp => (Range: kvp.Key, Section: kvp.Value));
@@ -43,7 +43,8 @@ public sealed class SeatLayoutDefinition
                         CreatedAt = DateTime.UtcNow,
                         RowNumber = (byte)row,
                         Letter = letter,
-                        Type = section.SeatType
+                        Type = section.SeatType,
+                        AircraftId = aircraftId
                     };
                 }
             }

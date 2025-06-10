@@ -18,7 +18,13 @@ public sealed class Aircraft
         MaximumLandingWeight = args.MaximumLandingWeight;
         MaximumZeroFuelWeight = args.MaximumZeroFuelWeight;
         MaximumFuelWeight = args.MaximumFuelWeight;
-        _seats.AddRange(args.Seats);
+        var seats = args.Seats.ToSeatsCollection(Id).ToList();
+        var groups = seats.GroupBy(s => new { s.RowNumber, s.Letter });
+        if (groups.Any(g => g.Count() > 1))
+        {
+            throw new ArgumentException("Duplicate seat definitions found in the seat layout.");
+        }
+        _seats.AddRange(seats);
     }
 #pragma warning disable CS8618
     private Aircraft()

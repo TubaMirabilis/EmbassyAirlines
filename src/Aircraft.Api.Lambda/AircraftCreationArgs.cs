@@ -9,5 +9,5 @@ public sealed record AircraftCreationArgs
     public required Weight MaximumLandingWeight { get; init; }
     public required Weight MaximumZeroFuelWeight { get; init; }
     public required Weight MaximumFuelWeight { get; init; }
-    public IEnumerable<Seat> Seats { get; init; } = [];
+    public required SeatLayoutDefinition Seats { get; init; }
 }
