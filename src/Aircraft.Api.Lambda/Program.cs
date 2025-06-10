@@ -22,6 +22,10 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
            .UseSnakeCaseNamingConvention());
 builder.Services.AddSingleton<IValidator<CreateOrUpdateAircraftDto>, CreateOrUpdateAircraftDtoValidator>();
 var app = builder.Build();
+if (app.Environment.IsDevelopment())
+{
+    await app.ApplyMigrationsAsync();
+}
 app.MapGet("aircraft/{id}", async ([FromServices] ApplicationDbContext ctx, [FromRoute] Guid id) =>
 {
     var aircraft = await ctx.Aircraft
