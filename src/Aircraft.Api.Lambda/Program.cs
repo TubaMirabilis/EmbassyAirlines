@@ -22,6 +22,18 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
            .UseSnakeCaseNamingConvention());
 builder.Services.AddSingleton<IValidator<CreateOrUpdateAircraftDto>, CreateOrUpdateAircraftDtoValidator>();
 var app = builder.Build();
+app.MapGet("aircraft/{id}", async ([FromServices] ApplicationDbContext ctx, [FromRoute] Guid id) =>
+{
+    var aircraft = await ctx.Aircraft
+                            .Include(a => a.Seats)
+                            .FirstOrDefaultAsync(a => a.Id == id);
+    if (aircraft is null)
+    {
+        var error = Error.NotFound("Aircraft", $"Aircraft with ID {id} not found");
+        return ErrorHandlingHelper.HandleProblem(error);
+    }
+    return TypedResults.Ok(aircraft.ToDto());
+});
 app.MapPost("aircraft", async ([FromServices] ApplicationDbContext ctx, IAmazonS3 client, IValidator<CreateOrUpdateAircraftDto> validator, [FromBody] CreateOrUpdateAircraftDto dto) =>
 {
     var validationResult = await validator.ValidateAsync(dto);
@@ -30,7 +42,7 @@ app.MapPost("aircraft", async ([FromServices] ApplicationDbContext ctx, IAmazonS
         var error = Error.Validation("Airport.Validation", formattedErrors);
         return ErrorHandlingHelper.HandleProblem(error);
     }
-    if (ctx.Aircraft.Any(a => a.TailNumber == dto.TailNumber))
+    if (await ctx.Aircraft.AnyAsync(a => a.TailNumber == dto.TailNumber))
     {
         var error = Error.Conflict("Aircraft.TailNumber", $"Aircraft with tail number {dto.TailNumber} already exists");
         return ErrorHandlingHelper.HandleProblem(error);
