@@ -17,7 +17,7 @@ jobs:
         runs-on: ubuntu-22.04
         steps:
             - name: Checkout
-              uses: actions/checkout@v4
+              uses: actions/checkout@v5
             - name: Terraform Check
               run: terraform fmt -check=true -recursive
 
@@ -26,7 +26,7 @@ jobs:
         runs-on: ubuntu-latest
         steps:
             - name: Checkout
-              uses: actions/checkout@v4.2.0
+              uses: actions/checkout@v5
             - name: Prettier Check
               run: npx prettier --check .
 
@@ -35,7 +35,7 @@ jobs:
         runs-on: ubuntu-latest
         steps:
             - name: Checkout
-              uses: actions/checkout@v4.2.0
+              uses: actions/checkout@v5
             - name: Setup .NET
               uses: actions/setup-dotnet@v4
               with:
