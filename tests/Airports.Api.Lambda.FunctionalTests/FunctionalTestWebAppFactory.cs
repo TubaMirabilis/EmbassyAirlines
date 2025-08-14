@@ -6,7 +6,6 @@ using MassTransit;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Testcontainers.DynamoDb;
@@ -18,15 +17,8 @@ public class FunctionalTestWebAppFactory : WebApplicationFactory<Program>, IAsyn
     private readonly DynamoDbContainer _dynamoDbContainer = new DynamoDbBuilder().Build();
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
-        builder.ConfigureAppConfiguration((_, config) =>
-        {
-            var configuration = new Dictionary<string, string?>
-            {
-                                {"DynamoDb:TableName", "airports"},
-                                {"MassTransit:Scope", "embassy-airlines"}
-            };
-            config.AddInMemoryCollection(configuration);
-        });
+        builder.UseSetting("DynamoDb:TableName", "airports");
+        builder.UseSetting("MassTransit:Scope", "embassy-airlines");
         builder.ConfigureTestServices(services =>
         {
             var credentials = new BasicAWSCredentials("test-access-key", "test-secret-key");
