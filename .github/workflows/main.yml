@@ -47,6 +47,9 @@ jobs:
     Deploy:
         name: Deploy
         runs-on: ubuntu-latest
+        env:
+            AWS_REGION: eu-west-2
+            ECR_REPO_NAME: example
         steps:
             - name: Checkout
               uses: actions/checkout@v5
@@ -57,7 +60,7 @@ jobs:
               with:
                   aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
                   aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-                  aws-region: eu-west-2
+                  aws-region: ${{ env.AWS_REGION }}
             - name: Terraform Init (with module git auth)
               working-directory: terraform
               env:
@@ -71,3 +74,38 @@ jobs:
             - name: Terraform Apply
               working-directory: terraform
               run: terraform apply -auto-approve -input=false
+            - name: Resolve ECR Repository URI
+              id: ecr
+              run: |
+                  set -e
+                  echo "Resolving ECR repository URI for: ${ECR_REPO_NAME}"
+                  for i in {1..10}; do
+                    REPO_URI=$(aws ecr describe-repositories --repository-names "${ECR_REPO_NAME}" --query 'repositories[0].repositoryUri' --output text 2>/dev/null || true)
+                    if [ -n "$REPO_URI" ] && [ "$REPO_URI" != "None" ]; then
+                      break
+                    fi
+                    echo "Repository not yet available, retry $i/10..."
+                    sleep 6
+                  done
+                  if [ -z "$REPO_URI" ] || [ "$REPO_URI" = "None" ]; then
+                    echo "Failed to resolve ECR repository URI" >&2
+                    exit 1
+                  fi
+                  echo "Resolved URI: $REPO_URI"
+                  echo "repo_uri=$REPO_URI" >> $GITHUB_OUTPUT
+            - name: Login to ECR
+              run: |
+                  aws ecr get-login-password --region "$AWS_REGION" | docker login --username AWS --password-stdin "$(echo '${{ steps.ecr.outputs.repo_uri }}' | cut -d'/' -f1)"
+            - name: Build Example API Lambda Image
+              run: |
+                  IMAGE_URI="${{ steps.ecr.outputs.repo_uri }}"
+                  LATEST_TAG="${IMAGE_URI}:latest"
+                  docker build -f docker/Example.Api.Lambda.dockerfile -t "$LATEST_TAG" .
+                  echo "Built image tag: $LATEST_TAG"
+            - name: Push Image
+              run: |
+                  IMAGE_URI="${{ steps.ecr.outputs.repo_uri }}"
+                  docker push "${IMAGE_URI}:latest"
+            - name: Summarize Image
+              run: |
+                  echo "Image pushed (latest): ${{ steps.ecr.outputs.repo_uri }}:latest" >> $GITHUB_STEP_SUMMARY
