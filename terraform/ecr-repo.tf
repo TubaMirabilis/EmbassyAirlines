@@ -1,4 +1,4 @@
-module "ecr_repo" {
+module "web" {
   source                 = "github.com/welcome-ally-ltd/aws-ecr-repo"
   repo_name              = "example"
   force_delete           = true
