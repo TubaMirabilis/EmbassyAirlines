@@ -1,3 +1,5 @@
+using Shared.Contracts;
+
 namespace Aircraft.Api.Lambda;
 
 public static class AircraftExtensions

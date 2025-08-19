@@ -5,18 +5,35 @@ using Aircraft.Api.Lambda.Database;
 using Amazon.S3;
 using ErrorOr;
 using FluentValidation;
+using MassTransit;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Shared;
+using Shared.Contracts;
 using Shared.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 var config = builder.Configuration;
 config.AddEnvironmentVariables(prefix: "AIRCRAFT_");
+var scope = config["MassTransit:Scope"];
+if (string.IsNullOrWhiteSpace(scope))
+{
+    throw new ArgumentException("MassTransit scope is not configured. Please set the AIRCRAFT_MASSTRANSIT_SCOPE environment variable.");
+}
+var region = Environment.GetEnvironmentVariable("AWS_REGION") ?? "eu-west-2";
 builder.Services.AddAWSLambdaHosting(LambdaEventSource.HttpApi);
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddAWSService<IAmazonS3>();
 builder.Services.AddProblemDetails();
+builder.Services.AddMassTransit(x =>
+{
+    x.SetEndpointNameFormatter(new KebabCaseEndpointNameFormatter(prefix: scope));
+    x.UsingAmazonSqs((context, cfg) =>
+    {
+        cfg.Host(region, h => h.Scope(scope, scopeTopics: true));
+        cfg.ConfigureEndpoints(context);
+    });
+});
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(config["ConnectionStrings:DefaultConnection"])
            .UseSnakeCaseNamingConvention());
@@ -38,7 +55,7 @@ app.MapGet("aircraft/{id}", async ([FromServices] ApplicationDbContext ctx, [Fro
     }
     return TypedResults.Ok(aircraft.ToDto());
 });
-app.MapPost("aircraft", async ([FromServices] ApplicationDbContext ctx, IAmazonS3 client, IValidator<CreateOrUpdateAircraftDto> validator, [FromBody] CreateOrUpdateAircraftDto dto) =>
+app.MapPost("aircraft", async ([FromServices] ApplicationDbContext ctx, IAmazonS3 client, IBus bus, IValidator<CreateOrUpdateAircraftDto> validator, [FromBody] CreateOrUpdateAircraftDto dto) =>
 {
     var validationResult = await validator.ValidateAsync(dto);
     if (!validationResult.IsValid(out var formattedErrors))
@@ -76,6 +93,7 @@ app.MapPost("aircraft", async ([FromServices] ApplicationDbContext ctx, IAmazonS
         var aircraft = Aircraft.Api.Lambda.Aircraft.Create(args);
         ctx.Aircraft.Add(aircraft);
         await ctx.SaveChangesAsync();
+        await bus.Publish(new AircraftCreatedEvent(aircraft.Id, aircraft.TailNumber, aircraft.EquipmentCode, aircraft.Seats.Select(s => s.ToDto()).ToList()));
         return TypedResults.Created($"/aircraft/{aircraft.Id}", aircraft.ToDto());
     }
     catch (AmazonS3Exception e)
