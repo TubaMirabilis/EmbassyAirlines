@@ -46,6 +46,7 @@ jobs:
 
     Deploy:
         name: Deploy
+        needs: [Terraform, Prettier, DotNet]
         runs-on: ubuntu-latest
         env:
             AWS_REGION: eu-west-2
