@@ -21,16 +21,16 @@ internal sealed class ListAirportsEndpoint : IEndpoint
     private async Task<IResult> InvokeAsync(CancellationToken ct)
     {
         var scanRequest = new ScanRequest
-    {
-        TableName = _config["DynamoDb:TableName"]
-    };
+        {
+            TableName = _config["DynamoDb:TableName"]
+        };
         var response = await _dynamoDb.ScanAsync(scanRequest, ct);
-    var airports = response.Items.Select(item =>
-    {
-        var itemAsDocument = Document.FromAttributeMap(item);
-        var airportAsJson = itemAsDocument.ToJson();
-        return JsonSerializer.Deserialize<AirportDto>(airportAsJson);
-    });
-    return TypedResults.Ok(airports);
+        var airports = response.Items.Select(item =>
+        {
+            var itemAsDocument = Document.FromAttributeMap(item);
+            var airportAsJson = itemAsDocument.ToJson();
+            return JsonSerializer.Deserialize<AirportDto>(airportAsJson);
+        });
+        return TypedResults.Ok(airports);
     }
 }
