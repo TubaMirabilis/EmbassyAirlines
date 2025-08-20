@@ -31,7 +31,12 @@ builder.Services.AddMassTransit(x =>
     });
 });
 builder.Services.AddSingleton<IValidator<CreateOrUpdateAirportDto>, CreateOrUpdateAirportDtoValidator>();
+builder.Services.AddOpenApi();
 var app = builder.Build();
+if (app.Environment.IsDevelopment())
+{
+    app.MapOpenApi();
+}
 app.MapEndpoints();
 app.UseExceptionHandler();
 await app.RunAsync();

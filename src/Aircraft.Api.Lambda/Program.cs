@@ -1,15 +1,10 @@
-using System.Net;
-using System.Text.Json;
 using Aircraft.Api.Lambda;
 using Aircraft.Api.Lambda.Database;
 using Amazon.S3;
-using ErrorOr;
 using FluentValidation;
 using MassTransit;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Shared;
-using Shared.Contracts;
 using Shared.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -21,6 +16,8 @@ if (string.IsNullOrWhiteSpace(scope))
     throw new ArgumentException("MassTransit scope is not configured. Please set the AIRCRAFT_MASSTRANSIT_SCOPE environment variable.");
 }
 var region = Environment.GetEnvironmentVariable("AWS_REGION") ?? "eu-west-2";
+var assembly = typeof(Program).Assembly;
+builder.Services.AddEndpoints(assembly);
 builder.Services.AddAWSLambdaHosting(LambdaEventSource.HttpApi);
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddAWSService<IAmazonS3>();
@@ -38,76 +35,17 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(config["ConnectionStrings:DefaultConnection"])
            .UseSnakeCaseNamingConvention());
 builder.Services.AddSingleton<IValidator<CreateOrUpdateAircraftDto>, CreateOrUpdateAircraftDtoValidator>();
+builder.Services.AddOpenApi();
 var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     await app.ApplyMigrationsAsync();
+    app.MapOpenApi();
 }
-app.MapGet("aircraft/{id}", async ([FromServices] ApplicationDbContext ctx, [FromRoute] Guid id) =>
-{
-    var aircraft = await ctx.Aircraft
-                            .Include(a => a.Seats)
-                            .FirstOrDefaultAsync(a => a.Id == id);
-    if (aircraft is null)
-    {
-        var error = Error.NotFound("Aircraft", $"Aircraft with ID {id} not found");
-        return ErrorHandlingHelper.HandleProblem(error);
-    }
-    return TypedResults.Ok(aircraft.ToDto());
-});
-app.MapPost("aircraft", async ([FromServices] ApplicationDbContext ctx, IAmazonS3 client, IBus bus, IValidator<CreateOrUpdateAircraftDto> validator, [FromBody] CreateOrUpdateAircraftDto dto) =>
-{
-    var validationResult = await validator.ValidateAsync(dto);
-    if (!validationResult.IsValid(out var formattedErrors))
-    {
-        var error = Error.Validation("Airport.Validation", formattedErrors);
-        return ErrorHandlingHelper.HandleProblem(error);
-    }
-    if (await ctx.Aircraft.AnyAsync(a => a.TailNumber == dto.TailNumber))
-    {
-        var error = Error.Conflict("Aircraft.TailNumber", $"Aircraft with tail number {dto.TailNumber} already exists");
-        return ErrorHandlingHelper.HandleProblem(error);
-    }
-    var equipmentCode = dto.EquipmentCode;
-    try
-    {
-        var bucketName = config["AWS:BucketName"];
-        if (string.IsNullOrEmpty(bucketName))
-        {
-            var error = Error.Validation("Aircraft.BucketName", "Bucket name is not configured");
-            return ErrorHandlingHelper.HandleProblem(error);
-        }
-        var response = await client.GetObjectAsync(bucketName, $"{equipmentCode}.json");
-        var def = await JsonSerializer.DeserializeAsync<SeatLayoutDefinition>(response.ResponseStream) ?? throw new InvalidOperationException($"Seat layout definition for {equipmentCode} is null");
-        var args = new AircraftCreationArgs
-        {
-            TailNumber = dto.TailNumber,
-            EquipmentCode = equipmentCode,
-            DryOperatingWeight = new Weight(dto.DryOperatingWeight),
-            MaximumTakeoffWeight = new Weight(dto.MaximumTakeoffWeight),
-            MaximumLandingWeight = new Weight(dto.MaximumLandingWeight),
-            MaximumZeroFuelWeight = new Weight(dto.MaximumZeroFuelWeight),
-            MaximumFuelWeight = new Weight(dto.MaximumFuelWeight),
-            Seats = def
-        };
-        var aircraft = Aircraft.Api.Lambda.Aircraft.Create(args);
-        ctx.Aircraft.Add(aircraft);
-        await ctx.SaveChangesAsync();
-        await bus.Publish(new AircraftCreatedEvent(aircraft.Id, aircraft.TailNumber, aircraft.EquipmentCode, aircraft.Seats.Select(s => s.ToDto()).ToList()));
-        return TypedResults.Created($"/aircraft/{aircraft.Id}", aircraft.ToDto());
-    }
-    catch (AmazonS3Exception e)
-    {
-        var error = e.StatusCode == HttpStatusCode.NotFound
-            ? Error.Validation("Aircraft.SeatLayoutDefinition", $"Seat layout definition for {equipmentCode} not found")
-            : Error.Failure("Aircraft.SeatLayoutDefinition", $"Error retrieving seat layout definition for {equipmentCode}: {e.Message}");
-        return ErrorHandlingHelper.HandleProblem(error);
-    }
-    catch (InvalidOperationException e)
-    {
-        var error = Error.Validation("Aircraft.SeatLayoutDefinition", e.Message);
-        return ErrorHandlingHelper.HandleProblem(error);
-    }
-});
+app.MapEndpoints();
 app.UseExceptionHandler();
 await app.RunAsync();
+
+#pragma warning disable CA1515
+public partial class Program { }
+#pragma warning restore CA1515
