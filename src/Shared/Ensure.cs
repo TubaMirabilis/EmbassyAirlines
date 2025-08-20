@@ -19,6 +19,15 @@ public static class Ensure
         }
     }
     public static void GreaterThanZero(
+        decimal value,
+        [CallerArgumentExpression(nameof(value))] string? paramName = null)
+    {
+        if (value <= 0)
+        {
+            throw new ArgumentOutOfRangeException(paramName, "Value must be greater than zero.");
+        }
+    }
+    public static void GreaterThanZero(
         int value,
         [CallerArgumentExpression(nameof(value))] string? paramName = null)
     {

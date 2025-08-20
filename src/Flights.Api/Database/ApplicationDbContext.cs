@@ -8,6 +8,7 @@ public sealed class ApplicationDbContext : DbContext
         : base(options)
     {
     }
+    public DbSet<Aircraft> Aircraft { get; set; } = null!;
     public DbSet<Airport> Airports { get; set; } = null!;
     public DbSet<Flight> Flights { get; set; } = null!;
 }
