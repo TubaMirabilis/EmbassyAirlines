@@ -1,11 +1,9 @@
 using ErrorOr;
 using Flights.Api.Database;
 using FluentValidation;
-using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using NodaTime;
 using Shared;
-using Shared.Contracts;
 using Shared.Endpoints;
 using Shared.Extensions;
 

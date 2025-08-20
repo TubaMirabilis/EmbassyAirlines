@@ -19,7 +19,7 @@ internal sealed class GetAircraftEndpoint : IEndpoint
                                  .FirstOrDefaultAsync(a => a.Id == id, ct);
         if (aircraft is null)
         {
-            var error = Error.NotFound("Aircraft", $"Aircraft with ID {id} not found");
+            var error = Error.NotFound("Aircraft.NotFound", $"Aircraft with ID {id} not found");
             return ErrorHandlingHelper.HandleProblem(error);
         }
         return TypedResults.Ok(aircraft.ToDto());
