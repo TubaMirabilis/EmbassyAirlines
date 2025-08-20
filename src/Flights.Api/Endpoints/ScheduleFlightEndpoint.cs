@@ -63,7 +63,7 @@ internal sealed class ScheduleFlightEndpoint : IEndpoint
         var aircraft = await _ctx.Aircraft
             .Where(a => a.Id == dto.AircraftId)
             .SingleOrDefaultAsync(ct);
-if (aircraft is null)
+        if (aircraft is null)
         {
             var error = Error.Validation("Flight.AircraftNotFound", "Aircraft not found");
             return ErrorHandlingHelper.HandleProblem(error);

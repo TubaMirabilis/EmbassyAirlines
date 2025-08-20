@@ -12,7 +12,7 @@ public sealed class Airport
         TimeZoneId = timeZoneId;
         IataCode = iataCode;
     }
-    #pragma warning disable CS8618
+#pragma warning disable CS8618
     private Airport()
     {
     }

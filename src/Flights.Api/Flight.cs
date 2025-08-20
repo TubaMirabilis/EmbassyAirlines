@@ -17,7 +17,7 @@ public sealed class Flight
         EconomyPrice = args.EconomyPrice;
         BusinessPrice = args.BusinessPrice;
     }
-    #pragma warning disable CS8618
+#pragma warning disable CS8618
     private Flight()
     {
     }
