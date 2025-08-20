@@ -1,0 +1,13 @@
+﻿using Microsoft.EntityFrameworkCore;
+
+namespace Flights.Api.Database;
+
+public sealed class ApplicationDbContext : DbContext
+{
+    public ApplicationDbContext(DbContextOptions options)
+        : base(options)
+    {
+    }
+    public DbSet<Airport> Airports { get; set; } = null!;
+    public DbSet<Flight> Flights { get; set; } = null!;
+}

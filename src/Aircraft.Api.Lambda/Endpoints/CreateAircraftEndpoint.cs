@@ -1,6 +1,5 @@
 using System.Net;
 using System.Text.Json;
-using Aircraft.Api.Lambda;
 using Aircraft.Api.Lambda.Database;
 using Amazon.S3;
 using ErrorOr;
@@ -12,7 +11,7 @@ using Shared.Contracts;
 using Shared.Endpoints;
 using Shared.Extensions;
 
-namespace Airports.Api.Lambda.Endpoints;
+namespace Aircraft.Api.Lambda.Endpoints;
 
 internal sealed class CreateAircraftEndpoint : IEndpoint
 {
@@ -36,7 +35,7 @@ internal sealed class CreateAircraftEndpoint : IEndpoint
         var validationResult = await _validator.ValidateAsync(dto, ct);
         if (!validationResult.IsValid(out var formattedErrors))
         {
-            var error = Error.Validation("Airport.Validation", formattedErrors);
+            var error = Error.Validation("Aircraft.Validation", formattedErrors);
             return ErrorHandlingHelper.HandleProblem(error);
         }
         if (await _ctx.Aircraft.AnyAsync(a => a.TailNumber == dto.TailNumber, ct))
@@ -66,7 +65,7 @@ internal sealed class CreateAircraftEndpoint : IEndpoint
                 MaximumFuelWeight = new Weight(dto.MaximumFuelWeight),
                 Seats = def
             };
-            var aircraft = Aircraft.Api.Lambda.Aircraft.Create(args);
+            var aircraft = Aircraft.Create(args);
             _ctx.Aircraft.Add(aircraft);
             await _ctx.SaveChangesAsync(ct);
             await _bus.Publish(new AircraftCreatedEvent(aircraft.Id, aircraft.TailNumber, aircraft.EquipmentCode, aircraft.Seats.Select(s => s.ToDto()).ToList()), ct);
