@@ -1,6 +1,7 @@
 using System.Text.Json;
 using Airports.Api.Lambda.FunctionalTests.Extensions;
 using Amazon.DynamoDBv2;
+using Amazon.DynamoDBv2.Model;
 using Amazon.Runtime;
 using MassTransit;
 using Microsoft.AspNetCore.Hosting;
@@ -22,7 +23,7 @@ public class FunctionalTestWebAppFactory : WebApplicationFactory<Program>, IAsyn
         builder.ConfigureTestServices(services =>
         {
             var credentials = new BasicAWSCredentials("test-access-key", "test-secret-key");
-            services.AddScoped<JsonSerializerOptions>(_ => new JsonSerializerOptions
+            services.AddSingleton<JsonSerializerOptions>(_ => new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true
             });
@@ -41,7 +42,25 @@ public class FunctionalTestWebAppFactory : WebApplicationFactory<Program>, IAsyn
             services.AddSingleton<IAmazonDynamoDB>(_ => new AmazonDynamoDBClient(credentials, config));
         });
     }
-    public async ValueTask InitializeAsync() => await _dynamoDbContainer.StartAsync();
+    public async ValueTask InitializeAsync()
+    {
+        await _dynamoDbContainer.StartAsync();
+        var client = Services.GetRequiredService<IAmazonDynamoDB>();
+        var request = new CreateTableRequest
+        {
+            TableName = "airports",
+            KeySchema =
+            [
+                new KeySchemaElement("Id", KeyType.HASH)
+            ],
+            AttributeDefinitions =
+            [
+                new AttributeDefinition("Id", ScalarAttributeType.S)
+            ],
+            ProvisionedThroughput = new ProvisionedThroughput(1, 1)
+        };
+        await client.CreateTableAsync(request);
+    }
     public new async Task DisposeAsync()
     {
         await _dynamoDbContainer.StopAsync();
