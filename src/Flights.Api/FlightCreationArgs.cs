@@ -4,7 +4,8 @@ namespace Flights.Api;
 
 public sealed record FlightCreationArgs
 {
-    public required string FlightNumber { get; init; }
+    public required string FlightNumberIata { get; init; }
+    public required string FlightNumberIcao { get; init; }
     public required LocalDateTime DepartureLocalTime { get; init; }
     public required LocalDateTime ArrivalLocalTime { get; init; }
     public required Airport DepartureAirport { get; init; }

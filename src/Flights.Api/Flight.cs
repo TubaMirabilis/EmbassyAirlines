@@ -8,7 +8,8 @@ public sealed class Flight
     {
         Id = Guid.NewGuid();
         CreatedAt = SystemClock.Instance.GetCurrentInstant();
-        FlightNumber = args.FlightNumber;
+        FlightNumberIata = args.FlightNumberIata;
+        FlightNumberIcao = args.FlightNumberIcao;
         DepartureLocalTime = args.DepartureLocalTime;
         ArrivalLocalTime = args.ArrivalLocalTime;
         DepartureAirport = args.DepartureAirport;
@@ -24,7 +25,8 @@ public sealed class Flight
 #pragma warning restore CS8618
     public Guid Id { get; init; }
     public Instant CreatedAt { get; init; }
-    public string FlightNumber { get; private set; }
+    public string FlightNumberIata { get; private set; }
+    public string FlightNumberIcao { get; private set; }
     public LocalDateTime DepartureLocalTime { get; set; }
     public LocalDateTime ArrivalLocalTime { get; set; }
     public ZonedDateTime DepartureZonedTime => DepartureLocalTime.InZoneStrictly(DepartureAirport.TimeZone);

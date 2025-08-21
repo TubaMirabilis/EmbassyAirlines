@@ -23,10 +23,18 @@ services.AddProblemDetails();
 services.AddMassTransit(x =>
 {
     x.SetEndpointNameFormatter(new KebabCaseEndpointNameFormatter(prefix: scope));
+    x.SetInMemorySagaRepositoryProvider();
+    x.AddConsumers(assembly);
     x.UsingAmazonSqs((context, cfg) =>
     {
         cfg.Host(region, h => h.Scope(scope, scopeTopics: true));
         cfg.ConfigureEndpoints(context);
+        cfg.UseDelayedMessageScheduler();
+        cfg.UseDelayedRedelivery(r =>
+        {
+            r.Handle<Exception>();
+            r.Intervals(TimeSpan.FromMinutes(5), TimeSpan.FromMinutes(15), TimeSpan.FromMinutes(30));
+        });
     });
 });
 services.AddDbContext<ApplicationDbContext>(options =>

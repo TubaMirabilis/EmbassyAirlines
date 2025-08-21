@@ -70,7 +70,8 @@ internal sealed class ScheduleFlightEndpoint : IEndpoint
         var businessPrice = new Money(dto.BusinessPrice);
         var args = new FlightCreationArgs
         {
-            FlightNumber = dto.FlightNumber,
+            FlightNumberIata = dto.FlightNumberIata,
+            FlightNumberIcao = dto.FlightNumberIcao,
             DepartureLocalTime = departureTime,
             ArrivalLocalTime = arrivalTime,
             DepartureAirport = departureAirport,

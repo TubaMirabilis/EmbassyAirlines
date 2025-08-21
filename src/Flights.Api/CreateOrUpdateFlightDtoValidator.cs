@@ -10,11 +10,16 @@ public sealed class CreateOrUpdateFlightDtoValidator : AbstractValidator<CreateO
         RuleFor(x => x.AircraftId)
             .NotEmpty()
                 .WithMessage("Aircraft id is required.");
-        RuleFor(x => x.FlightNumber)
-            .MaximumLength(6)
-                .WithMessage("Flight number must be 6 characters or less.")
+        RuleFor(x => x.FlightNumberIcao)
+            .MaximumLength(7)
+                .WithMessage("ICAO flight number must be 7 characters or less.")
             .Matches("^[A-Z0-9]+$")
-                .WithMessage("Flight number must be alphanumeric.");
+                .WithMessage("ICAO flight number must be alphanumeric.");
+        RuleFor(x => x.FlightNumberIata)
+            .MaximumLength(6)
+                .WithMessage("IATA flight number must be 6 characters or less.")
+            .Matches("^[A-Z0-9]+$")
+                .WithMessage("IATA flight number must be alphanumeric.");
         RuleFor(x => x.DepartureAirportId)
             .NotEmpty()
                 .WithMessage("Departure airport id is required.");

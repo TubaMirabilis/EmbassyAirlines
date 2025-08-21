@@ -68,7 +68,7 @@ internal sealed class CreateAircraftEndpoint : IEndpoint
             var aircraft = Aircraft.Create(args);
             _ctx.Aircraft.Add(aircraft);
             await _ctx.SaveChangesAsync(ct);
-            await _bus.Publish(new AircraftCreatedEvent(aircraft.Id, aircraft.TailNumber, aircraft.EquipmentCode, aircraft.Seats.Select(s => s.ToDto()).ToList()), ct);
+            await _bus.Publish(new AircraftCreatedEvent(aircraft.Id, aircraft.TailNumber, aircraft.EquipmentCode), ct);
             return TypedResults.Created($"/aircraft/{aircraft.Id}", aircraft.ToDto());
         }
         catch (AmazonS3Exception e)
