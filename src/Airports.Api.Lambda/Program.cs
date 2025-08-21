@@ -12,7 +12,7 @@ config.AddEnvironmentVariables(prefix: "AIRPORTS_");
 var scope = config["MassTransit:Scope"];
 if (string.IsNullOrWhiteSpace(scope))
 {
-    throw new ArgumentException("MassTransit scope is not configured. Please set the AIRPORTS_MASSTRANSIT_SCOPE environment variable.");
+    throw new ArgumentException("MassTransit scope is not configured. Please set the AIRPORTS_MassTransit__Scope environment variable.");
 }
 var region = Environment.GetEnvironmentVariable("AWS_REGION") ?? "eu-west-2";
 var assembly = typeof(Program).Assembly;
