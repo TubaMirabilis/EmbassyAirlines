@@ -18,14 +18,14 @@ internal sealed class CreateAircraftEndpoint : IEndpoint
     private readonly IBus _bus;
     private readonly IAmazonS3 _client;
     private readonly IConfiguration _config;
-    private readonly ApplicationDbContext _ctx;
+    private readonly IServiceScopeFactory _factory;
     private readonly IValidator<CreateOrUpdateAircraftDto> _validator;
-    public CreateAircraftEndpoint(IBus bus, IAmazonS3 client, IConfiguration config, ApplicationDbContext ctx, IValidator<CreateOrUpdateAircraftDto> validator)
+    public CreateAircraftEndpoint(IBus bus, IAmazonS3 client, IConfiguration config, IServiceScopeFactory factory, IValidator<CreateOrUpdateAircraftDto> validator)
     {
         _bus = bus;
         _client = client;
         _config = config;
-        _ctx = ctx;
+        _factory = factory;
         _validator = validator;
     }
     public void MapEndpoint(IEndpointRouteBuilder app)
@@ -38,7 +38,9 @@ internal sealed class CreateAircraftEndpoint : IEndpoint
             var error = Error.Validation("Aircraft.Validation", formattedErrors);
             return ErrorHandlingHelper.HandleProblem(error);
         }
-        if (await _ctx.Aircraft.AnyAsync(a => a.TailNumber == dto.TailNumber, ct))
+        using var scope = _factory.CreateScope();
+        var ctx = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        if (await ctx.Aircraft.AnyAsync(a => a.TailNumber == dto.TailNumber, ct))
         {
             var error = Error.Conflict("Aircraft.TailNumber", $"Aircraft with tail number {dto.TailNumber} already exists");
             return ErrorHandlingHelper.HandleProblem(error);
@@ -52,7 +54,7 @@ internal sealed class CreateAircraftEndpoint : IEndpoint
                 var error = Error.Validation("Aircraft.BucketName", "Bucket name is not configured");
                 return ErrorHandlingHelper.HandleProblem(error);
             }
-            var response = await _client.GetObjectAsync(bucketName, $"{equipmentCode}.json", ct);
+            var response = await _client.GetObjectAsync(bucketName, $"seat-layouts/{equipmentCode}.json", ct);
             var def = await JsonSerializer.DeserializeAsync<SeatLayoutDefinition>(response.ResponseStream, cancellationToken: ct) ?? throw new InvalidOperationException($"Seat layout definition for {equipmentCode} is null");
             var args = new AircraftCreationArgs
             {
@@ -66,8 +68,8 @@ internal sealed class CreateAircraftEndpoint : IEndpoint
                 Seats = def
             };
             var aircraft = Aircraft.Create(args);
-            _ctx.Aircraft.Add(aircraft);
-            await _ctx.SaveChangesAsync(ct);
+            ctx.Aircraft.Add(aircraft);
+            await ctx.SaveChangesAsync(ct);
             await _bus.Publish(new AircraftCreatedEvent(aircraft.Id, aircraft.TailNumber, aircraft.EquipmentCode), ct);
             return TypedResults.Created($"/aircraft/{aircraft.Id}", aircraft.ToDto());
         }

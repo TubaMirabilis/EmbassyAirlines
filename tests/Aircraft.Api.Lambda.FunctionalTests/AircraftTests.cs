@@ -1,0 +1,37 @@
+using System.Net.Http.Json;
+using System.Text.Json;
+using FluentAssertions;
+using Shared.Contracts;
+
+namespace Aircraft.Api.Lambda.FunctionalTests;
+
+[TestCaseOrderer(typeof(PriorityOrderer))]
+public class AircraftTests : BaseFunctionalTest
+{
+    private static AircraftDto? _dto;
+    public AircraftTests(FunctionalTestWebAppFactory factory) : base(factory)
+    {
+    }
+
+    [Fact, TestPriority(0)]
+    public async Task Create_Should_ReturnCreated_WhenRequestIsValid()
+    {
+        // Arrange
+        var request = new CreateOrUpdateAircraftDto("C-FJRN", "B78X", 135500, 254011, 201848, 192777, 101522);
+
+        // Act
+        var response = await HttpClient.PostAsJsonAsync("aircraft", request, TestContext.Current.CancellationToken);
+        var content = await response.Content.ReadAsStreamAsync(TestContext.Current.CancellationToken);
+        _dto = await JsonSerializer.DeserializeAsync<AircraftDto>(content, JsonSerializerOptions, TestContext.Current.CancellationToken) ?? throw new JsonException();
+
+        // Assert
+        _dto.Should().Match<AircraftDto>(x =>
+            x.TailNumber == request.TailNumber &&
+            x.EquipmentCode == request.EquipmentCode &&
+            x.DryOperatingWeight == request.DryOperatingWeight &&
+            x.MaximumFuelWeight == request.MaximumFuelWeight &&
+            x.MaximumLandingWeight == request.MaximumLandingWeight &&
+            x.MaximumTakeoffWeight == request.MaximumTakeoffWeight &&
+            x.MaximumZeroFuelWeight == request.MaximumZeroFuelWeight);
+    }
+}

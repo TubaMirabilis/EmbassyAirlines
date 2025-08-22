@@ -8,13 +8,15 @@ namespace Aircraft.Api.Lambda.Endpoints;
 
 internal sealed class GetAircraftEndpoint : IEndpoint
 {
-    private readonly ApplicationDbContext _ctx;
-    public GetAircraftEndpoint(ApplicationDbContext ctx) => _ctx = ctx;
+    private readonly IServiceScopeFactory _factory;
+    public GetAircraftEndpoint(IServiceScopeFactory factory) => _factory = factory;
     public void MapEndpoint(IEndpointRouteBuilder app)
         => app.MapGet("aircraft/{id}", InvokeAsync);
     private async Task<IResult> InvokeAsync(Guid id, CancellationToken ct)
     {
-        var aircraft = await _ctx.Aircraft
+        using var scope = _factory.CreateScope();
+        var ctx = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        var aircraft = await ctx.Aircraft
                                  .Include(a => a.Seats)
                                  .FirstOrDefaultAsync(a => a.Id == id, ct);
         if (aircraft is null)
