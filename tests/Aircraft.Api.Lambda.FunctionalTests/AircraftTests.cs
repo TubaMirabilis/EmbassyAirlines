@@ -34,4 +34,20 @@ public class AircraftTests : BaseFunctionalTest
             x.MaximumTakeoffWeight == request.MaximumTakeoffWeight &&
             x.MaximumZeroFuelWeight == request.MaximumZeroFuelWeight);
     }
+
+    [Fact, TestPriority(1)]
+    public async Task GetById_Should_ReturnOk_WhenAircraftExists()
+    {
+        // Arrange
+        ArgumentNullException.ThrowIfNull(_dto);
+        var id = _dto.Id;
+
+        // Act
+        var uri = new Uri($"aircraft/{id}", UriKind.Relative);
+        var response = await HttpClient.GetAsync(uri, TestContext.Current.CancellationToken);
+        var aircraftDto = await response.Content.ReadFromJsonAsync<AircraftDto>(TestContext.Current.CancellationToken);
+
+        // Assert
+        aircraftDto.Should().BeEquivalentTo(_dto);
+    }
 }
