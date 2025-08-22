@@ -20,13 +20,15 @@ internal sealed class CreateAircraftEndpoint : IEndpoint
     private readonly IConfiguration _config;
     private readonly IServiceScopeFactory _factory;
     private readonly IValidator<CreateOrUpdateAircraftDto> _validator;
-    public CreateAircraftEndpoint(IBus bus, IAmazonS3 client, IConfiguration config, IServiceScopeFactory factory, IValidator<CreateOrUpdateAircraftDto> validator)
+    private readonly ILogger<CreateAircraftEndpoint> _logger;
+    public CreateAircraftEndpoint(IBus bus, IAmazonS3 client, IConfiguration config, IServiceScopeFactory factory, IValidator<CreateOrUpdateAircraftDto> validator, ILogger<CreateAircraftEndpoint> logger)
     {
         _bus = bus;
         _client = client;
         _config = config;
         _factory = factory;
         _validator = validator;
+        _logger = logger;
     }
     public void MapEndpoint(IEndpointRouteBuilder app)
         => app.MapPost("aircraft", InvokeAsync);
@@ -35,6 +37,7 @@ internal sealed class CreateAircraftEndpoint : IEndpoint
         var validationResult = await _validator.ValidateAsync(dto, ct);
         if (!validationResult.IsValid(out var formattedErrors))
         {
+            _logger.LogWarning("Validation failed for creation of aircraft: {Errors}", formattedErrors);
             var error = Error.Validation("Aircraft.Validation", formattedErrors);
             return ErrorHandlingHelper.HandleProblem(error);
         }
@@ -42,6 +45,7 @@ internal sealed class CreateAircraftEndpoint : IEndpoint
         var ctx = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
         if (await ctx.Aircraft.AnyAsync(a => a.TailNumber == dto.TailNumber, ct))
         {
+            _logger.LogWarning("Aircraft with tail number {TailNumber} already exists", dto.TailNumber);
             var error = Error.Conflict("Aircraft.TailNumber", $"Aircraft with tail number {dto.TailNumber} already exists");
             return ErrorHandlingHelper.HandleProblem(error);
         }
@@ -51,6 +55,7 @@ internal sealed class CreateAircraftEndpoint : IEndpoint
             var bucketName = _config["AWS:BucketName"];
             if (string.IsNullOrEmpty(bucketName))
             {
+                _logger.LogWarning("Bucket name is not configured");
                 var error = Error.Validation("Aircraft.BucketName", "Bucket name is not configured");
                 return ErrorHandlingHelper.HandleProblem(error);
             }
@@ -75,6 +80,7 @@ internal sealed class CreateAircraftEndpoint : IEndpoint
         }
         catch (AmazonS3Exception e)
         {
+            _logger.LogError(e, "Error retrieving seat layout definition for {EquipmentCode}", equipmentCode);
             var error = e.StatusCode == HttpStatusCode.NotFound
                 ? Error.Validation("Aircraft.SeatLayoutDefinition", $"Seat layout definition for {equipmentCode} not found")
                 : Error.Failure("Aircraft.SeatLayoutDefinition", $"Error retrieving seat layout definition for {equipmentCode}: {e.Message}");
@@ -82,6 +88,7 @@ internal sealed class CreateAircraftEndpoint : IEndpoint
         }
         catch (InvalidOperationException e)
         {
+            _logger.LogError(e, "Invalid seat layout definition for {EquipmentCode}", equipmentCode);
             var error = Error.Validation("Aircraft.SeatLayoutDefinition", e.Message);
             return ErrorHandlingHelper.HandleProblem(error);
         }

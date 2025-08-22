@@ -19,12 +19,14 @@ internal sealed class CreateAirportEndpoint : IEndpoint
     private readonly IBus _bus;
     private readonly IConfiguration _config;
     private readonly IValidator<CreateOrUpdateAirportDto> _validator;
-    public CreateAirportEndpoint(IBus bus, IAmazonDynamoDB dynamoDb, IValidator<CreateOrUpdateAirportDto> validator, IConfiguration config)
+    private readonly ILogger<CreateAirportEndpoint> _logger;
+    public CreateAirportEndpoint(IBus bus, IAmazonDynamoDB dynamoDb, IValidator<CreateOrUpdateAirportDto> validator, IConfiguration config, ILogger<CreateAirportEndpoint> logger)
     {
         _bus = bus;
         _config = config;
         _dynamoDb = dynamoDb;
         _validator = validator;
+        _logger = logger;
     }
     public void MapEndpoint(IEndpointRouteBuilder app)
         => app.MapPost("airports", InvokeAsync);
@@ -33,6 +35,7 @@ internal sealed class CreateAirportEndpoint : IEndpoint
         var validationResult = await _validator.ValidateAsync(dto, ct);
         if (!validationResult.IsValid(out var formattedErrors))
         {
+            _logger.LogWarning("Validation failed for creation of airport: {Errors}", formattedErrors);
             var error = Error.Validation("Airport.Validation", formattedErrors);
             return ErrorHandlingHelper.HandleProblem(error);
         }
@@ -48,6 +51,7 @@ internal sealed class CreateAirportEndpoint : IEndpoint
         var scanResponse = await _dynamoDb.ScanAsync(scanRequest, ct);
         if (scanResponse.Items.Count > 0)
         {
+            _logger.LogWarning("Conflict: Airport with IATA code {IataCode} already exists", dto.IataCode);
             var error = Error.Conflict("Airport.Conflict", $"Airport with IATA code {dto.IataCode} already exists");
             return ErrorHandlingHelper.HandleProblem(error);
         }
@@ -63,6 +67,7 @@ internal sealed class CreateAirportEndpoint : IEndpoint
         var response = await _dynamoDb.PutItemAsync(createItemRequest, ct);
         if (response.HttpStatusCode is not HttpStatusCode.OK)
         {
+            _logger.LogError("Failed to create airport: {Errors}", response);
             var error = Error.Failure("Airport.Create", "Failed to create airport");
             return ErrorHandlingHelper.HandleProblem(error);
         }

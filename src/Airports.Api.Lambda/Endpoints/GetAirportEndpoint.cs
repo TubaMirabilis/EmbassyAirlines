@@ -13,10 +13,12 @@ internal sealed class GetAirportEndpoint : IEndpoint
 {
     private readonly IConfiguration _config;
     private readonly IAmazonDynamoDB _dynamoDb;
-    public GetAirportEndpoint(IConfiguration config, IAmazonDynamoDB dynamoDb)
+    private readonly ILogger<GetAirportEndpoint> _logger;
+    public GetAirportEndpoint(IConfiguration config, IAmazonDynamoDB dynamoDb, ILogger<GetAirportEndpoint> logger)
     {
         _config = config;
         _dynamoDb = dynamoDb;
+        _logger = logger;
     }
     public void MapEndpoint(IEndpointRouteBuilder app)
         => app.MapGet("airports/{id}", InvokeAsync);
@@ -34,6 +36,7 @@ internal sealed class GetAirportEndpoint : IEndpoint
         var response = await _dynamoDb.GetItemAsync(getItemRequest, ct);
         if (!response.IsItemSet)
         {
+            _logger.LogWarning("Airport with id {Id} not found", id);
             var error = Error.NotFound("Airport.NotFound", $"Airport with id {id} not found");
             return ErrorHandlingHelper.HandleProblem(error);
         }

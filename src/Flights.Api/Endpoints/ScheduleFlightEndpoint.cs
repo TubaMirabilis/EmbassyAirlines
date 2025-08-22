@@ -13,10 +13,12 @@ internal sealed class ScheduleFlightEndpoint : IEndpoint
 {
     private readonly ApplicationDbContext _ctx;
     private readonly IValidator<CreateOrUpdateFlightDto> _validator;
-    public ScheduleFlightEndpoint(ApplicationDbContext ctx, IValidator<CreateOrUpdateFlightDto> validator)
+    private readonly ILogger<ScheduleFlightEndpoint> _logger;
+    public ScheduleFlightEndpoint(ApplicationDbContext ctx, IValidator<CreateOrUpdateFlightDto> validator, ILogger<ScheduleFlightEndpoint> logger)
     {
         _ctx = ctx;
         _validator = validator;
+        _logger = logger;
     }
     public void MapEndpoint(IEndpointRouteBuilder app)
         => app.MapPost("flights", InvokeAsync);
@@ -25,7 +27,8 @@ internal sealed class ScheduleFlightEndpoint : IEndpoint
         var validationResult = await _validator.ValidateAsync(dto, ct);
         if (!validationResult.IsValid(out var formattedErrors))
         {
-            var error = Error.Validation("Flight.Validation", formattedErrors);
+            _logger.LogWarning("Validation failed for flight creation: {Errors}", formattedErrors);
+            var error = Error.Validation("Flight.ValidationFailed", formattedErrors);
             return ErrorHandlingHelper.HandleProblem(error);
         }
         var departureAirport = await _ctx.Airports
@@ -33,7 +36,8 @@ internal sealed class ScheduleFlightEndpoint : IEndpoint
                                          .SingleOrDefaultAsync(ct);
         if (departureAirport is null)
         {
-            var error = Error.Validation("Flight.DepartureAirportNotFound", "Departure airport not found");
+            _logger.LogWarning("Departure airport with ID {Id} not found", dto.DepartureAirportId);
+            var error = Error.NotFound("Flight.DepartureAirportNotFound", "Departure airport not found");
             return ErrorHandlingHelper.HandleProblem(error);
         }
         var arrivalAirport = await _ctx.Airports
@@ -41,13 +45,15 @@ internal sealed class ScheduleFlightEndpoint : IEndpoint
                                         .SingleOrDefaultAsync(ct);
         if (arrivalAirport is null)
         {
-            var error = Error.Validation("Flight.ArrivalAirportNotFound", "Arrival airport not found");
+            _logger.LogWarning("Arrival airport with ID {Id} not found", dto.ArrivalAirportId);
+            var error = Error.NotFound("Flight.ArrivalAirportNotFound", "Arrival airport not found");
             return ErrorHandlingHelper.HandleProblem(error);
         }
         var departureTime = LocalDateTime.FromDateTime(dto.DepartureLocalTime);
         var departureInstant = departureTime.InZoneStrictly(departureAirport.TimeZone).ToInstant();
         if (departureInstant < SystemClock.Instance.GetCurrentInstant())
         {
+            _logger.LogWarning("Departure time cannot be in the past");
             var error = Error.Validation("Flight.DepartureTimeInPast", "Departure time cannot be in the past");
             return ErrorHandlingHelper.HandleProblem(error);
         }
@@ -55,6 +61,7 @@ internal sealed class ScheduleFlightEndpoint : IEndpoint
         var arrivalInstant = arrivalTime.InZoneStrictly(arrivalAirport.TimeZone).ToInstant();
         if (arrivalInstant < departureInstant)
         {
+            _logger.LogWarning("Arrival time cannot be before departure time");
             var error = Error.Validation("Flight.ArrivalTimeBeforeDeparture", "Arrival time cannot be before departure time");
             return ErrorHandlingHelper.HandleProblem(error);
         }
@@ -63,7 +70,8 @@ internal sealed class ScheduleFlightEndpoint : IEndpoint
             .SingleOrDefaultAsync(ct);
         if (aircraft is null)
         {
-            var error = Error.Validation("Flight.AircraftNotFound", "Aircraft not found");
+            _logger.LogWarning("Aircraft with ID {Id} not found", dto.AircraftId);
+            var error = Error.NotFound("Flight.AircraftNotFound", "Aircraft not found");
             return ErrorHandlingHelper.HandleProblem(error);
         }
         var economyPrice = new Money(dto.EconomyPrice);

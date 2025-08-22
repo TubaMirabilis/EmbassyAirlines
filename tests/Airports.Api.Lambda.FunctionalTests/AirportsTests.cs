@@ -236,11 +236,12 @@ public class AirportsTests : BaseFunctionalTest
     public async Task Update_Should_ReturnBadRequest_WhenIcaoCodeIsEmpty()
     {
         // Arrange
+        ArgumentNullException.ThrowIfNull(_dto);
         var request = new CreateOrUpdateAirportDto("", "YVR", "Vancouver International Airport", "America/Vancouver");
         var error = "ICAO Code must consist of 4 uppercase letters only.";
 
         // Act
-        var response = await HttpClient.PutAsJsonAsync($"airports/{Guid.NewGuid()}", request, TestContext.Current.CancellationToken);
+        var response = await HttpClient.PutAsJsonAsync($"airports/{_dto.Id}", request, TestContext.Current.CancellationToken);
 
         // Assert
         await GetProblemDetailsFromResponseAndAssert(response, error);
@@ -250,11 +251,12 @@ public class AirportsTests : BaseFunctionalTest
     public async Task Update_Should_ReturnBadRequest_WhenIcaoCodeIsTooLong()
     {
         // Arrange
+        ArgumentNullException.ThrowIfNull(_dto);
         var request = new CreateOrUpdateAirportDto(LongString, "YVR", "Vancouver International Airport", "America/Vancouver");
         var error = "ICAO Code must consist of 4 uppercase letters only.";
 
         // Act
-        var response = await HttpClient.PutAsJsonAsync($"airports/{Guid.NewGuid()}", request, TestContext.Current.CancellationToken);
+        var response = await HttpClient.PutAsJsonAsync($"airports/{_dto.Id}", request, TestContext.Current.CancellationToken);
 
         // Assert
         await GetProblemDetailsFromResponseAndAssert(response, error);
@@ -264,11 +266,12 @@ public class AirportsTests : BaseFunctionalTest
     public async Task Update_Should_ReturnBadRequest_WhenIcaoCodeIsInvalid()
     {
         // Arrange
+        ArgumentNullException.ThrowIfNull(_dto);
         var request = new CreateOrUpdateAirportDto("3/a.", "YVR", "Vancouver International Airport", "America/Vancouver");
         var error = "ICAO Code must consist of 4 uppercase letters only.";
 
         // Act
-        var response = await HttpClient.PutAsJsonAsync($"airports/{Guid.NewGuid()}", request, TestContext.Current.CancellationToken);
+        var response = await HttpClient.PutAsJsonAsync($"airports/{_dto.Id}", request, TestContext.Current.CancellationToken);
 
         // Assert
         await GetProblemDetailsFromResponseAndAssert(response, error);
@@ -278,11 +281,12 @@ public class AirportsTests : BaseFunctionalTest
     public async Task Update_Should_ReturnBadRequest_WhenIataCodeIsEmpty()
     {
         // Arrange
+        ArgumentNullException.ThrowIfNull(_dto);
         var request = new CreateOrUpdateAirportDto("CYVR", "", "Vancouver International Airport", "America/Vancouver");
         var error = "IATA Code must consist of 3 uppercase letters only.";
 
         // Act
-        var response = await HttpClient.PutAsJsonAsync($"airports/{Guid.NewGuid()}", request, TestContext.Current.CancellationToken);
+        var response = await HttpClient.PutAsJsonAsync($"airports/{_dto.Id}", request, TestContext.Current.CancellationToken);
 
         // Assert
         await GetProblemDetailsFromResponseAndAssert(response, error);
@@ -292,11 +296,12 @@ public class AirportsTests : BaseFunctionalTest
     public async Task Update_Should_ReturnBadRequest_WhenIataCodeIsTooLong()
     {
         // Arrange
+        ArgumentNullException.ThrowIfNull(_dto);
         var request = new CreateOrUpdateAirportDto("CYVR", LongString, "Vancouver International Airport", "America/Vancouver");
         var error = "IATA Code must consist of 3 uppercase letters only.";
 
         // Act
-        var response = await HttpClient.PutAsJsonAsync($"airports/{Guid.NewGuid()}", request, TestContext.Current.CancellationToken);
+        var response = await HttpClient.PutAsJsonAsync($"airports/{_dto.Id}", request, TestContext.Current.CancellationToken);
 
         // Assert
         await GetProblemDetailsFromResponseAndAssert(response, error);
@@ -306,11 +311,12 @@ public class AirportsTests : BaseFunctionalTest
     public async Task Update_Should_ReturnBadRequest_WhenIataCodeIsInvalid()
     {
         // Arrange
+        ArgumentNullException.ThrowIfNull(_dto);
         var request = new CreateOrUpdateAirportDto("CYVR", "3/a", "Vancouver International Airport", "America/Vancouver");
         var error = "IATA Code must consist of 3 uppercase letters only.";
 
         // Act
-        var response = await HttpClient.PutAsJsonAsync($"airports/{Guid.NewGuid()}", request, TestContext.Current.CancellationToken);
+        var response = await HttpClient.PutAsJsonAsync($"airports/{_dto.Id}", request, TestContext.Current.CancellationToken);
 
         // Assert
         await GetProblemDetailsFromResponseAndAssert(response, error);
@@ -320,11 +326,12 @@ public class AirportsTests : BaseFunctionalTest
     public async Task Update_Should_ReturnBadRequest_WhenNameIsEmpty()
     {
         // Arrange
+        ArgumentNullException.ThrowIfNull(_dto);
         var request = new CreateOrUpdateAirportDto("CYVR", "YVR", "", "America/Vancouver");
         var error = "Name is required.";
 
         // Act
-        var response = await HttpClient.PutAsJsonAsync($"airports/{Guid.NewGuid()}", request, TestContext.Current.CancellationToken);
+        var response = await HttpClient.PutAsJsonAsync($"airports/{_dto.Id}", request, TestContext.Current.CancellationToken);
 
         // Assert
         await GetProblemDetailsFromResponseAndAssert(response, error);
@@ -334,11 +341,12 @@ public class AirportsTests : BaseFunctionalTest
     public async Task Update_Should_ReturnBadRequest_WhenNameIsTooLong()
     {
         // Arrange
+        ArgumentNullException.ThrowIfNull(_dto);
         var request = new CreateOrUpdateAirportDto("CYVR", "YVR", LongString, "America/Vancouver");
         var error = "Name must not exceed 100 characters in length.";
 
         // Act
-        var response = await HttpClient.PutAsJsonAsync($"airports/{Guid.NewGuid()}", request, TestContext.Current.CancellationToken);
+        var response = await HttpClient.PutAsJsonAsync($"airports/{_dto.Id}", request, TestContext.Current.CancellationToken);
 
         // Assert
         await GetProblemDetailsFromResponseAndAssert(response, error);
@@ -348,11 +356,12 @@ public class AirportsTests : BaseFunctionalTest
     public async Task Update_Should_ReturnBadRequest_WhenTimeZoneIdIsEmpty()
     {
         // Arrange
+        ArgumentNullException.ThrowIfNull(_dto);
         var request = new CreateOrUpdateAirportDto("CYVR", "YVR", "Vancouver International Airport", "");
         var error = "Time zone is required.";
 
         // Act
-        var response = await HttpClient.PutAsJsonAsync($"airports/{Guid.NewGuid()}", request, TestContext.Current.CancellationToken);
+        var response = await HttpClient.PutAsJsonAsync($"airports/{_dto.Id}", request, TestContext.Current.CancellationToken);
 
         // Assert
         await GetProblemDetailsFromResponseAndAssert(response, error);
@@ -362,11 +371,12 @@ public class AirportsTests : BaseFunctionalTest
     public async Task Update_Should_ReturnBadRequest_WhenTimeZoneIdIsTooLong()
     {
         // Arrange
+        ArgumentNullException.ThrowIfNull(_dto);
         var request = new CreateOrUpdateAirportDto("CYVR", "YVR", "Vancouver International Airport", LongString);
         var error = "Time zone must not exceed 100 characters in length.";
 
         // Act
-        var response = await HttpClient.PutAsJsonAsync($"airports/{Guid.NewGuid()}", request, TestContext.Current.CancellationToken);
+        var response = await HttpClient.PutAsJsonAsync($"airports/{_dto.Id}", request, TestContext.Current.CancellationToken);
 
         // Assert
         await GetProblemDetailsFromResponseAndAssert(response, error);

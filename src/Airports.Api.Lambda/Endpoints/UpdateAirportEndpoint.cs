@@ -15,27 +15,23 @@ namespace Airports.Api.Lambda.Endpoints;
 
 internal sealed class UpdateAirportEndpoint : IEndpoint
 {
-    private readonly IAmazonDynamoDB _dynamoDb;
     private readonly IBus _bus;
-    private readonly IConfiguration _config;
+    private readonly IAmazonDynamoDB _dynamoDb;
     private readonly IValidator<CreateOrUpdateAirportDto> _validator;
-    public UpdateAirportEndpoint(IBus bus, IAmazonDynamoDB dynamoDb, IValidator<CreateOrUpdateAirportDto> validator, IConfiguration config)
+    private readonly IConfiguration _config;
+    private readonly ILogger<UpdateAirportEndpoint> _logger;
+    public UpdateAirportEndpoint(IBus bus, IAmazonDynamoDB dynamoDb, IValidator<CreateOrUpdateAirportDto> validator, IConfiguration config, ILogger<UpdateAirportEndpoint> logger)
     {
         _bus = bus;
-        _config = config;
         _dynamoDb = dynamoDb;
         _validator = validator;
+        _config = config;
+        _logger = logger;
     }
     public void MapEndpoint(IEndpointRouteBuilder app)
         => app.MapPut("airports/{id}", InvokeAsync);
     private async Task<IResult> InvokeAsync(Guid id, CreateOrUpdateAirportDto dto, CancellationToken ct)
     {
-        var validationResult = await _validator.ValidateAsync(dto, ct);
-        if (!validationResult.IsValid(out var formattedErrors))
-        {
-            var error = Error.Validation("Airport.Validation", formattedErrors);
-            return ErrorHandlingHelper.HandleProblem(error);
-        }
         var key = new Dictionary<string, AttributeValue>
     {
         { "Id", new AttributeValue { S = id.ToString() } }
@@ -48,6 +44,7 @@ internal sealed class UpdateAirportEndpoint : IEndpoint
         var getItemResponse = await _dynamoDb.GetItemAsync(getItemRequest, ct);
         if (!getItemResponse.IsItemSet)
         {
+            _logger.LogWarning("Airport with id {Id} not found", id);
             var error = Error.NotFound("Airport.NotFound", $"Airport with id {id} not found");
             return ErrorHandlingHelper.HandleProblem(error);
         }
@@ -56,7 +53,15 @@ internal sealed class UpdateAirportEndpoint : IEndpoint
         var airport = JsonSerializer.Deserialize<Airport>(airportAsJson);
         if (airport is null)
         {
-            var error = Error.Failure("Airport.Update", "Failed to deserialize airport");
+            _logger.LogError("Failed to deserialize airport with id {Id}", id);
+            var error = Error.Failure("Airport.Update", $"Failed to deserialize airport with id {id}");
+            return ErrorHandlingHelper.HandleProblem(error);
+        }
+        var validationResult = await _validator.ValidateAsync(dto, ct);
+        if (!validationResult.IsValid(out var formattedErrors))
+        {
+            _logger.LogWarning("Validation failed for update of airport with id {Id}: {Errors}", id, formattedErrors);
+            var error = Error.Validation("Airport.Validation", formattedErrors);
             return ErrorHandlingHelper.HandleProblem(error);
         }
         airport.Update(dto.IcaoCode, dto.IataCode, dto.Name, dto.TimeZoneId);
@@ -73,7 +78,8 @@ internal sealed class UpdateAirportEndpoint : IEndpoint
         var updateItemResponse = await _dynamoDb.UpdateItemAsync(updateItemRequest, ct);
         if (updateItemResponse.HttpStatusCode is not HttpStatusCode.OK)
         {
-            var error = Error.Failure("Airport.Update", "Failed to update airport");
+            _logger.LogError("Failed to update airport with id {Id}", id);
+            var error = Error.Failure("Airport.Update", $"Failed to update airport with id {id}");
             return ErrorHandlingHelper.HandleProblem(error);
         }
         await _bus.Publish(new AirportUpdatedEvent(airport.Id, airport.Name, airport.IcaoCode, airport.IataCode, airport.TimeZoneId), ct);
