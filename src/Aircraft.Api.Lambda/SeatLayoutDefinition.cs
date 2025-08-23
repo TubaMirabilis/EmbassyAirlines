@@ -7,15 +7,17 @@ public sealed class SeatLayoutDefinition
     [JsonPropertyName("EquipmentType")]
     public string EquipmentType { get; set; } = default!;
     [JsonPropertyName("BusinessRows")]
-    public Dictionary<string, List<SeatSectionDefinition>> BusinessRowsRaw { get; } = [];
+    [JsonInclude]
+    public Dictionary<string, SeatSectionDefinition> BusinessRowsRaw { get; init; } = [];
     [JsonIgnore]
-    public Dictionary<RowRange, List<SeatSectionDefinition>> BusinessRows =>
+    public Dictionary<RowRange, SeatSectionDefinition> BusinessRows =>
         BusinessRowsRaw.ToDictionary(
             kvp => RowRange.Parse(kvp.Key),
             kvp => kvp.Value
         );
     [JsonPropertyName("EconomyRows")]
-    public Dictionary<string, SeatSectionDefinition> EconomyRowsRaw { get; } = [];
+    [JsonInclude]
+    public Dictionary<string, SeatSectionDefinition> EconomyRowsRaw { get; init; } = [];
     [JsonIgnore]
     public Dictionary<RowRange, SeatSectionDefinition> EconomyRows =>
         EconomyRowsRaw.ToDictionary(
@@ -24,30 +26,21 @@ public sealed class SeatLayoutDefinition
         );
     public IEnumerable<Seat> ToSeatsCollection(Guid aircraftId)
     {
-        var business = BusinessRows.SelectMany(kvp => kvp.Value.Select(section => (Range: kvp.Key, Section: section)));
-        var economy = EconomyRows.Select(kvp => (Range: kvp.Key, Section: kvp.Value));
-        var all = business.Concat(economy);
-        foreach (var (range, section) in all)
-        {
-            foreach (var row in range)
-            {
-                if (section.EveryNthRowOnly is int n && n > 0 && (row - range.Start) % n != 0)
+        var now = DateTime.UtcNow;
+        var business = BusinessRows
+            .Select(kvp => (Range: kvp.Key, Section: kvp.Value));
+        var economy = EconomyRows
+            .Select(kvp => (Range: kvp.Key, Section: kvp.Value));
+        return business.Concat(economy)
+            .SelectMany(x => x.Section.RowsIn(x.Range)
+                .SelectMany(row => x.Section.Seats.Select(letter => new Seat
                 {
-                    continue;
-                }
-                foreach (var letter in section.Seats)
-                {
-                    yield return new Seat
-                    {
-                        Id = Guid.NewGuid(),
-                        CreatedAt = DateTime.UtcNow,
-                        RowNumber = (byte)row,
-                        Letter = letter,
-                        Type = section.SeatType,
-                        AircraftId = aircraftId
-                    };
-                }
-            }
-        }
+                    Id = Guid.NewGuid(),
+                    CreatedAt = now,
+                    RowNumber = (byte)row,     // consider checked cast if row might exceed 255
+                    Letter = letter,
+                    Type = x.Section.SeatType,
+                    AircraftId = aircraftId
+                })));
     }
 }

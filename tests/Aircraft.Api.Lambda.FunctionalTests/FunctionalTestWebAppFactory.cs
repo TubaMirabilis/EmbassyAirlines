@@ -72,31 +72,29 @@ public class FunctionalTestWebAppFactory : WebApplicationFactory<Program>, IAsyn
     }
     private static string SeatLayoutDefinitionJson => """
     {
-    "EquipmentType": "B78X",
-    "BusinessRows": {
-        "1-18": [
-            { "Seats": ["A", "K"], "SeatType": "Business" },
-            {
-                "Seats": ["D", "F"],
-                "SeatType": "Business",
-                "EveryNthRowOnly": 2
+        "EquipmentType": "B78X",
+        "BusinessRows": {
+            "1-17": {
+                "Seats": ["A", "K"], "SeatType": "Business", "EveryNthRowOnly": 2
+            },
+            "2-18": {
+                "Seats": ["D", "F"], "SeatType": "Business", "EveryNthRowOnly": 2
             }
-        ]
-    },
-    "EconomyRows": {
-        "19-49": {
-            "Seats": ["A", "B", "C", "D", "E", "F", "G", "H", "J"],
-            "SeatType": "Economy"
         },
-        "50": {
-            "Seats": ["A", "B", "C", "D", "F", "G", "H", "J"],
-            "SeatType": "Economy"
-        },
-        "51-52": {
-            "Seats": ["A", "B", "D", "E", "F", "G", "J"],
-            "SeatType": "Economy"
+        "EconomyRows": {
+            "19-49": {
+                "Seats": ["A", "B", "C", "D", "E", "F", "G", "H", "J"],
+                "SeatType": "Economy"
+            },
+            "50": {
+                "Seats": ["A", "B", "C", "D", "F", "G", "H", "J"],
+                "SeatType": "Economy"
+            },
+            "51-52": {
+                "Seats": ["A", "B", "D", "E", "F", "G", "J"],
+                "SeatType": "Economy"
+            }
         }
     }
-}
-""";
+    """;
 }

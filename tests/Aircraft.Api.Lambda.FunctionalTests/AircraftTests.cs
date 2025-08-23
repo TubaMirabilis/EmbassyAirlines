@@ -32,7 +32,8 @@ public class AircraftTests : BaseFunctionalTest
             x.MaximumFuelWeight == request.MaximumFuelWeight &&
             x.MaximumLandingWeight == request.MaximumLandingWeight &&
             x.MaximumTakeoffWeight == request.MaximumTakeoffWeight &&
-            x.MaximumZeroFuelWeight == request.MaximumZeroFuelWeight);
+            x.MaximumZeroFuelWeight == request.MaximumZeroFuelWeight &&
+            x.Seats.Count() == 337);
     }
 
     [Fact, TestPriority(1)]
