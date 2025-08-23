@@ -6,13 +6,15 @@ namespace Flights.Api.Endpoints;
 
 internal sealed class ListFlightsEndpoint : IEndpoint
 {
-    private readonly ApplicationDbContext _ctx;
-    public ListFlightsEndpoint(ApplicationDbContext ctx) => _ctx = ctx;
+        private readonly IServiceScopeFactory _factory;
+    public ListFlightsEndpoint(IServiceScopeFactory factory) => _factory = factory;
     public void MapEndpoint(IEndpointRouteBuilder app)
         => app.MapGet("flights/{id}", InvokeAsync);
     private async Task<IResult> InvokeAsync(CancellationToken ct)
     {
-        var flights = await _ctx.Flights.ToListAsync(ct);
+        using var scope = _factory.CreateScope();
+        var ctx = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        var flights = await ctx.Flights.ToListAsync(ct);
         var list = flights.Select(f => f.ToDto()).ToList();
         return TypedResults.Ok(list);
     }

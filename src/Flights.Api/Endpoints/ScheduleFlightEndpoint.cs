@@ -11,12 +11,12 @@ namespace Flights.Api.Endpoints;
 
 internal sealed class ScheduleFlightEndpoint : IEndpoint
 {
-    private readonly ApplicationDbContext _ctx;
+    private readonly IServiceScopeFactory _factory;
     private readonly IValidator<CreateOrUpdateFlightDto> _validator;
     private readonly ILogger<ScheduleFlightEndpoint> _logger;
-    public ScheduleFlightEndpoint(ApplicationDbContext ctx, IValidator<CreateOrUpdateFlightDto> validator, ILogger<ScheduleFlightEndpoint> logger)
+    public ScheduleFlightEndpoint(IServiceScopeFactory factory, IValidator<CreateOrUpdateFlightDto> validator, ILogger<ScheduleFlightEndpoint> logger)
     {
-        _ctx = ctx;
+        _factory = factory;
         _validator = validator;
         _logger = logger;
     }
@@ -31,18 +31,20 @@ internal sealed class ScheduleFlightEndpoint : IEndpoint
             var error = Error.Validation("Flight.ValidationFailed", formattedErrors);
             return ErrorHandlingHelper.HandleProblem(error);
         }
-        var departureAirport = await _ctx.Airports
-                                         .Where(a => a.Id == dto.DepartureAirportId)
-                                         .SingleOrDefaultAsync(ct);
+        using var scope = _factory.CreateScope();
+        var ctx = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        var departureAirport = await ctx.Airports
+                                        .Where(a => a.Id == dto.DepartureAirportId)
+                                        .SingleOrDefaultAsync(ct);
         if (departureAirport is null)
         {
             _logger.LogWarning("Departure airport with ID {Id} not found", dto.DepartureAirportId);
             var error = Error.NotFound("Flight.DepartureAirportNotFound", "Departure airport not found");
             return ErrorHandlingHelper.HandleProblem(error);
         }
-        var arrivalAirport = await _ctx.Airports
-                                        .Where(a => a.Id == dto.ArrivalAirportId)
-                                        .SingleOrDefaultAsync(ct);
+        var arrivalAirport = await ctx.Airports
+                                      .Where(a => a.Id == dto.ArrivalAirportId)
+                                      .SingleOrDefaultAsync(ct);
         if (arrivalAirport is null)
         {
             _logger.LogWarning("Arrival airport with ID {Id} not found", dto.ArrivalAirportId);
@@ -65,9 +67,9 @@ internal sealed class ScheduleFlightEndpoint : IEndpoint
             var error = Error.Validation("Flight.ArrivalTimeBeforeDeparture", "Arrival time cannot be before departure time");
             return ErrorHandlingHelper.HandleProblem(error);
         }
-        var aircraft = await _ctx.Aircraft
-            .Where(a => a.Id == dto.AircraftId)
-            .SingleOrDefaultAsync(ct);
+        var aircraft = await ctx.Aircraft
+                                .Where(a => a.Id == dto.AircraftId)
+                                .SingleOrDefaultAsync(ct);
         if (aircraft is null)
         {
             _logger.LogWarning("Aircraft with ID {Id} not found", dto.AircraftId);
@@ -89,8 +91,8 @@ internal sealed class ScheduleFlightEndpoint : IEndpoint
             BusinessPrice = businessPrice
         };
         var flight = Flight.Create(args);
-        _ctx.Flights.Add(flight);
-        await _ctx.SaveChangesAsync(ct);
+        ctx.Flights.Add(flight);
+        await ctx.SaveChangesAsync(ct);
         return TypedResults.Created($"/flights/{flight.Id}", flight.ToDto());
     }
 }

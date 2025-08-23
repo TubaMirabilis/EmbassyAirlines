@@ -9,5 +9,6 @@
   <Folder Name="/tests/">
     <Project Path="tests/Aircraft.Api.Lambda.FunctionalTests/Aircraft.Api.Lambda.FunctionalTests.csproj" />
     <Project Path="tests/Airports.Api.Lambda.FunctionalTests/Airports.Api.Lambda.FunctionalTests.csproj" />
+    <Project Path="tests/Flights.Api.FunctionalTests/Flights.Api.FunctionalTests.csproj" />
   </Folder>
 </Solution>

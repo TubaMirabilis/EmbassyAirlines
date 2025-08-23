@@ -36,6 +36,21 @@ public class AircraftTests : BaseFunctionalTest
     }
 
     [Fact, TestPriority(1)]
+    public async Task GetById_Should_ReturnNotFound_WhenAircraftDoesNotExist()
+    {
+        // Arrange
+        var id = Guid.NewGuid();
+        var error = $"Aircraft with ID {id} not found";
+
+        // Act
+        var uri = new Uri($"aircraft/{id}", UriKind.Relative);
+        var response = await HttpClient.GetAsync(uri, TestContext.Current.CancellationToken);
+
+        // Assert
+        await GetProblemDetailsFromResponseAndAssert(response, error);
+    }
+
+    [Fact, TestPriority(2)]
     public async Task GetById_Should_ReturnOk_WhenAircraftExists()
     {
         // Arrange
