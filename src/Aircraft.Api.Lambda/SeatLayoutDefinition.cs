@@ -7,7 +7,6 @@ public sealed class SeatLayoutDefinition
     [JsonPropertyName("EquipmentType")]
     public string EquipmentType { get; set; } = default!;
     [JsonPropertyName("BusinessRows")]
-    [JsonInclude]
     public Dictionary<string, SeatSectionDefinition> BusinessRowsRaw { get; init; } = [];
     [JsonIgnore]
     public Dictionary<RowRange, SeatSectionDefinition> BusinessRows =>
@@ -16,7 +15,6 @@ public sealed class SeatLayoutDefinition
             kvp => kvp.Value
         );
     [JsonPropertyName("EconomyRows")]
-    [JsonInclude]
     public Dictionary<string, SeatSectionDefinition> EconomyRowsRaw { get; init; } = [];
     [JsonIgnore]
     public Dictionary<RowRange, SeatSectionDefinition> EconomyRows =>
@@ -26,21 +24,30 @@ public sealed class SeatLayoutDefinition
         );
     public IEnumerable<Seat> ToSeatsCollection(Guid aircraftId)
     {
-        var now = DateTime.UtcNow;
-        var business = BusinessRows
-            .Select(kvp => (Range: kvp.Key, Section: kvp.Value));
-        var economy = EconomyRows
-            .Select(kvp => (Range: kvp.Key, Section: kvp.Value));
-        return business.Concat(economy)
-            .SelectMany(x => x.Section.RowsIn(x.Range)
-                .SelectMany(row => x.Section.Seats.Select(letter => new Seat
+        var business = BusinessRows.Select(kvp => (Range: kvp.Key, Section: kvp.Value));
+        var economy = EconomyRows.Select(kvp => (Range: kvp.Key, Section: kvp.Value));
+        var all = business.Concat(economy);
+        foreach (var (range, section) in all)
+        {
+            foreach (var row in range)
+            {
+                if (section.EveryNthRowOnly is int n && n > 0 && (row - range.Start) % n != 0)
                 {
-                    Id = Guid.NewGuid(),
-                    CreatedAt = now,
-                    RowNumber = (byte)row,     // consider checked cast if row might exceed 255
-                    Letter = letter,
-                    Type = x.Section.SeatType,
-                    AircraftId = aircraftId
-                })));
+                    continue;
+                }
+                foreach (var letter in section.Seats)
+                {
+                    yield return new Seat
+                    {
+                        Id = Guid.NewGuid(),
+                        CreatedAt = DateTime.UtcNow,
+                        RowNumber = (byte)row,
+                        Letter = letter,
+                        Type = section.SeatType,
+                        AircraftId = aircraftId
+                    };
+                }
+            }
+        }
     }
 }
