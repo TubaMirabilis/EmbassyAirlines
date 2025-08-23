@@ -8,7 +8,7 @@ namespace Flights.Api.Endpoints;
 
 internal sealed class GetFlightEndpoint : IEndpoint
 {
-        private readonly IServiceScopeFactory _factory;
+    private readonly IServiceScopeFactory _factory;
     private readonly ILogger<GetFlightEndpoint> _logger;
     public GetFlightEndpoint(IServiceScopeFactory factory, ILogger<GetFlightEndpoint> logger)
     {
