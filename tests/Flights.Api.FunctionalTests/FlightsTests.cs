@@ -25,6 +25,26 @@ public class FlightsTests : BaseFunctionalTest
     }
 
     [Fact, TestPriority(0)]
+    public async Task Create_Should_ReturnNotFound_WhenAircraftDoesNotExist()
+    {
+        // Arrange
+        var id = Guid.NewGuid();
+        var tz1 = DateTimeZoneProviders.Tzdb["Asia/Seoul"];
+        var tz2 = DateTimeZoneProviders.Tzdb["Europe/Amsterdam"];
+        var soon = SystemClock.Instance.GetCurrentInstant().Plus(Duration.FromMinutes(30));
+        var departureFromIncheon = soon.InZone(tz1).ToDateTimeUnspecified();
+        var arrivalAtSchipol = soon.InZone(tz2).ToDateTimeUnspecified().AddHours(10).AddMinutes(30);
+        var request = new CreateOrUpdateFlightDto(id, "EB1", "EBY1", _incheon.Id, departureFromIncheon, _schipol.Id, arrivalAtSchipol, 400, 4000);
+        var error = $"Aircraft with ID {id} not found";
+
+        // Act
+        var response = await HttpClient.PostAsJsonAsync("flights", request, TestContext.Current.CancellationToken);
+
+        // Assert
+        await GetProblemDetailsFromResponseAndAssert(response, error);
+    }
+
+    [Fact, TestPriority(1)]
     public async Task Create_Should_ReturnCreated_WhenRequestIsValid()
     {
         // Arrange
@@ -65,7 +85,7 @@ public class FlightsTests : BaseFunctionalTest
             x.AircraftTailNumber == _aircraft.TailNumber);
     }
 
-    [Fact, TestPriority(1)]
+    [Fact, TestPriority(2)]
     public async Task GetById_Should_ReturnNotFound_WhenFlightDoesNotExist()
     {
         // Arrange
@@ -80,7 +100,7 @@ public class FlightsTests : BaseFunctionalTest
         await GetProblemDetailsFromResponseAndAssert(response, error);
     }
 
-    [Fact, TestPriority(2)]
+    [Fact, TestPriority(3)]
     public async Task GetById_Should_ReturnOk_WhenFlightExists()
     {
         // Arrange

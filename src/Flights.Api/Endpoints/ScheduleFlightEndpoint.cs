@@ -73,7 +73,7 @@ internal sealed class ScheduleFlightEndpoint : IEndpoint
         if (aircraft is null)
         {
             _logger.LogWarning("Aircraft with ID {Id} not found", dto.AircraftId);
-            var error = Error.NotFound("Flight.AircraftNotFound", "Aircraft not found");
+            var error = Error.NotFound("Flight.AircraftNotFound", $"Aircraft with ID {dto.AircraftId} not found");
             return ErrorHandlingHelper.HandleProblem(error);
         }
         var economyPrice = new Money(dto.EconomyPrice);
