@@ -15,7 +15,6 @@ internal sealed class GetFlightEndpoint : IEndpoint
         _factory = factory;
         _logger = logger;
     }
-
     public void MapEndpoint(IEndpointRouteBuilder app)
         => app.MapGet("flights/{id}", InvokeAsync);
     private async Task<IResult> InvokeAsync(Guid id, CancellationToken ct)

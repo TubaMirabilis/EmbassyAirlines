@@ -2,7 +2,7 @@ using System.Globalization;
 using System.Net.Http.Json;
 using System.Text.Json;
 using FluentAssertions;
-using Microsoft.AspNetCore.Mvc;
+using NodaTime;
 using Shared.Contracts;
 
 namespace Flights.Api.FunctionalTests;
@@ -28,9 +28,11 @@ public class FlightsTests : BaseFunctionalTest
     public async Task Create_Should_ReturnCreated_WhenRequestIsValid()
     {
         // Arrange
-        var soon = DateTime.UtcNow.AddMinutes(30);
-        var departureFromIncheon = soon.AddHours(8);
-        var arrivalAtSchipol = soon.AddHours(3).AddMinutes(30);
+        var tz1 = DateTimeZoneProviders.Tzdb["Asia/Seoul"];
+        var tz2 = DateTimeZoneProviders.Tzdb["Europe/Amsterdam"];
+        var soon = SystemClock.Instance.GetCurrentInstant().Plus(Duration.FromMinutes(30));
+        var departureFromIncheon = soon.InZone(tz1).ToDateTimeUnspecified();
+        var arrivalAtSchipol = soon.InZone(tz2).ToDateTimeUnspecified().AddHours(10).AddMinutes(30);
         var duration = TimeSpan.FromHours(10).Add(TimeSpan.FromMinutes(30));
         var request = new CreateOrUpdateFlightDto(_aircraft.Id, "EB1", "EBY1", _incheon.Id, departureFromIncheon, _schipol.Id, arrivalAtSchipol, 400, 4000);
 

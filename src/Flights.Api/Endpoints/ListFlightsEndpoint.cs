@@ -9,7 +9,7 @@ internal sealed class ListFlightsEndpoint : IEndpoint
         private readonly IServiceScopeFactory _factory;
     public ListFlightsEndpoint(IServiceScopeFactory factory) => _factory = factory;
     public void MapEndpoint(IEndpointRouteBuilder app)
-        => app.MapGet("flights/{id}", InvokeAsync);
+        => app.MapGet("flights", InvokeAsync);
     private async Task<IResult> InvokeAsync(CancellationToken ct)
     {
         using var scope = _factory.CreateScope();
