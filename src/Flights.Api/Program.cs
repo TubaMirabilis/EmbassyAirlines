@@ -3,10 +3,14 @@ using Flights.Api.Database;
 using FluentValidation;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
+using Serilog;
+using Serilog.Formatting.Compact;
 using Shared;
 using Shared.Extensions;
+using Shared.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Host.UseSerilog(new LoggerConfiguration().WriteTo.Console(new CompactJsonFormatter()).CreateLogger());
 var config = builder.Configuration;
 config.AddEnvironmentVariables(prefix: "FLIGHTS_");
 var scope = config["MassTransit:Scope"];
@@ -50,6 +54,8 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 app.MapEndpoints();
+app.UseMiddleware<RequestContextLoggingMiddleware>();
+app.UseSerilogRequestLogging();
 app.UseExceptionHandler();
 await app.RunAsync();
 
