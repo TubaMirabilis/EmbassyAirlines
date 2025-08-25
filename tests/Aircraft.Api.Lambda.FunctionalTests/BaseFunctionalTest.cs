@@ -24,6 +24,7 @@ public abstract class BaseFunctionalTest : IClassFixture<FunctionalTestWebAppFac
         {
             HttpStatusCode.BadRequest => new ProblemDetails().WithValidationError(detail),
             HttpStatusCode.NotFound => new ProblemDetails().WithQueryError(detail),
+            HttpStatusCode.Conflict => new ProblemDetails().WithConflictError(detail),
             _ => throw new InvalidOperationException()
         };
         var content = await response.Content

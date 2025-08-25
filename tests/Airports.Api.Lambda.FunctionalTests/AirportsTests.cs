@@ -177,12 +177,13 @@ public class AirportsTests : BaseFunctionalTest
     {
         // Arrange
         var request = new CreateOrUpdateAirportDto("CYVR", "YVR", "Vancouver International Airport", "America/Vancouver");
+        var error = $"Airport with IATA code {request.IataCode} already exists";
 
         // Act
         var response = await HttpClient.PostAsJsonAsync("airports", request, TestContext.Current.CancellationToken);
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.Conflict);
+        await GetProblemDetailsFromResponseAndAssert(response, error);
     }
 
     [Fact, TestPriority(12)]

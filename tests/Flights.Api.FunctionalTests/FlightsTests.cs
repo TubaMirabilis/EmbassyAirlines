@@ -25,6 +25,27 @@ public class FlightsTests : BaseFunctionalTest
     }
 
     [Fact, TestPriority(0)]
+    public async Task Create_Should_ReturnBadRequest_WhenDepartureTimeIsInThePast()
+    {
+        // Arrange
+        var tz1 = DateTimeZoneProviders.Tzdb["Asia/Seoul"];
+        var tz2 = DateTimeZoneProviders.Tzdb["Europe/Amsterdam"];
+        var recently = SystemClock.Instance.GetCurrentInstant().Minus(Duration.FromMinutes(30));
+        var now = SystemClock.Instance.GetCurrentInstant();
+        var soon = now.Plus(Duration.FromMinutes(30));
+        var departureFromIncheon = recently.InZone(tz1).ToDateTimeUnspecified();
+        var arrivalAtSchipol = soon.InZone(tz2).ToDateTimeUnspecified().AddHours(10).AddMinutes(30);
+        var request = new CreateOrUpdateFlightDto(_aircraft.Id, "EB1", "EBY1", _incheon.Id, departureFromIncheon, _schipol.Id, arrivalAtSchipol, 400, 4000);
+        var error = "Departure time cannot be in the past";
+
+        // Act
+        var response = await HttpClient.PostAsJsonAsync("flights", request, TestContext.Current.CancellationToken);
+
+        // Assert
+        await GetProblemDetailsFromResponseAndAssert(response, error);
+    }
+
+    [Fact, TestPriority(1)]
     public async Task Create_Should_ReturnBadRequest_WhenArrivalTimeIsBeforeDepartureTime()
     {
         // Arrange
@@ -44,7 +65,7 @@ public class FlightsTests : BaseFunctionalTest
         await GetProblemDetailsFromResponseAndAssert(response, error);
     }
 
-    [Fact, TestPriority(1)]
+    [Fact, TestPriority(2)]
     public async Task Create_Should_ReturnNotFound_WhenAircraftDoesNotExist()
     {
         // Arrange
@@ -64,7 +85,7 @@ public class FlightsTests : BaseFunctionalTest
         await GetProblemDetailsFromResponseAndAssert(response, error);
     }
 
-    [Fact, TestPriority(2)]
+    [Fact, TestPriority(3)]
     public async Task Create_Should_ReturnCreated_WhenRequestIsValid()
     {
         // Arrange
@@ -105,7 +126,7 @@ public class FlightsTests : BaseFunctionalTest
             x.AircraftTailNumber == _aircraft.TailNumber);
     }
 
-    [Fact, TestPriority(3)]
+    [Fact, TestPriority(4)]
     public async Task GetById_Should_ReturnNotFound_WhenFlightDoesNotExist()
     {
         // Arrange
@@ -120,7 +141,7 @@ public class FlightsTests : BaseFunctionalTest
         await GetProblemDetailsFromResponseAndAssert(response, error);
     }
 
-    [Fact, TestPriority(4)]
+    [Fact, TestPriority(5)]
     public async Task GetById_Should_ReturnOk_WhenFlightExists()
     {
         // Arrange

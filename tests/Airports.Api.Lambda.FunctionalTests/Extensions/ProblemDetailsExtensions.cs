@@ -13,6 +13,14 @@ internal static class ProblemDetailsExtensions
         pd.Type = "https://tools.ietf.org/html/rfc9110#section-15.5.1";
         return pd;
     }
+    public static ProblemDetails WithConflictError(this ProblemDetails pd, string error)
+    {
+        pd.Detail = error;
+        pd.Status = 409;
+        pd.Title = ErrorHandlingHelper.ErrorMessages[(int)pd.Status];
+        pd.Type = "https://tools.ietf.org/html/rfc9110#section-15.5.10";
+        return pd;
+    }
     public static ProblemDetails WithQueryError(this ProblemDetails pd, string error)
     {
         pd.Detail = error;
