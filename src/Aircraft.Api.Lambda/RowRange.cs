@@ -4,7 +4,7 @@ using Shared;
 
 namespace Aircraft.Api.Lambda;
 
-public readonly struct RowRange : IEnumerable<int>, IEquatable<RowRange>
+internal readonly struct RowRange : IEnumerable<int>, IEquatable<RowRange>
 {
     public int Start { get; }
     public int End { get; }

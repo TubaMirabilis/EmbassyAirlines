@@ -4,7 +4,7 @@ using Shared.Contracts;
 
 namespace Flights.Api;
 
-public class AirportCreatedConsumer : IConsumer<AirportCreatedEvent>
+internal sealed class AirportCreatedConsumer : IConsumer<AirportCreatedEvent>
 {
     private readonly ApplicationDbContext _ctx;
     private readonly ILogger<AirportCreatedConsumer> _logger;

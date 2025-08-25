@@ -52,7 +52,7 @@ public class FunctionalTestWebAppFactory : WebApplicationFactory<Program>, IAsyn
         await base.DisposeAsync();
         GC.SuppressFinalize(this);
     }
-    public Airport? IncheonAirport { get; private set; }
-    public Airport? SchipolAirport { get; private set; }
-    public Aircraft? Aircraft { get; set; }
+    internal Airport? IncheonAirport { get; private set; }
+    internal Airport? SchipolAirport { get; private set; }
+    internal Aircraft? Aircraft { get; set; }
 }

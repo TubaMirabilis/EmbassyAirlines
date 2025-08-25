@@ -2,7 +2,7 @@ using NodaTime;
 
 namespace Flights.Api;
 
-public sealed record FlightCreationArgs
+internal sealed record FlightCreationArgs
 {
     public required string FlightNumberIata { get; init; }
     public required string FlightNumberIcao { get; init; }

@@ -2,7 +2,7 @@ using Shared.Contracts;
 
 namespace Aircraft.Api.Lambda;
 
-public static class AircraftExtensions
+internal static class AircraftExtensions
 {
     public static AircraftDto ToDto(this Aircraft aircraft) => new(
         aircraft.Id,

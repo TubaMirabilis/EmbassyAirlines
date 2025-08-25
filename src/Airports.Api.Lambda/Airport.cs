@@ -3,7 +3,7 @@ using Shared;
 
 namespace Airports.Api.Lambda;
 
-public sealed class Airport
+internal sealed class Airport
 {
     private Airport(string icaoCode, string iataCode, string name, string timeZoneId)
     {

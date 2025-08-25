@@ -2,7 +2,7 @@ using FluentValidation;
 
 namespace Aircraft.Api.Lambda;
 
-public sealed class CreateOrUpdateAircraftDtoValidator : AbstractValidator<CreateOrUpdateAircraftDto>
+internal sealed class CreateOrUpdateAircraftDtoValidator : AbstractValidator<CreateOrUpdateAircraftDto>
 {
     public CreateOrUpdateAircraftDtoValidator()
     {

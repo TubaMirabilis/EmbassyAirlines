@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Flights.Api;
 
-public sealed class CreateOrUpdateFlightDtoValidator : AbstractValidator<CreateOrUpdateFlightDto>
+internal sealed class CreateOrUpdateFlightDtoValidator : AbstractValidator<CreateOrUpdateFlightDto>
 {
     public CreateOrUpdateFlightDtoValidator()
     {

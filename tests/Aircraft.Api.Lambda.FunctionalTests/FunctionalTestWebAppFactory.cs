@@ -14,7 +14,7 @@ using Testcontainers.PostgreSql;
 
 namespace Aircraft.Api.Lambda.FunctionalTests;
 
-public class FunctionalTestWebAppFactory : WebApplicationFactory<Program>, IAsyncLifetime
+public sealed class FunctionalTestWebAppFactory : WebApplicationFactory<Program>, IAsyncLifetime
 {
     private readonly LocalStackContainer _localStackContainer = new LocalStackBuilder().Build();
     private readonly PostgreSqlContainer _dbContainer = new PostgreSqlBuilder().WithImage("postgres").WithDatabase("mastermind").WithUsername("mastermind").WithPassword("mastermind").WithExposedPort(5432).Build();

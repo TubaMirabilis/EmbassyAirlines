@@ -2,7 +2,7 @@ using Shared;
 
 namespace Flights.Api;
 
-public sealed record Money
+internal sealed record Money
 {
     public Money(decimal amount)
     {

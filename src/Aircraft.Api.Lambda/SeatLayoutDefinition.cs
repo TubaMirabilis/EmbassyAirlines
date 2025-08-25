@@ -2,7 +2,7 @@ using System.Text.Json.Serialization;
 
 namespace Aircraft.Api.Lambda;
 
-public sealed class SeatLayoutDefinition
+internal sealed class SeatLayoutDefinition
 {
     [JsonPropertyName("EquipmentType")]
     public string EquipmentType { get; set; } = default!;

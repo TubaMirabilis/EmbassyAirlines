@@ -2,7 +2,7 @@ using System.Text.Json.Serialization;
 
 namespace Aircraft.Api.Lambda;
 
-public sealed class SeatSectionDefinition
+internal sealed class SeatSectionDefinition
 {
     [JsonPropertyName("Seats")]
     public IEnumerable<char> Seats { get; set; } = Array.Empty<char>();

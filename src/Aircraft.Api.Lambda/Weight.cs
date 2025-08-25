@@ -2,7 +2,7 @@
 
 namespace Aircraft.Api.Lambda;
 
-public sealed record Weight
+internal sealed record Weight
 {
     public Weight(int kilograms)
     {

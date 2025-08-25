@@ -25,4 +25,8 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="Aircraft.Api.Lambda.FunctionalTests" />
+  </ItemGroup>
+
 </Project>

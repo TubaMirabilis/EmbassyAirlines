@@ -8,61 +8,32 @@ trim_trailing_whitespace = true
 end_of_line = crlf
 insert_final_newline = true
 
+[*.{razor,cshtml}]
+charset = utf-8-bom
+indent_size = 2
+
 [*.xml]
 indent_size = 2
 
 [*.cs]
-# ASP0018: Unused route parameters should be removed
-dotnet_diagnostic.ASP0018.severity = none
-# CA1031: Do not catch general exception types
-dotnet_diagnostic.CA1031.severity = none
-# CA1034: Nested types should not be visible
-dotnet_diagnostic.CA1034.severity = none
 # CA1062: Validate arguments of public methods
 dotnet_diagnostic.CA1062.severity = none
-# CA1515: Type can be made internal
-dotnet_diagnostic.CA1515.severity = none
 # CA1707: Identifiers should not contain underscores
 dotnet_diagnostic.CA1707.severity = none
 # CA1716: Identifiers should not match keywords
 dotnet_diagnostic.CA1716.severity = none
 # CA1724: Type names should not match namespaces
 dotnet_diagnostic.CA1724.severity = none
-# CA1727: Use PascalCase for named placeholders
-dotnet_diagnostic.CA1727.severity = none
 # CA1812: Avoid uninstantiated internal classes
 dotnet_diagnostic.CA1812.severity = none
 # CA1848: Use the LoggerMessage delegates
 dotnet_diagnostic.CA1848.severity = none
 # CA2007: Consider calling ConfigureAwait on the awaited task
 dotnet_diagnostic.CA2007.severity = none
-# CA5404: TokenValidationParameters.ValidateAudience should not be set to false as it disables important validationDo not use hardcoded, crypto-weak IVs
-# A great idea, with the best of intensions, but AWS Cognito does not support audience properties in JWT tokens.
-dotnet_diagnostic.CA5404.severity = none
-# IDE0005: Using directive is unnecessary
-dotnet_diagnostic.IDE0005.severity = none
-# IDE0058: Expression value is never used
-dotnet_diagnostic.IDE0058.severity = none
 # S1118: Utility classes should not have public constructors
 dotnet_diagnostic.S1118.severity = none
-# S1135: Track uses of "TODO" tags
-dotnet_diagnostic.S1135.severity = none
-# S1144: Unused internal types should be removed
-dotnet_diagnostic.S1144.severity = none
-# S1244: Do not check floating point equality with exact values
-dotnet_diagnostic.S1244.severity = none
-# S2094: Remove empty records
-dotnet_diagnostic.S2094.severity = none
-# S2139: Rethrow exceptions without adding contextual information
-dotnet_diagnostic.S2139.severity = none
-# S6781: JWT secret keys should not be disclosed.
-# A great idea, with the best of intentions, but the code analyzer is not smart enough to know if the secret is being used in a secure way.
-dotnet_diagnostic.S6781.severity = none
-# S6964: Property used as input in a controller action should be nullable or annotated with the Required attribute to avoid under-posting
-dotnet_diagnostic.S6964.severity = none
-# S6966: Use async version of methods
-dotnet_diagnostic.S6966.severity = none
 
+# Markdown files
 [*.md]
 max_line_length = off
 trim_trailing_whitespace = false
@@ -130,7 +101,7 @@ csharp_style_var_when_type_is_apparent = true:error
 
 # Expression-bodied members
 csharp_style_expression_bodied_accessors = true:error
-csharp_style_expression_bodied_constructors = false:silent
+csharp_style_expression_bodied_constructors = true:error
 csharp_style_expression_bodied_indexers = true:error
 csharp_style_expression_bodied_lambdas = true:error
 csharp_style_expression_bodied_local_functions = true:error
@@ -175,7 +146,7 @@ csharp_using_directive_placement = outside_namespace:error
 csharp_style_prefer_method_group_conversion = true:error
 
 # Language version
-csharp_style_prefer_top_level_statements = true:silent
+csharp_style_prefer_top_level_statements = true:error
 csharp_style_prefer_primary_constructors = true:none
 
 #### C# Formatting Rules ####

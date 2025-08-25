@@ -3,7 +3,7 @@ using Shared;
 
 namespace Flights.Api;
 
-public sealed class Airport
+internal sealed class Airport
 {
     private Airport(Guid id, string timeZoneId, string iataCode, string icaoCode, string name)
     {

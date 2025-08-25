@@ -2,7 +2,7 @@
 
 namespace Flights.Api;
 
-public sealed class Flight
+internal sealed class Flight
 {
     private Flight(FlightCreationArgs args)
     {

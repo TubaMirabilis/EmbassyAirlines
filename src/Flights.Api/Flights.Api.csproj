@@ -24,4 +24,8 @@
     <PackageReference Update="SonarAnalyzer.CSharp" Version="10.15.0.120848" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="Flights.Api.FunctionalTests" />
+  </ItemGroup>
+
 </Project>

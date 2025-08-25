@@ -1,6 +1,6 @@
 namespace Aircraft.Api.Lambda;
 
-public sealed record AircraftCreationArgs
+internal sealed record AircraftCreationArgs
 {
     public string? TailNumber { get; init; }
     public string? EquipmentCode { get; init; }

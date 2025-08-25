@@ -2,7 +2,7 @@
 
 namespace Aircraft.Api.Lambda;
 
-public sealed class Aircraft
+internal sealed class Aircraft
 {
     private readonly List<Seat> _seats = [];
     private Aircraft(AircraftCreationArgs args)

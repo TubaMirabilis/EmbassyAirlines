@@ -2,7 +2,7 @@
 
 namespace Aircraft.Api.Lambda.Database;
 
-public sealed class ApplicationDbContext : DbContext
+internal sealed class ApplicationDbContext : DbContext
 {
     public ApplicationDbContext(DbContextOptions options)
         : base(options)

@@ -1,6 +1,6 @@
 ﻿namespace Flights.Api;
 
-public sealed class Aircraft
+internal sealed class Aircraft
 {
     private Aircraft(Guid id, string tailNumber, string equipmentCode)
     {

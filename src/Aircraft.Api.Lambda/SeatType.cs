@@ -1,6 +1,6 @@
 namespace Aircraft.Api.Lambda;
 
-public enum SeatType
+internal enum SeatType
 {
     Business,
     Economy

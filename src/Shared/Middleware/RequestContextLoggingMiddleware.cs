@@ -7,10 +7,7 @@ public class RequestContextLoggingMiddleware
 {
     private const string CorrelationIdHeaderName = "X-Correlation-Id";
     private readonly RequestDelegate _next;
-    public RequestContextLoggingMiddleware(RequestDelegate next)
-    {
-        _next = next;
-    }
+    public RequestContextLoggingMiddleware(RequestDelegate next) => _next = next;
     public Task Invoke(HttpContext context)
     {
         ArgumentNullException.ThrowIfNull(context);
