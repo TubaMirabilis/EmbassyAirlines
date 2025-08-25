@@ -25,6 +25,26 @@ public class FlightsTests : BaseFunctionalTest
     }
 
     [Fact, TestPriority(0)]
+    public async Task Create_Should_ReturnBadRequest_WhenArrivalTimeIsBeforeDepartureTime()
+    {
+        // Arrange
+        var tz1 = DateTimeZoneProviders.Tzdb["Asia/Seoul"];
+        var tz2 = DateTimeZoneProviders.Tzdb["Europe/Amsterdam"];
+        var now = SystemClock.Instance.GetCurrentInstant();
+        var soon = now.Plus(Duration.FromMinutes(30));
+        var departureFromIncheon = soon.InZone(tz1).ToDateTimeUnspecified();
+        var arrivalAtSchipol = now.InZone(tz2).ToDateTimeUnspecified();
+        var request = new CreateOrUpdateFlightDto(_aircraft.Id, "EB1", "EBY1", _incheon.Id, departureFromIncheon, _schipol.Id, arrivalAtSchipol, 400, 4000);
+        var error = "Arrival time cannot be before departure time";
+
+        // Act
+        var response = await HttpClient.PostAsJsonAsync("flights", request, TestContext.Current.CancellationToken);
+
+        // Assert
+        await GetProblemDetailsFromResponseAndAssert(response, error);
+    }
+
+    [Fact, TestPriority(1)]
     public async Task Create_Should_ReturnNotFound_WhenAircraftDoesNotExist()
     {
         // Arrange
@@ -44,7 +64,7 @@ public class FlightsTests : BaseFunctionalTest
         await GetProblemDetailsFromResponseAndAssert(response, error);
     }
 
-    [Fact, TestPriority(1)]
+    [Fact, TestPriority(2)]
     public async Task Create_Should_ReturnCreated_WhenRequestIsValid()
     {
         // Arrange
@@ -85,7 +105,7 @@ public class FlightsTests : BaseFunctionalTest
             x.AircraftTailNumber == _aircraft.TailNumber);
     }
 
-    [Fact, TestPriority(2)]
+    [Fact, TestPriority(3)]
     public async Task GetById_Should_ReturnNotFound_WhenFlightDoesNotExist()
     {
         // Arrange
@@ -100,7 +120,7 @@ public class FlightsTests : BaseFunctionalTest
         await GetProblemDetailsFromResponseAndAssert(response, error);
     }
 
-    [Fact, TestPriority(3)]
+    [Fact, TestPriority(4)]
     public async Task GetById_Should_ReturnOk_WhenFlightExists()
     {
         // Arrange
