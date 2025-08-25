@@ -60,7 +60,13 @@ internal sealed class CreateAircraftEndpoint : IEndpoint
                 return ErrorHandlingHelper.HandleProblem(error);
             }
             var response = await _client.GetObjectAsync(bucketName, $"seat-layouts/{equipmentCode}.json", ct);
-            var def = await JsonSerializer.DeserializeAsync<SeatLayoutDefinition>(response.ResponseStream, cancellationToken: ct) ?? throw new InvalidOperationException($"Seat layout definition for {equipmentCode} is null");
+            var def = await JsonSerializer.DeserializeAsync<SeatLayoutDefinition>(response.ResponseStream, cancellationToken: ct);
+            if (def is null)
+            {
+                _logger.LogWarning("Seat layout definition for {EquipmentCode} is null", equipmentCode);
+                var error = Error.Validation("Aircraft.SeatLayoutDefinition", $"Seat layout definition for {equipmentCode} is null");
+                return ErrorHandlingHelper.HandleProblem(error);
+            }
             var args = new AircraftCreationArgs
             {
                 TailNumber = dto.TailNumber,
@@ -84,12 +90,6 @@ internal sealed class CreateAircraftEndpoint : IEndpoint
             var error = e.StatusCode == HttpStatusCode.NotFound
                 ? Error.Validation("Aircraft.SeatLayoutDefinition", $"Seat layout definition for {equipmentCode} not found")
                 : Error.Failure("Aircraft.SeatLayoutDefinition", $"Error retrieving seat layout definition for {equipmentCode}: {e.Message}");
-            return ErrorHandlingHelper.HandleProblem(error);
-        }
-        catch (InvalidOperationException e)
-        {
-            _logger.LogError(e, "Invalid seat layout definition for {EquipmentCode}", equipmentCode);
-            var error = Error.Validation("Aircraft.SeatLayoutDefinition", e.Message);
             return ErrorHandlingHelper.HandleProblem(error);
         }
     }

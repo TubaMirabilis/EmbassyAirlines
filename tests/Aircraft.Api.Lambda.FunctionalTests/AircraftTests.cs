@@ -13,7 +13,21 @@ public class AircraftTests : BaseFunctionalTest
     {
     }
 
-    [Fact, TestPriority(0)]
+    [Fact, TestPriority(1)]
+    public async Task Test1()
+    {
+        // Arrange
+        var request = new CreateOrUpdateAircraftDto("C-FZTY", "B38M", 42045, 82190, 69308, 65952, 20826);
+        var error = "Seat layout definition for B38M not found";
+
+        // Act
+        var response = await HttpClient.PostAsJsonAsync("aircraft", request, TestContext.Current.CancellationToken);
+
+        // Assert
+        await GetProblemDetailsFromResponseAndAssert(response, error);
+    }
+
+    [Fact, TestPriority(1)]
     public async Task Create_Should_ReturnCreated_WhenRequestIsValid()
     {
         // Arrange
@@ -36,7 +50,7 @@ public class AircraftTests : BaseFunctionalTest
             x.Seats.Count() == 337);
     }
 
-    [Fact, TestPriority(1)]
+    [Fact, TestPriority(2)]
     public async Task GetById_Should_ReturnNotFound_WhenAircraftDoesNotExist()
     {
         // Arrange
@@ -51,7 +65,7 @@ public class AircraftTests : BaseFunctionalTest
         await GetProblemDetailsFromResponseAndAssert(response, error);
     }
 
-    [Fact, TestPriority(2)]
+    [Fact, TestPriority(3)]
     public async Task GetById_Should_ReturnOk_WhenAircraftExists()
     {
         // Arrange
