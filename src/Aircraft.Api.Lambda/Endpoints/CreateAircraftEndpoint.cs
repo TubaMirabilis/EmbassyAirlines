@@ -88,7 +88,7 @@ internal sealed class CreateAircraftEndpoint : IEndpoint
         {
             _logger.LogError(e, "Error retrieving seat layout definition for {EquipmentCode}", equipmentCode);
             var error = e.StatusCode == HttpStatusCode.NotFound
-                ? Error.Validation("Aircraft.SeatLayoutDefinition", $"Seat layout definition for {equipmentCode} not found")
+                ? Error.NotFound("Aircraft.SeatLayoutDefinition", $"Seat layout definition for {equipmentCode} not found")
                 : Error.Failure("Aircraft.SeatLayoutDefinition", $"Error retrieving seat layout definition for {equipmentCode}: {e.Message}");
             return ErrorHandlingHelper.HandleProblem(error);
         }

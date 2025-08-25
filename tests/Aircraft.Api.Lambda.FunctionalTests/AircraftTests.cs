@@ -14,7 +14,7 @@ public class AircraftTests : BaseFunctionalTest
     }
 
     [Fact, TestPriority(1)]
-    public async Task Test1()
+    public async Task Create_Should_ReturnNotFound_WhenSeatLayoutDefinitionDoesNotExist()
     {
         // Arrange
         var request = new CreateOrUpdateAircraftDto("C-FZTY", "B38M", 42045, 82190, 69308, 65952, 20826);
