@@ -12,7 +12,7 @@ internal sealed class CreateOrUpdateAircraftDtoValidator : AbstractValidator<Cre
             .MaximumLength(12)
             .WithMessage("Tail number must be no longer than 12 characters.");
         RuleFor(x => x.EquipmentCode)
-            .Matches(@"^[A-Z0-9]+$")
+            .Matches("^[A-Z0-9]+$")
             .WithMessage("Equipment code must only contain uppercase letters and numbers.")
             .MaximumLength(4)
             .WithMessage("Equipment code must be no longer than 4 characters.");
