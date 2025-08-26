@@ -38,11 +38,12 @@ public class FunctionalTestWebAppFactory : WebApplicationFactory<Program>, IAsyn
         await _dbContainer.StartAsync();
         IncheonAirport = Airport.Create(Guid.NewGuid(), "Asia/Seoul", "ICN", "RKSI", "Incheon International Airport");
         SchipolAirport = Airport.Create(Guid.NewGuid(), "Europe/Amsterdam", "AMS", "EHAM", "Schipol Airport");
-        Aircraft = Aircraft.Create(Guid.NewGuid(), "C-FJRN", "B78X");
+        Aircraft1 = Aircraft.Create(Guid.NewGuid(), "C-FJRN", "B78X");
+        Aircraft2 = Aircraft.Create(Guid.NewGuid(), "C-FJRO", "B78X");
         using var scope = Services.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
         dbContext.Airports.AddRange(IncheonAirport, SchipolAirport);
-        dbContext.Aircraft.Add(Aircraft);
+        dbContext.Aircraft.AddRange(Aircraft1, Aircraft2);
         await dbContext.SaveChangesAsync();
     }
     public new async ValueTask DisposeAsync()
@@ -54,5 +55,6 @@ public class FunctionalTestWebAppFactory : WebApplicationFactory<Program>, IAsyn
     }
     internal Airport? IncheonAirport { get; private set; }
     internal Airport? SchipolAirport { get; private set; }
-    internal Aircraft? Aircraft { get; private set; }
+    internal Aircraft? Aircraft1 { get; private set; }
+    internal Aircraft? Aircraft2 { get; private set; }
 }

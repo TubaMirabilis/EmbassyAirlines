@@ -13,15 +13,18 @@ public class FlightsTests : BaseFunctionalTest
     private static FlightDto? s_dto;
     private readonly Airport _incheon;
     private readonly Airport _schipol;
-    private readonly Aircraft _aircraft;
+    private readonly Aircraft _aircraft1;
+    private readonly Aircraft _aircraft2;
     public FlightsTests(FunctionalTestWebAppFactory factory) : base(factory)
     {
         ArgumentNullException.ThrowIfNull(factory.IncheonAirport);
         ArgumentNullException.ThrowIfNull(factory.SchipolAirport);
-        ArgumentNullException.ThrowIfNull(factory.Aircraft);
+        ArgumentNullException.ThrowIfNull(factory.Aircraft1);
+        ArgumentNullException.ThrowIfNull(factory.Aircraft2);
         _incheon = factory.IncheonAirport;
         _schipol = factory.SchipolAirport;
-        _aircraft = factory.Aircraft;
+        _aircraft1 = factory.Aircraft1;
+        _aircraft2 = factory.Aircraft2;
     }
 
     [Fact, TestPriority(0)]
@@ -35,7 +38,7 @@ public class FlightsTests : BaseFunctionalTest
         var soon = now.Plus(Duration.FromMinutes(30));
         var departureFromIncheon = recently.InZone(tz1).ToDateTimeUnspecified();
         var arrivalAtSchipol = soon.InZone(tz2).ToDateTimeUnspecified().AddHours(10).AddMinutes(30);
-        var request = new CreateOrUpdateFlightDto(_aircraft.Id, "EB1", "EBY1", _incheon.Id, departureFromIncheon, _schipol.Id, arrivalAtSchipol, 400, 4000);
+        var request = new CreateOrUpdateFlightDto(_aircraft1.Id, "EB1", "EBY1", _incheon.Id, departureFromIncheon, _schipol.Id, arrivalAtSchipol, 400, 4000);
         var error = "Departure time cannot be in the past";
 
         // Act
@@ -55,7 +58,7 @@ public class FlightsTests : BaseFunctionalTest
         var soon = now.Plus(Duration.FromMinutes(30));
         var departureFromIncheon = soon.InZone(tz1).ToDateTimeUnspecified();
         var arrivalAtSchipol = now.InZone(tz2).ToDateTimeUnspecified();
-        var request = new CreateOrUpdateFlightDto(_aircraft.Id, "EB1", "EBY1", _incheon.Id, departureFromIncheon, _schipol.Id, arrivalAtSchipol, 400, 4000);
+        var request = new CreateOrUpdateFlightDto(_aircraft1.Id, "EB1", "EBY1", _incheon.Id, departureFromIncheon, _schipol.Id, arrivalAtSchipol, 400, 4000);
         var error = "Arrival time cannot be before departure time";
 
         // Act
@@ -95,7 +98,7 @@ public class FlightsTests : BaseFunctionalTest
         var departureFromIncheon = soon.InZone(tz1).ToDateTimeUnspecified();
         var arrivalAtSchipol = soon.InZone(tz2).ToDateTimeUnspecified().AddHours(10).AddMinutes(30);
         var duration = TimeSpan.FromHours(10).Add(TimeSpan.FromMinutes(30));
-        var request = new CreateOrUpdateFlightDto(_aircraft.Id, "EB1", "EBY1", _incheon.Id, departureFromIncheon, _schipol.Id, arrivalAtSchipol, 400, 4000);
+        var request = new CreateOrUpdateFlightDto(_aircraft1.Id, "EB1", "EBY1", _incheon.Id, departureFromIncheon, _schipol.Id, arrivalAtSchipol, 400, 4000);
 
         // Act
         var response = await HttpClient.PostAsJsonAsync("flights", request, TestContext.Current.CancellationToken);
@@ -122,8 +125,8 @@ public class FlightsTests : BaseFunctionalTest
             x.EconomyPrice == request.EconomyPrice &&
             x.BusinessPrice == request.BusinessPrice &&
             x.AircraftId == request.AircraftId &&
-            x.AircraftEquipmentCode == _aircraft.EquipmentCode &&
-            x.AircraftTailNumber == _aircraft.TailNumber);
+            x.AircraftEquipmentCode == _aircraft1.EquipmentCode &&
+            x.AircraftTailNumber == _aircraft1.TailNumber);
     }
 
     [Fact, TestPriority(4)]
@@ -155,5 +158,51 @@ public class FlightsTests : BaseFunctionalTest
 
         // Assert
         flightDto.Should().BeEquivalentTo(s_dto);
+    }
+
+    [Fact, TestPriority(6)]
+    public async Task AssignAircraft_Should_ReturnNotFound_WhenFlightDoesNotExist()
+    {
+        // Arrange
+        var id = Guid.NewGuid();
+        var dto = new AssignAircraftToFlightDto(Guid.NewGuid());
+        var error = $"Flight with ID {id} not found";
+
+        // Act
+        var response = await HttpClient.PatchAsJsonAsync($"flights/{id}/aircraft", dto, TestContext.Current.CancellationToken);
+
+        // Assert
+        await GetProblemDetailsFromResponseAndAssert(response, error);
+    }
+
+    [Fact, TestPriority(7)]
+    public async Task AssignAircraft_Should_ReturnNotFound_WhenAircraftDoesNotExist()
+    {
+        // Arrange
+        ArgumentNullException.ThrowIfNull(s_dto);
+        var dto = new AssignAircraftToFlightDto(Guid.NewGuid());
+        var error = $"Aircraft with ID {dto.AircraftId} not found";
+
+        // Act
+        var response = await HttpClient.PatchAsJsonAsync($"flights/{s_dto.Id}/aircraft", dto, TestContext.Current.CancellationToken);
+
+        // Assert
+        await GetProblemDetailsFromResponseAndAssert(response, error);
+    }
+
+    [Fact, TestPriority(8)]
+    public async Task AssignAircraft_Should_ReturnOk_WhenRequestIsValid()
+    {
+        // Arrange
+        ArgumentNullException.ThrowIfNull(s_dto);
+        var dto = new AssignAircraftToFlightDto(_aircraft2.Id);
+
+        // Act
+        var response = await HttpClient.PatchAsJsonAsync($"flights/{s_dto.Id}/aircraft", dto, TestContext.Current.CancellationToken);
+        var content = await response.Content.ReadAsStreamAsync(TestContext.Current.CancellationToken);
+        s_dto = await JsonSerializer.DeserializeAsync<FlightDto>(content, JsonSerializerOptions, TestContext.Current.CancellationToken) ?? throw new JsonException();
+
+        // Assert
+        s_dto.AircraftId.Should().Be(_aircraft2.Id);
     }
 }
