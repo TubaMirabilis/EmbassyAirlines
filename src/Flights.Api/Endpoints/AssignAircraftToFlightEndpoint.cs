@@ -32,14 +32,14 @@ internal sealed class AssignAircraftToFlightEndpoint : IEndpoint
         }
         var aircraft = await ctx.Aircraft
                                 .FirstOrDefaultAsync(a => a.Id == dto.AircraftId, ct);
-                                if (aircraft is null)
-                                {
-                                    _logger.LogWarning("Aircraft with ID {Id} not found", dto.AircraftId);
-                                    var error = Error.NotFound("Aircraft.NotFound", $"Aircraft with ID {dto.AircraftId} not found");
-                                    return ErrorHandlingHelper.HandleProblem(error);
-                                }
-                                flight.AssignAircraft(aircraft);
-                                await ctx.SaveChangesAsync(ct);
+        if (aircraft is null)
+        {
+            _logger.LogWarning("Aircraft with ID {Id} not found", dto.AircraftId);
+            var error = Error.NotFound("Aircraft.NotFound", $"Aircraft with ID {dto.AircraftId} not found");
+            return ErrorHandlingHelper.HandleProblem(error);
+        }
+        flight.AssignAircraft(aircraft);
+        await ctx.SaveChangesAsync(ct);
         return TypedResults.Ok(flight.ToDto());
     }
 }
