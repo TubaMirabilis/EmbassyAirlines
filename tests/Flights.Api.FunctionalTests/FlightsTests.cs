@@ -239,4 +239,30 @@ public class FlightsTests : BaseFunctionalTest
             x.EconomyPrice == dto.EconomyPrice &&
             x.BusinessPrice == dto.BusinessPrice);
     }
+
+    [Fact, TestPriority(11)]
+    public async Task Reschedule_Should_ReturnOk_WhenRequestIsValid()
+    {
+        // Arrange
+        ArgumentNullException.ThrowIfNull(s_dto);
+        var tz1 = DateTimeZoneProviders.Tzdb["Asia/Seoul"];
+        var tz2 = DateTimeZoneProviders.Tzdb["Europe/Amsterdam"];
+        var tomorrow = SystemClock.Instance.GetCurrentInstant().Plus(Duration.FromDays(1));
+        var departureFromIncheon = tomorrow.InZone(tz1).ToDateTimeUnspecified();
+        var arrivalAtSchipol = tomorrow.InZone(tz2).ToDateTimeUnspecified().AddHours(10).AddMinutes(30);
+        var request = new RescheduleFlightDto(departureFromIncheon, arrivalAtSchipol);
+
+        // Act
+        var response = await HttpClient.PatchAsJsonAsync($"flights/{s_dto.Id}/schedule", request, TestContext.Current.CancellationToken);
+        var content = await response.Content.ReadAsStreamAsync(TestContext.Current.CancellationToken);
+        s_dto = await JsonSerializer.DeserializeAsync<FlightDto>(content, JsonSerializerOptions, TestContext.Current.CancellationToken) ?? throw new JsonException();
+
+        // Assert
+        s_dto.Should().Match<FlightDto>(x =>
+            x.DepartureLocalTime == request.DepartureLocalTime.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture) &&
+            x.ArrivalLocalTime == request.ArrivalLocalTime.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture) &&
+            x.EconomyPrice == 500 &&
+            x.BusinessPrice == 5000 &&
+            x.AircraftId == _aircraft2.Id);
+    }
 }
