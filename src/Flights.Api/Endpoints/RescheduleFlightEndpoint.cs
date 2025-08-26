@@ -1,13 +1,11 @@
 using ErrorOr;
 using Flights.Api.Database;
-using FluentValidation;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using NodaTime;
 using Shared;
 using Shared.Contracts;
 using Shared.Endpoints;
-using Shared.Extensions;
 
 namespace Flights.Api.Endpoints;
 
@@ -30,7 +28,7 @@ internal sealed class RescheduleFlightEndpoint : IEndpoint
         var ctx = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
         var flight = await ctx.Flights
                               .FirstOrDefaultAsync(a => a.Id == id, ct);
-if (flight is null)
+        if (flight is null)
         {
             _logger.LogWarning("Flight with ID {Id} not found", id);
             var error = Error.NotFound("Flight.NotFound", $"Flight with ID {id} not found");
