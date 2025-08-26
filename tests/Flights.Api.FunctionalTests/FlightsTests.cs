@@ -10,7 +10,7 @@ namespace Flights.Api.FunctionalTests;
 [TestCaseOrderer(typeof(PriorityOrderer))]
 public class FlightsTests : BaseFunctionalTest
 {
-    private static FlightDto? _dto;
+    private static FlightDto? s_dto;
     private readonly Airport _incheon;
     private readonly Airport _schipol;
     private readonly Aircraft _aircraft;
@@ -100,10 +100,10 @@ public class FlightsTests : BaseFunctionalTest
         // Act
         var response = await HttpClient.PostAsJsonAsync("flights", request, TestContext.Current.CancellationToken);
         var content = await response.Content.ReadAsStreamAsync(TestContext.Current.CancellationToken);
-        _dto = await JsonSerializer.DeserializeAsync<FlightDto>(content, JsonSerializerOptions, TestContext.Current.CancellationToken) ?? throw new JsonException();
+        s_dto = await JsonSerializer.DeserializeAsync<FlightDto>(content, JsonSerializerOptions, TestContext.Current.CancellationToken) ?? throw new JsonException();
 
         // Assert
-        _dto.Should().Match<FlightDto>(x =>
+        s_dto.Should().Match<FlightDto>(x =>
             x.FlightNumberIata == request.FlightNumberIata &&
             x.FlightNumberIcao == request.FlightNumberIcao &&
             x.DepartureAirportId == request.DepartureAirportId &&
@@ -145,8 +145,8 @@ public class FlightsTests : BaseFunctionalTest
     public async Task GetById_Should_ReturnOk_WhenFlightExists()
     {
         // Arrange
-        ArgumentNullException.ThrowIfNull(_dto);
-        var id = _dto.Id;
+        ArgumentNullException.ThrowIfNull(s_dto);
+        var id = s_dto.Id;
 
         // Act
         var uri = new Uri($"flights/{id}", UriKind.Relative);
@@ -154,6 +154,6 @@ public class FlightsTests : BaseFunctionalTest
         var flightDto = await response.Content.ReadFromJsonAsync<FlightDto>(TestContext.Current.CancellationToken);
 
         // Assert
-        flightDto.Should().BeEquivalentTo(_dto);
+        flightDto.Should().BeEquivalentTo(s_dto);
     }
 }

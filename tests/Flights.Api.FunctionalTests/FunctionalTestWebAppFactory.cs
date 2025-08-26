@@ -54,5 +54,5 @@ public class FunctionalTestWebAppFactory : WebApplicationFactory<Program>, IAsyn
     }
     internal Airport? IncheonAirport { get; private set; }
     internal Airport? SchipolAirport { get; private set; }
-    internal Aircraft? Aircraft { get; set; }
+    internal Aircraft? Aircraft { get; private set; }
 }

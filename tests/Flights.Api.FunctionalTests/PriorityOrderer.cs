@@ -35,9 +35,9 @@ public class PriorityOrderer : ITestCaseOrderer
         foreach (var list in sortedMethods.Keys.Select(priority => sortedMethods[priority]))
         {
             list.Sort((x, y) => StringComparer.OrdinalIgnoreCase.Compare(x.TestMethod.Method.Name, y.TestMethod.Method.Name));
-            for (var i = 0; i < list.Count; i++)
+            foreach (var testCase in list)
             {
-                if (list[i] is TTestCase tTestCase)
+                if (testCase is TTestCase tTestCase)
                 {
                     result.Add(tTestCase);
                 }

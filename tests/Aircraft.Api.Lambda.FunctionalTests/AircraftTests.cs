@@ -8,7 +8,7 @@ namespace Aircraft.Api.Lambda.FunctionalTests;
 [TestCaseOrderer(typeof(PriorityOrderer))]
 public class AircraftTests : BaseFunctionalTest
 {
-    private static AircraftDto? _dto;
+    private static AircraftDto? s_dto;
     public AircraftTests(FunctionalTestWebAppFactory factory) : base(factory)
     {
     }
@@ -36,10 +36,10 @@ public class AircraftTests : BaseFunctionalTest
         // Act
         var response = await HttpClient.PostAsJsonAsync("aircraft", request, TestContext.Current.CancellationToken);
         var content = await response.Content.ReadAsStreamAsync(TestContext.Current.CancellationToken);
-        _dto = await JsonSerializer.DeserializeAsync<AircraftDto>(content, JsonSerializerOptions, TestContext.Current.CancellationToken) ?? throw new JsonException();
+        s_dto = await JsonSerializer.DeserializeAsync<AircraftDto>(content, JsonSerializerOptions, TestContext.Current.CancellationToken) ?? throw new JsonException();
 
         // Assert
-        _dto.Should().Match<AircraftDto>(x =>
+        s_dto.Should().Match<AircraftDto>(x =>
             x.TailNumber == request.TailNumber &&
             x.EquipmentCode == request.EquipmentCode &&
             x.DryOperatingWeight == request.DryOperatingWeight &&
@@ -83,8 +83,8 @@ public class AircraftTests : BaseFunctionalTest
     public async Task GetById_Should_ReturnOk_WhenAircraftExists()
     {
         // Arrange
-        ArgumentNullException.ThrowIfNull(_dto);
-        var id = _dto.Id;
+        ArgumentNullException.ThrowIfNull(s_dto);
+        var id = s_dto.Id;
 
         // Act
         var uri = new Uri($"aircraft/{id}", UriKind.Relative);
@@ -92,6 +92,6 @@ public class AircraftTests : BaseFunctionalTest
         var aircraftDto = await response.Content.ReadFromJsonAsync<AircraftDto>(TestContext.Current.CancellationToken);
 
         // Assert
-        aircraftDto.Should().BeEquivalentTo(_dto);
+        aircraftDto.Should().BeEquivalentTo(s_dto);
     }
 }

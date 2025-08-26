@@ -31,7 +31,8 @@ internal sealed class SeatLayoutDefinition
         {
             foreach (var row in range)
             {
-                if (section.EveryNthRowOnly is int n && n > 0 && (row - range.Start) % n != 0)
+                var n = section.EveryNthRowOnly;
+                if (n is not null && n > 0 && (row - range.Start) % n != 0)
                 {
                     continue;
                 }

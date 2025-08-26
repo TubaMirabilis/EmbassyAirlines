@@ -12,5 +12,5 @@ internal sealed record Money
     private Money()
     {
     }
-    public decimal Amount { get; init; }
+    public decimal Amount { get; }
 }

@@ -12,5 +12,5 @@ internal sealed record Weight
     private Weight()
     {
     }
-    public int Kilograms { get; init; }
+    public int Kilograms { get; }
 }
