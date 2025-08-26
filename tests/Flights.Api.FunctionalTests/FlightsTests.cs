@@ -205,4 +205,38 @@ public class FlightsTests : BaseFunctionalTest
         // Assert
         s_dto.AircraftId.Should().Be(_aircraft2.Id);
     }
+
+    [Fact, TestPriority(9)]
+    public async Task AdjustFlightPricing_Should_ReturnNotFound_WhenFlightDoesNotExist()
+    {
+        // Arrange
+        var id = Guid.NewGuid();
+        var dto = new AdjustFlightPricingDto(500, 5000);
+        var error = $"Flight with ID {id} not found";
+
+        // Act
+        var response = await HttpClient.PatchAsJsonAsync($"flights/{id}/pricing", dto, TestContext.Current.CancellationToken);
+
+        // Assert
+        await GetProblemDetailsFromResponseAndAssert(response, error);
+    }
+
+    [Fact, TestPriority(10)]
+    public async Task AdjustFlightPricing_Should_ReturnOk_WhenRequestIsValid()
+    {
+        // Arrange
+        ArgumentNullException.ThrowIfNull(s_dto);
+        var dto = new AdjustFlightPricingDto(500, 5000);
+
+        // Act
+        var response = await HttpClient.PatchAsJsonAsync($"flights/{s_dto.Id}/pricing", dto, TestContext.Current.CancellationToken);
+        var content = await response.Content.ReadAsStreamAsync(TestContext.Current.CancellationToken);
+        s_dto = await JsonSerializer.DeserializeAsync<FlightDto>(content, JsonSerializerOptions, TestContext.Current.CancellationToken) ?? throw new JsonException();
+
+        // Assert
+        s_dto.Should().Match<FlightDto>(x =>
+        x.AircraftId == _aircraft2.Id &&
+            x.EconomyPrice == dto.EconomyPrice &&
+            x.BusinessPrice == dto.BusinessPrice);
+    }
 }

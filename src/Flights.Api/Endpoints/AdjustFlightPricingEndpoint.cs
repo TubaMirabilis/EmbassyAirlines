@@ -8,20 +8,20 @@ using Shared.Endpoints;
 
 namespace Flights.Api.Endpoints;
 
-internal sealed class AssignAircraftToFlightEndpoint : IEndpoint
+internal sealed class AdjustFlightPricingEndpoint : IEndpoint
 {
     private readonly IBus _bus;
     private readonly IServiceScopeFactory _factory;
-    private readonly ILogger<AssignAircraftToFlightEndpoint> _logger;
-    public AssignAircraftToFlightEndpoint(IBus bus, IServiceScopeFactory factory, ILogger<AssignAircraftToFlightEndpoint> logger)
+    private readonly ILogger<AdjustFlightPricingEndpoint> _logger;
+    public AdjustFlightPricingEndpoint(IBus bus, IServiceScopeFactory factory, ILogger<AdjustFlightPricingEndpoint> logger)
     {
         _bus = bus;
         _factory = factory;
         _logger = logger;
     }
     public void MapEndpoint(IEndpointRouteBuilder app)
-        => app.MapPatch("flights/{id}/aircraft", InvokeAsync);
-    private async Task<IResult> InvokeAsync(Guid id, AssignAircraftToFlightDto dto, CancellationToken ct)
+        => app.MapPatch("flights/{id}/pricing", InvokeAsync);
+    private async Task<IResult> InvokeAsync(Guid id, AdjustFlightPricingDto dto, CancellationToken ct)
     {
         using var scope = _factory.CreateScope();
         var ctx = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
@@ -33,17 +33,11 @@ internal sealed class AssignAircraftToFlightEndpoint : IEndpoint
             var error = Error.NotFound("Flight.NotFound", $"Flight with ID {id} not found");
             return ErrorHandlingHelper.HandleProblem(error);
         }
-        var aircraft = await ctx.Aircraft
-                                .FirstOrDefaultAsync(a => a.Id == dto.AircraftId, ct);
-        if (aircraft is null)
-        {
-            _logger.LogWarning("Aircraft with ID {Id} not found", dto.AircraftId);
-            var error = Error.NotFound("Aircraft.NotFound", $"Aircraft with ID {dto.AircraftId} not found");
-            return ErrorHandlingHelper.HandleProblem(error);
-        }
-        flight.AssignAircraft(aircraft);
+        var economyPrice = new Money(dto.EconomyPrice);
+        var businessPrice = new Money(dto.BusinessPrice);
+        flight.AdjustPricing(economyPrice, businessPrice);
         await ctx.SaveChangesAsync(ct);
-        await _bus.Publish(new AircraftAssignedToFlightEvent(flight.Id, aircraft.Id), ct);
+        await _bus.Publish(new FlightPricingAdjustedEvent(flight.Id, economyPrice.Amount, businessPrice.Amount), ct);
         return TypedResults.Ok(flight.ToDto());
     }
 }
