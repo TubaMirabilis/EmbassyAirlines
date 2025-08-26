@@ -5,7 +5,7 @@ namespace Aircraft.Api.Lambda;
 internal sealed class SeatLayoutDefinition
 {
     [JsonPropertyName("EquipmentType")]
-    public string EquipmentType { get; set; } = default!;
+    public string EquipmentType { get; init; } = null!;
     [JsonPropertyName("BusinessRows")]
     public Dictionary<string, SeatSectionDefinition> BusinessRowsRaw { get; init; } = [];
     [JsonIgnore]

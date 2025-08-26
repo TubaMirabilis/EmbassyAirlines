@@ -18,7 +18,7 @@ public class PriorityOrderer : ITestCaseOrderer
     }
 
     public IReadOnlyCollection<TTestCase> OrderTestCases<TTestCase>(IReadOnlyCollection<TTestCase> testCases)
-        where TTestCase : notnull, ITestCase
+        where TTestCase : ITestCase
     {
         var result = new List<TTestCase>();
         var sortedMethods = new SortedDictionary<int, List<IXunitTestCase>>();
