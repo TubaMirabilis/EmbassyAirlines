@@ -1,3 +1,4 @@
+
 name: CI-CD Pipe
 
 on:
@@ -6,18 +7,10 @@ on:
             - "main"
 
 env:
-    DOTNET_VERSION: "10.0.x"
+  DOTNET_VERSION: "10.0.x"
+  AWS_REGION: eu-west-2
 
 jobs:
-    Terraform:
-        name: Terraform Check
-        runs-on: ubuntu-22.04
-        steps:
-            - name: Checkout
-              uses: actions/checkout@v5
-            - name: Terraform Check
-              run: terraform fmt -check=true -recursive
-
     Prettier:
         name: Prettier Check
         runs-on: ubuntu-latest
@@ -33,6 +26,15 @@ jobs:
         steps:
             - name: Checkout
               uses: actions/checkout@v5
+            - name: Configure AWS Credentials
+              uses: aws-actions/configure-aws-credentials@v4
+              with:
+                  aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+                  aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+                  aws-region: ${{ env.AWS_REGION }}
+            - name: Login to Amazon ECR
+              id: login-ecr
+              uses: aws-actions/amazon-ecr-login@v2
             - name: Setup .NET
               uses: actions/setup-dotnet@v4
               with:
@@ -43,3 +45,5 @@ jobs:
               run: dotnet build --configuration Release --no-restore
             - name: DotNet Test
               run: dotnet test -v d --configuration Release --no-restore --no-build
+            - name: Run App.cs
+              run: dotnet run ./Scripts/app.cs
