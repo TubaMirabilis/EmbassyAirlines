@@ -1,25 +1,27 @@
 ﻿#:package AWSSDK.ECR@4.0.3.6
 #:package Ductus.FluentDocker@2.85.0
+using System.IO.Pipelines;
 using Amazon.ECR;
 using Amazon.ECR.Model;
 using Ductus.FluentDocker.Builders;
 
-using var client = new AmazonECRClient();
-var req = new DescribeRegistryRequest();
-var res = await client.DescribeRegistryAsync(req);
-Console.WriteLine($"Registry ID: {res.RegistryId}");
-Console.WriteLine("Building Docker image...");
-var dir = Directory.GetCurrentDirectory();
-var dockerfilePath = Path.Combine(dir, "docker", "Example.Api.Lambda.dockerfile");
-if (!File.Exists(dockerfilePath))
+await CreateRepositoryAsync("embassy-web");
+
+static async Task CreateRepositoryAsync(string name)
 {
-    Console.WriteLine($"Dockerfile not found at path: {dockerfilePath}");
-    return;
+    using var client = new AmazonECRClient();
+    var req = new DescribeRepositoriesRequest();
+    var res = await client.DescribeRepositoriesAsync(req);
+    var exists = res.Repositories.Exists(r => r.RepositoryName == name);
+    if (!exists)
+    {
+        Console.WriteLine("Repository does not exist. Creating...");
+    }
+    var req2 = new CreateRepositoryRequest
+    {
+        RepositoryName = "embassy-web"
+    };
+    var res2 = await client.CreateRepositoryAsync(req2);
+    Console.WriteLine($"Created repository: {res2.Repository.RepositoryName}");
+    Console.WriteLine($"Uri: {res2.Repository.RepositoryUri}");
 }
-var dockerfileContents = await File.ReadAllTextAsync(dockerfilePath);
-var image = new Builder().DefineImage("tubamirabilis/example")
-                         .ReuseIfAlreadyExists()
-                         .FromString(dockerfileContents)
-                         .WorkingFolder(dir)
-                         .Build();
-Console.WriteLine($"Image ID: {image.Id}");
