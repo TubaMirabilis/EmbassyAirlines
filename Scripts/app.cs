@@ -53,29 +53,26 @@ static async Task<string> BuildDockerImageAsync()
     return image.Id;
 }
 
-    static void RunDockerCommand(string arguments)
+static void RunDockerCommand(string arguments)
+{
+    var psi = new ProcessStartInfo
     {
-        var psi = new ProcessStartInfo
-        {
-            FileName = "docker",
-            Arguments = arguments,
-            RedirectStandardOutput = true,
-            RedirectStandardError = true,
-            UseShellExecute = false,
-            CreateNoWindow = true
-        };
-
-        using var process = new Process { StartInfo = psi };
-        process.OutputDataReceived += (s, e) => { if (e.Data != null) { Console.WriteLine(e.Data); } };
-        process.ErrorDataReceived += (s, e) => { if (e.Data != null) { Console.Error.WriteLine(e.Data); } };
-
-        process.Start();
-        process.BeginOutputReadLine();
-        process.BeginErrorReadLine();
-        process.WaitForExit();
-
-        if (process.ExitCode != 0)
-        {
-            throw new InvalidOperationException($"Docker command failed: docker {arguments}");
-        }
+        FileName = "docker",
+        Arguments = arguments,
+        RedirectStandardOutput = true,
+        RedirectStandardError = true,
+        UseShellExecute = false,
+        CreateNoWindow = true
+    };
+    using var process = new Process { StartInfo = psi };
+    process.OutputDataReceived += (s, e) => { if (e.Data != null) { Console.WriteLine(e.Data); } };
+    process.ErrorDataReceived += (s, e) => { if (e.Data != null) { Console.Error.WriteLine(e.Data); } };
+    process.Start();
+    process.BeginOutputReadLine();
+    process.BeginErrorReadLine();
+    process.WaitForExit();
+    if (process.ExitCode != 0)
+    {
+        throw new InvalidOperationException($"Docker command failed: docker {arguments}");
     }
+}
