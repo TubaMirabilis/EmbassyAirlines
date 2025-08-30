@@ -13,9 +13,10 @@ static async Task CreateRepositoryAsync(string name)
     var req = new DescribeRepositoriesRequest();
     var res = await client.DescribeRepositoriesAsync(req);
     var exists = res.Repositories.Exists(r => r.RepositoryName == name);
-    if (!exists)
+    if (exists)
     {
-        Console.WriteLine("Repository does not exist. Creating...");
+        Console.WriteLine("Repository already exists.");
+        return;
     }
     var req2 = new CreateRepositoryRequest
     {
