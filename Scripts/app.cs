@@ -22,13 +22,12 @@ RunDockerCommand($"push {remoteImageUri}");
 Console.WriteLine("Image push completed.");
 var role = await CreateRoleAsync();
 Console.WriteLine($"Using role: {role.Arn}");
-var policyArn = await CreatePolicyAsync();
-Console.WriteLine($"Using policy ARN: {policyArn}");
-await AttachPolicyToRoleAsync(policyArn, role.RoleName);
+await AttachPolicyToRoleAsync("arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole", role.RoleName);
 var functionArn = await CreateFunctionAsync(remoteImageUri, role.Arn);
 Console.WriteLine($"Using function ARN: {functionArn}");
 var functionUrl = await CreateFunctionUrlAsync();
 Console.WriteLine($"Using function URL: {functionUrl}");
+await AllowPublicInvokeUrlAsync();
 
 static async Task<string> AttachPolicyToRoleAsync(string policyArn, string roleName)
 {
@@ -44,7 +43,7 @@ static async Task<string> AttachPolicyToRoleAsync(string policyArn, string roleN
 static async Task<string> CreateFunctionUrlAsync()
 {
     using var lambdaClient = new AmazonLambdaClient();
-    var req = new ListFunctionUrlConfigsRequest()
+    var req = new ListFunctionUrlConfigsRequest
     {
         FunctionName = "ExampleApiLambda"
     };
@@ -54,7 +53,7 @@ static async Task<string> CreateFunctionUrlAsync()
         Console.WriteLine("Function URL already exists.");
         return res.FunctionUrlConfigs[0].FunctionUrl;
     }
-    var req2 = new CreateFunctionUrlConfigRequest()
+    var req2 = new CreateFunctionUrlConfigRequest
     {
         AuthType = FunctionUrlAuthType.NONE,
         FunctionName = "ExampleApiLambda"
@@ -86,37 +85,6 @@ static async Task<string> CreateFunctionAsync(string remoteImageUri, string role
     };
     var res2 = await lambdaClient.CreateFunctionAsync(req2);
     return res2.FunctionArn;
-}
-static async Task<string> CreatePolicyAsync()
-{
-    using var iamClient = new AmazonIdentityManagementServiceClient();
-    var req = new ListPoliciesRequest
-    {
-        Scope = PolicyScopeType.Local
-    };
-    var res = await iamClient.ListPoliciesAsync(req);
-    var existingPolicy = res.Policies?.Find(p => p.PolicyName == "ExampleApiLambdaPolicy");
-    if (existingPolicy is not null)
-    {
-        Console.WriteLine($"Policy {existingPolicy.PolicyName} already exists.");
-        return existingPolicy.Arn;
-    }
-    var req2 = new CreatePolicyRequest
-    {
-        PolicyName = "ExampleApiLambdaPolicy",
-        PolicyDocument = @"{
-            ""Version"": ""2012-10-17"",
-            ""Statement"": [
-                {
-                    ""Effect"": ""Allow"",
-                    ""Action"": ""lambda:InvokeFunctionUrl"",
-                    ""Resource"": ""*""
-                }
-            ]
-        }"
-    };
-    var res2 = await iamClient.CreatePolicyAsync(req2);
-    return res2.Policy.Arn;
 }
 static async Task<Role> CreateRoleAsync()
 {
@@ -208,5 +176,25 @@ static void RunDockerCommand(string arguments)
     if (process.ExitCode != 0)
     {
         throw new InvalidOperationException($"Docker command failed: docker {arguments}");
+    }
+}
+static async Task AllowPublicInvokeUrlAsync()
+{
+    using var lambda = new AmazonLambdaClient();
+    try
+    {
+        await lambda.AddPermissionAsync(new AddPermissionRequest
+        {
+            FunctionName = "ExampleApiLambda",
+            StatementId = "AllowPublicInvokeUrl",
+            Action = "lambda:InvokeFunctionUrl",
+            Principal = "*",
+            FunctionUrlAuthType = FunctionUrlAuthType.NONE
+        });
+        Console.WriteLine("Public invoke permission added.");
+    }
+    catch (ResourceConflictException)
+    {
+        Console.WriteLine("Permission already exists.");
     }
 }
