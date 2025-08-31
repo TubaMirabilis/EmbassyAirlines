@@ -69,7 +69,14 @@ static async Task<string> CreateFunctionAsync(string remoteImageUri, string role
     var existingFunction = res.Functions.Find(f => f.FunctionName == "ExampleApiLambda");
     if (existingFunction is not null)
     {
-        Console.WriteLine($"Function {existingFunction.FunctionName} already exists.");
+        Console.WriteLine($"Function {existingFunction.FunctionName} already exists. Updating function code...");
+        var updateReq = new UpdateFunctionCodeRequest
+        {
+            FunctionName = existingFunction.FunctionName,
+            ImageUri = remoteImageUri,
+            Publish = true
+        };
+        await lambdaClient.UpdateFunctionCodeAsync(updateReq);
         return existingFunction.FunctionArn;
     }
     var req2 = new CreateFunctionRequest
@@ -129,7 +136,7 @@ static async Task<string> CreateRepositoryAsync(string name)
     }
     var req2 = new CreateRepositoryRequest
     {
-        RepositoryName = "embassy-web"
+        RepositoryName = name
     };
     var res2 = await client.CreateRepositoryAsync(req2);
     Console.WriteLine($"Created repository: {res2.Repository.RepositoryName}");
