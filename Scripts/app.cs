@@ -160,6 +160,12 @@ static async Task BuildDockerImageAsync()
                             .Build();
     Console.WriteLine("Docker image built successfully.");
     Console.WriteLine($"Image ID: {image.Id}");
+    var dockerfile = Path.Combine(dir, "Dockerfile");
+    if (File.Exists(dockerfile))
+    {
+        File.Delete(dockerfile);
+        Console.WriteLine("Removed Dockerfile.");
+    }
 }
 
 static void RunDockerCommand(string arguments)
