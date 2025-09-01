@@ -57,4 +57,4 @@ jobs:
               with:
                   dotnet-version: ${{ env.DOTNET_VERSION }}
             - name: Run App.cs
-              run: dotnet run ./Scripts/app.cs
+              run: dotnet run --project Deployment/Deployment.csproj
