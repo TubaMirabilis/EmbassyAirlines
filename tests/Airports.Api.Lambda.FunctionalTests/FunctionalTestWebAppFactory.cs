@@ -13,7 +13,7 @@ using Testcontainers.DynamoDb;
 
 namespace Airports.Api.Lambda.FunctionalTests;
 
-public class FunctionalTestWebAppFactory : WebApplicationFactory<Program>, IAsyncLifetime
+public class FunctionalTestWebAppFactory : WebApplicationFactory<Program>
 {
     private readonly DynamoDbContainer _dynamoDbContainer = new DynamoDbBuilder().Build();
     protected override void ConfigureWebHost(IWebHostBuilder builder)
