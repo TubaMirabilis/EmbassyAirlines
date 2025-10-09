@@ -8,10 +8,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="AWSSDK.DynamoDBv2" Version="4.0.6.3" />
-    <PackageReference Include="AWSSDK.ECR" Version="4.0.4.3" />
-    <PackageReference Include="AWSSDK.IdentityManagement" Version="4.0.3.4" />
-    <PackageReference Include="AWSSDK.Lambda" Version="4.0.2.10" />
+    <PackageReference Include="AWSSDK.DynamoDBv2" Version="4.0.7" />
+    <PackageReference Include="AWSSDK.ECR" Version="4.0.4.6" />
+    <PackageReference Include="AWSSDK.IdentityManagement" Version="4.0.3.7" />
+    <PackageReference Include="AWSSDK.Lambda" Version="4.0.2.13" />
     <PackageReference Include="Ductus.FluentDocker" Version="2.85.0" />
   </ItemGroup>
 
