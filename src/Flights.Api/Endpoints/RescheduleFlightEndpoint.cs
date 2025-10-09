@@ -12,20 +12,16 @@ namespace Flights.Api.Endpoints;
 internal sealed class RescheduleFlightEndpoint : IEndpoint
 {
     private readonly IBus _bus;
-    private readonly IServiceScopeFactory _factory;
     private readonly ILogger<RescheduleFlightEndpoint> _logger;
-    public RescheduleFlightEndpoint(IBus bus, IServiceScopeFactory factory, ILogger<RescheduleFlightEndpoint> logger)
+    public RescheduleFlightEndpoint(IBus bus, ILogger<RescheduleFlightEndpoint> logger)
     {
         _bus = bus;
-        _factory = factory;
         _logger = logger;
     }
     public void MapEndpoint(IEndpointRouteBuilder app)
         => app.MapPatch("flights/{id}/schedule", InvokeAsync);
-    private async Task<IResult> InvokeAsync(Guid id, RescheduleFlightDto dto, CancellationToken ct)
+    private async Task<IResult> InvokeAsync(ApplicationDbContext ctx, Guid id, RescheduleFlightDto dto, CancellationToken ct)
     {
-        using var scope = _factory.CreateScope();
-        var ctx = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
         var flight = await ctx.Flights
                               .FirstOrDefaultAsync(a => a.Id == id, ct);
         if (flight is null)

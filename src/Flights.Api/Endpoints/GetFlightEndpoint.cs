@@ -8,19 +8,12 @@ namespace Flights.Api.Endpoints;
 
 internal sealed class GetFlightEndpoint : IEndpoint
 {
-    private readonly IServiceScopeFactory _factory;
     private readonly ILogger<GetFlightEndpoint> _logger;
-    public GetFlightEndpoint(IServiceScopeFactory factory, ILogger<GetFlightEndpoint> logger)
-    {
-        _factory = factory;
-        _logger = logger;
-    }
+    public GetFlightEndpoint(ILogger<GetFlightEndpoint> logger) => _logger = logger;
     public void MapEndpoint(IEndpointRouteBuilder app)
         => app.MapGet("flights/{id}", InvokeAsync);
-    private async Task<IResult> InvokeAsync(Guid id, CancellationToken ct)
+    private async Task<IResult> InvokeAsync(ApplicationDbContext ctx, Guid id, CancellationToken ct)
     {
-        using var scope = _factory.CreateScope();
-        var ctx = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
         var flight = await ctx.Flights
                               .FirstOrDefaultAsync(a => a.Id == id, ct);
         if (flight is null)

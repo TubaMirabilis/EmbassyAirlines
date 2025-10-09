@@ -11,20 +11,16 @@ namespace Flights.Api.Endpoints;
 internal sealed class AdjustFlightPricingEndpoint : IEndpoint
 {
     private readonly IBus _bus;
-    private readonly IServiceScopeFactory _factory;
     private readonly ILogger<AdjustFlightPricingEndpoint> _logger;
-    public AdjustFlightPricingEndpoint(IBus bus, IServiceScopeFactory factory, ILogger<AdjustFlightPricingEndpoint> logger)
+    public AdjustFlightPricingEndpoint(IBus bus, ILogger<AdjustFlightPricingEndpoint> logger)
     {
         _bus = bus;
-        _factory = factory;
         _logger = logger;
     }
     public void MapEndpoint(IEndpointRouteBuilder app)
         => app.MapPatch("flights/{id}/pricing", InvokeAsync);
-    private async Task<IResult> InvokeAsync(Guid id, AdjustFlightPricingDto dto, CancellationToken ct)
+    private async Task<IResult> InvokeAsync(ApplicationDbContext ctx, Guid id, AdjustFlightPricingDto dto, CancellationToken ct)
     {
-        using var scope = _factory.CreateScope();
-        var ctx = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
         var flight = await ctx.Flights
                               .FirstOrDefaultAsync(a => a.Id == id, ct);
         if (flight is null)

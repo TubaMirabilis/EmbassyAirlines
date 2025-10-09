@@ -11,18 +11,16 @@ namespace Flights.Api.Endpoints;
 
 internal sealed class ScheduleFlightEndpoint : IEndpoint
 {
-    private readonly IServiceScopeFactory _factory;
     private readonly IValidator<CreateOrUpdateFlightDto> _validator;
     private readonly ILogger<ScheduleFlightEndpoint> _logger;
-    public ScheduleFlightEndpoint(IServiceScopeFactory factory, IValidator<CreateOrUpdateFlightDto> validator, ILogger<ScheduleFlightEndpoint> logger)
+    public ScheduleFlightEndpoint(IValidator<CreateOrUpdateFlightDto> validator, ILogger<ScheduleFlightEndpoint> logger)
     {
-        _factory = factory;
         _validator = validator;
         _logger = logger;
     }
     public void MapEndpoint(IEndpointRouteBuilder app)
         => app.MapPost("flights", InvokeAsync);
-    private async Task<IResult> InvokeAsync(CreateOrUpdateFlightDto dto, CancellationToken ct)
+    private async Task<IResult> InvokeAsync(ApplicationDbContext ctx, CreateOrUpdateFlightDto dto, CancellationToken ct)
     {
         var validationResult = await _validator.ValidateAsync(dto, ct);
         if (!validationResult.IsValid(out var formattedErrors))
@@ -31,8 +29,6 @@ internal sealed class ScheduleFlightEndpoint : IEndpoint
             var error = Error.Validation("Flight.ValidationFailed", formattedErrors);
             return ErrorHandlingHelper.HandleProblem(error);
         }
-        using var scope = _factory.CreateScope();
-        var ctx = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
         var departureAirport = await ctx.Airports
                                         .Where(a => a.Id == dto.DepartureAirportId)
                                         .SingleOrDefaultAsync(ct);

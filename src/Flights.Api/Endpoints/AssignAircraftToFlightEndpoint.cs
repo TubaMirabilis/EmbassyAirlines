@@ -11,20 +11,16 @@ namespace Flights.Api.Endpoints;
 internal sealed class AssignAircraftToFlightEndpoint : IEndpoint
 {
     private readonly IBus _bus;
-    private readonly IServiceScopeFactory _factory;
     private readonly ILogger<AssignAircraftToFlightEndpoint> _logger;
-    public AssignAircraftToFlightEndpoint(IBus bus, IServiceScopeFactory factory, ILogger<AssignAircraftToFlightEndpoint> logger)
+    public AssignAircraftToFlightEndpoint(IBus bus, ILogger<AssignAircraftToFlightEndpoint> logger)
     {
         _bus = bus;
-        _factory = factory;
         _logger = logger;
     }
     public void MapEndpoint(IEndpointRouteBuilder app)
         => app.MapPatch("flights/{id}/aircraft", InvokeAsync);
-    private async Task<IResult> InvokeAsync(Guid id, AssignAircraftToFlightDto dto, CancellationToken ct)
+    private async Task<IResult> InvokeAsync(ApplicationDbContext ctx, Guid id, AssignAircraftToFlightDto dto, CancellationToken ct)
     {
-        using var scope = _factory.CreateScope();
-        var ctx = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
         var flight = await ctx.Flights
                               .FirstOrDefaultAsync(a => a.Id == id, ct);
         if (flight is null)

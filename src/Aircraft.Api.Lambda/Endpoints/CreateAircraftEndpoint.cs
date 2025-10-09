@@ -18,21 +18,19 @@ internal sealed class CreateAircraftEndpoint : IEndpoint
     private readonly IBus _bus;
     private readonly IAmazonS3 _client;
     private readonly IConfiguration _config;
-    private readonly IServiceScopeFactory _factory;
     private readonly IValidator<CreateOrUpdateAircraftDto> _validator;
     private readonly ILogger<CreateAircraftEndpoint> _logger;
-    public CreateAircraftEndpoint(IBus bus, IAmazonS3 client, IConfiguration config, IServiceScopeFactory factory, IValidator<CreateOrUpdateAircraftDto> validator, ILogger<CreateAircraftEndpoint> logger)
+    public CreateAircraftEndpoint(IBus bus, IAmazonS3 client, IConfiguration config, IValidator<CreateOrUpdateAircraftDto> validator, ILogger<CreateAircraftEndpoint> logger)
     {
         _bus = bus;
         _client = client;
         _config = config;
-        _factory = factory;
         _validator = validator;
         _logger = logger;
     }
     public void MapEndpoint(IEndpointRouteBuilder app)
         => app.MapPost("aircraft", InvokeAsync);
-    private async Task<IResult> InvokeAsync(CreateOrUpdateAircraftDto dto, CancellationToken ct)
+    private async Task<IResult> InvokeAsync(ApplicationDbContext ctx, CreateOrUpdateAircraftDto dto, CancellationToken ct)
     {
         var validationResult = await _validator.ValidateAsync(dto, ct);
         if (!validationResult.IsValid(out var formattedErrors))
@@ -41,8 +39,6 @@ internal sealed class CreateAircraftEndpoint : IEndpoint
             var error = Error.Validation("Aircraft.Validation", formattedErrors);
             return ErrorHandlingHelper.HandleProblem(error);
         }
-        using var scope = _factory.CreateScope();
-        var ctx = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
         if (await ctx.Aircraft.AnyAsync(a => a.TailNumber == dto.TailNumber, ct))
         {
             _logger.LogWarning("Aircraft with tail number {TailNumber} already exists", dto.TailNumber);
