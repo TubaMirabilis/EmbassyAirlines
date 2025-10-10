@@ -3,6 +3,7 @@ using Flights.Api.Database;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using NodaTime;
+using NodaTime.TimeZones;
 using Shared;
 using Shared.Contracts;
 using Shared.Endpoints;
@@ -31,24 +32,53 @@ internal sealed class RescheduleFlightEndpoint : IEndpoint
             return ErrorHandlingHelper.HandleProblem(error);
         }
         var departureTime = LocalDateTime.FromDateTime(dto.DepartureLocalTime);
-        var departureInstant = departureTime.InZoneStrictly(flight.DepartureAirport.TimeZone).ToInstant();
-        if (departureInstant < SystemClock.Instance.GetCurrentInstant())
+        if (!Enum.TryParse<SchedulingAmbiguityPolicy>(dto.SchedulingAmbiguityPolicy, out var schedulingAmbiguityPolicy))
         {
-            _logger.LogWarning("Departure time cannot be in the past");
-            var error = Error.Validation("Flight.DepartureTimeInPast", "Departure time cannot be in the past");
+            _logger.LogWarning("Invalid scheduling ambiguity policy: {Policy}", dto.SchedulingAmbiguityPolicy);
+            var error = Error.Validation("Flight.InvalidSchedulingAmbiguityPolicy", "Invalid scheduling ambiguity policy");
             return ErrorHandlingHelper.HandleProblem(error);
         }
-        var arrivalTime = LocalDateTime.FromDateTime(dto.ArrivalLocalTime);
-        var arrivalInstant = arrivalTime.InZoneStrictly(flight.ArrivalAirport.TimeZone).ToInstant();
-        if (arrivalInstant < departureInstant)
+        var ambiguousTimeResolver = schedulingAmbiguityPolicy switch
         {
-            _logger.LogWarning("Arrival time cannot be before departure time");
-            var error = Error.Validation("Flight.ArrivalTimeBeforeDeparture", "Arrival time cannot be before departure time");
+            SchedulingAmbiguityPolicy.PreferEarlier => Resolvers.ReturnEarlier,
+            SchedulingAmbiguityPolicy.PreferLater => Resolvers.ReturnLater,
+            _ => Resolvers.ThrowWhenAmbiguous
+        };
+        var skippedTimeResolver = Resolvers.ThrowWhenSkipped;
+        var resolver = Resolvers.CreateMappingResolver(ambiguousTimeResolver, skippedTimeResolver);
+        try
+        {
+            var departureInstant = departureTime.InZone(flight.DepartureAirport.TimeZone, resolver).ToInstant();
+            if (departureInstant < SystemClock.Instance.GetCurrentInstant())
+            {
+                _logger.LogWarning("Departure time cannot be in the past");
+                var error = Error.Validation("Flight.DepartureTimeInPast", "Departure time cannot be in the past");
+                return ErrorHandlingHelper.HandleProblem(error);
+            }
+            var arrivalTime = LocalDateTime.FromDateTime(dto.ArrivalLocalTime);
+            var arrivalInstant = arrivalTime.InZone(flight.ArrivalAirport.TimeZone, resolver).ToInstant();
+            if (arrivalInstant < departureInstant)
+            {
+                _logger.LogWarning("Arrival time cannot be before departure time");
+                var error = Error.Validation("Flight.ArrivalTimeBeforeDeparture", "Arrival time cannot be before departure time");
+                return ErrorHandlingHelper.HandleProblem(error);
+            }
+            flight.Reschedule(departureTime, arrivalTime, schedulingAmbiguityPolicy);
+            await ctx.SaveChangesAsync(ct);
+            await _bus.Publish(new FlightRescheduledEvent(id, dto.DepartureLocalTime, dto.ArrivalLocalTime), ct);
+            return TypedResults.Ok(flight.ToDto());
+        }
+        catch (SkippedTimeException ex)
+        {
+            _logger.LogWarning(ex, "Departure or arrival time falls within a skipped time period due to daylight saving time transition");
+            var error = Error.Validation("Flight.SkippedTime", "Departure or arrival time falls within a skipped time period due to daylight saving time transition");
             return ErrorHandlingHelper.HandleProblem(error);
         }
-        flight.Reschedule(departureTime, arrivalTime);
-        await ctx.SaveChangesAsync(ct);
-        await _bus.Publish(new FlightRescheduledEvent(id, dto.DepartureLocalTime, dto.ArrivalLocalTime), ct);
-        return TypedResults.Ok(flight.ToDto());
+        catch (AmbiguousTimeException ex)
+        {
+            _logger.LogWarning(ex, "Departure or arrival time is ambiguous due to daylight saving time transition");
+            var error = Error.Validation("Flight.AmbiguousTime", "Departure or arrival time is ambiguous due to daylight saving time transition");
+            return ErrorHandlingHelper.HandleProblem(error);
+        }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using NodaTime;
+using NodaTime.TimeZones;
 
 namespace Flights.Api;
 
@@ -17,6 +18,7 @@ internal sealed class Flight
         Aircraft = args.Aircraft;
         EconomyPrice = args.EconomyPrice;
         BusinessPrice = args.BusinessPrice;
+        SchedulingAmbiguityPolicy = args.SchedulingAmbiguityPolicy;
     }
 #pragma warning disable CS8618
     private Flight()
@@ -29,8 +31,9 @@ internal sealed class Flight
     public string FlightNumberIcao { get; private set; }
     public LocalDateTime DepartureLocalTime { get; private set; }
     public LocalDateTime ArrivalLocalTime { get; private set; }
-    public ZonedDateTime DepartureZonedTime => DepartureLocalTime.InZoneStrictly(DepartureAirport.TimeZone);
-    public ZonedDateTime ArrivalZonedTime => ArrivalLocalTime.InZoneStrictly(ArrivalAirport.TimeZone);
+    public SchedulingAmbiguityPolicy SchedulingAmbiguityPolicy { get; private set; }
+    public ZonedDateTime DepartureZonedTime => DepartureLocalTime.InZone(DepartureAirport.TimeZone, GetMappingResolver());
+    public ZonedDateTime ArrivalZonedTime => ArrivalLocalTime.InZone(ArrivalAirport.TimeZone, GetMappingResolver());
     public Airport DepartureAirport { get; init; }
     public Airport ArrivalAirport { get; init; }
     public Aircraft Aircraft { get; private set; }
@@ -45,9 +48,22 @@ internal sealed class Flight
         EconomyPrice = economyPrice;
         BusinessPrice = businessPrice;
     }
-    public void Reschedule(LocalDateTime newDepartureLocalTime, LocalDateTime newArrivalLocalTime)
+    public void Reschedule(LocalDateTime newDepartureLocalTime, LocalDateTime newArrivalLocalTime, SchedulingAmbiguityPolicy schedulingAmbiguityPolicy)
     {
         DepartureLocalTime = newDepartureLocalTime;
         ArrivalLocalTime = newArrivalLocalTime;
+        SchedulingAmbiguityPolicy = schedulingAmbiguityPolicy;
+    }
+    // Method which returns the relevant MappingResolver:
+    public ZoneLocalMappingResolver GetMappingResolver()
+    {
+        var ambiguousTimeResolver = SchedulingAmbiguityPolicy switch
+        {
+            SchedulingAmbiguityPolicy.PreferEarlier => Resolvers.ReturnEarlier,
+            SchedulingAmbiguityPolicy.PreferLater => Resolvers.ReturnLater,
+            _ => Resolvers.ThrowWhenAmbiguous
+        };
+        var skippedTimeResolver = Resolvers.ThrowWhenSkipped;
+        return Resolvers.CreateMappingResolver(ambiguousTimeResolver, skippedTimeResolver);
     }
 }

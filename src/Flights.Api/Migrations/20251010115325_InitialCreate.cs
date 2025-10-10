@@ -6,7 +6,7 @@ using NodaTime;
 namespace Flights.Api.Migrations;
 
 /// <inheritdoc />
-internal sealed partial class InitialCreate : Migration
+internal partial class InitialCreate : Migration
 {
     /// <inheritdoc />
     protected override void Up(MigrationBuilder migrationBuilder)
@@ -46,6 +46,7 @@ internal sealed partial class InitialCreate : Migration
                 flight_number_icao = table.Column<string>(type: "character varying(7)", maxLength: 7, nullable: false),
                 departure_local_time = table.Column<LocalDateTime>(type: "timestamp without time zone", nullable: false),
                 arrival_local_time = table.Column<LocalDateTime>(type: "timestamp without time zone", nullable: false),
+                scheduling_ambiguity_policy = table.Column<string>(type: "character varying(20)", unicode: false, maxLength: 20, nullable: false),
                 departure_airport_id = table.Column<Guid>(type: "uuid", nullable: false),
                 arrival_airport_id = table.Column<Guid>(type: "uuid", nullable: false),
                 aircraft_id = table.Column<Guid>(type: "uuid", nullable: false),

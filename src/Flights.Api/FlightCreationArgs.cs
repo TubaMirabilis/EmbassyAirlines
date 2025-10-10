@@ -13,4 +13,5 @@ internal sealed record FlightCreationArgs
     public required Aircraft Aircraft { get; init; }
     public required Money EconomyPrice { get; init; }
     public required Money BusinessPrice { get; init; }
+    public required SchedulingAmbiguityPolicy SchedulingAmbiguityPolicy { get; init; }
 }

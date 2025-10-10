@@ -14,7 +14,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Flights.Api.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250821015350_InitialCreate")]
+    [Migration("20251010115325_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -22,7 +22,7 @@ namespace Flights.Api.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "9.0.8")
+                .HasAnnotation("ProductVersion", "10.0.0-rc.1.25451.107")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -144,7 +144,14 @@ namespace Flights.Api.Migrations
                         .HasColumnType("character varying(7)")
                         .HasColumnName("flight_number_icao");
 
-                    b.ComplexProperty<Dictionary<string, object>>("BusinessPrice", "Flights.Api.Flight.BusinessPrice#Money", b1 =>
+                    b.Property<string>("SchedulingAmbiguityPolicy")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .IsUnicode(false)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("scheduling_ambiguity_policy");
+
+                    b.ComplexProperty(typeof(Dictionary<string, object>), "BusinessPrice", "Flights.Api.Flight.BusinessPrice#Money", b1 =>
                         {
                             b1.IsRequired();
 
@@ -153,7 +160,7 @@ namespace Flights.Api.Migrations
                                 .HasColumnName("business_price_amount");
                         });
 
-                    b.ComplexProperty<Dictionary<string, object>>("EconomyPrice", "Flights.Api.Flight.EconomyPrice#Money", b1 =>
+                    b.ComplexProperty(typeof(Dictionary<string, object>), "EconomyPrice", "Flights.Api.Flight.EconomyPrice#Money", b1 =>
                         {
                             b1.IsRequired();
 
