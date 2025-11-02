@@ -72,8 +72,20 @@ internal static class ImageService
             CreateNoWindow = true
         };
         using var process = new Process { StartInfo = psi };
-        process.OutputDataReceived += (s, e) => { if (e.Data != null) { Console.WriteLine(e.Data); } };
-        process.ErrorDataReceived += (s, e) => { if (e.Data != null) { Console.Error.WriteLine(e.Data); } };
+        process.OutputDataReceived += (s, e) =>
+        {
+            if (e.Data is not null)
+            {
+                Console.WriteLine(e.Data);
+            }
+        };
+        process.ErrorDataReceived += (s, e) =>
+        {
+            if (e.Data is not null)
+            {
+                Console.Error.WriteLine(e.Data);
+            }
+        };
         process.Start();
         process.BeginOutputReadLine();
         process.BeginErrorReadLine();

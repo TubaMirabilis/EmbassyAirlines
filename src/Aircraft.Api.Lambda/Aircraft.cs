@@ -19,8 +19,8 @@ internal sealed class Aircraft
         MaximumZeroFuelWeight = args.MaximumZeroFuelWeight;
         MaximumFuelWeight = args.MaximumFuelWeight;
         var seats = args.Seats.ToSeatsCollection(Id).ToList();
-        var groups = seats.GroupBy(s => new { s.RowNumber, s.Letter });
-        if (groups.Any(g => g.Count() > 1))
+        var seen = new HashSet<(byte RowNumber, char Letter)>();
+        if (seats.Any(seat => !seen.Add((seat.RowNumber, seat.Letter))))
         {
             throw new ArgumentException("Duplicate seat definitions found in the seat layout.");
         }
