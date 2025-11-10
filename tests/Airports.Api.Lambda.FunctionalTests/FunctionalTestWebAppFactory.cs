@@ -26,7 +26,7 @@ public class FunctionalTestWebAppFactory : WebApplicationFactory<Program>, IAsyn
             {
                 PropertyNameCaseInsensitive = true
             });
-  services.AddMassTransitTestHarness();
+            services.AddMassTransitTestHarness();
             services.RemoveAll<IAmazonDynamoDB>();
             var config = new AmazonDynamoDBConfig
             {

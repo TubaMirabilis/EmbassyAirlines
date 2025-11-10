@@ -24,7 +24,7 @@ public class FunctionalTestWebAppFactory : WebApplicationFactory<Program>, IAsyn
             {
                 PropertyNameCaseInsensitive = true
             });
-  services.AddMassTransitTestHarness();
+            services.AddMassTransitTestHarness();
         });
     }
     public async ValueTask InitializeAsync()
