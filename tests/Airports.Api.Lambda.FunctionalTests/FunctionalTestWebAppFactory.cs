@@ -1,5 +1,4 @@
 using System.Text.Json;
-using Airports.Api.Lambda.FunctionalTests.Extensions;
 using Amazon.DynamoDBv2;
 using Amazon.DynamoDBv2.Model;
 using Amazon.Runtime;
@@ -27,13 +26,7 @@ public class FunctionalTestWebAppFactory : WebApplicationFactory<Program>, IAsyn
             {
                 PropertyNameCaseInsensitive = true
             });
-            var descriptors = services.Where(d => d.IsMassTransitService())
-.ToList();
-            foreach (var d in descriptors)
-            {
-                services.Remove(d);
-            }
-            services.AddMassTransitTestHarness();
+  services.AddMassTransitTestHarness();
             services.RemoveAll<IAmazonDynamoDB>();
             var config = new AmazonDynamoDBConfig
             {

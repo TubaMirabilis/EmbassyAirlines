@@ -1,5 +1,4 @@
 using System.Text.Json;
-using Aircraft.Api.Lambda.FunctionalTests.Extensions;
 using Amazon.Runtime;
 using Amazon.S3;
 using Amazon.S3.Model;
@@ -30,12 +29,6 @@ public sealed class FunctionalTestWebAppFactory : WebApplicationFactory<Program>
             {
                 PropertyNameCaseInsensitive = true
             });
-            var descriptors = services.Where(d => d.IsMassTransitService())
-.ToList();
-            foreach (var d in descriptors)
-            {
-                services.Remove(d);
-            }
             services.AddMassTransitTestHarness();
             services.RemoveAll<IAmazonS3>();
             var config = new AmazonS3Config
