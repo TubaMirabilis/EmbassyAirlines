@@ -13,10 +13,14 @@ internal static class AirportsDeployment
         await ImageService.TagAsync("tubamirabilis/airports:latest", fullImageTag);
         await DynamoDbService.CreateTableIfNotExistsAsync("airports");
         var hostPort = 9000;
+        var awsAccessKeyId = Environment.GetEnvironmentVariable("AWS_ACCESS_KEY_ID") ?? throw new InvalidOperationException("AWS_ACCESS_KEY_ID environment variable is not set.");
+        var awsSecretAccessKey = Environment.GetEnvironmentVariable("AWS_SECRET_ACCESS_KEY") ?? throw new InvalidOperationException("AWS_SECRET_ACCESS_KEY environment variable is not set.");
         var testEnv = new Dictionary<string, string>
         {
             { "AIRPORTS_MassTransit__Scope", "embassy-airlines" },
-            { "AIRPORTS_DynamoDb__TableName", "airports" }
+            { "AIRPORTS_DynamoDb__TableName", "airports" },
+            { "AWS_ACCESS_KEY_ID", awsAccessKeyId },
+            { "AWS_SECRET_ACCESS_KEY", awsSecretAccessKey }
         };
         await ImageService.RunAsync(fullImageTag, hostPort, 8080, "airports-service", testEnv);
         var body = """
@@ -49,6 +53,7 @@ internal static class AirportsDeployment
             await ImageService.StopAndRemoveContainerAsync("airports-service");
             return;
         }
+        await ImageService.StopAndRemoveContainerAsync("airports-service");
         await ImageService.PushAsync(fullImageTag);
         var role = await IdentityService.EnsureRoleAsync("AirportsApiLambdaRole");
         await IdentityService.AttachPolicyAsync("arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole", role.RoleName);

@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Text.Json;
 using Amazon.ECR;
 using Amazon.ECR.Model;
 using Ductus.FluentDocker.Builders;
@@ -85,6 +86,22 @@ internal static class ImageService
             {
                 Console.WriteLine($"Smoke test failed with status code: {response.StatusCode}");
                 Console.WriteLine($"Response body: {responseBody}");
+                return false;
+            }
+            var doc = JsonDocument.Parse(responseBody);
+            var root = doc.RootElement;
+            if (root.TryGetProperty("statusCode", out var statusCodeProp) && statusCodeProp.ValueKind == JsonValueKind.Number)
+            {
+                var statusCode = statusCodeProp.GetInt32();
+                if (statusCode >= 400)
+                {
+                    Console.WriteLine($"Smoke test failed with statusCode: {statusCode}");
+                    return false;
+                }
+            }
+            else
+            {
+                Console.WriteLine("Smoke test response does not contain a valid statusCode.");
                 return false;
             }
             Console.WriteLine("Smoke test succeeded.");
