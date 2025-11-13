@@ -47,7 +47,7 @@ internal static class AirportsDeployment
         }
         """;
         var url = $"http://localhost:{hostPort}/2015-03-31/functions/function/invocations";
-        var success = await ImageService.SmokeTestPostAsync(url, body);
+        var success = await SmokeTester.TestLambdaProxyAsync(url, body);
         if (!success)
         {
             await ImageService.StopAndRemoveContainerAsync("airports-service");
