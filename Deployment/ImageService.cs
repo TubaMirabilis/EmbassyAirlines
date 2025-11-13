@@ -55,6 +55,48 @@ internal static class ImageService
         Console.WriteLine($"Tagging image {localImageTag} as {remoteImageUri}");
         await RunDockerCommandAsync($"tag {localImageTag} {remoteImageUri}");
     }
+    public static async Task RunAsync(string imageTag, int hostPort, int containerPort, string name, Dictionary<string, string> env)
+    {
+        Console.WriteLine($"Running image {imageTag} on port {hostPort}:{containerPort}");
+        if (env.Count == 0)
+        {
+            await RunDockerCommandAsync($"run -d -p {hostPort}:{containerPort} --name {name} {imageTag}");
+            return;
+        }
+        var envArgs = string.Join(" ", env.Select(kv => $"-e {kv.Key}={kv.Value}"));
+        await RunDockerCommandAsync($"run -d -p {hostPort}:{containerPort} {envArgs} --name {name} {imageTag}");
+    }
+    public static async Task StopAndRemoveContainerAsync(string name)
+    {
+        Console.WriteLine($"Stopping and removing container {name}");
+        await RunDockerCommandAsync($"rm -f {name}");
+    }
+    public static async Task<bool> SmokeTestPostAsync(string url, string body)
+    {
+        Console.WriteLine($"Performing smoke test on {url}");
+        var uri = new Uri(url);
+        using var httpClient = new HttpClient();
+        using var content = new StringContent(body, System.Text.Encoding.UTF8, "application/json");
+        try
+        {
+            var response = await httpClient.PostAsync(uri, content);
+            var responseBody = await response.Content.ReadAsStringAsync();
+            if (!response.IsSuccessStatusCode)
+            {
+                Console.WriteLine($"Smoke test failed with status code: {response.StatusCode}");
+                Console.WriteLine($"Response body: {responseBody}");
+                return false;
+            }
+            Console.WriteLine("Smoke test succeeded.");
+            Console.WriteLine($"Response body: {responseBody}");
+            return true;
+        }
+        catch (HttpRequestException ex)
+        {
+            Console.WriteLine($"HTTP request failed: {ex.Message}");
+            return false;
+        }
+    }
     public static async Task PushAsync(string imageTag)
     {
         Console.WriteLine($"Pushing image {imageTag}");
