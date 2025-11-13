@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using System.Text.Json;
+﻿using System.Text.Json;
 using Amazon.ECR;
 using Amazon.ECR.Model;
 using Ductus.FluentDocker.Builders;
@@ -54,23 +53,23 @@ internal static class ImageService
     public static async Task TagAsync(string localImageTag, string remoteImageUri)
     {
         Console.WriteLine($"Tagging image {localImageTag} as {remoteImageUri}");
-        await RunDockerCommandAsync($"tag {localImageTag} {remoteImageUri}");
+        await DockerCommandRunner.RunCommandAsync($"tag {localImageTag} {remoteImageUri}");
     }
     public static async Task RunAsync(string imageTag, int hostPort, int containerPort, string name, Dictionary<string, string> env)
     {
         Console.WriteLine($"Running image {imageTag} on port {hostPort}:{containerPort}");
         if (env.Count == 0)
         {
-            await RunDockerCommandAsync($"run -d -p {hostPort}:{containerPort} --name {name} {imageTag}");
+            await DockerCommandRunner.RunCommandAsync($"run -d -p {hostPort}:{containerPort} --name {name} {imageTag}");
             return;
         }
         var envArgs = string.Join(" ", env.Select(kv => $"-e {kv.Key}={kv.Value}"));
-        await RunDockerCommandAsync($"run -d -p {hostPort}:{containerPort} {envArgs} --name {name} {imageTag}");
+        await DockerCommandRunner.RunCommandAsync($"run -d -p {hostPort}:{containerPort} {envArgs} --name {name} {imageTag}");
     }
     public static async Task StopAndRemoveContainerAsync(string name)
     {
         Console.WriteLine($"Stopping and removing container {name}");
-        await RunDockerCommandAsync($"rm -f {name}");
+        await DockerCommandRunner.RunCommandAsync($"rm -f {name}");
     }
     public static async Task<bool> SmokeTestPostAsync(string url, string body)
     {
@@ -117,41 +116,6 @@ internal static class ImageService
     public static async Task PushAsync(string imageTag)
     {
         Console.WriteLine($"Pushing image {imageTag}");
-        await RunDockerCommandAsync($"push {imageTag}");
-    }
-    private static async Task RunDockerCommandAsync(string arguments)
-    {
-        var psi = new ProcessStartInfo
-        {
-            FileName = "docker",
-            Arguments = arguments,
-            RedirectStandardOutput = true,
-            RedirectStandardError = true,
-            UseShellExecute = false,
-            CreateNoWindow = true
-        };
-        using var process = new Process { StartInfo = psi };
-        process.OutputDataReceived += (s, e) =>
-        {
-            if (e.Data is not null)
-            {
-                Console.WriteLine(e.Data);
-            }
-        };
-        process.ErrorDataReceived += (s, e) =>
-        {
-            if (e.Data is not null)
-            {
-                Console.Error.WriteLine(e.Data);
-            }
-        };
-        process.Start();
-        process.BeginOutputReadLine();
-        process.BeginErrorReadLine();
-        await process.WaitForExitAsync();
-        if (process.ExitCode != 0)
-        {
-            throw new InvalidOperationException($"Docker command failed: docker {arguments}");
-        }
+        await DockerCommandRunner.RunCommandAsync($"push {imageTag}");
     }
 }
