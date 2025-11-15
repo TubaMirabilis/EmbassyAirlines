@@ -1,6 +1,6 @@
 using Shared.Contracts;
 
-namespace Flights.Api;
+namespace Flights.Api.Extensions;
 
 internal static class FlightExtensions
 {

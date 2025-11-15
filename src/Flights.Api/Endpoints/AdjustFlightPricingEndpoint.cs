@@ -1,5 +1,6 @@
 using ErrorOr;
 using Flights.Api.Database;
+using Flights.Api.Extensions;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using Shared;

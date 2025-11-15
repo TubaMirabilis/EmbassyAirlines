@@ -1,4 +1,5 @@
 using Flights.Api.Database;
+using Flights.Api.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Shared.Contracts;
 using Shared.Endpoints;
