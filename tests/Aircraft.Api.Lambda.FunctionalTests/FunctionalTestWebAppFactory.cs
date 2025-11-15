@@ -11,6 +11,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Testcontainers.LocalStack;
 using Testcontainers.PostgreSql;
 
+[assembly: CaptureConsole]
 namespace Aircraft.Api.Lambda.FunctionalTests;
 
 public sealed class FunctionalTestWebAppFactory : WebApplicationFactory<Program>, IAsyncLifetime
