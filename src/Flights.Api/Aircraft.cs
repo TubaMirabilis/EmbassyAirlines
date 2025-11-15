@@ -1,11 +1,13 @@
-﻿namespace Flights.Api;
+﻿using NodaTime;
+
+namespace Flights.Api;
 
 internal sealed class Aircraft
 {
     private Aircraft(Guid id, string tailNumber, string equipmentCode)
     {
         Id = id;
-        CreatedAt = DateTime.UtcNow;
+        CreatedAt = SystemClock.Instance.GetCurrentInstant();
         TailNumber = tailNumber;
         EquipmentCode = equipmentCode;
     }
@@ -15,7 +17,7 @@ internal sealed class Aircraft
     }
 #pragma warning restore CS8618
     public Guid Id { get; init; }
-    public DateTime CreatedAt { get; init; }
+    public Instant CreatedAt { get; init; }
     public string TailNumber { get; private set; }
     public string EquipmentCode { get; private set; }
     public static Aircraft Create(Guid id, string tailNumber, string equipmentCode) => new(id, tailNumber, equipmentCode);

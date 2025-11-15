@@ -12,8 +12,8 @@ internal sealed class Airport
         Ensure.NotNullOrEmpty(name);
         Ensure.NotNullOrEmpty(timeZoneId);
         Id = id;
-        CreatedAt = DateTime.UtcNow;
-        UpdatedAt = DateTime.UtcNow;
+        CreatedAt = SystemClock.Instance.GetCurrentInstant();
+        UpdatedAt = CreatedAt;
         TimeZoneId = timeZoneId;
         IataCode = iataCode;
         IcaoCode = icaoCode;
@@ -25,8 +25,8 @@ internal sealed class Airport
     }
 #pragma warning restore CS8618
     public Guid Id { get; init; }
-    public DateTime CreatedAt { get; private set; }
-    public DateTime UpdatedAt { get; private set; }
+    public Instant CreatedAt { get; private set; }
+    public Instant UpdatedAt { get; private set; }
     public string TimeZoneId { get; private set; }
     public DateTimeZone TimeZone => DateTimeZoneProviders.Tzdb[TimeZoneId];
     public string IataCode { get; private set; }
@@ -39,6 +39,6 @@ internal sealed class Airport
         IataCode = iataCode;
         Name = name;
         TimeZoneId = timeZoneId;
-        UpdatedAt = DateTime.UtcNow;
+        UpdatedAt = SystemClock.Instance.GetCurrentInstant();
     }
 }
