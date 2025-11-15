@@ -1,4 +1,5 @@
-﻿using NodaTime;
+﻿using Flights.Api.Extensions;
+using NodaTime;
 using NodaTime.TimeZones;
 
 namespace Flights.Api;
@@ -32,8 +33,8 @@ internal sealed class Flight
     public LocalDateTime DepartureLocalTime { get; private set; }
     public LocalDateTime ArrivalLocalTime { get; private set; }
     public SchedulingAmbiguityPolicy SchedulingAmbiguityPolicy { get; private set; }
-    public ZonedDateTime DepartureZonedTime => DepartureLocalTime.InZone(DepartureAirport.TimeZone, GetMappingResolver());
-    public ZonedDateTime ArrivalZonedTime => ArrivalLocalTime.InZone(ArrivalAirport.TimeZone, GetMappingResolver());
+    public ZonedDateTime DepartureZonedTime => DepartureLocalTime.InZone(DepartureAirport.TimeZone, ZoneLocalMappingResolver.FromSchedulingAmbiguityPolicy(SchedulingAmbiguityPolicy));
+    public ZonedDateTime ArrivalZonedTime => ArrivalLocalTime.InZone(ArrivalAirport.TimeZone, ZoneLocalMappingResolver.FromSchedulingAmbiguityPolicy(SchedulingAmbiguityPolicy));
     public Airport DepartureAirport { get; init; }
     public Airport ArrivalAirport { get; init; }
     public Aircraft Aircraft { get; private set; }
@@ -53,16 +54,5 @@ internal sealed class Flight
         DepartureLocalTime = newDepartureLocalTime;
         ArrivalLocalTime = newArrivalLocalTime;
         SchedulingAmbiguityPolicy = schedulingAmbiguityPolicy;
-    }
-    public ZoneLocalMappingResolver GetMappingResolver()
-    {
-        var ambiguousTimeResolver = SchedulingAmbiguityPolicy switch
-        {
-            SchedulingAmbiguityPolicy.PreferEarlier => Resolvers.ReturnEarlier,
-            SchedulingAmbiguityPolicy.PreferLater => Resolvers.ReturnLater,
-            _ => Resolvers.ThrowWhenAmbiguous
-        };
-        var skippedTimeResolver = Resolvers.ThrowWhenSkipped;
-        return Resolvers.CreateMappingResolver(ambiguousTimeResolver, skippedTimeResolver);
     }
 }
