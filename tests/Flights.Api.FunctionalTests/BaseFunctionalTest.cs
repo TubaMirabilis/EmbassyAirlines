@@ -13,11 +13,9 @@ public abstract class BaseFunctionalTest : IClassFixture<FunctionalTestWebAppFac
     {
         JsonSerializerOptions = factory.Services.GetRequiredService<JsonSerializerOptions>();
         HttpClient = factory.CreateClient();
-        LongString = new string('A', 101);
     }
     protected JsonSerializerOptions JsonSerializerOptions { get; }
     protected HttpClient HttpClient { get; }
-    protected string LongString { get; }
     protected async Task GetProblemDetailsFromResponseAndAssert(HttpResponseMessage response, string detail)
     {
         var expectedProblemDetails = response.StatusCode switch
