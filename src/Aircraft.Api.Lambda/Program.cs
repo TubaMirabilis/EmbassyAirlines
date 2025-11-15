@@ -5,15 +5,14 @@ using FluentValidation;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
-using Serilog.Formatting.Compact;
 using Shared;
 using Shared.Extensions;
 using Shared.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
-builder.Host.UseSerilog(new LoggerConfiguration().WriteTo.Console(new CompactJsonFormatter()).CreateLogger());
 var config = builder.Configuration;
 config.AddEnvironmentVariables(prefix: "AIRCRAFT_");
+builder.Host.UseSerilog((context, loggerConfig) => loggerConfig.ReadFrom.Configuration(context.Configuration));
 var scope = config["MassTransit:Scope"];
 if (string.IsNullOrWhiteSpace(scope))
 {
