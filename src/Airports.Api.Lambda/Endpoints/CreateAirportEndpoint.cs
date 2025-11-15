@@ -20,7 +20,11 @@ internal sealed class CreateAirportEndpoint : IEndpoint
     private readonly IConfiguration _config;
     private readonly IValidator<CreateOrUpdateAirportDto> _validator;
     private readonly ILogger<CreateAirportEndpoint> _logger;
-    public CreateAirportEndpoint(IBus bus, IAmazonDynamoDB dynamoDb, IValidator<CreateOrUpdateAirportDto> validator, IConfiguration config, ILogger<CreateAirportEndpoint> logger)
+    public CreateAirportEndpoint(IBus bus,
+                                 IAmazonDynamoDB dynamoDb,
+                                 IValidator<CreateOrUpdateAirportDto> validator,
+                                 IConfiguration config,
+                                 ILogger<CreateAirportEndpoint> logger)
     {
         _bus = bus;
         _config = config;

@@ -10,7 +10,12 @@ internal sealed class ListFlightsEndpoint : IEndpoint
 {
     public void MapEndpoint(IEndpointRouteBuilder app)
         => app.MapGet("flights", InvokeAsync);
-    private static async Task<IResult> InvokeAsync(ApplicationDbContext ctx, int page = 1, int pageSize = 50, string? from = null, string? to = null, CancellationToken ct = default)
+    private static async Task<IResult> InvokeAsync(ApplicationDbContext ctx,
+                                                   int page = 1,
+                                                   int pageSize = 50,
+                                                   string? from = null,
+                                                   string? to = null,
+                                                   CancellationToken ct = default)
     {
         page = Math.Max(page, 1);
         pageSize = Math.Clamp(pageSize, 1, 200);

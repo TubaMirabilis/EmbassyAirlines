@@ -65,7 +65,8 @@ internal sealed class RescheduleFlightEndpoint : IEndpoint
         catch (SkippedTimeException ex)
         {
             _logger.LogWarning(ex, "Departure or arrival time falls within a skipped time period due to daylight saving time transition");
-            var error = Error.Validation("Flight.SkippedTime", "Departure or arrival time falls within a skipped time period due to daylight saving time transition");
+            var description = "Departure or arrival time falls within a skipped time period due to daylight saving time transition";
+            var error = Error.Validation("Flight.SkippedTime", description);
             return ErrorHandlingHelper.HandleProblem(error);
         }
         catch (AmbiguousTimeException ex)

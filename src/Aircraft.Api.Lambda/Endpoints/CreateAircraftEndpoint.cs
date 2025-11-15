@@ -20,7 +20,11 @@ internal sealed class CreateAircraftEndpoint : IEndpoint
     private readonly IConfiguration _config;
     private readonly IValidator<CreateOrUpdateAircraftDto> _validator;
     private readonly ILogger<CreateAircraftEndpoint> _logger;
-    public CreateAircraftEndpoint(IBus bus, IAmazonS3 client, IConfiguration config, IValidator<CreateOrUpdateAircraftDto> validator, ILogger<CreateAircraftEndpoint> logger)
+    public CreateAircraftEndpoint(IBus bus,
+                                  IAmazonS3 client,
+                                  IConfiguration config,
+                                  IValidator<CreateOrUpdateAircraftDto> validator,
+                                  ILogger<CreateAircraftEndpoint> logger)
     {
         _bus = bus;
         _client = client;

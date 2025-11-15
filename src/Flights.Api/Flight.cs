@@ -33,8 +33,22 @@ internal sealed class Flight
     public LocalDateTime DepartureLocalTime { get; private set; }
     public LocalDateTime ArrivalLocalTime { get; private set; }
     public SchedulingAmbiguityPolicy SchedulingAmbiguityPolicy { get; private set; }
-    public ZonedDateTime DepartureZonedTime => DepartureLocalTime.InZone(DepartureAirport.TimeZone, ZoneLocalMappingResolver.FromSchedulingAmbiguityPolicy(SchedulingAmbiguityPolicy));
-    public ZonedDateTime ArrivalZonedTime => ArrivalLocalTime.InZone(ArrivalAirport.TimeZone, ZoneLocalMappingResolver.FromSchedulingAmbiguityPolicy(SchedulingAmbiguityPolicy));
+    public ZonedDateTime DepartureZonedTime
+    {
+        get
+        {
+            var resolver = ZoneLocalMappingResolver.FromSchedulingAmbiguityPolicy(SchedulingAmbiguityPolicy);
+            return DepartureLocalTime.InZone(DepartureAirport.TimeZone, resolver);
+        }
+    }
+    public ZonedDateTime ArrivalZonedTime
+    {
+        get
+        {
+            var resolver = ZoneLocalMappingResolver.FromSchedulingAmbiguityPolicy(SchedulingAmbiguityPolicy);
+            return ArrivalLocalTime.InZone(ArrivalAirport.TimeZone, resolver);
+        }
+    }
     public Airport DepartureAirport { get; init; }
     public Airport ArrivalAirport { get; init; }
     public Aircraft Aircraft { get; private set; }

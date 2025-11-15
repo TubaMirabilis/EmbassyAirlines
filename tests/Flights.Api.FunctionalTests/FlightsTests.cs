@@ -37,7 +37,19 @@ public class FlightsTests : BaseFunctionalTest
         var soon = now.Plus(Duration.FromMinutes(30));
         var departureFromIncheon = recently.InZone(tz1).ToDateTimeUnspecified();
         var arrivalAtSchipol = soon.InZone(tz2).ToDateTimeUnspecified().AddHours(10).AddMinutes(30);
-        var request = new CreateOrUpdateFlightDto(_aircraft1.Id, "EB1", "EBY1", _incheon.Id, departureFromIncheon, _schipol.Id, arrivalAtSchipol, 400, 4000, "ThrowWhenAmbiguous");
+        var request = new CreateOrUpdateFlightDto
+        {
+            AircraftId = _aircraft1.Id,
+            FlightNumberIata = "EB1",
+            FlightNumberIcao = "EBY1",
+            DepartureAirportId = _incheon.Id,
+            DepartureLocalTime = departureFromIncheon,
+            ArrivalAirportId = _schipol.Id,
+            ArrivalLocalTime = arrivalAtSchipol,
+            EconomyPrice = 400,
+            BusinessPrice = 4000,
+            SchedulingAmbiguityPolicy = "ThrowWhenAmbiguous"
+        };
         var error = "Departure time cannot be in the past";
 
         // Act
@@ -57,7 +69,19 @@ public class FlightsTests : BaseFunctionalTest
         var soon = now.Plus(Duration.FromMinutes(30));
         var departureFromIncheon = soon.InZone(tz1).ToDateTimeUnspecified();
         var arrivalAtSchipol = now.InZone(tz2).ToDateTimeUnspecified();
-        var request = new CreateOrUpdateFlightDto(_aircraft1.Id, "EB1", "EBY1", _incheon.Id, departureFromIncheon, _schipol.Id, arrivalAtSchipol, 400, 4000, "ThrowWhenAmbiguous");
+        var request = new CreateOrUpdateFlightDto
+        {
+            AircraftId = _aircraft1.Id,
+            FlightNumberIata = "EB1",
+            FlightNumberIcao = "EBY1",
+            DepartureAirportId = _incheon.Id,
+            DepartureLocalTime = departureFromIncheon,
+            ArrivalAirportId = _schipol.Id,
+            ArrivalLocalTime = arrivalAtSchipol,
+            EconomyPrice = 400,
+            BusinessPrice = 4000,
+            SchedulingAmbiguityPolicy = "ThrowWhenAmbiguous"
+        };
         var error = "Arrival time cannot be before departure time";
 
         // Act
@@ -77,7 +101,19 @@ public class FlightsTests : BaseFunctionalTest
         var soon = SystemClock.Instance.GetCurrentInstant().Plus(Duration.FromMinutes(30));
         var departureFromIncheon = soon.InZone(tz1).ToDateTimeUnspecified();
         var arrivalAtSchipol = soon.InZone(tz2).ToDateTimeUnspecified().AddHours(10).AddMinutes(30);
-        var request = new CreateOrUpdateFlightDto(id, "EB1", "EBY1", _incheon.Id, departureFromIncheon, _schipol.Id, arrivalAtSchipol, 400, 4000, "ThrowWhenAmbiguous");
+        var request = new CreateOrUpdateFlightDto
+        {
+            AircraftId = id,
+            FlightNumberIata = "EB1",
+            FlightNumberIcao = "EBY1",
+            DepartureAirportId = _incheon.Id,
+            DepartureLocalTime = departureFromIncheon,
+            ArrivalAirportId = _schipol.Id,
+            ArrivalLocalTime = arrivalAtSchipol,
+            EconomyPrice = 400,
+            BusinessPrice = 4000,
+            SchedulingAmbiguityPolicy = "ThrowWhenAmbiguous"
+        };
         var error = $"Aircraft with ID {id} not found";
 
         // Act
@@ -98,12 +134,29 @@ public class FlightsTests : BaseFunctionalTest
         var departureFromIncheon = soon.InZone(tz1).ToDateTimeUnspecified();
         var arrivalAtSchipol = soon.InZone(tz2).ToDateTimeUnspecified().AddHours(10).AddMinutes(30);
         var duration = TimeSpan.FromHours(10).Add(TimeSpan.FromMinutes(30));
-        var request = new CreateOrUpdateFlightDto(_aircraft1.Id, "EB1", "EBY1", _incheon.Id, departureFromIncheon, _schipol.Id, arrivalAtSchipol, 400, 4000, "ThrowWhenAmbiguous");
+        var request = new CreateOrUpdateFlightDto
+        {
+            AircraftId = _aircraft1.Id,
+            FlightNumberIata = "EB1",
+            FlightNumberIcao = "EBY1",
+            DepartureAirportId = _incheon.Id,
+            DepartureLocalTime = departureFromIncheon,
+            ArrivalAirportId = _schipol.Id,
+            ArrivalLocalTime = arrivalAtSchipol,
+            EconomyPrice = 400,
+            BusinessPrice = 4000,
+            SchedulingAmbiguityPolicy = "ThrowWhenAmbiguous"
+        };
 
         // Act
         var response = await HttpClient.PostAsJsonAsync("flights", request, TestContext.Current.CancellationToken);
         var content = await response.Content.ReadAsStreamAsync(TestContext.Current.CancellationToken);
-        s_dto = await JsonSerializer.DeserializeAsync<FlightDto>(content, JsonSerializerOptions, TestContext.Current.CancellationToken) ?? throw new JsonException();
+        var flight = await JsonSerializer.DeserializeAsync<FlightDto>(content, JsonSerializerOptions, TestContext.Current.CancellationToken);
+        if (flight is null)
+        {
+            throw new JsonException();
+        }
+        s_dto = flight;
 
         // Assert
         s_dto.Should().Match<FlightDto>(x =>
@@ -216,7 +269,12 @@ public class FlightsTests : BaseFunctionalTest
         // Act
         var response = await HttpClient.PatchAsJsonAsync($"flights/{s_dto.Id}/aircraft", dto, TestContext.Current.CancellationToken);
         var content = await response.Content.ReadAsStreamAsync(TestContext.Current.CancellationToken);
-        s_dto = await JsonSerializer.DeserializeAsync<FlightDto>(content, JsonSerializerOptions, TestContext.Current.CancellationToken) ?? throw new JsonException();
+        var flight = await JsonSerializer.DeserializeAsync<FlightDto>(content, JsonSerializerOptions, TestContext.Current.CancellationToken);
+        if (flight is null)
+        {
+            throw new JsonException();
+        }
+        s_dto = flight;
 
         // Assert
         s_dto.AircraftId.Should().Be(_aircraft2.Id);
@@ -247,7 +305,12 @@ public class FlightsTests : BaseFunctionalTest
         // Act
         var response = await HttpClient.PatchAsJsonAsync($"flights/{s_dto.Id}/pricing", dto, TestContext.Current.CancellationToken);
         var content = await response.Content.ReadAsStreamAsync(TestContext.Current.CancellationToken);
-        s_dto = await JsonSerializer.DeserializeAsync<FlightDto>(content, JsonSerializerOptions, TestContext.Current.CancellationToken) ?? throw new JsonException();
+        var flight = await JsonSerializer.DeserializeAsync<FlightDto>(content, JsonSerializerOptions, TestContext.Current.CancellationToken);
+        if (flight is null)
+        {
+            throw new JsonException();
+        }
+        s_dto = flight;
 
         // Assert
         s_dto.Should().Match<FlightDto>(x =>
@@ -271,7 +334,12 @@ public class FlightsTests : BaseFunctionalTest
         // Act
         var response = await HttpClient.PatchAsJsonAsync($"flights/{s_dto.Id}/schedule", request, TestContext.Current.CancellationToken);
         var content = await response.Content.ReadAsStreamAsync(TestContext.Current.CancellationToken);
-        s_dto = await JsonSerializer.DeserializeAsync<FlightDto>(content, JsonSerializerOptions, TestContext.Current.CancellationToken) ?? throw new JsonException();
+        var flight = await JsonSerializer.DeserializeAsync<FlightDto>(content, JsonSerializerOptions, TestContext.Current.CancellationToken);
+        if (flight is null)
+        {
+            throw new JsonException();
+        }
+        s_dto = flight;
 
         // Assert
         s_dto.Should().Match<FlightDto>(x =>

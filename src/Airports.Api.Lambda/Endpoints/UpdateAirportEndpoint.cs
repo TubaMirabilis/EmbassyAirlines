@@ -20,7 +20,11 @@ internal sealed class UpdateAirportEndpoint : IEndpoint
     private readonly IValidator<CreateOrUpdateAirportDto> _validator;
     private readonly IConfiguration _config;
     private readonly ILogger<UpdateAirportEndpoint> _logger;
-    public UpdateAirportEndpoint(IBus bus, IAmazonDynamoDB dynamoDb, IValidator<CreateOrUpdateAirportDto> validator, IConfiguration config, ILogger<UpdateAirportEndpoint> logger)
+    public UpdateAirportEndpoint(IBus bus,
+                                 IAmazonDynamoDB dynamoDb,
+                                 IValidator<CreateOrUpdateAirportDto> validator,
+                                 IConfiguration config,
+                                 ILogger<UpdateAirportEndpoint> logger)
     {
         _bus = bus;
         _dynamoDb = dynamoDb;
@@ -73,7 +77,16 @@ internal sealed class UpdateAirportEndpoint : IEndpoint
         {
             TableName = _config["DynamoDb:TableName"],
             Key = key,
-            AttributeUpdates = updatedAirportAsAttributes.ToDictionary(kvp => kvp.Key, kvp => new AttributeValueUpdate { Action = AttributeAction.PUT, Value = kvp.Value })
+            AttributeUpdates = updatedAirportAsAttributes.ToDictionary(kvp => kvp.Key, kvp =>
+            {
+                var action = AttributeAction.PUT;
+                var value = kvp.Value;
+                return new AttributeValueUpdate
+                {
+                    Action = action,
+                    Value = value
+                };
+            })
         };
         var updateItemResponse = await _dynamoDb.UpdateItemAsync(updateItemRequest, ct);
         if (updateItemResponse.HttpStatusCode is not HttpStatusCode.OK)

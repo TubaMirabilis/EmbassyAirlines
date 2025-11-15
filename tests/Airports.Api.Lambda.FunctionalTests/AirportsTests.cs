@@ -162,7 +162,12 @@ public class AirportsTests : BaseFunctionalTest
         // Act
         var response = await HttpClient.PostAsJsonAsync("airports", request, TestContext.Current.CancellationToken);
         var content = await response.Content.ReadAsStreamAsync(TestContext.Current.CancellationToken);
-        s_dto = await JsonSerializer.DeserializeAsync<AirportDto>(content, JsonSerializerOptions, TestContext.Current.CancellationToken) ?? throw new JsonException();
+        var airport = await JsonSerializer.DeserializeAsync<AirportDto>(content, JsonSerializerOptions, TestContext.Current.CancellationToken);
+        if (airport is null)
+        {
+            throw new JsonException("Expected airport object not returned");
+        }
+        s_dto = airport;
 
         // Assert
         s_dto.Should().Match<AirportDto>(x =>
@@ -408,7 +413,11 @@ public class AirportsTests : BaseFunctionalTest
         // Act
         var updateResponse = await HttpClient.PutAsJsonAsync($"airports/{s_dto.Id}", updateRequest, TestContext.Current.CancellationToken);
         updateResponse.EnsureSuccessStatusCode();
-        var updateResponseContent = await updateResponse.Content.ReadFromJsonAsync<Airport>(TestContext.Current.CancellationToken) ?? throw new JsonException("Expected airport object not returned");
+        var updateResponseContent = await updateResponse.Content.ReadFromJsonAsync<AirportDto>(TestContext.Current.CancellationToken);
+        if (updateResponseContent is null)
+        {
+            throw new JsonException("Expected airport object not returned");
+        }
 
         // Assert
         updateResponseContent.Should().BeEquivalentTo(expected);

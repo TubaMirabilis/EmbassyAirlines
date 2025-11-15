@@ -17,7 +17,12 @@ namespace Aircraft.Api.Lambda.FunctionalTests;
 public sealed class FunctionalTestWebAppFactory : WebApplicationFactory<Program>, IAsyncLifetime
 {
     private readonly LocalStackContainer _localStackContainer = new LocalStackBuilder().Build();
-    private readonly PostgreSqlContainer _dbContainer = new PostgreSqlBuilder().WithImage("postgres").WithDatabase("mastermind").WithUsername("mastermind").WithPassword("mastermind").WithExposedPort(5432).Build();
+    private readonly PostgreSqlContainer _dbContainer = new PostgreSqlBuilder().WithImage("postgres")
+                                                                               .WithDatabase("aircraft")
+                                                                               .WithUsername("aircraft")
+                                                                               .WithPassword("aircraft")
+                                                                               .WithExposedPort(5432)
+                                                                               .Build();
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.UseSetting("MassTransit:Scope", "embassy-airlines");

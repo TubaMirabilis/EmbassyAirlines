@@ -36,7 +36,12 @@ public class AircraftTests : BaseFunctionalTest
         // Act
         var response = await HttpClient.PostAsJsonAsync("aircraft", request, TestContext.Current.CancellationToken);
         var content = await response.Content.ReadAsStreamAsync(TestContext.Current.CancellationToken);
-        s_dto = await JsonSerializer.DeserializeAsync<AircraftDto>(content, JsonSerializerOptions, TestContext.Current.CancellationToken) ?? throw new JsonException();
+        var aircraft = await JsonSerializer.DeserializeAsync<AircraftDto>(content, JsonSerializerOptions, TestContext.Current.CancellationToken);
+        if (aircraft is null)
+        {
+            throw new JsonException("Deserialized aircraft is null");
+        }
+        s_dto = aircraft;
 
         // Assert
         s_dto.Should().Match<AircraftDto>(x =>

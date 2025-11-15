@@ -13,8 +13,16 @@ internal static class AirportsDeployment
         await ImageService.TagAsync("tubamirabilis/airports:latest", fullImageTag);
         await DynamoDbService.CreateTableIfNotExistsAsync("airports");
         var hostPort = 9000;
-        var awsAccessKeyId = Environment.GetEnvironmentVariable("AWS_ACCESS_KEY_ID") ?? throw new InvalidOperationException("AWS_ACCESS_KEY_ID environment variable is not set.");
-        var awsSecretAccessKey = Environment.GetEnvironmentVariable("AWS_SECRET_ACCESS_KEY") ?? throw new InvalidOperationException("AWS_SECRET_ACCESS_KEY environment variable is not set.");
+        var awsAccessKeyId = Environment.GetEnvironmentVariable("AWS_ACCESS_KEY_ID");
+        if (string.IsNullOrWhiteSpace(awsAccessKeyId))
+        {
+            throw new InvalidOperationException("AWS_ACCESS_KEY_ID environment variable is not set.");
+        }
+        var awsSecretAccessKey = Environment.GetEnvironmentVariable("AWS_SECRET_ACCESS_KEY");
+        if (string.IsNullOrWhiteSpace(awsSecretAccessKey))
+        {
+            throw new InvalidOperationException("AWS_SECRET_ACCESS_KEY environment variable is not set.");
+        }
         var testEnv = new Dictionary<string, string>
         {
             { "AIRPORTS_MassTransit__Scope", "embassy-airlines" },

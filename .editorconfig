@@ -66,7 +66,7 @@ dotnet_style_parentheses_in_relational_binary_operators = never_if_unnecessary:e
 dotnet_style_require_accessibility_modifiers = for_non_interface_members:error
 
 # Expression-level preferences
-dotnet_style_coalesce_expression = true:error
+dotnet_style_coalesce_expression = false:none
 dotnet_style_collection_initializer = true:error
 dotnet_style_explicit_tuple_names = true:error
 dotnet_style_null_propagation = true:error

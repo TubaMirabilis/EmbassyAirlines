@@ -12,7 +12,12 @@ namespace Flights.Api.FunctionalTests;
 
 public class FunctionalTestWebAppFactory : WebApplicationFactory<Program>, IAsyncLifetime
 {
-    private readonly PostgreSqlContainer _dbContainer = new PostgreSqlBuilder().WithImage("postgres").WithDatabase("mastermind").WithUsername("mastermind").WithPassword("mastermind").WithExposedPort(5432).Build();
+    private readonly PostgreSqlContainer _dbContainer = new PostgreSqlBuilder().WithImage("postgres")
+                                                                               .WithDatabase("flights")
+                                                                               .WithUsername("flights")
+                                                                               .WithPassword("flights")
+                                                                               .WithExposedPort(5432)
+                                                                               .Build();
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.UseSetting("MassTransit:Scope", "embassy-airlines");
