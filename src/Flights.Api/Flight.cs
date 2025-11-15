@@ -54,7 +54,6 @@ internal sealed class Flight
         ArrivalLocalTime = newArrivalLocalTime;
         SchedulingAmbiguityPolicy = schedulingAmbiguityPolicy;
     }
-    // Method which returns the relevant MappingResolver:
     public ZoneLocalMappingResolver GetMappingResolver()
     {
         var ambiguousTimeResolver = SchedulingAmbiguityPolicy switch
