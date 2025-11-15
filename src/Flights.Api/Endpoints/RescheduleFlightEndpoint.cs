@@ -39,14 +39,7 @@ internal sealed class RescheduleFlightEndpoint : IEndpoint
             var error = Error.Validation("Flight.InvalidSchedulingAmbiguityPolicy", "Invalid scheduling ambiguity policy");
             return ErrorHandlingHelper.HandleProblem(error);
         }
-        var ambiguousTimeResolver = schedulingAmbiguityPolicy switch
-        {
-            SchedulingAmbiguityPolicy.PreferEarlier => Resolvers.ReturnEarlier,
-            SchedulingAmbiguityPolicy.PreferLater => Resolvers.ReturnLater,
-            _ => Resolvers.ThrowWhenAmbiguous
-        };
-        var skippedTimeResolver = Resolvers.ThrowWhenSkipped;
-        var resolver = Resolvers.CreateMappingResolver(ambiguousTimeResolver, skippedTimeResolver);
+        var resolver = ZoneLocalMappingResolver.FromSchedulingAmbiguityPolicy(schedulingAmbiguityPolicy);
         try
         {
             var departureInstant = departureTime.InZone(flight.DepartureAirport.TimeZone, resolver).ToInstant();
