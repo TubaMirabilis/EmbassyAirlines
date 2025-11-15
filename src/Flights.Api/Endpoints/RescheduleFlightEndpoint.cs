@@ -72,7 +72,8 @@ internal sealed class RescheduleFlightEndpoint : IEndpoint
         catch (AmbiguousTimeException ex)
         {
             _logger.LogWarning(ex, "Departure or arrival time is ambiguous due to daylight saving time transition");
-            var error = Error.Validation("Flight.AmbiguousTime", "Departure or arrival time is ambiguous due to daylight saving time transition");
+            var description = "Departure or arrival time is ambiguous due to daylight saving time transition";
+            var error = Error.Validation("Flight.AmbiguousTime", description);
             return ErrorHandlingHelper.HandleProblem(error);
         }
     }

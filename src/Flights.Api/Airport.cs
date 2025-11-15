@@ -5,19 +5,19 @@ namespace Flights.Api;
 
 internal sealed class Airport
 {
-    private Airport(Guid id, string timeZoneId, string iataCode, string icaoCode, string name)
+    private Airport(AirportCreationArgs args)
     {
-        Ensure.NotNullOrEmpty(icaoCode);
-        Ensure.NotNullOrEmpty(iataCode);
-        Ensure.NotNullOrEmpty(name);
-        Ensure.NotNullOrEmpty(timeZoneId);
-        Id = id;
+        Ensure.NotNullOrEmpty(args.IcaoCode);
+        Ensure.NotNullOrEmpty(args.IataCode);
+        Ensure.NotNullOrEmpty(args.Name);
+        Ensure.NotNullOrEmpty(args.TimeZoneId);
+        Id = args.Id;
         CreatedAt = SystemClock.Instance.GetCurrentInstant();
         UpdatedAt = CreatedAt;
-        TimeZoneId = timeZoneId;
-        IataCode = iataCode;
-        IcaoCode = icaoCode;
-        Name = name;
+        TimeZoneId = args.TimeZoneId;
+        IataCode = args.IataCode;
+        IcaoCode = args.IcaoCode;
+        Name = args.Name;
     }
 #pragma warning disable CS8618
     private Airport()
@@ -32,7 +32,7 @@ internal sealed class Airport
     public string IataCode { get; private set; }
     public string IcaoCode { get; private set; }
     public string Name { get; private set; }
-    public static Airport Create(Guid id, string timeZoneId, string iataCode, string icaoCode, string name) => new(id, timeZoneId, iataCode, icaoCode, name);
+    public static Airport Create(AirportCreationArgs args) => new(args);
     public void Update(string icaoCode, string iataCode, string name, string timeZoneId)
     {
         IcaoCode = icaoCode;

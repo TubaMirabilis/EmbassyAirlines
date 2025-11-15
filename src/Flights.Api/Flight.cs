@@ -63,10 +63,10 @@ internal sealed class Flight
         EconomyPrice = economyPrice;
         BusinessPrice = businessPrice;
     }
-    public void Reschedule(LocalDateTime newDepartureLocalTime, LocalDateTime newArrivalLocalTime, SchedulingAmbiguityPolicy schedulingAmbiguityPolicy)
+    public void Reschedule(LocalDateTime departureLocalTime, LocalDateTime arrivalLocalTime, SchedulingAmbiguityPolicy policy)
     {
-        DepartureLocalTime = newDepartureLocalTime;
-        ArrivalLocalTime = newArrivalLocalTime;
-        SchedulingAmbiguityPolicy = schedulingAmbiguityPolicy;
+        DepartureLocalTime = departureLocalTime;
+        ArrivalLocalTime = arrivalLocalTime;
+        SchedulingAmbiguityPolicy = policy;
     }
 }

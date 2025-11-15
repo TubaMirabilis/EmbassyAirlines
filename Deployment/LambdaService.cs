@@ -5,20 +5,20 @@ namespace Deployment;
 
 internal static class LambdaService
 {
-    public static async Task<string> UpsertFunctionFromImageAsync(string functionName, string imageUri, string roleArn, Dictionary<string, string> environment)
+    public static async Task<string> UpsertFunctionFromImageAsync(LambdaFunctionConfigurationArgs args)
     {
-        Console.WriteLine($"Creating or updating Lambda function '{functionName}' with image '{imageUri}'...");
+        Console.WriteLine($"Creating or updating Lambda function '{args.FunctionName}' with image '{args.ImageUri}'...");
         using var lambdaClient = new AmazonLambdaClient();
         var req = new ListFunctionsRequest();
         var res = await lambdaClient.ListFunctionsAsync(req);
-        var existingFunction = res.Functions.Find(f => f.FunctionName == functionName);
+        var existingFunction = res.Functions.Find(f => f.FunctionName == args.FunctionName);
         if (existingFunction is not null)
         {
             Console.WriteLine($"Function {existingFunction.FunctionName} already exists. Updating function code...");
             var updateReq = new UpdateFunctionCodeRequest
             {
                 FunctionName = existingFunction.FunctionName,
-                ImageUri = imageUri,
+                ImageUri = args.ImageUri,
                 Publish = true
             };
             await lambdaClient.UpdateFunctionCodeAsync(updateReq);
@@ -28,16 +28,16 @@ internal static class LambdaService
         {
             Code = new FunctionCode
             {
-                ImageUri = imageUri
+                ImageUri = args.ImageUri
             },
             Environment = new Amazon.Lambda.Model.Environment
             {
-                Variables = environment
+                Variables = args.Environment
             },
-            FunctionName = functionName,
+            FunctionName = args.FunctionName,
             PackageType = PackageType.Image,
             Publish = true,
-            Role = roleArn,
+            Role = args.RoleArn,
             Timeout = 30
         };
         var res2 = await lambdaClient.CreateFunctionAsync(req2);

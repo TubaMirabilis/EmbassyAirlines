@@ -16,7 +16,15 @@ internal sealed class AirportCreatedConsumer : IConsumer<AirportCreatedEvent>
     public async Task Consume(ConsumeContext<AirportCreatedEvent> context)
     {
         _logger.LogInformation("Consuming AirportCreatedEvent for airport with ID {Id}", context.Message.Id);
-        var airport = Airport.Create(context.Message.Id, context.Message.TimeZoneId, context.Message.IataCode, context.Message.IcaoCode, context.Message.Name);
+        var args = new AirportCreationArgs
+        {
+            IataCode = context.Message.IataCode,
+            IcaoCode = context.Message.IcaoCode,
+            Id = context.Message.Id,
+            Name = context.Message.Name,
+            TimeZoneId = context.Message.TimeZoneId
+        };
+        var airport = Airport.Create(args);
         _ctx.Airports.Add(airport);
         await _ctx.SaveChangesAsync();
     }

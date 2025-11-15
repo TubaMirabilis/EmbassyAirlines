@@ -73,7 +73,14 @@ internal static class AirportsDeployment
             { "AIRPORTS_MassTransit__Scope", "embassy-airlines" },
             { "AIRPORTS_DynamoDb__TableName", "airports" }
         };
-        await LambdaService.UpsertFunctionFromImageAsync("AirportsApiLambda", fullImageTag, role.Arn, env);
+        var args = new LambdaFunctionConfigurationArgs
+        {
+            FunctionName = "AirportsApiLambda",
+            ImageUri = fullImageTag,
+            RoleArn = role.Arn,
+            Environment = env
+        };
+        await LambdaService.UpsertFunctionFromImageAsync(args);
         var functionUrl = await LambdaService.CreateFunctionUrlAsync("AirportsApiLambda");
         await LambdaService.AllowPublicInvokeUrlAsync("AirportsApiLambda");
         Console.WriteLine($"Deployment of {project} completed. Function URL: {functionUrl}");

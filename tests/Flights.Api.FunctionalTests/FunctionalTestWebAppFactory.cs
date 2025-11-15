@@ -35,8 +35,22 @@ public class FunctionalTestWebAppFactory : WebApplicationFactory<Program>, IAsyn
     public async ValueTask InitializeAsync()
     {
         await _dbContainer.StartAsync();
-        IncheonAirport = Airport.Create(Guid.NewGuid(), "Asia/Seoul", "ICN", "RKSI", "Incheon International Airport");
-        SchipolAirport = Airport.Create(Guid.NewGuid(), "Europe/Amsterdam", "AMS", "EHAM", "Schipol Airport");
+        IncheonAirport = Airport.Create(new AirportCreationArgs
+        {
+            IataCode = "ICN",
+            IcaoCode = "RKSI",
+            Id = Guid.NewGuid(),
+            Name = "Incheon International Airport",
+            TimeZoneId = "Asia/Seoul"
+        });
+        SchipolAirport = Airport.Create(new AirportCreationArgs
+        {
+            IataCode = "AMS",
+            IcaoCode = "EHAM",
+            Id = Guid.NewGuid(),
+            Name = "Schipol Airport",
+            TimeZoneId = "Europe/Amsterdam"
+        });
         Aircraft1 = Aircraft.Create(Guid.NewGuid(), "C-FJRN", "B78X");
         Aircraft2 = Aircraft.Create(Guid.NewGuid(), "C-FJRO", "B78X");
         using var scope = Services.CreateScope();
