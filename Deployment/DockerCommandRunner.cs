@@ -16,14 +16,14 @@ internal static class DockerCommandRunner
             CreateNoWindow = true
         };
         using var process = new Process { StartInfo = psi };
-        process.OutputDataReceived += (s, e) =>
+        process.OutputDataReceived += (_, e) =>
         {
             if (e.Data is not null)
             {
                 Console.WriteLine(e.Data);
             }
         };
-        process.ErrorDataReceived += (s, e) =>
+        process.ErrorDataReceived += (_, e) =>
         {
             if (e.Data is not null)
             {
