@@ -22,6 +22,7 @@ internal static class LambdaService
                 Publish = true
             };
             await lambdaClient.UpdateFunctionCodeAsync(updateReq);
+            return;
         }
         var req2 = new CreateFunctionRequest
         {
