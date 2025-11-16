@@ -5,7 +5,7 @@ namespace Deployment;
 
 internal static class LambdaService
 {
-    public static async Task<string> UpsertFunctionFromImageAsync(LambdaFunctionConfigurationArgs args)
+    public static async Task UpsertFunctionFromImageAsync(LambdaFunctionConfigurationArgs args)
     {
         Console.WriteLine($"Creating or updating Lambda function '{args.FunctionName}' with image '{args.ImageUri}'...");
         using var lambdaClient = new AmazonLambdaClient();
@@ -39,8 +39,7 @@ internal static class LambdaService
             Role = args.RoleArn,
             Timeout = 30
         };
-        var res2 = await lambdaClient.CreateFunctionAsync(req2);
-        return res2.FunctionArn;
+        await lambdaClient.CreateFunctionAsync(req2);
     }
     public static async Task<string> CreateFunctionUrlAsync(string functionName)
     {
