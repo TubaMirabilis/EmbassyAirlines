@@ -1,4 +1,4 @@
-﻿using Amazon.ECR;
+using Amazon.ECR;
 using Amazon.ECR.Model;
 using Ductus.FluentDocker.Builders;
 

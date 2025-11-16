@@ -1,4 +1,4 @@
-﻿using Flights.Api.Extensions;
+using Flights.Api.Extensions;
 using NodaTime;
 using NodaTime.TimeZones;
 

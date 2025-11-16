@@ -1,3 +1,3 @@
-﻿using Deployment;
+using Deployment;
 
 await AirportsDeployment.DeployAsync();

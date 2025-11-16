@@ -1,4 +1,4 @@
-﻿using NodaTime;
+using NodaTime;
 using Shared;
 
 namespace Flights.Api;

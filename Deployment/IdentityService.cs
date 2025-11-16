@@ -1,4 +1,4 @@
-﻿using Amazon.IdentityManagement;
+using Amazon.IdentityManagement;
 using Amazon.IdentityManagement.Model;
 
 namespace Deployment;

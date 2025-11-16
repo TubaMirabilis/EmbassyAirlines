@@ -1,4 +1,4 @@
-﻿namespace Airports.Api.Lambda.FunctionalTests;
+namespace Airports.Api.Lambda.FunctionalTests;
 
 [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
 public sealed class TestPriorityAttribute : Attribute
