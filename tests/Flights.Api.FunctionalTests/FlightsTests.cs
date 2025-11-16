@@ -50,7 +50,7 @@ public class FlightsTests : BaseFunctionalTest
             BusinessPrice = 4000,
             SchedulingAmbiguityPolicy = "ThrowWhenAmbiguous"
         };
-        var error = "Departure time cannot be in the past";
+        var error = "Departure time cannot be in the past (Parameter 'args')";
 
         // Act
         var response = await HttpClient.PostAsJsonAsync("flights", request, TestContext.Current.CancellationToken);
@@ -82,7 +82,7 @@ public class FlightsTests : BaseFunctionalTest
             BusinessPrice = 4000,
             SchedulingAmbiguityPolicy = "ThrowWhenAmbiguous"
         };
-        var error = "Arrival time cannot be before departure time";
+        var error = "Arrival time cannot be before departure time (Parameter 'args')";
 
         // Act
         var response = await HttpClient.PostAsJsonAsync("flights", request, TestContext.Current.CancellationToken);

@@ -3,7 +3,6 @@ using Flights.Api.Database;
 using Flights.Api.Extensions;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
-using NodaTime;
 using Shared;
 using Shared.Endpoints;
 using Shared.Extensions;
@@ -63,10 +62,10 @@ internal sealed class ScheduleFlightEndpoint : IEndpoint
             var error = Error.NotFound("Flight.AircraftNotFound", $"Aircraft with ID {dto.AircraftId} not found");
             return ErrorHandlingHelper.HandleProblem(error);
         }
-        var economyPrice = new Money(dto.EconomyPrice);
-        var businessPrice = new Money(dto.BusinessPrice);
         try
         {
+            var economyPrice = new Money(dto.EconomyPrice);
+            var businessPrice = new Money(dto.BusinessPrice);
             var schedule = new FlightSchedule(new FlightScheduleCreationArgs
             {
                 DepartureAirport = departureAirport,
@@ -88,24 +87,10 @@ internal sealed class ScheduleFlightEndpoint : IEndpoint
             await ctx.SaveChangesAsync(ct);
             return TypedResults.Created($"/flights/{flight.Id}", flight.ToDto());
         }
-        catch (InvalidOperationException ex)
+        catch (ArgumentOutOfRangeException ex)
         {
             _logger.LogWarning(ex, "Invalid operation while scheduling flight: {Message}", ex.Message);
             var error = Error.Validation("Flight.SchedulingFailed", ex.Message);
-            return ErrorHandlingHelper.HandleProblem(error);
-        }
-        catch (SkippedTimeException ex)
-        {
-            _logger.LogWarning(ex, "Departure or arrival time falls within a skipped time period due to daylight saving time transition");
-            var description = "Departure or arrival time falls within a skipped time period due to daylight saving time transition";
-            var error = Error.Validation("Flight.SkippedTime", description);
-            return ErrorHandlingHelper.HandleProblem(error);
-        }
-        catch (AmbiguousTimeException ex)
-        {
-            _logger.LogWarning(ex, "Departure or arrival time is ambiguous due to daylight saving time transition");
-            var description = "Departure or arrival time is ambiguous due to daylight saving time transition";
-            var error = Error.Validation("Flight.AmbiguousTime", description);
             return ErrorHandlingHelper.HandleProblem(error);
         }
     }

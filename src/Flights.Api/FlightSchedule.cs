@@ -13,13 +13,13 @@ internal sealed record FlightSchedule
         var departureInstant = DepartureTime.InZone(args.DepartureAirport.TimeZone, resolver).ToInstant();
         if (departureInstant < SystemClock.Instance.GetCurrentInstant())
         {
-            throw new InvalidOperationException("Departure time cannot be in the past");
+            throw new ArgumentOutOfRangeException(nameof(args), "Departure time cannot be in the past");
         }
         ArrivalTime = LocalDateTime.FromDateTime(args.ArrivalLocalTime);
         var arrivalInstant = ArrivalTime.InZone(args.ArrivalAirport.TimeZone, resolver).ToInstant();
         if (arrivalInstant < departureInstant)
         {
-            throw new InvalidOperationException("Arrival time cannot be before departure time");
+            throw new ArgumentOutOfRangeException(nameof(args), "Arrival time cannot be before departure time");
         }
         ArrivalAirport = args.ArrivalAirport;
         DepartureAirport = args.DepartureAirport;

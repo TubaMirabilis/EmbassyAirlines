@@ -3,7 +3,6 @@ using Flights.Api.Database;
 using Flights.Api.Extensions;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
-using NodaTime;
 using Shared;
 using Shared.Contracts;
 using Shared.Endpoints;
@@ -44,24 +43,10 @@ internal sealed class RescheduleFlightEndpoint : IEndpoint
             await _bus.Publish(new FlightRescheduledEvent(id, dto.DepartureLocalTime, dto.ArrivalLocalTime), ct);
             return TypedResults.Ok(flight.ToDto());
         }
-        catch (InvalidOperationException ex)
+        catch (ArgumentOutOfRangeException ex)
         {
             _logger.LogWarning(ex, "Invalid operation while rescheduling flight: {Message}", ex.Message);
             var error = Error.Validation("Flight.ReschedulingFailed", ex.Message);
-            return ErrorHandlingHelper.HandleProblem(error);
-        }
-        catch (SkippedTimeException ex)
-        {
-            _logger.LogWarning(ex, "Departure or arrival time falls within a skipped time period due to daylight saving time transition");
-            var description = "Departure or arrival time falls within a skipped time period due to daylight saving time transition";
-            var error = Error.Validation("Flight.SkippedTime", description);
-            return ErrorHandlingHelper.HandleProblem(error);
-        }
-        catch (AmbiguousTimeException ex)
-        {
-            _logger.LogWarning(ex, "Departure or arrival time is ambiguous due to daylight saving time transition");
-            var description = "Departure or arrival time is ambiguous due to daylight saving time transition";
-            var error = Error.Validation("Flight.AmbiguousTime", description);
             return ErrorHandlingHelper.HandleProblem(error);
         }
     }
