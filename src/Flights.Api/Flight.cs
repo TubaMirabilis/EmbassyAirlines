@@ -8,32 +8,18 @@ internal sealed class Flight
 {
     private Flight(FlightCreationArgs args)
     {
-        var policy = args.SchedulingAmbiguityPolicy;
-        var resolver = ZoneLocalMappingResolver.FromSchedulingAmbiguityPolicy(policy);
-        var departureTime = LocalDateTime.FromDateTime(args.DepartureLocalTime);
-        var departureInstant = departureTime.InZone(args.DepartureAirport.TimeZone, resolver).ToInstant();
-        if (departureInstant < SystemClock.Instance.GetCurrentInstant())
-        {
-            throw new InvalidOperationException("Departure time cannot be in the past");
-        }
-        var arrivalTime = LocalDateTime.FromDateTime(args.ArrivalLocalTime);
-        var arrivalInstant = arrivalTime.InZone(args.ArrivalAirport.TimeZone, resolver).ToInstant();
-        if (arrivalInstant < departureInstant)
-        {
-            throw new InvalidOperationException("Arrival time cannot be before departure time");
-        }
         Id = Guid.NewGuid();
         CreatedAt = SystemClock.Instance.GetCurrentInstant();
         FlightNumberIata = args.FlightNumberIata;
         FlightNumberIcao = args.FlightNumberIcao;
-        DepartureLocalTime = departureTime;
-        ArrivalLocalTime = arrivalTime;
-        DepartureAirport = args.DepartureAirport;
-        ArrivalAirport = args.ArrivalAirport;
+        DepartureLocalTime = args.Schedule.DepartureTime;
+        ArrivalLocalTime = args.Schedule.ArrivalTime;
+        DepartureAirport = args.Schedule.DepartureAirport;
+        ArrivalAirport = args.Schedule.ArrivalAirport;
         Aircraft = args.Aircraft;
         EconomyPrice = args.EconomyPrice;
         BusinessPrice = args.BusinessPrice;
-        SchedulingAmbiguityPolicy = policy;
+        SchedulingAmbiguityPolicy = args.Schedule.SchedulingAmbiguityPolicy;
     }
 #pragma warning disable CS8618
     private Flight()
@@ -79,21 +65,16 @@ internal sealed class Flight
     }
     public void Reschedule(DateTime departureLocalTime, DateTime arrivalLocalTime, SchedulingAmbiguityPolicy policy)
     {
-        var resolver = ZoneLocalMappingResolver.FromSchedulingAmbiguityPolicy(policy);
-        var departureTime = LocalDateTime.FromDateTime(departureLocalTime);
-        var departureInstant = departureTime.InZone(DepartureAirport.TimeZone, resolver).ToInstant();
-        if (departureInstant < SystemClock.Instance.GetCurrentInstant())
+        var schedule = new FlightSchedule(new FlightScheduleCreationArgs
         {
-            throw new InvalidOperationException("Departure time cannot be in the past");
-        }
-        var arrivalTime = LocalDateTime.FromDateTime(arrivalLocalTime);
-        var arrivalInstant = arrivalTime.InZone(ArrivalAirport.TimeZone, resolver).ToInstant();
-        if (arrivalInstant < departureInstant)
-        {
-            throw new InvalidOperationException("Arrival time cannot be before departure time");
-        }
-        DepartureLocalTime = departureTime;
-        ArrivalLocalTime = arrivalTime;
-        SchedulingAmbiguityPolicy = policy;
+            DepartureAirport = DepartureAirport,
+            DepartureLocalTime = departureLocalTime,
+            ArrivalAirport = ArrivalAirport,
+            ArrivalLocalTime = arrivalLocalTime,
+            SchedulingAmbiguityPolicy = policy
+        });
+        DepartureLocalTime = schedule.DepartureTime;
+        ArrivalLocalTime = schedule.ArrivalTime;
+        SchedulingAmbiguityPolicy = schedule.SchedulingAmbiguityPolicy;
     }
 }

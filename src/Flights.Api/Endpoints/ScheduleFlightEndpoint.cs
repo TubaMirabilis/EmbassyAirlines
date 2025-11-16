@@ -65,22 +65,25 @@ internal sealed class ScheduleFlightEndpoint : IEndpoint
         }
         var economyPrice = new Money(dto.EconomyPrice);
         var businessPrice = new Money(dto.BusinessPrice);
-        var args = new FlightCreationArgs
-        {
-            FlightNumberIata = dto.FlightNumberIata,
-            FlightNumberIcao = dto.FlightNumberIcao,
-            DepartureLocalTime = dto.DepartureLocalTime,
-            ArrivalLocalTime = dto.ArrivalLocalTime,
-            DepartureAirport = departureAirport,
-            ArrivalAirport = arrivalAirport,
-            Aircraft = aircraft,
-            EconomyPrice = economyPrice,
-            BusinessPrice = businessPrice,
-            SchedulingAmbiguityPolicy = schedulingAmbiguityPolicy
-        };
         try
         {
-            var flight = Flight.Create(args);
+            var schedule = new FlightSchedule(new FlightScheduleCreationArgs
+            {
+                DepartureAirport = departureAirport,
+                DepartureLocalTime = dto.DepartureLocalTime,
+                ArrivalAirport = arrivalAirport,
+                ArrivalLocalTime = dto.ArrivalLocalTime,
+                SchedulingAmbiguityPolicy = schedulingAmbiguityPolicy
+            });
+            var flight = Flight.Create(new FlightCreationArgs
+            {
+                Aircraft = aircraft,
+                BusinessPrice = businessPrice,
+                EconomyPrice = economyPrice,
+                FlightNumberIata = dto.FlightNumberIata,
+                FlightNumberIcao = dto.FlightNumberIcao,
+                Schedule = schedule
+            });
             ctx.Flights.Add(flight);
             await ctx.SaveChangesAsync(ct);
             return TypedResults.Created($"/flights/{flight.Id}", flight.ToDto());
