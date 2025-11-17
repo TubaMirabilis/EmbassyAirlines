@@ -1,8 +1,3 @@
-using System.Text.Json;
-using Amazon.DynamoDBv2;
-using Amazon.DynamoDBv2.DocumentModel;
-using Amazon.DynamoDBv2.Model;
-using ErrorOr;
 using Shared;
 using Shared.Contracts;
 using Shared.Endpoints;
@@ -11,38 +6,18 @@ namespace Airports.Api.Lambda.Endpoints;
 
 internal sealed class GetAirportEndpoint : IEndpoint
 {
-    private readonly IConfiguration _config;
-    private readonly IAmazonDynamoDB _dynamoDb;
-    private readonly ILogger<GetAirportEndpoint> _logger;
-    public GetAirportEndpoint(IConfiguration config, IAmazonDynamoDB dynamoDb, ILogger<GetAirportEndpoint> logger)
-    {
-        _config = config;
-        _dynamoDb = dynamoDb;
-        _logger = logger;
-    }
     public void MapEndpoint(IEndpointRouteBuilder app)
         => app.MapGet("airports/{id}", InvokeAsync);
-    private async Task<IResult> InvokeAsync(Guid id, CancellationToken ct)
+    static private async Task<IResult> InvokeAsync(IAirportRepository repository, ILogger<GetAirportEndpoint> logger, Guid id, CancellationToken ct)
     {
-        var key = new Dictionary<string, AttributeValue>
-    {
-        { "Id", new AttributeValue { S = id.ToString() } }
-    };
-        var getItemRequest = new GetItemRequest
+        var getAirportResult = await repository.GetAirportByIdAsync(id, ct);
+        if (getAirportResult.IsError)
         {
-            TableName = _config["DynamoDb:TableName"],
-            Key = key
-        };
-        var response = await _dynamoDb.GetItemAsync(getItemRequest, ct);
-        if (!response.IsItemSet)
-        {
-            _logger.LogWarning("Airport with id {Id} not found", id);
-            var error = Error.NotFound("Airport.NotFound", $"Airport with id {id} not found");
-            return ErrorHandlingHelper.HandleProblem(error);
+            logger.LogWarning("Error retrieving airport with id {Id}: {Errors}", id, getAirportResult.FirstError.Description);
+            return ErrorHandlingHelper.HandleProblem(getAirportResult.FirstError);
         }
-        var itemAsDocument = Document.FromAttributeMap(response.Item);
-        var airportAsJson = itemAsDocument.ToJson();
-        var airport = JsonSerializer.Deserialize<AirportDto>(airportAsJson);
-        return TypedResults.Ok(airport);
+        var airport = getAirportResult.Value;
+        var response = new AirportDto(airport.Id, airport.Name, airport.IcaoCode, airport.IataCode, airport.TimeZoneId);
+        return TypedResults.Ok(response);
     }
 }
