@@ -11,21 +11,18 @@ namespace Flights.Api.Endpoints;
 
 internal sealed class ScheduleFlightEndpoint : IEndpoint
 {
-    private readonly IValidator<CreateOrUpdateFlightDto> _validator;
-    private readonly ILogger<ScheduleFlightEndpoint> _logger;
-    public ScheduleFlightEndpoint(IValidator<CreateOrUpdateFlightDto> validator, ILogger<ScheduleFlightEndpoint> logger)
-    {
-        _validator = validator;
-        _logger = logger;
-    }
     public void MapEndpoint(IEndpointRouteBuilder app)
         => app.MapPost("flights", InvokeAsync);
-    private async Task<IResult> InvokeAsync(ApplicationDbContext ctx, CreateOrUpdateFlightDto dto, CancellationToken ct)
+    private async Task<IResult> InvokeAsync(ApplicationDbContext ctx,
+                                            ILogger<ScheduleFlightEndpoint> logger,
+                                            IValidator<CreateOrUpdateFlightDto> validator,
+                                            CreateOrUpdateFlightDto dto,
+                                            CancellationToken ct)
     {
-        var validationResult = await _validator.ValidateAsync(dto, ct);
+        var validationResult = await validator.ValidateAsync(dto, ct);
         if (!validationResult.IsValid(out var formattedErrors))
         {
-            _logger.LogWarning("Validation failed for flight creation: {Errors}", formattedErrors);
+            logger.LogWarning("Validation failed for flight creation: {Errors}", formattedErrors);
             var error = Error.Validation("Flight.ValidationFailed", formattedErrors);
             return ErrorHandlingHelper.HandleProblem(error);
         }
@@ -34,7 +31,7 @@ internal sealed class ScheduleFlightEndpoint : IEndpoint
                                         .SingleOrDefaultAsync(ct);
         if (departureAirport is null)
         {
-            _logger.LogWarning("Departure airport with ID {Id} not found", dto.DepartureAirportId);
+            logger.LogWarning("Departure airport with ID {Id} not found", dto.DepartureAirportId);
             var error = Error.NotFound("Flight.DepartureAirportNotFound", "Departure airport not found");
             return ErrorHandlingHelper.HandleProblem(error);
         }
@@ -43,13 +40,13 @@ internal sealed class ScheduleFlightEndpoint : IEndpoint
                                       .SingleOrDefaultAsync(ct);
         if (arrivalAirport is null)
         {
-            _logger.LogWarning("Arrival airport with ID {Id} not found", dto.ArrivalAirportId);
+            logger.LogWarning("Arrival airport with ID {Id} not found", dto.ArrivalAirportId);
             var error = Error.NotFound("Flight.ArrivalAirportNotFound", "Arrival airport not found");
             return ErrorHandlingHelper.HandleProblem(error);
         }
         if (!Enum.TryParse<SchedulingAmbiguityPolicy>(dto.SchedulingAmbiguityPolicy, out var schedulingAmbiguityPolicy))
         {
-            _logger.LogWarning("Invalid scheduling ambiguity policy: {Policy}", dto.SchedulingAmbiguityPolicy);
+            logger.LogWarning("Invalid scheduling ambiguity policy: {Policy}", dto.SchedulingAmbiguityPolicy);
             var error = Error.Validation("Flight.InvalidSchedulingAmbiguityPolicy", "Invalid scheduling ambiguity policy");
             return ErrorHandlingHelper.HandleProblem(error);
         }
@@ -58,7 +55,7 @@ internal sealed class ScheduleFlightEndpoint : IEndpoint
                                 .SingleOrDefaultAsync(ct);
         if (aircraft is null)
         {
-            _logger.LogWarning("Aircraft with ID {Id} not found", dto.AircraftId);
+            logger.LogWarning("Aircraft with ID {Id} not found", dto.AircraftId);
             var error = Error.NotFound("Flight.AircraftNotFound", $"Aircraft with ID {dto.AircraftId} not found");
             return ErrorHandlingHelper.HandleProblem(error);
         }
@@ -89,7 +86,7 @@ internal sealed class ScheduleFlightEndpoint : IEndpoint
         }
         catch (ArgumentOutOfRangeException ex)
         {
-            _logger.LogWarning(ex, "Invalid operation while scheduling flight: {Message}", ex.Message);
+            logger.LogWarning(ex, "Invalid operation while scheduling flight: {Message}", ex.Message);
             var error = Error.Validation("Flight.SchedulingFailed", ex.Message);
             return ErrorHandlingHelper.HandleProblem(error);
         }
