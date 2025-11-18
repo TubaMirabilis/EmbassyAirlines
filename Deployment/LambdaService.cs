@@ -22,6 +22,15 @@ internal static class LambdaService
                 Publish = true
             };
             await lambdaClient.UpdateFunctionCodeAsync(updateReq);
+            var updateConfigReq = new UpdateFunctionConfigurationRequest
+            {
+                FunctionName = existingFunction.FunctionName,
+                Environment = new Amazon.Lambda.Model.Environment
+                {
+                    Variables = args.Environment
+                }
+            };
+            await lambdaClient.UpdateFunctionConfigurationAsync(updateConfigReq);
             return;
         }
         var req2 = new CreateFunctionRequest
