@@ -15,13 +15,6 @@ internal static class LambdaService
         if (existingFunction is not null)
         {
             Console.WriteLine($"Function {existingFunction.FunctionName} already exists. Updating function code...");
-            var updateReq = new UpdateFunctionCodeRequest
-            {
-                FunctionName = existingFunction.FunctionName,
-                ImageUri = args.ImageUri,
-                Publish = true
-            };
-            await lambdaClient.UpdateFunctionCodeAsync(updateReq);
             var updateConfigReq = new UpdateFunctionConfigurationRequest
             {
                 FunctionName = existingFunction.FunctionName,
@@ -31,6 +24,13 @@ internal static class LambdaService
                 }
             };
             await lambdaClient.UpdateFunctionConfigurationAsync(updateConfigReq);
+            var updateReq = new UpdateFunctionCodeRequest
+            {
+                FunctionName = existingFunction.FunctionName,
+                ImageUri = args.ImageUri,
+                Publish = true
+            };
+            await lambdaClient.UpdateFunctionCodeAsync(updateReq);
             return;
         }
         var req2 = new CreateFunctionRequest
