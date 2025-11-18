@@ -24,6 +24,7 @@ internal static class LambdaService
                 }
             };
             await lambdaClient.UpdateFunctionConfigurationAsync(updateConfigReq);
+            await Task.Delay(5000);
             var updateReq = new UpdateFunctionCodeRequest
             {
                 FunctionName = existingFunction.FunctionName,
