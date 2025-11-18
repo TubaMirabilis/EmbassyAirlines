@@ -8,8 +8,8 @@
 
   <ItemGroup>
     <PackageReference Include="Amazon.Lambda.AspNetCoreServer.Hosting" />
+    <PackageReference Include="AWS.Messaging" />
     <PackageReference Include="AWSSDK.DynamoDBv2" />
-    <PackageReference Include="MassTransit.AmazonSQS" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
   </ItemGroup>
 

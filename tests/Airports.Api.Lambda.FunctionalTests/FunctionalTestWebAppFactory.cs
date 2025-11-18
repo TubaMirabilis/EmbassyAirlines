@@ -2,7 +2,7 @@ using System.Text.Json;
 using Amazon.DynamoDBv2;
 using Amazon.DynamoDBv2.Model;
 using Amazon.Runtime;
-using MassTransit;
+using AWS.Messaging;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
@@ -18,22 +18,24 @@ public class FunctionalTestWebAppFactory : WebApplicationFactory<Program>, IAsyn
     private readonly DynamoDbContainer _dynamoDbContainer = new DynamoDbBuilder().Build();
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
-        builder.UseSetting("DynamoDb:TableName", "airports");
-        builder.UseSetting("MassTransit:Scope", "embassy-airlines");
+        builder.UseSetting("SNS:AirportCreatedTopicArn", "testAirportCreatedTopicArn");
+        builder.UseSetting("SNS:AirportUpdatedTopicArn", "testAirportUpdatedTopicArn");
+        builder.UseSetting("DynamoDb:TableName", "airports-test");
         builder.ConfigureTestServices(services =>
         {
-            var credentials = new BasicAWSCredentials("test-access-key", "test-secret-key");
             services.AddSingleton<JsonSerializerOptions>(_ => new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true
             });
-            services.AddMassTransitTestHarness();
             services.RemoveAll<IAmazonDynamoDB>();
+            services.RemoveAll<IMessagePublisher>();
+            var credentials = new BasicAWSCredentials("test-access-key", "test-secret-key");
             var config = new AmazonDynamoDBConfig
             {
                 ServiceURL = _dynamoDbContainer.GetConnectionString()
             };
             services.AddSingleton<IAmazonDynamoDB>(_ => new AmazonDynamoDBClient(credentials, config));
+            services.AddSingleton<IMessagePublisher, FakeMessagePublisher>();
         });
     }
     public async ValueTask InitializeAsync()
@@ -42,7 +44,7 @@ public class FunctionalTestWebAppFactory : WebApplicationFactory<Program>, IAsyn
         var client = Services.GetRequiredService<IAmazonDynamoDB>();
         var request = new CreateTableRequest
         {
-            TableName = "airports",
+            TableName = "airports-test",
             KeySchema =
             [
                 new KeySchemaElement("Id", KeyType.HASH)

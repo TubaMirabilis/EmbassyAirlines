@@ -4,15 +4,6 @@ internal static class AirportsDeployment
 {
     public static async Task DeployAsync()
     {
-        var project = "Airports.Api.Lambda";
-        Console.WriteLine($"Starting deployment of {project}...");
-        var repoUri = await ImageService.EnsureRepositoryAsync("airports");
-        var tag = "latest";
-        await ImageService.BuildAsync("Airports.Api.Lambda.dockerfile", "tubamirabilis/airports", tag);
-        var fullImageTag = $"{repoUri}:{tag}";
-        await ImageService.TagAsync("tubamirabilis/airports:latest", fullImageTag);
-        await DynamoDbService.CreateTableIfNotExistsAsync("airports");
-        var hostPort = 9000;
         var awsAccessKeyId = Environment.GetEnvironmentVariable("AWS_ACCESS_KEY_ID");
         if (string.IsNullOrWhiteSpace(awsAccessKeyId))
         {
@@ -23,10 +14,22 @@ internal static class AirportsDeployment
         {
             throw new InvalidOperationException("AWS_SECRET_ACCESS_KEY environment variable is not set.");
         }
+        var project = "Airports.Api.Lambda";
+        Console.WriteLine($"Starting deployment of {project}...");
+        var repoUri = await ImageService.EnsureRepositoryAsync("airports");
+        var tag = "latest";
+        await ImageService.BuildAsync("Airports.Api.Lambda.dockerfile", "tubamirabilis/airports", tag);
+        var fullImageTag = $"{repoUri}:{tag}";
+        await ImageService.TagAsync("tubamirabilis/airports:latest", fullImageTag);
+        await DynamoDbService.CreateTableIfNotExistsAsync("airports-test");
+        var hostPort = 9000;
+        var testAirportCreatedTopicArn = await SnsService.EnsureTopicAsync("AirportCreatedTopicForTesting");
+        var testAirportUpdatedTopicArn = await SnsService.EnsureTopicAsync("AirportUpdatedTopicForTesting");
         var testEnv = new Dictionary<string, string>
         {
-            { "AIRPORTS_MassTransit__Scope", "embassy-airlines" },
-            { "AIRPORTS_DynamoDb__TableName", "airports" },
+            { "AIRPORTS_DynamoDb__TableName", "airports-test" },
+            { "AIRPORTS_SNS__AirportCreatedTopicArn", testAirportCreatedTopicArn },
+            { "AIRPORTS_SNS__AirportUpdatedTopicArn", testAirportUpdatedTopicArn },
             { "AWS_ACCESS_KEY_ID", awsAccessKeyId },
             { "AWS_SECRET_ACCESS_KEY", awsSecretAccessKey }
         };
@@ -68,10 +71,14 @@ internal static class AirportsDeployment
         await IdentityService.AttachPolicyAsync("arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess", role.RoleName);
         await IdentityService.AttachPolicyAsync("arn:aws:iam::aws:policy/AmazonSQSFullAccess", role.RoleName);
         await IdentityService.AttachPolicyAsync("arn:aws:iam::aws:policy/AmazonSNSFullAccess", role.RoleName);
+        await DynamoDbService.CreateTableIfNotExistsAsync("airports");
+        var airportCreatedTopicArn = await SnsService.EnsureTopicAsync("AirportCreatedTopic");
+        var airportUpdatedTopicArn = await SnsService.EnsureTopicAsync("AirportUpdatedTopic");
         var env = new Dictionary<string, string>
         {
-            { "AIRPORTS_MassTransit__Scope", "embassy-airlines" },
-            { "AIRPORTS_DynamoDb__TableName", "airports" }
+            { "AIRPORTS_DynamoDb__TableName", "airports" },
+            { "AIRPORTS_SNS__AirportCreatedTopicArn", airportCreatedTopicArn },
+            { "AIRPORTS_SNS__AirportUpdatedTopicArn", airportUpdatedTopicArn }
         };
         var args = new LambdaFunctionConfigurationArgs
         {

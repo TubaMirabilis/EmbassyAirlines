@@ -12,6 +12,7 @@
     <PackageReference Include="AWSSDK.ECR" />
     <PackageReference Include="AWSSDK.IdentityManagement" />
     <PackageReference Include="AWSSDK.Lambda" />
+    <PackageReference Include="AWSSDK.SimpleNotificationService" />
     <PackageReference Include="Ductus.FluentDocker" />
   </ItemGroup>
 </Project>
