@@ -73,7 +73,9 @@ internal static class AirportsDeployment
         await IdentityService.AttachPolicyAsync("arn:aws:iam::aws:policy/AmazonSNSFullAccess", role.RoleName);
         await DynamoDbService.CreateTableIfNotExistsAsync("airports");
         var airportCreatedTopicArn = await SnsService.EnsureTopicAsync("AirportCreatedTopic");
+        Console.WriteLine($"Created topic ARN: {airportCreatedTopicArn}");
         var airportUpdatedTopicArn = await SnsService.EnsureTopicAsync("AirportUpdatedTopic");
+        Console.WriteLine($"Created topic ARN: {airportUpdatedTopicArn}");
         var env = new Dictionary<string, string>
         {
             { "AIRPORTS_DynamoDb__TableName", "airports" },
