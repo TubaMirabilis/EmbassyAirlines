@@ -69,7 +69,6 @@ internal static class AirportsDeployment
         var role = await IdentityService.EnsureRoleAsync("AirportsApiLambdaRole");
         await IdentityService.AttachPolicyAsync("arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole", role.RoleName);
         await IdentityService.AttachPolicyAsync("arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess", role.RoleName);
-        await IdentityService.AttachPolicyAsync("arn:aws:iam::aws:policy/AmazonSQSFullAccess", role.RoleName);
         await IdentityService.AttachPolicyAsync("arn:aws:iam::aws:policy/AmazonSNSFullAccess", role.RoleName);
         await DynamoDbService.CreateTableIfNotExistsAsync("airports");
         var airportCreatedTopicArn = await SnsService.EnsureTopicAsync("AirportCreatedTopic");
