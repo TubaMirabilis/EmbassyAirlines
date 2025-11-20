@@ -2,7 +2,7 @@ using System.Text.Json;
 using Amazon.Runtime;
 using Amazon.S3;
 using Amazon.S3.Model;
-using MassTransit;
+using AWS.Messaging;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
@@ -25,9 +25,9 @@ public sealed class FunctionalTestWebAppFactory : WebApplicationFactory<Program>
                                                                                .Build();
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
-        builder.UseSetting("MassTransit:Scope", "embassy-airlines");
+        builder.UseSetting("SNS:AircraftCreatedTopicArn", "testAircraftCreatedTopicArn");
         builder.UseSetting("ConnectionStrings:DefaultConnection", _dbContainer.GetConnectionString());
-        builder.UseSetting("AWS:BucketName", "embassy-airlines");
+        builder.UseSetting("S3:BucketName", "embassy-airlines");
         builder.ConfigureTestServices(services =>
         {
             var credentials = new BasicAWSCredentials("test-access-key", "test-secret-key");
@@ -35,13 +35,14 @@ public sealed class FunctionalTestWebAppFactory : WebApplicationFactory<Program>
             {
                 PropertyNameCaseInsensitive = true
             });
-            services.AddMassTransitTestHarness();
             services.RemoveAll<IAmazonS3>();
+            services.RemoveAll<IMessagePublisher>();
             var config = new AmazonS3Config
             {
                 ServiceURL = _localStackContainer.GetConnectionString()
             };
             services.AddSingleton<IAmazonS3>(_ => new AmazonS3Client(credentials, config));
+            services.AddSingleton<IMessagePublisher, FakeMessagePublisher>();
         });
     }
     public async ValueTask InitializeAsync()
