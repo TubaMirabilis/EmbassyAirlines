@@ -482,3 +482,7 @@ $RECYCLE.BIN/
 
 # Vim temporary swap files
 *.swp
+
+# CDK asset staging directory
+.cdk.staging
+cdk.out

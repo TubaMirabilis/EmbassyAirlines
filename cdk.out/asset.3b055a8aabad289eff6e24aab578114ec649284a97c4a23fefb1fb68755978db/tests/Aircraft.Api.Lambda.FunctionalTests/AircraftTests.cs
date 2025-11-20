@@ -1,0 +1,102 @@
+using System.Net.Http.Json;
+using System.Text.Json;
+using FluentAssertions;
+using Shared.Contracts;
+
+namespace Aircraft.Api.Lambda.FunctionalTests;
+
+[TestCaseOrderer(typeof(PriorityOrderer))]
+public class AircraftTests : BaseFunctionalTest
+{
+    private static AircraftDto? s_dto;
+    public AircraftTests(FunctionalTestWebAppFactory factory) : base(factory)
+    {
+    }
+
+    [Fact, TestPriority(0)]
+    public async Task Create_Should_ReturnNotFound_WhenSeatLayoutDefinitionDoesNotExist()
+    {
+        // Arrange
+        var request = new CreateOrUpdateAircraftDto("C-FZTY", "B38M", 42045, 82190, 69308, 65952, 20826);
+        var error = "Seat layout definition for B38M not found";
+
+        // Act
+        var response = await HttpClient.PostAsJsonAsync("aircraft", request, TestContext.Current.CancellationToken);
+
+        // Assert
+        await GetProblemDetailsFromResponseAndAssert(response, error);
+    }
+
+    [Fact, TestPriority(1)]
+    public async Task Create_Should_ReturnCreated_WhenRequestIsValid()
+    {
+        // Arrange
+        var request = new CreateOrUpdateAircraftDto("C-FJRN", "B78X", 135500, 254011, 201848, 192777, 101522);
+
+        // Act
+        var response = await HttpClient.PostAsJsonAsync("aircraft", request, TestContext.Current.CancellationToken);
+        var content = await response.Content.ReadAsStreamAsync(TestContext.Current.CancellationToken);
+        var aircraft = await JsonSerializer.DeserializeAsync<AircraftDto>(content, JsonSerializerOptions, TestContext.Current.CancellationToken);
+        if (aircraft is null)
+        {
+            throw new JsonException("Deserialized aircraft is null");
+        }
+        s_dto = aircraft;
+
+        // Assert
+        s_dto.Should().Match<AircraftDto>(x =>
+            x.TailNumber == request.TailNumber &&
+            x.EquipmentCode == request.EquipmentCode &&
+            x.DryOperatingWeight == request.DryOperatingWeight &&
+            x.MaximumFuelWeight == request.MaximumFuelWeight &&
+            x.MaximumLandingWeight == request.MaximumLandingWeight &&
+            x.MaximumTakeoffWeight == request.MaximumTakeoffWeight &&
+            x.MaximumZeroFuelWeight == request.MaximumZeroFuelWeight &&
+            x.Seats.Count() == 337);
+    }
+
+    [Fact, TestPriority(2)]
+    public async Task Create_Should_ReturnConflict_WhenAircraftAlreadyExists()
+    {
+        // Arrange
+        var request = new CreateOrUpdateAircraftDto("C-FJRN", "B78X", 135500, 254011, 201848, 192777, 101522);
+        var error = $"Aircraft with tail number {request.TailNumber} already exists";
+
+        // Act
+        var response = await HttpClient.PostAsJsonAsync("aircraft", request, TestContext.Current.CancellationToken);
+
+        // Assert
+        await GetProblemDetailsFromResponseAndAssert(response, error);
+    }
+
+    [Fact, TestPriority(3)]
+    public async Task GetById_Should_ReturnNotFound_WhenAircraftDoesNotExist()
+    {
+        // Arrange
+        var id = Guid.NewGuid();
+        var error = $"Aircraft with ID {id} not found";
+
+        // Act
+        var uri = new Uri($"aircraft/{id}", UriKind.Relative);
+        var response = await HttpClient.GetAsync(uri, TestContext.Current.CancellationToken);
+
+        // Assert
+        await GetProblemDetailsFromResponseAndAssert(response, error);
+    }
+
+    [Fact, TestPriority(4)]
+    public async Task GetById_Should_ReturnOk_WhenAircraftExists()
+    {
+        // Arrange
+        ArgumentNullException.ThrowIfNull(s_dto);
+        var id = s_dto.Id;
+
+        // Act
+        var uri = new Uri($"aircraft/{id}", UriKind.Relative);
+        var response = await HttpClient.GetAsync(uri, TestContext.Current.CancellationToken);
+        var aircraftDto = await response.Content.ReadFromJsonAsync<AircraftDto>(TestContext.Current.CancellationToken);
+
+        // Assert
+        aircraftDto.Should().BeEquivalentTo(s_dto);
+    }
+}

@@ -1,0 +1,306 @@
+{
+ "Resources": {
+  "AirportsTable52A78C6C": {
+   "Type": "AWS::DynamoDB::Table",
+   "Properties": {
+    "AttributeDefinitions": [
+     {
+      "AttributeName": "Id",
+      "AttributeType": "S"
+     }
+    ],
+    "BillingMode": "PAY_PER_REQUEST",
+    "KeySchema": [
+     {
+      "AttributeName": "Id",
+      "KeyType": "HASH"
+     }
+    ],
+    "TableName": "airports"
+   },
+   "UpdateReplacePolicy": "Retain",
+   "DeletionPolicy": "Retain",
+   "Metadata": {
+    "aws:cdk:path": "EmbassyAirlinesStack/AirportsTable/Resource"
+   }
+  },
+  "AirportCreatedTopicEC96273C": {
+   "Type": "AWS::SNS::Topic",
+   "Properties": {
+    "TopicName": "AirportCreatedTopic"
+   },
+   "Metadata": {
+    "aws:cdk:path": "EmbassyAirlinesStack/AirportCreatedTopic/Resource"
+   }
+  },
+  "AirportUpdatedTopic6DE5109C": {
+   "Type": "AWS::SNS::Topic",
+   "Properties": {
+    "TopicName": "AirportUpdatedTopic"
+   },
+   "Metadata": {
+    "aws:cdk:path": "EmbassyAirlinesStack/AirportUpdatedTopic/Resource"
+   }
+  },
+  "AirportsApiLambdaServiceRole75522ADA": {
+   "Type": "AWS::IAM::Role",
+   "Properties": {
+    "AssumeRolePolicyDocument": {
+     "Statement": [
+      {
+       "Action": "sts:AssumeRole",
+       "Effect": "Allow",
+       "Principal": {
+        "Service": "lambda.amazonaws.com"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "ManagedPolicyArns": [
+     {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+       ]
+      ]
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "EmbassyAirlinesStack/AirportsApiLambda/ServiceRole/Resource"
+   }
+  },
+  "AirportsApiLambdaServiceRoleDefaultPolicy79F60AAB": {
+   "Type": "AWS::IAM::Policy",
+   "Properties": {
+    "PolicyDocument": {
+     "Statement": [
+      {
+       "Action": [
+        "dynamodb:BatchGetItem",
+        "dynamodb:BatchWriteItem",
+        "dynamodb:ConditionCheckItem",
+        "dynamodb:DeleteItem",
+        "dynamodb:DescribeTable",
+        "dynamodb:GetItem",
+        "dynamodb:GetRecords",
+        "dynamodb:GetShardIterator",
+        "dynamodb:PutItem",
+        "dynamodb:Query",
+        "dynamodb:Scan",
+        "dynamodb:UpdateItem"
+       ],
+       "Effect": "Allow",
+       "Resource": [
+        {
+         "Fn::GetAtt": [
+          "AirportsTable52A78C6C",
+          "Arn"
+         ]
+        },
+        {
+         "Ref": "AWS::NoValue"
+        }
+       ]
+      },
+      {
+       "Action": "sns:Publish",
+       "Effect": "Allow",
+       "Resource": [
+        {
+         "Ref": "AirportCreatedTopicEC96273C"
+        },
+        {
+         "Ref": "AirportUpdatedTopic6DE5109C"
+        }
+       ]
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "PolicyName": "AirportsApiLambdaServiceRoleDefaultPolicy79F60AAB",
+    "Roles": [
+     {
+      "Ref": "AirportsApiLambdaServiceRole75522ADA"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "EmbassyAirlinesStack/AirportsApiLambda/ServiceRole/DefaultPolicy/Resource"
+   }
+  },
+  "AirportsApiLambda4F41FC9D": {
+   "Type": "AWS::Lambda::Function",
+   "Properties": {
+    "Code": {
+     "ImageUri": {
+      "Fn::Sub": "905418365926.dkr.ecr.eu-west-2.${AWS::URLSuffix}/cdk-hnb659fds-container-assets-905418365926-eu-west-2:b39118eb6f0855d84699d9d915c2ec11a59075ac41aa98ee5007e2435b763db9"
+     }
+    },
+    "Environment": {
+     "Variables": {
+      "AIRPORTS_DynamoDb__TableName": {
+       "Ref": "AirportsTable52A78C6C"
+      },
+      "AIRPORTS_SNS__AirportCreatedTopicArn": {
+       "Ref": "AirportCreatedTopicEC96273C"
+      },
+      "AIRPORTS_SNS__AirportUpdatedTopicArn": {
+       "Ref": "AirportUpdatedTopic6DE5109C"
+      }
+     }
+    },
+    "FunctionName": "AirportsApiLambda",
+    "PackageType": "Image",
+    "Role": {
+     "Fn::GetAtt": [
+      "AirportsApiLambdaServiceRole75522ADA",
+      "Arn"
+     ]
+    },
+    "Timeout": 30
+   },
+   "DependsOn": [
+    "AirportsApiLambdaServiceRoleDefaultPolicy79F60AAB",
+    "AirportsApiLambdaServiceRole75522ADA"
+   ],
+   "Metadata": {
+    "aws:cdk:path": "EmbassyAirlinesStack/AirportsApiLambda/Resource",
+    "aws:asset:path": "asset.b39118eb6f0855d84699d9d915c2ec11a59075ac41aa98ee5007e2435b763db9",
+    "aws:asset:dockerfile-path": "docker/Airports.Api.Lambda.dockerfile",
+    "aws:asset:property": "Code.ImageUri"
+   }
+  },
+  "AirportsApiLambdaLogGroupAFF6DC46": {
+   "Type": "AWS::Logs::LogGroup",
+   "Properties": {
+    "LogGroupName": {
+     "Fn::Join": [
+      "",
+      [
+       "/aws/lambda/",
+       {
+        "Ref": "AirportsApiLambda4F41FC9D"
+       }
+      ]
+     ]
+    },
+    "RetentionInDays": 731
+   },
+   "UpdateReplacePolicy": "Retain",
+   "DeletionPolicy": "Retain",
+   "Metadata": {
+    "aws:cdk:path": "EmbassyAirlinesStack/AirportsApiLambda/LogGroup/Resource"
+   }
+  },
+  "AirportsApiLambdaFunctionUrlFB3F9642": {
+   "Type": "AWS::Lambda::Url",
+   "Properties": {
+    "AuthType": "NONE",
+    "TargetFunctionArn": {
+     "Fn::GetAtt": [
+      "AirportsApiLambda4F41FC9D",
+      "Arn"
+     ]
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "EmbassyAirlinesStack/AirportsApiLambda/FunctionUrl/Resource"
+   }
+  },
+  "AirportsApiLambdainvokefunctionurl65B1FE17": {
+   "Type": "AWS::Lambda::Permission",
+   "Properties": {
+    "Action": "lambda:InvokeFunctionUrl",
+    "FunctionName": {
+     "Fn::GetAtt": [
+      "AirportsApiLambda4F41FC9D",
+      "Arn"
+     ]
+    },
+    "FunctionUrlAuthType": "NONE",
+    "Principal": "*"
+   },
+   "Metadata": {
+    "aws:cdk:path": "EmbassyAirlinesStack/AirportsApiLambda/invoke-function-url"
+   }
+  },
+  "AirportsApiLambdainvokefunction5DF0C145": {
+   "Type": "AWS::Lambda::Permission",
+   "Properties": {
+    "Action": "lambda:InvokeFunction",
+    "FunctionName": {
+     "Fn::GetAtt": [
+      "AirportsApiLambda4F41FC9D",
+      "Arn"
+     ]
+    },
+    "InvokedViaFunctionUrl": true,
+    "Principal": "*"
+   },
+   "Metadata": {
+    "aws:cdk:path": "EmbassyAirlinesStack/AirportsApiLambda/invoke-function"
+   }
+  },
+  "CDKMetadata": {
+   "Type": "AWS::CDK::Metadata",
+   "Properties": {
+    "Analytics": "v2:deflate64:H4sIAAAAAAAA/6VSbWvbMBD+LdXHoihuYPsQ2IesdUvZ5nqOMxgmBFlWXS2yZKRzixH670O243ULG4WB4I7nXp7nTrciq9U7El3QF7tg1XEhRUncFig7YvpiD67qFW10VRKX01LywiEINqENR2t0iTAqhZRC1V90FZB08/2Qxtkhi7/u4m2OMGqpAQFCq0+8R2uH1K9S6NvgbpH3e3z9qAYKj62yxOW6FSzQBTvTeXyGjJUB81jSpqwocTeaHbm5b2jNbzvFAnvhEBslBmaunoXRquEKJuRxyns1GYiG6w5OxPP7v0aD3pMqfHJ2RhZurp3qaAdP+bij5CGJp9qdkcGk3DTCWqGVx4I2xGV6+B9aVblOjVBMtFSmWgrWo3Xh/D5IpwCUPd0rKRSfY+gSvSH4775/jw6igzg8wqHjTJbrEDnTcA5X1RYo8LBo+xvtW+FBxqjAY87MgVrLwZJXt7IJSIiRjLfaCtCm/0gtL/ZY6toS91nXd0Z3beGQnNw/DvGU4T3OuNWdYXyYN8yBh/5boLVQdUh+6KDtwOMbDQmH5VVEIhItSRLn19rwTdsuvnETfvjD83sSLa/IkHDxwwqxMJ0KZ0Wy0f4EK0hdVsgDAAA="
+   },
+   "Metadata": {
+    "aws:cdk:path": "EmbassyAirlinesStack/CDKMetadata/Default"
+   }
+  }
+ },
+ "Outputs": {
+  "AirportsFunctionUrl": {
+   "Description": "Public URL for AirportsApiLambda",
+   "Value": {
+    "Fn::GetAtt": [
+     "AirportsApiLambdaFunctionUrlFB3F9642",
+     "FunctionUrl"
+    ]
+   }
+  }
+ },
+ "Parameters": {
+  "BootstrapVersion": {
+   "Type": "AWS::SSM::Parameter::Value<String>",
+   "Default": "/cdk-bootstrap/hnb659fds/version",
+   "Description": "Version of the CDK Bootstrap resources in this environment, automatically retrieved from SSM Parameter Store. [cdk:skip]"
+  }
+ },
+ "Rules": {
+  "CheckBootstrapVersion": {
+   "Assertions": [
+    {
+     "Assert": {
+      "Fn::Not": [
+       {
+        "Fn::Contains": [
+         [
+          "1",
+          "2",
+          "3",
+          "4",
+          "5"
+         ],
+         {
+          "Ref": "BootstrapVersion"
+         }
+        ]
+       }
+      ]
+     },
+     "AssertDescription": "CDK bootstrap stack version 6 required. Please run 'cdk bootstrap' with a recent version of the CDK CLI."
+    }
+   ]
+  }
+ }
+}
