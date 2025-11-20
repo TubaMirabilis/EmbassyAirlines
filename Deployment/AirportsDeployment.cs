@@ -62,7 +62,7 @@ internal static class AirportsDeployment
         if (!success)
         {
             await ImageService.StopAndRemoveContainerAsync("airports-service");
-            return;
+            throw new InvalidOperationException("Smoke test failed. Deployment aborted.");
         }
         await ImageService.StopAndRemoveContainerAsync("airports-service");
         await ImageService.PushAsync(fullImageTag);
