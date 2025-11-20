@@ -17,7 +17,14 @@ internal sealed class CreateAircraftEndpoint : IEndpoint
 {
     public void MapEndpoint(IEndpointRouteBuilder app)
         => app.MapPost("aircraft", InvokeAsync);
-    private async Task<IResult> InvokeAsync(IAmazonS3 client, IConfiguration config, ApplicationDbContext ctx, ILogger<CreateAircraftEndpoint> logger, IMessagePublisher publisher, IValidator<CreateOrUpdateAircraftDto> validator, CreateOrUpdateAircraftDto dto, CancellationToken ct)
+    private async Task<IResult> InvokeAsync(IAmazonS3 client,
+                                            IConfiguration config,
+                                            ApplicationDbContext ctx,
+                                            ILogger<CreateAircraftEndpoint> logger,
+                                            IMessagePublisher publisher,
+                                            IValidator<CreateOrUpdateAircraftDto> validator,
+                                            CreateOrUpdateAircraftDto dto,
+                                            CancellationToken ct)
     {
         var validationResult = await validator.ValidateAsync(dto, ct);
         if (!validationResult.IsValid(out var formattedErrors))
