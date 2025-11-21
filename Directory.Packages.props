@@ -4,22 +4,20 @@
     <CentralPackageTransitivePinningEnabled>false</CentralPackageTransitivePinningEnabled>
   </PropertyGroup>
   <ItemGroup Condition="'$(MSBuildProjectExtension)' != '.dcproj'">
+    <PackageVersion Include="Amazon.CDK.Lib" Version="2.227.0" />
+    <PackageVersion Include="Amazon.JSII.Analyzers" Version="1.119.0" />
     <PackageVersion Include="AWS.Messaging" Version="1.0.2" />
     <PackageVersion Include="AWSSDK.CloudWatchLogs" Version="4.0.9.3" />
-    <PackageVersion Include="AWSSDK.SimpleNotificationService" Version="4.0.2.6" />
+    <PackageVersion Include="Constructs" Version="10.4.3" />
     <PackageVersion Include="Microsoft.Build.Tasks.Core" Version="18.0.2" />
     <PackageVersion Include="SonarAnalyzer.CSharp" Version="10.15.0.120848" />
   </ItemGroup>
   <ItemGroup>
     <PackageVersion Include="Amazon.Lambda.AspNetCoreServer.Hosting" Version="1.9.0" />
     <PackageVersion Include="AWSSDK.DynamoDBv2" Version="4.0.10" />
-    <PackageVersion Include="AWSSDK.ECR" Version="4.0.7" />
     <PackageVersion Include="AWSSDK.Extensions.NETCore.Setup" Version="4.0.3.13" />
-    <PackageVersion Include="AWSSDK.IdentityManagement" Version="4.0.8" />
-    <PackageVersion Include="AWSSDK.Lambda" Version="4.0.7" />
-    <PackageVersion Include="AWSSDK.S3" Version="4.0.12" />
+    <PackageVersion Include="AWSSDK.S3" Version="4.0.13" />
     <PackageVersion Include="coverlet.collector" Version="6.0.4" />
-    <PackageVersion Include="Ductus.FluentDocker" Version="2.85.0" />
     <PackageVersion Include="EFCore.NamingConventions" Version="10.0.0-rc.2" />
     <PackageVersion Include="ErrorOr" Version="2.0.1" />
     <PackageVersion Include="FluentAssertions" Version="[7.0.0]" />
