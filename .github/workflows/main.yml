@@ -15,7 +15,7 @@ jobs:
         runs-on: ubuntu-latest
         steps:
             - name: Checkout
-              uses: actions/checkout@v5
+              uses: actions/checkout@v6
             - name: Prettier Check
               run: npx prettier --check .
 
@@ -24,7 +24,7 @@ jobs:
         runs-on: ubuntu-latest
         steps:
             - name: Checkout
-              uses: actions/checkout@v5
+              uses: actions/checkout@v6
             - name: Setup .NET
               uses: actions/setup-dotnet@v5
               with:
@@ -42,7 +42,7 @@ jobs:
         needs: DotNet
         steps:
             - name: Checkout
-              uses: actions/checkout@v5
+              uses: actions/checkout@v6
             - name: Configure AWS Credentials
               uses: aws-actions/configure-aws-credentials@v5.1.0
               with:
