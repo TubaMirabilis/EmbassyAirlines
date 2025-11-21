@@ -82,7 +82,7 @@ internal sealed class EmbassyAirlinesStack : Stack
         {
             Path = "/airports",
             Integration = new HttpLambdaIntegration("AirportsApiIntegration", lambda),
-            Methods = new[] { Amazon.CDK.AWS.Apigatewayv2.HttpMethod.ANY }
+            Methods = [Amazon.CDK.AWS.Apigatewayv2.HttpMethod.ANY]
         });
         new ARecord(this, "EmbassyAirlinesApiAliasRecord", new ARecordProps
         {
