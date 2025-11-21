@@ -12,7 +12,7 @@ public class PriorityOrderer : ITestCaseOrderer
         {
             return result;
         }
-        result = new List<IXunitTestCase>();
+        result = [];
         dictionary[key] = result;
         return result;
     }
