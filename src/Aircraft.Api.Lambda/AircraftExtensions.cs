@@ -13,6 +13,6 @@ internal static class AircraftExtensions
         aircraft.MaximumLandingWeight.Kilograms,
         aircraft.MaximumZeroFuelWeight.Kilograms,
         aircraft.MaximumFuelWeight.Kilograms,
-        aircraft.Seats.Select(s => s.ToDto()).ToList()
+        [.. aircraft.Seats.Select(s => s.ToDto())]
     );
 }

@@ -46,7 +46,7 @@ internal sealed class ListFlightsEndpoint : IEndpoint
                               .Skip((page - 1) * pageSize)
                               .Take(pageSize)
                               .ToListAsync(ct);
-        var res = new FlightListDto(list.Select(f => f.ToDto()).ToList(), page, pageSize, count, page < pages);
+        var res = new FlightListDto([.. list.Select(f => f.ToDto())], page, pageSize, count, page < pages);
         return TypedResults.Ok(res);
     }
 }
