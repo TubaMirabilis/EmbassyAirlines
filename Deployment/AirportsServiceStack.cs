@@ -1,19 +1,16 @@
 using Amazon.CDK;
 using Amazon.CDK.AWS.Apigatewayv2;
-using Amazon.CDK.AWS.CertificateManager;
 using Amazon.CDK.AWS.DynamoDB;
 using Amazon.CDK.AWS.Lambda;
-using Amazon.CDK.AWS.Route53;
-using Amazon.CDK.AWS.Route53.Targets;
 using Amazon.CDK.AWS.SNS;
 using Amazon.CDK.AwsApigatewayv2Integrations;
 using Constructs;
 
 namespace Deployment;
 
-internal sealed class EmbassyAirlinesStack : Stack
+internal sealed class AirportsServiceStack : Stack
 {
-    internal EmbassyAirlinesStack(Construct scope, string id, IStackProps props) : base(scope, id, props)
+    internal AirportsServiceStack(Construct scope, string id, AirportsServiceStackProps props) : base(scope, id, props)
     {
         var airportsTable = new Table(this, "AirportsTable", new TableProps
         {
@@ -52,43 +49,11 @@ internal sealed class EmbassyAirlinesStack : Stack
         airportsTable.GrantReadWriteData(lambda);
         airportCreatedTopic.GrantPublish(lambda);
         airportUpdatedTopic.GrantPublish(lambda);
-        var hostedZone = HostedZone.FromHostedZoneAttributes(this, "EmbassyAirlinesHostedZone", new HostedZoneAttributes
-        {
-            HostedZoneId = "Z0067852TNRCM5YQCWSI",
-            ZoneName = "embassyairlines.com"
-        });
-        var certificate = new Certificate(this, "EmbassyAirlinesCert", new CertificateProps
-        {
-            DomainName = "embassyairlines.com",
-            Validation = CertificateValidation.FromDns(hostedZone)
-        });
-        certificate.ApplyRemovalPolicy(RemovalPolicy.RETAIN);
-        var domainName = new DomainName(this, "EmbassyAirlinesDomainName", new DomainNameProps
-        {
-            DomainName = "embassyairlines.com",
-            Certificate = certificate
-        });
-        var api = new HttpApi(this, "EmbassyAirlinesApi", new HttpApiProps
-        {
-            ApiName = "EmbassyAirlinesApi",
-            Description = "Embassy Airlines HTTP API",
-            DefaultDomainMapping = new DomainMappingOptions
-            {
-                DomainName = domainName,
-                MappingKey = "api"
-            }
-        });
-        api.AddRoutes(new AddRoutesOptions
+        props.Api.AddRoutes(new AddRoutesOptions
         {
             Path = "/airports",
             Integration = new HttpLambdaIntegration("AirportsApiIntegration", lambda),
             Methods = [Amazon.CDK.AWS.Apigatewayv2.HttpMethod.ANY]
-        });
-        new ARecord(this, "EmbassyAirlinesApiAliasRecord", new ARecordProps
-        {
-            Zone = hostedZone,
-            RecordName = "",
-            Target = RecordTarget.FromAlias(new ApiGatewayv2DomainProperties(domainName.RegionalDomainName, domainName.RegionalHostedZoneId))
         });
     }
 }
