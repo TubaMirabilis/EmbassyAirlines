@@ -4,8 +4,8 @@
     <CentralPackageTransitivePinningEnabled>false</CentralPackageTransitivePinningEnabled>
   </PropertyGroup>
   <ItemGroup Condition="'$(MSBuildProjectExtension)' != '.dcproj'">
-    <PackageVersion Include="Amazon.CDK.Lib" Version="2.227.0" />
-    <PackageVersion Include="Amazon.JSII.Analyzers" Version="1.119.0" />
+    <PackageVersion Include="Amazon.CDK.Lib" Version="2.229.1" />
+    <PackageVersion Include="Amazon.JSII.Analyzers" Version="1.120.0" />
     <PackageVersion Include="AWS.Messaging" Version="1.0.2" />
     <PackageVersion Include="AWSSDK.CloudWatchLogs" Version="4.0.9.3" />
     <PackageVersion Include="Constructs" Version="10.4.3" />
@@ -29,9 +29,9 @@
     <PackageVersion Include="Npgsql.EntityFrameworkCore.PostgreSQL.NodaTime" Version="10.0.0" />
     <PackageVersion Include="NodaTime" Version="3.2.2" />
     <PackageVersion Include="Serilog.AspNetCore" Version="9.0.0" />
-    <PackageVersion Include="Testcontainers.DynamoDb" Version="4.8.1" />
-    <PackageVersion Include="Testcontainers.LocalStack" Version="4.8.1" />
-    <PackageVersion Include="Testcontainers.PostgreSql" Version="4.8.1" />
+    <PackageVersion Include="Testcontainers.DynamoDb" Version="4.9.0" />
+    <PackageVersion Include="Testcontainers.LocalStack" Version="4.9.0" />
+    <PackageVersion Include="Testcontainers.PostgreSql" Version="4.9.0" />
     <PackageVersion Include="xunit.v3" Version="3.2.0" />
     <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.5" />
   </ItemGroup>
