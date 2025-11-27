@@ -7,6 +7,10 @@ var env = new Amazon.CDK.Environment
     Account = System.Environment.GetEnvironmentVariable("CDK_DEFAULT_ACCOUNT"),
     Region = System.Environment.GetEnvironmentVariable("CDK_DEFAULT_REGION"),
 };
+var networkingStack = new NetworkingStack(app, "NetworkingStack", new StackProps
+{
+    Env = env
+});
 var sharedInfraStack = new SharedInfraStack(app, "SharedInfraStack", new StackProps
 {
     Env = env
@@ -21,6 +25,6 @@ new AircraftServiceStack(app, "AircraftServiceStack", new AircraftServiceStackPr
     Api = sharedInfraStack.Api,
     Env = env,
     EnvironmentName = "Production",
-    Vpc = sharedInfraStack.Vpc
+    Vpc = networkingStack.Vpc
 });
 app.Synth();
