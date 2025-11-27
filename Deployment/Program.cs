@@ -16,4 +16,11 @@ new AirportsServiceStack(app, "AirportsServiceStack", new AirportsServiceStackPr
     Api = sharedInfraStack.Api,
     Env = env
 });
+new AircraftServiceStack(app, "AircraftServiceStack", new AircraftServiceStackProps
+{
+    Api = sharedInfraStack.Api,
+    Env = env,
+    EnvironmentName = "Production",
+    Vpc = sharedInfraStack.Vpc
+});
 app.Synth();

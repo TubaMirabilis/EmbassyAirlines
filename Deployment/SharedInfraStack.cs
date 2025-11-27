@@ -1,6 +1,7 @@
 using Amazon.CDK;
 using Amazon.CDK.AWS.Apigatewayv2;
 using Amazon.CDK.AWS.CertificateManager;
+using Amazon.CDK.AWS.EC2;
 using Amazon.CDK.AWS.Route53;
 using Amazon.CDK.AWS.Route53.Targets;
 using Constructs;
@@ -11,6 +12,11 @@ internal sealed class SharedInfraStack : Stack
 {
     internal SharedInfraStack(Construct scope, string id, IStackProps props) : base(scope, id, props)
     {
+        Vpc = new Vpc(this, "AircraftVpc", new VpcProps
+        {
+            MaxAzs = 2,
+            NatGateways = 1
+        });
         var hostedZone = HostedZone.FromHostedZoneAttributes(this, "EmbassyAirlinesHostedZone", new HostedZoneAttributes
         {
             HostedZoneId = "Z0067852TNRCM5YQCWSI",
@@ -45,4 +51,5 @@ internal sealed class SharedInfraStack : Stack
         });
     }
     internal HttpApi Api { get; }
+    internal Vpc Vpc { get; }
 }

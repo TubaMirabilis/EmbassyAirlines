@@ -9,6 +9,7 @@
     <PackageReference Include="AWS.Messaging" />
     <PackageReference Include="AWSSDK.Extensions.NETCore.Setup" />
     <PackageReference Include="AWSSDK.S3" />
+    <PackageReference Include="AWSSecretsManager.Provider" />
     <PackageReference Include="EFCore.NamingConventions" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design">

@@ -1,6 +1,8 @@
 using Aircraft.Api.Lambda;
 using Aircraft.Api.Lambda.Database;
+using Amazon;
 using Amazon.S3;
+using AWSSecretsManager.Provider;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
@@ -11,6 +13,14 @@ using Shared.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 var config = builder.Configuration;
+if (!builder.Environment.IsDevelopment())
+{
+    config.AddSecretsManager(region: RegionEndpoint.EUWest2, configurator: options =>
+    {
+        options.SecretFilter = entry => entry.Name.StartsWith($"{builder.Environment.EnvironmentName}/Aircraft/", StringComparison.OrdinalIgnoreCase);
+        options.KeyGenerator = (secret, name) => name.Replace($"{builder.Environment.EnvironmentName}/Aircraft/", string.Empty, StringComparison.OrdinalIgnoreCase).Replace("__", ConfigurationPath.KeyDelimiter, StringComparison.OrdinalIgnoreCase);
+    });
+}
 config.AddEnvironmentVariables(prefix: "AIRCRAFT_");
 builder.Host.UseSerilog((context, loggerConfig) => loggerConfig.ReadFrom.Configuration(context.Configuration));
 var assembly = typeof(Program).Assembly;
