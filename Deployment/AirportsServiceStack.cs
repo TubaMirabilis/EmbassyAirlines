@@ -1,6 +1,7 @@
 using Amazon.CDK;
 using Amazon.CDK.AWS.Apigatewayv2;
 using Amazon.CDK.AWS.DynamoDB;
+using Amazon.CDK.AWS.EC2;
 using Amazon.CDK.AWS.Lambda;
 using Amazon.CDK.AWS.SNS;
 using Amazon.CDK.AwsApigatewayv2Integrations;
@@ -34,6 +35,13 @@ internal sealed class AirportsServiceStack : Stack
         {
             File = "docker/Airports.Api.Lambda.dockerfile"
         });
+        var lambdaSg = new SecurityGroup(this, "AirportsLambdaSG", new SecurityGroupProps
+        {
+            Vpc = props.Vpc,
+            AllowAllOutbound = false,
+            Description = "Security group for Airports API Lambda"
+        });
+        lambdaSg.AddEgressRule(Peer.Ipv4(props.Vpc.VpcCidrBlock), Port.Tcp(443), "Allow HTTPS to VPC-local endpoints");
         var lambda = new DockerImageFunction(this, "AirportsApiLambda", new DockerImageFunctionProps
         {
             FunctionName = "AirportsApiLambda",
@@ -44,7 +52,9 @@ internal sealed class AirportsServiceStack : Stack
                 { "AIRPORTS_DynamoDb__TableName", airportsTable.TableName },
                 { "AIRPORTS_SNS__AirportCreatedTopicArn", airportCreatedTopic.TopicArn },
                 { "AIRPORTS_SNS__AirportUpdatedTopicArn", airportUpdatedTopic.TopicArn }
-            }
+            },
+            Vpc = props.Vpc,
+            SecurityGroups = [lambdaSg]
         });
         airportsTable.GrantReadWriteData(lambda);
         airportCreatedTopic.GrantPublish(lambda);

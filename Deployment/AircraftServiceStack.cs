@@ -53,6 +53,7 @@ internal sealed class AircraftServiceStack : Stack
             AllowAllOutbound = false,
             Description = "Security group for Aircraft API Lambda"
         });
+        lambdaSg.AddEgressRule(Peer.Ipv4(props.Vpc.VpcCidrBlock), Port.Tcp(443), "Allow HTTPS to VPC-local endpoints");
         var lambda = new DockerImageFunction(this, "AircraftApiLambda", new DockerImageFunctionProps
         {
             FunctionName = "AircraftApiLambda",

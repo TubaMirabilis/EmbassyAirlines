@@ -23,7 +23,8 @@ var sharedInfraStack = new SharedInfraStack(app, "SharedInfraStack", new StackPr
 new AirportsServiceStack(app, "AirportsServiceStack", new AirportsServiceStackProps
 {
     Api = sharedInfraStack.Api,
-    Env = env
+    Env = env,
+    Vpc = networkingStack.Vpc
 });
 new AircraftServiceStack(app, "AircraftServiceStack", new AircraftServiceStackProps
 {
