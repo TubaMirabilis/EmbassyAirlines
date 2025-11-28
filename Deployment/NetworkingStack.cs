@@ -9,7 +9,7 @@ internal sealed class NetworkingStack : Stack
     internal NetworkingStack(Construct scope, string id, IStackProps props) : base(scope, id, props) => Vpc = new Vpc(this, "EmbassyAirlinesVpc", new VpcProps
     {
         MaxAzs = 2,
-        NatGateways = 1
+        NatGateways = 0
     });
     internal Vpc Vpc { get; }
 }

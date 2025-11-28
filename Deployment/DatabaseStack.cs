@@ -31,7 +31,7 @@ internal sealed class DatabaseStack : Stack
             Vpc = props.Vpc,
             VpcSubnets = new SubnetSelection
             {
-                SubnetType = SubnetType.PRIVATE_WITH_EGRESS
+                SubnetType = SubnetType.PRIVATE_ISOLATED
             },
             Credentials = Credentials.FromPassword(username: DbUser.ValueAsString, password: SecretValue.CfnParameter(DbPasswordParam)),
             InstanceType = InstanceType.Of(InstanceClass.T4G, InstanceSize.MICRO),
