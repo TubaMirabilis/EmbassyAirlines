@@ -11,6 +11,11 @@ var networkingStack = new NetworkingStack(app, "NetworkingStack", new StackProps
 {
     Env = env
 });
+var databaseStack = new DatabaseStack(app, "DatabaseStack", new DatabaseStackProps
+{
+    Vpc = networkingStack.Vpc,
+    Env = env
+});
 var sharedInfraStack = new SharedInfraStack(app, "SharedInfraStack", new StackProps
 {
     Env = env
@@ -23,6 +28,9 @@ new AirportsServiceStack(app, "AirportsServiceStack", new AirportsServiceStackPr
 new AircraftServiceStack(app, "AircraftServiceStack", new AircraftServiceStackProps
 {
     Api = sharedInfraStack.Api,
+    DbInstance = databaseStack.DbInstance,
+    DbPasswordParam = databaseStack.DbPasswordParam,
+    DbUser = databaseStack.DbUser,
     Env = env,
     EnvironmentName = "Production",
     Vpc = networkingStack.Vpc
