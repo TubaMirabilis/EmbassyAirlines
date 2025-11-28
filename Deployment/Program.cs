@@ -32,7 +32,6 @@ new AircraftServiceStack(app, "AircraftServiceStack", new AircraftServiceStackPr
     DbPasswordParam = databaseStack.DbPasswordParam,
     DbUser = databaseStack.DbUser,
     Env = env,
-    EnvironmentName = "Production",
     Vpc = networkingStack.Vpc
 });
 app.Synth();

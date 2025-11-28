@@ -11,6 +11,5 @@ internal sealed class AircraftServiceStackProps : StackProps
     internal required DatabaseInstance DbInstance { get; init; }
     internal required CfnParameter DbPasswordParam { get; init; }
     internal required CfnParameter DbUser { get; init; }
-    internal required string EnvironmentName { get; init; }
     internal required Vpc Vpc { get; init; }
 }

@@ -15,10 +15,21 @@ internal sealed class AircraftServiceStack : Stack
     internal AircraftServiceStack(Construct scope, string id, AircraftServiceStackProps props) : base(scope, id, props)
     {
         const string dbName = "aircraft";
+        var environmentName = new CfnParameter(this, "EnvironmentName", new CfnParameterProps
+        {
+            Type = "String",
+            AllowedPattern = "^[a-zA-Z][a-zA-Z0-9-_]{3,}$",
+            Description = "The name of the deployment environment (e.g., Development, Staging, Production)."
+        });
+        var bucketName = new CfnParameter(this, "AircraftBucketName", new CfnParameterProps
+        {
+            Type = "String",
+            Description = "The name of the S3 bucket for aircraft data."
+        });
         var connectionString = $"Server={props.DbInstance.DbInstanceEndpointAddress};" + $"Port={props.DbInstance.DbInstanceEndpointPort};" + $"Database={dbName};" + $"User Id={props.DbUser.ValueAsString};" + $"Password={props.DbPasswordParam.ValueAsString};" + $"Include Error Detail=true";
         var connectionStringSecret = new Secret(this, "AircraftConnectionStringSecret", new SecretProps
         {
-            SecretName = $"{props.EnvironmentName}/Aircraft/ConnectionStrings__DefaultConnection",
+            SecretName = $"{environmentName.ValueAsString}/Aircraft/ConnectionStrings__DefaultConnection",
             SecretStringValue = SecretValue.UnsafePlainText(connectionString)
         });
         var aircraftCreatedTopic = new Topic(this, "AircraftCreatedTopic", new TopicProps
@@ -27,7 +38,7 @@ internal sealed class AircraftServiceStack : Stack
         });
         var bucket = new Bucket(this, "AircraftBucket", new Amazon.CDK.AWS.S3.BucketProps
         {
-            BucketName = "embassy-airlines-aircraft-bucket",
+            BucketName = bucketName.ValueAsString,
             BlockPublicAccess = BlockPublicAccess.BLOCK_ALL,
             RemovalPolicy = RemovalPolicy.DESTROY,
             AutoDeleteObjects = true
@@ -35,6 +46,12 @@ internal sealed class AircraftServiceStack : Stack
         var imageCode = DockerImageCode.FromImageAsset(directory: ".", new AssetImageCodeProps
         {
             File = "docker/Aircraft.Api.Lambda.dockerfile"
+        });
+        var lambdaSg = new SecurityGroup(this, "AircraftLambdaSG", new SecurityGroupProps
+        {
+            Vpc = props.Vpc,
+            AllowAllOutbound = false,
+            Description = "Security group for Aircraft API Lambda"
         });
         var lambda = new DockerImageFunction(this, "AircraftApiLambda", new DockerImageFunctionProps
         {
@@ -46,7 +63,8 @@ internal sealed class AircraftServiceStack : Stack
                 { "AIRCRAFT_S3__BucketName", bucket.BucketName },
                 { "AIRCRAFT_SNS__AircraftCreatedTopicArn", aircraftCreatedTopic.TopicArn }
             },
-            Vpc = props.Vpc
+            Vpc = props.Vpc,
+            SecurityGroups = [lambdaSg]
         });
         props.Api.AddRoutes(new AddRoutesOptions
         {
