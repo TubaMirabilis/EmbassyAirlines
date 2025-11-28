@@ -33,13 +33,13 @@ internal sealed class NetworkingStack : Stack
             Service = InterfaceVpcEndpointAwsService.SECRETS_MANAGER
         });
         Vpc.AddGatewayEndpoint("DynamoDbEndpoint", new GatewayVpcEndpointOptions
-{
-    Service = GatewayVpcEndpointAwsService.DYNAMODB,
-    Subnets =
+        {
+            Service = GatewayVpcEndpointAwsService.DYNAMODB,
+            Subnets =
     [
         new SubnetSelection { SubnetType = SubnetType.PRIVATE_ISOLATED }
     ]
-});
+        });
     }
     internal Vpc Vpc { get; }
 }
