@@ -38,10 +38,9 @@ internal sealed class AirportsServiceStack : Stack
         var lambdaSg = new SecurityGroup(this, "AirportsLambdaSG", new SecurityGroupProps
         {
             Vpc = props.Vpc,
-            AllowAllOutbound = false,
+            AllowAllOutbound = true,
             Description = "Security group for Airports API Lambda"
         });
-        lambdaSg.AddEgressRule(Peer.Ipv4(props.Vpc.VpcCidrBlock), Port.Tcp(443), "Allow HTTPS to VPC-local endpoints");
         var lambda = new DockerImageFunction(this, "AirportsApiLambda", new DockerImageFunctionProps
         {
             FunctionName = "AirportsApiLambda",
@@ -54,6 +53,10 @@ internal sealed class AirportsServiceStack : Stack
                 { "AIRPORTS_SNS__AirportUpdatedTopicArn", airportUpdatedTopic.TopicArn }
             },
             Vpc = props.Vpc,
+            VpcSubnets = new SubnetSelection
+            {
+                SubnetType = SubnetType.PRIVATE_ISOLATED
+            },
             SecurityGroups = [lambdaSg]
         });
         airportsTable.GrantReadWriteData(lambda);

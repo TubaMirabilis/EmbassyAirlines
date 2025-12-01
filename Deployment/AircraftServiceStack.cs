@@ -50,10 +50,9 @@ internal sealed class AircraftServiceStack : Stack
         var lambdaSg = new SecurityGroup(this, "AircraftLambdaSG", new SecurityGroupProps
         {
             Vpc = props.Vpc,
-            AllowAllOutbound = false,
+            AllowAllOutbound = true,
             Description = "Security group for Aircraft API Lambda"
         });
-        lambdaSg.AddEgressRule(Peer.Ipv4(props.Vpc.VpcCidrBlock), Port.Tcp(443), "Allow HTTPS to VPC-local endpoints");
         var lambda = new DockerImageFunction(this, "AircraftApiLambda", new DockerImageFunctionProps
         {
             FunctionName = "AircraftApiLambda",
@@ -65,6 +64,10 @@ internal sealed class AircraftServiceStack : Stack
                 { "AIRCRAFT_SNS__AircraftCreatedTopicArn", aircraftCreatedTopic.TopicArn }
             },
             Vpc = props.Vpc,
+            VpcSubnets = new SubnetSelection
+            {
+                SubnetType = SubnetType.PRIVATE_ISOLATED
+            },
             SecurityGroups = [lambdaSg]
         });
         props.Api.AddRoutes(new AddRoutesOptions
