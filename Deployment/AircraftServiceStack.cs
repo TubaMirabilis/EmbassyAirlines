@@ -79,6 +79,5 @@ internal sealed class AircraftServiceStack : Stack
         aircraftCreatedTopic.GrantPublish(lambda);
         bucket.GrantRead(lambda);
         connectionStringSecret.GrantRead(lambda);
-        lambda.Connections.AllowTo(props.DbInstance, Port.Tcp(5432), "Allow Lambda to access RDS");
     }
 }
