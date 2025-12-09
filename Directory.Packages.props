@@ -8,7 +8,7 @@
     <PackageVersion Include="Amazon.JSII.Analyzers" Version="1.120.0" />
     <PackageVersion Include="AWS.Messaging" Version="1.0.2" />
     <PackageVersion Include="AWSSDK.CloudWatchLogs" Version="4.0.9.3" />
-    <PackageVersion Include="AWSSecretsManager.Provider" Version="1.1.6.22" />
+    <PackageVersion Include="AWSSDK.RDS" Version="4.0.15" />
     <PackageVersion Include="Constructs" Version="10.4.3" />
     <PackageVersion Include="SonarAnalyzer.CSharp" Version="10.16.1.129956" />
   </ItemGroup>

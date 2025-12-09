@@ -1,10 +1,9 @@
 using Aircraft.Api.Lambda;
 using Aircraft.Api.Lambda.Database;
-using Amazon;
 using Amazon.S3;
-using AWSSecretsManager.Provider;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
+using Npgsql;
 using Serilog;
 using Shared;
 using Shared.Contracts;
@@ -13,14 +12,6 @@ using Shared.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 var config = builder.Configuration;
-if (!builder.Environment.IsDevelopment())
-{
-    config.AddSecretsManager(region: RegionEndpoint.EUWest2, configurator: options =>
-    {
-        options.SecretFilter = entry => entry.Name.StartsWith($"{builder.Environment.EnvironmentName}/Aircraft/", StringComparison.OrdinalIgnoreCase);
-        options.KeyGenerator = (secret, name) => name.Replace($"{builder.Environment.EnvironmentName}/Aircraft/", string.Empty, StringComparison.OrdinalIgnoreCase).Replace("__", ConfigurationPath.KeyDelimiter, StringComparison.OrdinalIgnoreCase);
-    });
-}
 config.AddEnvironmentVariables(prefix: "AIRCRAFT_");
 builder.Host.UseSerilog((context, loggerConfig) => loggerConfig.ReadFrom.Configuration(context.Configuration));
 var assembly = typeof(Program).Assembly;
@@ -29,9 +20,21 @@ builder.Services.AddAWSLambdaHosting(LambdaEventSource.HttpApi);
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddAWSService<IAmazonS3>();
 builder.Services.AddProblemDetails();
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseNpgsql(config["ConnectionStrings:DefaultConnection"])
-           .UseSnakeCaseNamingConvention());
+var host = config["DbConnection:Host"];
+var dbName = config["DbConnection:Database"];
+var connectionString = new NpgsqlConnectionStringBuilder
+{
+    Host = host,
+    Database = dbName
+}.ConnectionString;
+if (!builder.Environment.IsEnvironment("FunctionalTests"))
+{
+    builder.Services.AddSingleton<EntityFrameworkInterceptor>();
+    builder.Services.AddDbContext<ApplicationDbContext>((sp, options) =>
+        options.UseNpgsql(new NpgsqlConnection(connectionString), x => x.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery))
+               .UseSnakeCaseNamingConvention()
+               .AddInterceptors(sp.GetRequiredService<EntityFrameworkInterceptor>()));
+}
 builder.Services.AddSingleton<IValidator<CreateOrUpdateAircraftDto>, CreateOrUpdateAircraftDtoValidator>();
 builder.Services.AddOpenApi();
 builder.Services.AddAWSMessageBus(bus =>
@@ -46,9 +49,9 @@ builder.Services.AddAWSMessageBus(bus =>
 var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
-    await app.ApplyMigrationsAsync();
     app.MapOpenApi();
 }
+await app.ApplyMigrationsAsync();
 app.MapEndpoints();
 app.UseMiddleware<RequestContextLoggingMiddleware>();
 app.UseSerilogRequestLogging();
