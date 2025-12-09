@@ -8,23 +8,43 @@ namespace Deployment;
 
 internal sealed class DatabaseStack : Stack
 {
-    internal DatabaseStack(Construct scope, string id, DatabaseStackProps props) : base(scope, id, props) => DbInstance = new DatabaseInstance(this, "EmbassyAirlinesDb", new DatabaseInstanceProps
+    internal DatabaseStack(Construct scope, string id, DatabaseStackProps props) : base(scope, id, props)
     {
-        Engine = DatabaseInstanceEngine.Postgres(new PostgresInstanceEngineProps
+        DbInstance = new DatabaseInstance(this, "EmbassyAirlinesDb", new DatabaseInstanceProps
         {
-            Version = PostgresEngineVersion.VER_18_1
-        }),
-        Vpc = props.Vpc,
-        VpcSubnets = new SubnetSelection
+            Engine = DatabaseInstanceEngine.Postgres(new PostgresInstanceEngineProps
+            {
+                Version = PostgresEngineVersion.VER_18_1
+            }),
+            Vpc = props.Vpc,
+            VpcSubnets = new SubnetSelection
+            {
+                SubnetType = SubnetType.PRIVATE_ISOLATED
+            },
+            Credentials = Credentials.FromGeneratedSecret("admin"),
+            InstanceType = InstanceType.Of(InstanceClass.T4G, InstanceSize.MICRO),
+            AllocatedStorage = 20,
+            MultiAz = false,
+            DeletionProtection = false,
+            RemovalPolicy = RemovalPolicy.DESTROY
+        });
+        var dbProxySecurityGroup = new SecurityGroup(this, "EmbassyAirlinesDbProxySecurityGroup", new SecurityGroupProps
         {
-            SubnetType = SubnetType.PRIVATE_ISOLATED
-        },
-        Credentials = Credentials.FromGeneratedSecret("admin"),
-        InstanceType = InstanceType.Of(InstanceClass.T4G, InstanceSize.MICRO),
-        AllocatedStorage = 20,
-        MultiAz = false,
-        DeletionProtection = false,
-        RemovalPolicy = RemovalPolicy.DESTROY
-    });
+            Vpc = props.Vpc,
+            Description = "Security group for RDS Proxy for Embassy Airlines DB",
+            AllowAllOutbound = true
+        });
+        DbInstance.Connections.AllowDefaultPortFrom(dbProxySecurityGroup, "RDS Proxy to DB");
+        ArgumentNullException.ThrowIfNull(DbInstance.Secret);
+        DbProxy = new DatabaseProxy(this, "EmbassyAirlinesDbProxy", new DatabaseProxyProps
+        {
+            ProxyTarget = ProxyTarget.FromInstance(DbInstance),
+            Vpc = props.Vpc,
+            Secrets = [DbInstance.Secret],
+            SecurityGroups = [dbProxySecurityGroup],
+            IamAuth = true
+        });
+    }
     internal DatabaseInstance DbInstance { get; }
+    internal DatabaseProxy DbProxy { get; }
 }

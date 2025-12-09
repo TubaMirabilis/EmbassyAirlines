@@ -30,6 +30,7 @@ new AircraftServiceStack(app, "AircraftServiceStack", new AircraftServiceStackPr
 {
     Api = sharedInfraStack.Api,
     DbInstance = databaseStack.DbInstance,
+    DbProxy = databaseStack.DbProxy,
     Env = env,
     Vpc = networkingStack.Vpc
 });

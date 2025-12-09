@@ -46,7 +46,7 @@ internal sealed class AircraftServiceStack : Stack
             Timeout = Duration.Seconds(30),
             Environment = new Dictionary<string, string>
             {
-                { "AIRCRAFT_DbConnection__Host", props.DbInstance.DbInstanceEndpointAddress },
+                { "AIRCRAFT_DbConnection__Host", props.DbProxy.Endpoint },
                 { "AIRCRAFT_DbConnection__Database", "aircraft" },
                 { "AIRCRAFT_DbConnection__Username", "admin" },
                 { "AIRCRAFT_S3__BucketName", bucket.BucketName },
@@ -65,6 +65,8 @@ internal sealed class AircraftServiceStack : Stack
             Integration = new HttpLambdaIntegration("AircraftApiIntegration", lambda),
             Methods = [Amazon.CDK.AWS.Apigatewayv2.HttpMethod.ANY]
         });
+        props.DbProxy.GrantConnect(lambda, "admin");
+        props.DbProxy.Connections.AllowDefaultPortFrom(lambda, "Lambda to RDS Proxy");
         aircraftCreatedTopic.GrantPublish(lambda);
         bucket.GrantRead(lambda);
     }
