@@ -9,7 +9,7 @@ internal sealed class AircraftServiceStackProps : StackProps
 {
     internal required HttpApi Api { get; init; }
     internal required DatabaseInstance DbInstance { get; init; }
-    internal required CfnParameter DbPasswordParam { get; init; }
-    internal required CfnParameter DbUser { get; init; }
+    internal required DatabaseProxy DbProxy { get; init; }
+    internal required SecurityGroup DbProxySecurityGroup { get; init; }
     internal required Vpc Vpc { get; init; }
 }

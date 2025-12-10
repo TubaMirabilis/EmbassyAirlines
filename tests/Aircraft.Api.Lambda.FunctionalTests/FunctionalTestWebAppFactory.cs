@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Aircraft.Api.Lambda.Database;
 using Amazon.Runtime;
 using Amazon.S3;
 using Amazon.S3.Model;
@@ -6,8 +7,10 @@ using AWS.Messaging;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Logging;
 using Testcontainers.LocalStack;
 using Testcontainers.PostgreSql;
 
@@ -25,8 +28,8 @@ public sealed class FunctionalTestWebAppFactory : WebApplicationFactory<Program>
                                                                                .Build();
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
+        builder.UseEnvironment("FunctionalTests");
         builder.UseSetting("SNS:AircraftCreatedTopicArn", "testAircraftCreatedTopicArn");
-        builder.UseSetting("ConnectionStrings:DefaultConnection", _dbContainer.GetConnectionString());
         builder.UseSetting("S3:BucketName", "embassy-airlines");
         builder.ConfigureTestServices(services =>
         {
@@ -37,12 +40,17 @@ public sealed class FunctionalTestWebAppFactory : WebApplicationFactory<Program>
             });
             services.RemoveAll<IAmazonS3>();
             services.RemoveAll<IMessagePublisher>();
+            services.RemoveAll<DbContextOptions<ApplicationDbContext>>();
             var config = new AmazonS3Config
             {
                 ServiceURL = _localStackContainer.GetConnectionString()
             };
             services.AddSingleton<IAmazonS3>(_ => new AmazonS3Client(credentials, config));
             services.AddSingleton<IMessagePublisher, FakeMessagePublisher>();
+            services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseNpgsql(_dbContainer.GetConnectionString(), x => x.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery))
+           .UseSnakeCaseNamingConvention()
+           .LogTo(Console.WriteLine, LogLevel.Warning));
         });
     }
     public async ValueTask InitializeAsync()

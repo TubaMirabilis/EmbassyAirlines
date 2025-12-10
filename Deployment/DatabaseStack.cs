@@ -10,18 +10,6 @@ internal sealed class DatabaseStack : Stack
 {
     internal DatabaseStack(Construct scope, string id, DatabaseStackProps props) : base(scope, id, props)
     {
-        DbPasswordParam = new CfnParameter(this, "DbPassword", new CfnParameterProps
-        {
-            Type = "String",
-            NoEcho = true,
-            Description = "Password for the RDS user"
-        });
-        DbUser = new CfnParameter(this, "DbUser", new CfnParameterProps
-        {
-            Type = "String",
-            Default = "db_user",
-            Description = "Username for the RDS user"
-        });
         DbInstance = new DatabaseInstance(this, "EmbassyAirlinesDb", new DatabaseInstanceProps
         {
             Engine = DatabaseInstanceEngine.Postgres(new PostgresInstanceEngineProps
@@ -33,15 +21,31 @@ internal sealed class DatabaseStack : Stack
             {
                 SubnetType = SubnetType.PRIVATE_ISOLATED
             },
-            Credentials = Credentials.FromPassword(username: DbUser.ValueAsString, password: SecretValue.CfnParameter(DbPasswordParam)),
+            Credentials = Credentials.FromGeneratedSecret("embassyadmin"),
             InstanceType = InstanceType.Of(InstanceClass.T4G, InstanceSize.MICRO),
             AllocatedStorage = 20,
             MultiAz = false,
             DeletionProtection = false,
             RemovalPolicy = RemovalPolicy.DESTROY
         });
+        DbProxySecurityGroup = new SecurityGroup(this, "EmbassyAirlinesDbProxySecurityGroup", new SecurityGroupProps
+        {
+            Vpc = props.Vpc,
+            Description = "Security group for RDS Proxy for Embassy Airlines DB",
+            AllowAllOutbound = true
+        });
+        DbInstance.Connections.AllowDefaultPortFrom(DbProxySecurityGroup, "RDS Proxy to DB");
+        ArgumentNullException.ThrowIfNull(DbInstance.Secret);
+        DbProxy = new DatabaseProxy(this, "EmbassyAirlinesDbProxy", new DatabaseProxyProps
+        {
+            ProxyTarget = ProxyTarget.FromInstance(DbInstance),
+            Vpc = props.Vpc,
+            Secrets = [DbInstance.Secret],
+            SecurityGroups = [DbProxySecurityGroup],
+            IamAuth = true
+        });
     }
     internal DatabaseInstance DbInstance { get; }
-    internal CfnParameter DbPasswordParam { get; }
-    internal CfnParameter DbUser { get; }
+    internal DatabaseProxy DbProxy { get; }
+    internal SecurityGroup DbProxySecurityGroup { get; }
 }

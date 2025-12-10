@@ -28,10 +28,6 @@ internal sealed class NetworkingStack : Stack
         {
             Service = InterfaceVpcEndpointAwsService.SNS
         });
-        Vpc.AddInterfaceEndpoint("SecretsManagerInterfaceEndpoint", new InterfaceVpcEndpointOptions
-        {
-            Service = InterfaceVpcEndpointAwsService.SECRETS_MANAGER
-        });
         Vpc.AddGatewayEndpoint("DynamoDbEndpoint", new GatewayVpcEndpointOptions
         {
             Service = GatewayVpcEndpointAwsService.DYNAMODB,
