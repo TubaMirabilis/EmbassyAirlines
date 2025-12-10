@@ -5,7 +5,7 @@
   </PropertyGroup>
   <ItemGroup Condition="'$(MSBuildProjectExtension)' != '.dcproj'">
     <PackageVersion Include="Amazon.CDK.Lib" Version="2.232.1" />
-    <PackageVersion Include="Amazon.JSII.Analyzers" Version="1.120.0" />
+    <PackageVersion Include="Amazon.JSII.Analyzers" Version="1.121.0" />
     <PackageVersion Include="AWS.Messaging" Version="1.0.2" />
     <PackageVersion Include="AWSSDK.CloudWatchLogs" Version="4.0.9.3" />
     <PackageVersion Include="AWSSDK.RDS" Version="4.0.15" />
@@ -22,8 +22,8 @@
     <PackageVersion Include="ErrorOr" Version="2.0.1" />
     <PackageVersion Include="FluentAssertions" Version="[7.0.0]" />
     <PackageVersion Include="FluentValidation" Version="12.1.1" />
-    <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="10.0.0" />
-    <PackageVersion Include="Microsoft.AspNetCore.OpenApi" Version="10.0.0" />
+    <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="10.0.1" />
+    <PackageVersion Include="Microsoft.AspNetCore.OpenApi" Version="10.0.1" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.0" />
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.0.1" />
     <PackageVersion Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.0" />

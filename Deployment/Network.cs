@@ -1,12 +1,11 @@
-using Amazon.CDK;
 using Amazon.CDK.AWS.EC2;
 using Constructs;
 
 namespace Deployment;
 
-internal sealed class NetworkingStack : Stack
+internal sealed class Network : Construct
 {
-    internal NetworkingStack(Construct scope, string id, IStackProps props) : base(scope, id, props)
+    internal Network(Construct scope, string id) : base(scope, id)
     {
         Vpc = new Vpc(this, "EmbassyAirlinesVpc", new VpcProps
         {

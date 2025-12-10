@@ -6,9 +6,9 @@ using InstanceType = Amazon.CDK.AWS.EC2.InstanceType;
 
 namespace Deployment;
 
-internal sealed class DatabaseStack : Stack
+internal sealed class RdsResources : Construct
 {
-    internal DatabaseStack(Construct scope, string id, DatabaseStackProps props) : base(scope, id, props)
+    internal RdsResources(Construct scope, string id, RdsResourcesProps props) : base(scope, id)
     {
         DbInstance = new DatabaseInstance(this, "EmbassyAirlinesDb", new DatabaseInstanceProps
         {

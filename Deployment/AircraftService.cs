@@ -9,9 +9,9 @@ using Constructs;
 
 namespace Deployment;
 
-internal sealed class AircraftServiceStack : Stack
+internal sealed class AircraftService : Construct
 {
-    internal AircraftServiceStack(Construct scope, string id, AircraftServiceStackProps props) : base(scope, id, props)
+    internal AircraftService(Construct scope, string id, AircraftServiceProps props) : base(scope, id)
     {
         var bucketName = new CfnParameter(this, "AircraftBucketName", new CfnParameterProps
         {

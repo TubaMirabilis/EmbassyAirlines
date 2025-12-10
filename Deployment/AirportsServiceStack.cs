@@ -9,9 +9,9 @@ using Constructs;
 
 namespace Deployment;
 
-internal sealed class AirportsServiceStack : Stack
+internal sealed class AirportsService : Construct
 {
-    internal AirportsServiceStack(Construct scope, string id, AirportsServiceStackProps props) : base(scope, id, props)
+    internal AirportsService(Construct scope, string id, AirportsServiceProps props) : base(scope, id)
     {
         var airportsTable = new Table(this, "AirportsTable", new TableProps
         {

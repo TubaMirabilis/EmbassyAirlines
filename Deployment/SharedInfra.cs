@@ -7,9 +7,9 @@ using Constructs;
 
 namespace Deployment;
 
-internal sealed class SharedInfraStack : Stack
+internal sealed class SharedInfra : Construct
 {
-    internal SharedInfraStack(Construct scope, string id, IStackProps props) : base(scope, id, props)
+    internal SharedInfra(Construct scope, string id) : base(scope, id)
     {
         var hostedZone = HostedZone.FromHostedZoneAttributes(this, "EmbassyAirlinesHostedZone", new HostedZoneAttributes
         {
