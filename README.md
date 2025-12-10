@@ -1,6 +1,6 @@
 # EmbassyAirlines
 
-This represents a cloud-native airline management system with proper testing, deployment automation, and microservices best practices.
+Embassy Airlines is a cloud-native airline management platform built with .NET 10, AWS CDK, and modern serverless/containerized patterns. It currently provides APIs for managing aircraft, airports, and flights. These APIs leverage AWS services such as Lambda, DynamoDB, RDS, S3, and SNS. I hope to add more APIs in future.
 
 ## Project Structure & Infrastructure
 
