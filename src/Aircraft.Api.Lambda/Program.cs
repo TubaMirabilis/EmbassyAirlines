@@ -30,10 +30,13 @@ var connectionString = new NpgsqlConnectionStringBuilder
 if (!builder.Environment.IsEnvironment("FunctionalTests"))
 {
     builder.Services.AddSingleton<EntityFrameworkInterceptor>();
-    builder.Services.AddDbContext<ApplicationDbContext>((sp, options) =>
-        options.UseNpgsql(new NpgsqlConnection(connectionString), x => x.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery))
-               .UseSnakeCaseNamingConvention()
-               .AddInterceptors(sp.GetRequiredService<EntityFrameworkInterceptor>()));
+    builder.Services.AddDbContext<ApplicationDbContext>((sp, options) => options.UseNpgsql(new NpgsqlConnection(connectionString), x =>
+    {
+        x.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
+        x.MigrationsHistoryTable("__EFMigrationsHistory", "aircraft");
+    })
+    .UseSnakeCaseNamingConvention()
+    .AddInterceptors(sp.GetRequiredService<EntityFrameworkInterceptor>()));
 }
 builder.Services.AddSingleton<IValidator<CreateOrUpdateAircraftDto>, CreateOrUpdateAircraftDtoValidator>();
 builder.Services.AddOpenApi();

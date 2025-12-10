@@ -13,18 +13,13 @@ internal sealed class AircraftService : Construct
 {
     internal AircraftService(Construct scope, string id, AircraftServiceProps props) : base(scope, id)
     {
-        var bucketName = new CfnParameter(this, "AircraftBucketName", new CfnParameterProps
-        {
-            Type = "String",
-            Description = "The name of the S3 bucket for aircraft data."
-        });
         var aircraftCreatedTopic = new Topic(this, "AircraftCreatedTopic", new TopicProps
         {
             TopicName = "AircraftCreatedTopic"
         });
         var bucket = new Bucket(this, "AircraftBucket", new Amazon.CDK.AWS.S3.BucketProps
         {
-            BucketName = bucketName.ValueAsString,
+            BucketName = $"aircraft-bucket-{Aws.ACCOUNT_ID}-{Aws.REGION}",
             BlockPublicAccess = BlockPublicAccess.BLOCK_ALL,
             RemovalPolicy = RemovalPolicy.DESTROY,
             AutoDeleteObjects = true
@@ -47,7 +42,7 @@ internal sealed class AircraftService : Construct
             Environment = new Dictionary<string, string>
             {
                 { "AIRCRAFT_DbConnection__Host", props.DbProxy.Endpoint },
-                { "AIRCRAFT_DbConnection__Database", "aircraft" },
+                { "AIRCRAFT_DbConnection__Database", "embassyairlinesdb" },
                 { "AIRCRAFT_DbConnection__Username", "embassyadmin" },
                 { "AIRCRAFT_S3__BucketName", bucket.BucketName },
                 { "AIRCRAFT_SNS__AircraftCreatedTopicArn", aircraftCreatedTopic.TopicArn }

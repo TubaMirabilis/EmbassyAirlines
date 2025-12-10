@@ -1,3 +1,9 @@
 {
-    "cSpell.words": ["Apigatewayv", "AWSSDK", "dbname", "embassyadmin"]
+    "cSpell.words": [
+        "Apigatewayv",
+        "AWSSDK",
+        "dbname",
+        "embassyadmin",
+        "embassyairlinesdb"
+    ]
 }

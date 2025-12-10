@@ -47,10 +47,13 @@ public sealed class FunctionalTestWebAppFactory : WebApplicationFactory<Program>
             };
             services.AddSingleton<IAmazonS3>(_ => new AmazonS3Client(credentials, config));
             services.AddSingleton<IMessagePublisher, FakeMessagePublisher>();
-            services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseNpgsql(_dbContainer.GetConnectionString(), x => x.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery))
-           .UseSnakeCaseNamingConvention()
-           .LogTo(Console.WriteLine, LogLevel.Warning));
+            services.AddDbContext<ApplicationDbContext>(options => options.UseNpgsql(_dbContainer.GetConnectionString(), x =>
+            {
+                x.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
+                x.MigrationsHistoryTable("__EFMigrationsHistory", "aircraft");
+            })
+            .UseSnakeCaseNamingConvention()
+            .LogTo(Console.WriteLine, LogLevel.Warning));
         });
     }
     public async ValueTask InitializeAsync()

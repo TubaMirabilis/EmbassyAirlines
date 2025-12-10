@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore.Migrations;
+﻿using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
@@ -10,8 +10,12 @@ internal partial class InitialCreate : Migration
     /// <inheritdoc />
     protected override void Up(MigrationBuilder migrationBuilder)
     {
+        migrationBuilder.EnsureSchema(
+            name: "aircraft");
+
         migrationBuilder.CreateTable(
             name: "aircraft",
+            schema: "aircraft",
             columns: table => new
             {
                 id = table.Column<Guid>(type: "uuid", nullable: false),
@@ -28,6 +32,7 @@ internal partial class InitialCreate : Migration
 
         migrationBuilder.CreateTable(
             name: "seats",
+            schema: "aircraft",
             columns: table => new
             {
                 id = table.Column<Guid>(type: "uuid", nullable: false),
@@ -43,6 +48,7 @@ internal partial class InitialCreate : Migration
                 table.ForeignKey(
                     name: "fk_seats_aircraft_aircraft_id",
                     column: x => x.aircraft_id,
+                    principalSchema: "aircraft",
                     principalTable: "aircraft",
                     principalColumn: "id",
                     onDelete: ReferentialAction.Cascade);
@@ -50,6 +56,7 @@ internal partial class InitialCreate : Migration
 
         migrationBuilder.CreateIndex(
             name: "ix_seats_aircraft_id",
+            schema: "aircraft",
             table: "seats",
             column: "aircraft_id");
     }
@@ -58,9 +65,11 @@ internal partial class InitialCreate : Migration
     protected override void Down(MigrationBuilder migrationBuilder)
     {
         migrationBuilder.DropTable(
-            name: "seats");
+            name: "seats",
+            schema: "aircraft");
 
         migrationBuilder.DropTable(
-            name: "aircraft");
+            name: "aircraft",
+            schema: "aircraft");
     }
 }

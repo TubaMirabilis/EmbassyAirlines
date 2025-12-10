@@ -23,6 +23,7 @@ internal sealed class RdsResources : Construct
             },
             Credentials = Credentials.FromGeneratedSecret("embassyadmin"),
             InstanceType = InstanceType.Of(InstanceClass.T4G, InstanceSize.MICRO),
+            DatabaseName = "embassyairlinesdb",
             AllocatedStorage = 20,
             MultiAz = false,
             DeletionProtection = false,

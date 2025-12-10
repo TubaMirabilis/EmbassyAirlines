@@ -13,6 +13,7 @@ internal sealed class ApplicationDbContext : DbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         var assembly = typeof(ApplicationDbContext).Assembly;
+        modelBuilder.HasDefaultSchema("aircraft");
         modelBuilder.ApplyConfigurationsFromAssembly(assembly);
     }
 }
