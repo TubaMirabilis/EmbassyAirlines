@@ -21,7 +21,8 @@ internal sealed class AirportsService : Construct
                 Name = "Id",
                 Type = AttributeType.STRING
             },
-            BillingMode = BillingMode.PAY_PER_REQUEST
+            BillingMode = BillingMode.PAY_PER_REQUEST,
+            RemovalPolicy = RemovalPolicy.DESTROY
         });
         var airportCreatedTopic = new Topic(this, "AirportCreatedTopic", new TopicProps
         {
