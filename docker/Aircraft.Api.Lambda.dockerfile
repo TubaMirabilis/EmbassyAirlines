@@ -7,7 +7,7 @@ WORKDIR /src/Aircraft.Api.Lambda
 RUN dotnet restore
 RUN dotnet publish -c Release --os linux -o /app/publish
 
-FROM public.ecr.aws/lambda/dotnet:10-preview
+FROM public.ecr.aws/lambda/dotnet:10
 WORKDIR /var/task
 COPY --from=build /app/publish .
 CMD ["Aircraft.Api.Lambda"]
