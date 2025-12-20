@@ -16,6 +16,7 @@ internal static class FlightExtensions
         flight.DepartureAirport.TimeZoneId,
         flight.ArrivalAirport.Id,
         flight.ArrivalAirport.IataCode,
+        flight.Status.ToString(),
         flight.ArrivalAirport.IcaoCode,
         flight.ArrivalAirport.Name,
         flight.ArrivalAirport.TimeZoneId,

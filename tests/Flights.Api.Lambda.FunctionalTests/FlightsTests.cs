@@ -180,6 +180,7 @@ public class FlightsTests : BaseFunctionalTest
             x.BusinessPrice == request.BusinessPrice &&
             x.AircraftId == request.AircraftId &&
             x.AircraftEquipmentCode == _aircraft1.EquipmentCode &&
+            x.Status == "Scheduled" &&
             x.AircraftTailNumber == _aircraft1.TailNumber);
     }
 
@@ -316,6 +317,7 @@ public class FlightsTests : BaseFunctionalTest
         // Assert
         s_dto.Should().Match<FlightDto>(x =>
         x.AircraftId == _aircraft2.Id &&
+        x.Status == "Scheduled" &&
             x.EconomyPrice == dto.EconomyPrice &&
             x.BusinessPrice == dto.BusinessPrice);
     }
@@ -346,8 +348,32 @@ public class FlightsTests : BaseFunctionalTest
         s_dto.Should().Match<FlightDto>(x =>
             x.DepartureTime == tomorrow.InZone(tz1).ToDateTimeOffset() &&
             x.ArrivalTime == tomorrow.InZone(tz2).ToDateTimeOffset().AddHours(10).AddMinutes(30) &&
+            x.Status == "Scheduled" &&
             x.EconomyPrice == 500 &&
             x.BusinessPrice == 5000 &&
             x.AircraftId == _aircraft2.Id);
+    }
+
+    [Fact, TestPriority(13)]
+    public async Task AdjustFlightStatus_Should_ReturnOk_WhenRequestIsValid()
+    {
+        // Arrange
+        ArgumentNullException.ThrowIfNull(s_dto);
+        var dto = new AdjustFlightStatusDto("EnRoute");
+
+        // Act
+        var response = await HttpClient.PatchAsJsonAsync($"flights/{s_dto.Id}/status", dto, TestContext.Current.CancellationToken);
+        var content = await response.Content.ReadAsStreamAsync(TestContext.Current.CancellationToken);
+        var flight = await JsonSerializer.DeserializeAsync<FlightDto>(content, JsonSerializerOptions, TestContext.Current.CancellationToken);
+        if (flight is null)
+        {
+            throw new JsonException();
+        }
+        s_dto = flight;
+
+        // Assert
+        s_dto.Should().Match<FlightDto>(x =>
+        x.AircraftId == _aircraft2.Id &&
+        x.Status == "EnRoute");
     }
 }
