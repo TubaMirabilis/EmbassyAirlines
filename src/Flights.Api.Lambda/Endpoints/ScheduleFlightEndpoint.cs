@@ -34,7 +34,7 @@ internal sealed class ScheduleFlightEndpoint : IEndpoint
         if (!Enum.TryParse<SchedulingAmbiguityPolicy>(dto.SchedulingAmbiguityPolicy, out var schedulingAmbiguityPolicy))
         {
             logger.LogWarning("Invalid scheduling ambiguity policy: {Policy}", dto.SchedulingAmbiguityPolicy);
-            var error = Error.Validation("Flight.InvalidSchedulingAmbiguityPolicy", "Invalid scheduling ambiguity policy");
+            var error = Error.Validation("Flight.InvalidSchedulingAmbiguityPolicy", $"Invalid scheduling ambiguity policy: {dto.SchedulingAmbiguityPolicy}");
             return ErrorHandlingHelper.HandleProblem(error);
         }
         var departureAirport = await ctx.Airports
@@ -43,7 +43,7 @@ internal sealed class ScheduleFlightEndpoint : IEndpoint
         if (departureAirport is null)
         {
             logger.LogWarning("Departure airport with ID {Id} not found", dto.DepartureAirportId);
-            var error = Error.NotFound("Flight.DepartureAirportNotFound", "Departure airport not found");
+            var error = Error.NotFound("Flight.DepartureAirportNotFound", $"Departure airport with ID {dto.DepartureAirportId} not found");
             return ErrorHandlingHelper.HandleProblem(error);
         }
         var arrivalAirport = await ctx.Airports
@@ -52,7 +52,7 @@ internal sealed class ScheduleFlightEndpoint : IEndpoint
         if (arrivalAirport is null)
         {
             logger.LogWarning("Arrival airport with ID {Id} not found", dto.ArrivalAirportId);
-            var error = Error.NotFound("Flight.ArrivalAirportNotFound", "Arrival airport not found");
+            var error = Error.NotFound("Flight.ArrivalAirportNotFound", $"Arrival airport with ID {dto.ArrivalAirportId} not found");
             return ErrorHandlingHelper.HandleProblem(error);
         }
         var aircraft = await ctx.Aircraft

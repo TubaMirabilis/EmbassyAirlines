@@ -28,7 +28,7 @@ public class FlightsTests : BaseFunctionalTest
     }
 
     [Fact, TestPriority(0)]
-    public async Task Create_Should_ReturnBadRequest_WhenDepartureTimeIsInThePast()
+    public async Task Schedule_Should_ReturnBadRequest_WhenDepartureTimeIsInThePast()
     {
         // Arrange
         var tz1 = DateTimeZoneProviders.Tzdb["Asia/Seoul"];
@@ -61,7 +61,7 @@ public class FlightsTests : BaseFunctionalTest
     }
 
     [Fact, TestPriority(1)]
-    public async Task Create_Should_ReturnBadRequest_WhenArrivalTimeIsBeforeDepartureTime()
+    public async Task Schedule_Should_ReturnBadRequest_WhenArrivalTimeIsBeforeDepartureTime()
     {
         // Arrange
         var tz1 = DateTimeZoneProviders.Tzdb["Asia/Seoul"];
@@ -93,7 +93,7 @@ public class FlightsTests : BaseFunctionalTest
     }
 
     [Fact, TestPriority(2)]
-    public async Task Create_Should_ReturnNotFound_WhenAircraftDoesNotExist()
+    public async Task Schedule_Should_ReturnNotFound_WhenAircraftDoesNotExist()
     {
         // Arrange
         var id = Guid.NewGuid();
@@ -125,7 +125,102 @@ public class FlightsTests : BaseFunctionalTest
     }
 
     [Fact, TestPriority(3)]
-    public async Task Create_Should_ReturnCreated_WhenRequestIsValid()
+    public async Task Schedule_Should_ReturnNotFound_WhenDepartureAirportDoesNotExist()
+    {
+        // Arrange
+        var id = Guid.NewGuid();
+        var tz1 = DateTimeZoneProviders.Tzdb["Asia/Seoul"];
+        var tz2 = DateTimeZoneProviders.Tzdb["Europe/Amsterdam"];
+        var soon = SystemClock.Instance.GetCurrentInstant().Plus(Duration.FromMinutes(30));
+        var departureFromIncheon = soon.InZone(tz1).ToDateTimeUnspecified();
+        var arrivalAtSchipol = soon.InZone(tz2).ToDateTimeUnspecified().AddHours(10).AddMinutes(30);
+        var request = new ScheduleFlightDto
+        {
+            AircraftId = _aircraft1.Id,
+            FlightNumberIata = "EB1",
+            FlightNumberIcao = "EBY1",
+            DepartureAirportId = id,
+            DepartureLocalTime = departureFromIncheon,
+            ArrivalAirportId = _schipol.Id,
+            ArrivalLocalTime = arrivalAtSchipol,
+            EconomyPrice = 400,
+            BusinessPrice = 4000,
+            SchedulingAmbiguityPolicy = "ThrowWhenAmbiguous"
+        };
+        var error = $"Departure airport with ID {id} not found";
+
+        // Act
+        var response = await HttpClient.PostAsJsonAsync("flights", request, TestContext.Current.CancellationToken);
+
+        // Assert
+        await GetProblemDetailsFromResponseAndAssert(response, error);
+    }
+
+    [Fact, TestPriority(4)]
+    public async Task Schedule_Should_ReturnNotFound_WhenArrivalAirportDoesNotExist()
+    {
+        // Arrange
+        var id = Guid.NewGuid();
+        var tz1 = DateTimeZoneProviders.Tzdb["Asia/Seoul"];
+        var tz2 = DateTimeZoneProviders.Tzdb["Europe/Amsterdam"];
+        var soon = SystemClock.Instance.GetCurrentInstant().Plus(Duration.FromMinutes(30));
+        var departureFromIncheon = soon.InZone(tz1).ToDateTimeUnspecified();
+        var arrivalAtSchipol = soon.InZone(tz2).ToDateTimeUnspecified().AddHours(10).AddMinutes(30);
+        var request = new ScheduleFlightDto
+        {
+            AircraftId = _aircraft1.Id,
+            FlightNumberIata = "EB1",
+            FlightNumberIcao = "EBY1",
+            DepartureAirportId = _incheon.Id,
+            DepartureLocalTime = departureFromIncheon,
+            ArrivalAirportId = id,
+            ArrivalLocalTime = arrivalAtSchipol,
+            EconomyPrice = 400,
+            BusinessPrice = 4000,
+            SchedulingAmbiguityPolicy = "ThrowWhenAmbiguous"
+        };
+        var error = $"Arrival airport with ID {id} not found";
+
+        // Act
+        var response = await HttpClient.PostAsJsonAsync("flights", request, TestContext.Current.CancellationToken);
+
+        // Assert
+        await GetProblemDetailsFromResponseAndAssert(response, error);
+    }
+
+    [Fact, TestPriority(5)]
+    public async Task Schedule_Should_ReturnBadRequest_WhenSchedulingAmbiguityPolicyIsInvalid()
+    {
+        // Arrange
+        var tz1 = DateTimeZoneProviders.Tzdb["Asia/Seoul"];
+        var tz2 = DateTimeZoneProviders.Tzdb["Europe/Amsterdam"];
+        var soon = SystemClock.Instance.GetCurrentInstant().Plus(Duration.FromMinutes(30));
+        var departureFromIncheon = soon.InZone(tz1).ToDateTimeUnspecified();
+        var arrivalAtSchipol = soon.InZone(tz2).ToDateTimeUnspecified().AddHours(10).AddMinutes(30);
+        var request = new ScheduleFlightDto
+        {
+            AircraftId = _aircraft1.Id,
+            FlightNumberIata = "EB1",
+            FlightNumberIcao = "EBY1",
+            DepartureAirportId = _incheon.Id,
+            DepartureLocalTime = departureFromIncheon,
+            ArrivalAirportId = _schipol.Id,
+            ArrivalLocalTime = arrivalAtSchipol,
+            EconomyPrice = 400,
+            BusinessPrice = 4000,
+            SchedulingAmbiguityPolicy = "None"
+        };
+        var error = "Invalid scheduling ambiguity policy: None";
+
+        // Act
+        var response = await HttpClient.PostAsJsonAsync("flights", request, TestContext.Current.CancellationToken);
+
+        // Assert
+        await GetProblemDetailsFromResponseAndAssert(response, error);
+    }
+
+    [Fact, TestPriority(6)]
+    public async Task Schedule_Should_ReturnCreated_WhenRequestIsValid()
     {
         // Arrange
         var tz1 = DateTimeZoneProviders.Tzdb["Asia/Seoul"];
@@ -184,7 +279,7 @@ public class FlightsTests : BaseFunctionalTest
             x.AircraftTailNumber == _aircraft1.TailNumber);
     }
 
-    [Fact, TestPriority(4)]
+    [Fact, TestPriority(7)]
     public async Task List_Should_ReturnOk_WhenFlightsExist()
     {
         // Arrange
@@ -200,7 +295,7 @@ public class FlightsTests : BaseFunctionalTest
         flightDtos.Should().BeEquivalentTo(expected);
     }
 
-    [Fact, TestPriority(5)]
+    [Fact, TestPriority(8)]
     public async Task GetById_Should_ReturnNotFound_WhenFlightDoesNotExist()
     {
         // Arrange
@@ -215,7 +310,7 @@ public class FlightsTests : BaseFunctionalTest
         await GetProblemDetailsFromResponseAndAssert(response, error);
     }
 
-    [Fact, TestPriority(6)]
+    [Fact, TestPriority(9)]
     public async Task GetById_Should_ReturnOk_WhenFlightExists()
     {
         // Arrange
@@ -231,7 +326,7 @@ public class FlightsTests : BaseFunctionalTest
         flightDto.Should().BeEquivalentTo(s_dto);
     }
 
-    [Fact, TestPriority(7)]
+    [Fact, TestPriority(10)]
     public async Task AssignAircraft_Should_ReturnNotFound_WhenFlightDoesNotExist()
     {
         // Arrange
@@ -246,7 +341,7 @@ public class FlightsTests : BaseFunctionalTest
         await GetProblemDetailsFromResponseAndAssert(response, error);
     }
 
-    [Fact, TestPriority(8)]
+    [Fact, TestPriority(11)]
     public async Task AssignAircraft_Should_ReturnNotFound_WhenAircraftDoesNotExist()
     {
         // Arrange
@@ -261,7 +356,7 @@ public class FlightsTests : BaseFunctionalTest
         await GetProblemDetailsFromResponseAndAssert(response, error);
     }
 
-    [Fact, TestPriority(9)]
+    [Fact, TestPriority(12)]
     public async Task AssignAircraft_Should_ReturnOk_WhenRequestIsValid()
     {
         // Arrange
@@ -282,7 +377,7 @@ public class FlightsTests : BaseFunctionalTest
         s_dto.AircraftId.Should().Be(_aircraft2.Id);
     }
 
-    [Fact, TestPriority(10)]
+    [Fact, TestPriority(13)]
     public async Task AdjustFlightPricing_Should_ReturnNotFound_WhenFlightDoesNotExist()
     {
         // Arrange
@@ -297,7 +392,7 @@ public class FlightsTests : BaseFunctionalTest
         await GetProblemDetailsFromResponseAndAssert(response, error);
     }
 
-    [Fact, TestPriority(11)]
+    [Fact, TestPriority(14)]
     public async Task AdjustFlightPricing_Should_ReturnOk_WhenRequestIsValid()
     {
         // Arrange
@@ -322,7 +417,7 @@ public class FlightsTests : BaseFunctionalTest
             x.BusinessPrice == dto.BusinessPrice);
     }
 
-    [Fact, TestPriority(12)]
+    [Fact, TestPriority(15)]
     public async Task Reschedule_Should_ReturnOk_WhenRequestIsValid()
     {
         // Arrange
@@ -354,7 +449,7 @@ public class FlightsTests : BaseFunctionalTest
             x.AircraftId == _aircraft2.Id);
     }
 
-    [Fact, TestPriority(13)]
+    [Fact, TestPriority(16)]
     public async Task AdjustFlightStatus_Should_ReturnBadRequest_WhenFlightStatusIsInvalid()
     {
         // Arrange
@@ -369,7 +464,7 @@ public class FlightsTests : BaseFunctionalTest
         await GetProblemDetailsFromResponseAndAssert(response, error);
     }
 
-    [Fact, TestPriority(14)]
+    [Fact, TestPriority(17)]
     public async Task AdjustFlightStatus_Should_ReturnNotFound_WhenFlightDoesNotExist()
     {
         // Arrange
@@ -384,7 +479,7 @@ public class FlightsTests : BaseFunctionalTest
         await GetProblemDetailsFromResponseAndAssert(response, error);
     }
 
-    [Fact, TestPriority(15)]
+    [Fact, TestPriority(18)]
     public async Task AdjustFlightStatus_Should_ReturnOk_WhenRequestIsValid()
     {
         // Arrange
