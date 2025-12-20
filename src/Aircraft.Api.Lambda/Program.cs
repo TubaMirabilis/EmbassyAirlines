@@ -20,20 +20,20 @@ builder.Services.AddAWSLambdaHosting(LambdaEventSource.HttpApi);
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddAWSService<IAmazonS3>();
 builder.Services.AddProblemDetails();
-var host = config["DbConnection:Host"];
-var dbName = config["DbConnection:Database"];
-var connectionString = new NpgsqlConnectionStringBuilder
-{
-    Host = host,
-    Database = dbName
-}.ConnectionString;
 if (!builder.Environment.IsEnvironment("FunctionalTests"))
 {
+    var host = config["DbConnection:Host"];
+    var dbName = config["DbConnection:Database"];
+    var connectionString = new NpgsqlConnectionStringBuilder
+    {
+        Host = host,
+        Database = dbName
+    }.ConnectionString;
     builder.Services.AddSingleton<EntityFrameworkInterceptor>();
     builder.Services.AddDbContext<ApplicationDbContext>((sp, options) => options.UseNpgsql(new NpgsqlConnection(connectionString), x =>
     {
-        x.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
         x.MigrationsHistoryTable("__EFMigrationsHistory", "aircraft");
+        x.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
     })
     .UseSnakeCaseNamingConvention()
     .AddInterceptors(sp.GetRequiredService<EntityFrameworkInterceptor>()));

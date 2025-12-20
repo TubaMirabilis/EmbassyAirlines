@@ -49,8 +49,8 @@ public sealed class FunctionalTestWebAppFactory : WebApplicationFactory<Program>
             services.AddSingleton<IMessagePublisher, FakeMessagePublisher>();
             services.AddDbContext<ApplicationDbContext>(options => options.UseNpgsql(_dbContainer.GetConnectionString(), x =>
             {
-                x.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
                 x.MigrationsHistoryTable("__EFMigrationsHistory", "aircraft");
+                x.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
             })
             .UseSnakeCaseNamingConvention()
             .LogTo(Console.WriteLine, LogLevel.Warning));

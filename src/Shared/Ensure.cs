@@ -5,6 +5,16 @@ namespace Shared;
 
 public static class Ensure
 {
+    // Method to guard against Guid.Empty:
+    public static void NotEmpty(
+        Guid value,
+        [CallerArgumentExpression(nameof(value))] string? paramName = null)
+    {
+        if (value == Guid.Empty)
+        {
+            throw new ArgumentException("Value cannot be an empty GUID.", paramName);
+        }
+    }
     public static void NotNullOrEmpty(
             [NotNull] string? value,
             [CallerArgumentExpression(nameof(value))] string? paramName = null)
@@ -18,7 +28,7 @@ public static class Ensure
             throw new ArgumentException("Value cannot be empty or whitespace.", paramName);
         }
     }
-    public static void GreaterThanZero(
+    public static void ZeroOrGreater(
         decimal value,
         [CallerArgumentExpression(nameof(value))] string? paramName = null)
     {
@@ -31,7 +41,7 @@ public static class Ensure
         int value,
         [CallerArgumentExpression(nameof(value))] string? paramName = null)
     {
-        if (value <= 0)
+        if (value < 0)
         {
             throw new ArgumentOutOfRangeException(paramName);
         }
