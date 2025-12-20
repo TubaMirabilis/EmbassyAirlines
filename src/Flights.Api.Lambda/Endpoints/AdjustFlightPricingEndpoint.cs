@@ -34,6 +34,7 @@ internal sealed class AdjustFlightPricingEndpoint : IEndpoint
         var businessPrice = new Money(dto.BusinessPrice);
         flight.AdjustPricing(economyPrice, businessPrice, SystemClock.Instance.GetCurrentInstant());
         await ctx.SaveChangesAsync(ct);
+        logger.LogInformation("Adjusted pricing for flight {Id}: Economy - {EconomyPrice}, Business - {BusinessPrice}", id, economyPrice, businessPrice);
         await publisher.PublishAsync(new FlightPricingAdjustedEvent(flight.Id, economyPrice.Amount, businessPrice.Amount), ct);
         return TypedResults.Ok(flight.ToDto());
     }

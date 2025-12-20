@@ -49,6 +49,7 @@ internal sealed class RescheduleFlightEndpoint : IEndpoint
             });
             flight.Reschedule(schedule, SystemClock.Instance.GetCurrentInstant());
             await ctx.SaveChangesAsync(ct);
+            logger.LogInformation("Rescheduled flight {Id}: Departure - {DepartureLocalTime}, Arrival - {ArrivalLocalTime}", id, dto.DepartureLocalTime, dto.ArrivalLocalTime);
             await publisher.PublishAsync(new FlightRescheduledEvent(id, dto.DepartureLocalTime, dto.ArrivalLocalTime), ct);
             return TypedResults.Ok(flight.ToDto());
         }

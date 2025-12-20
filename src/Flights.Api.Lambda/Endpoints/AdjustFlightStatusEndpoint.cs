@@ -41,6 +41,7 @@ internal sealed class AdjustFlightStatusEndpoint : IEndpoint
         {
             flight.AdjustStatus(newStatus, SystemClock.Instance.GetCurrentInstant());
             await ctx.SaveChangesAsync(ct);
+            logger.LogInformation("Adjusted status for flight {Id}: New Status - {NewStatus}", id, newStatus);
             IFlightStatusManagementEvent message = newStatus switch
             {
                 FlightStatus.Cancelled => new FlightCancelledEvent(flight.Id),
