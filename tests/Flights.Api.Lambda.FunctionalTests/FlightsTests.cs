@@ -38,7 +38,7 @@ public class FlightsTests : BaseFunctionalTest
         var soon = now.Plus(Duration.FromMinutes(30));
         var departureFromIncheon = recently.InZone(tz1).ToDateTimeUnspecified();
         var arrivalAtSchipol = soon.InZone(tz2).ToDateTimeUnspecified().AddHours(10).AddMinutes(30);
-        var request = new CreateOrUpdateFlightDto
+        var request = new ScheduleFlightDto
         {
             AircraftId = _aircraft1.Id,
             FlightNumberIata = "EB1",
@@ -70,7 +70,7 @@ public class FlightsTests : BaseFunctionalTest
         var soon = now.Plus(Duration.FromMinutes(30));
         var departureFromIncheon = soon.InZone(tz1).ToDateTimeUnspecified();
         var arrivalAtSchipol = now.InZone(tz2).ToDateTimeUnspecified();
-        var request = new CreateOrUpdateFlightDto
+        var request = new ScheduleFlightDto
         {
             AircraftId = _aircraft1.Id,
             FlightNumberIata = "EB1",
@@ -102,7 +102,7 @@ public class FlightsTests : BaseFunctionalTest
         var soon = SystemClock.Instance.GetCurrentInstant().Plus(Duration.FromMinutes(30));
         var departureFromIncheon = soon.InZone(tz1).ToDateTimeUnspecified();
         var arrivalAtSchipol = soon.InZone(tz2).ToDateTimeUnspecified().AddHours(10).AddMinutes(30);
-        var request = new CreateOrUpdateFlightDto
+        var request = new ScheduleFlightDto
         {
             AircraftId = id,
             FlightNumberIata = "EB1",
@@ -135,7 +135,7 @@ public class FlightsTests : BaseFunctionalTest
         var departureFromIncheon = soon.InZone(tz1).ToDateTimeUnspecified();
         var arrivalAtSchipol = soon.InZone(tz2).ToDateTimeUnspecified().AddHours(10).AddMinutes(30);
         var duration = TimeSpan.FromHours(10).Add(TimeSpan.FromMinutes(30));
-        var request = new CreateOrUpdateFlightDto
+        var request = new ScheduleFlightDto
         {
             AircraftId = _aircraft1.Id,
             FlightNumberIata = "EB1",

@@ -2,9 +2,9 @@ using FluentValidation;
 
 namespace Aircraft.Api.Lambda;
 
-internal sealed class CreateOrUpdateAircraftDtoValidator : AbstractValidator<CreateOrUpdateAircraftDto>
+internal sealed class CreateAircraftDtoValidator : AbstractValidator<CreateAircraftDto>
 {
-    public CreateOrUpdateAircraftDtoValidator()
+    public CreateAircraftDtoValidator()
     {
         RuleFor(x => x.TailNumber)
             .Matches(@"^[A-Z0-9\-]+$")

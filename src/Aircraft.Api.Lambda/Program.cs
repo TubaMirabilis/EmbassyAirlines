@@ -38,7 +38,7 @@ if (!builder.Environment.IsEnvironment("FunctionalTests"))
     .UseSnakeCaseNamingConvention()
     .AddInterceptors(sp.GetRequiredService<EntityFrameworkInterceptor>()));
 }
-builder.Services.AddSingleton<IValidator<CreateOrUpdateAircraftDto>, CreateOrUpdateAircraftDtoValidator>();
+builder.Services.AddSingleton<IValidator<CreateAircraftDto>, CreateAircraftDtoValidator>();
 builder.Services.AddOpenApi();
 builder.Services.AddAWSMessageBus(bus =>
 {

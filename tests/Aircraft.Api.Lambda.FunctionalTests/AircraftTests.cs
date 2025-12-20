@@ -17,7 +17,7 @@ public class AircraftTests : BaseFunctionalTest
     public async Task Create_Should_ReturnNotFound_WhenSeatLayoutDefinitionDoesNotExist()
     {
         // Arrange
-        var request = new CreateOrUpdateAircraftDto("C-FZTY", "B38M", 42045, 82190, 69308, 65952, 20826);
+        var request = new CreateAircraftDto("C-FZTY", "B38M", 42045, 82190, 69308, 65952, 20826);
         var error = "Seat layout definition for B38M not found";
 
         // Act
@@ -31,7 +31,7 @@ public class AircraftTests : BaseFunctionalTest
     public async Task Create_Should_ReturnCreated_WhenRequestIsValid()
     {
         // Arrange
-        var request = new CreateOrUpdateAircraftDto("C-FJRN", "B78X", 135500, 254011, 201848, 192777, 101522);
+        var request = new CreateAircraftDto("C-FJRN", "B78X", 135500, 254011, 201848, 192777, 101522);
 
         // Act
         var response = await HttpClient.PostAsJsonAsync("aircraft", request, TestContext.Current.CancellationToken);
@@ -59,7 +59,7 @@ public class AircraftTests : BaseFunctionalTest
     public async Task Create_Should_ReturnConflict_WhenAircraftAlreadyExists()
     {
         // Arrange
-        var request = new CreateOrUpdateAircraftDto("C-FJRN", "B78X", 135500, 254011, 201848, 192777, 101522);
+        var request = new CreateAircraftDto("C-FJRN", "B78X", 135500, 254011, 201848, 192777, 101522);
         var error = $"Aircraft with tail number {request.TailNumber} already exists";
 
         // Act

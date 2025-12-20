@@ -23,18 +23,18 @@ internal sealed class AdjustFlightStatusEndpoint : IEndpoint
                                                    AdjustFlightStatusDto dto,
                                                    CancellationToken ct)
     {
+        if (!Enum.TryParse<FlightStatus>(dto.Status, out var newStatus))
+        {
+            logger.LogWarning("Invalid flight status: {Status}", dto.Status);
+            var error = Error.Validation("Flight.InvalidStatus", $"Invalid flight status: {dto.Status}");
+            return ErrorHandlingHelper.HandleProblem(error);
+        }
         var flight = await ctx.Flights
                               .FirstOrDefaultAsync(a => a.Id == id, ct);
         if (flight is null)
         {
             logger.LogWarning("Flight with ID {Id} not found", id);
             var error = Error.NotFound("Flight.NotFound", $"Flight with ID {id} not found");
-            return ErrorHandlingHelper.HandleProblem(error);
-        }
-        if (!Enum.TryParse<FlightStatus>(dto.Status, out var newStatus))
-        {
-            logger.LogWarning("Invalid flight status: {Status}", dto.Status);
-            var error = Error.Validation("Flight.InvalidStatus", $"Invalid flight status: {dto.Status}");
             return ErrorHandlingHelper.HandleProblem(error);
         }
         try

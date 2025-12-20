@@ -22,8 +22,8 @@ internal sealed class CreateAircraftEndpoint : IEndpoint
                                             ApplicationDbContext ctx,
                                             ILogger<CreateAircraftEndpoint> logger,
                                             IMessagePublisher publisher,
-                                            IValidator<CreateOrUpdateAircraftDto> validator,
-                                            CreateOrUpdateAircraftDto dto,
+                                            IValidator<CreateAircraftDto> validator,
+                                            CreateAircraftDto dto,
                                             CancellationToken ct)
     {
         var validationResult = await validator.ValidateAsync(dto, ct);

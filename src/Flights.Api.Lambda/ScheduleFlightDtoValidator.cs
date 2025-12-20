@@ -2,9 +2,9 @@ using FluentValidation;
 
 namespace Flights.Api.Lambda;
 
-internal sealed class CreateOrUpdateFlightDtoValidator : AbstractValidator<CreateOrUpdateFlightDto>
+internal sealed class ScheduleFlightDtoValidator : AbstractValidator<ScheduleFlightDto>
 {
-    public CreateOrUpdateFlightDtoValidator()
+    public ScheduleFlightDtoValidator()
     {
         RuleFor(x => x.AircraftId)
             .NotEmpty()

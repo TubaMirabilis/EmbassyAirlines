@@ -22,18 +22,18 @@ internal sealed class RescheduleFlightEndpoint : IEndpoint
                                                    RescheduleFlightDto dto,
                                                    CancellationToken ct)
     {
+        if (!Enum.TryParse<SchedulingAmbiguityPolicy>(dto.SchedulingAmbiguityPolicy, out var schedulingAmbiguityPolicy))
+        {
+            logger.LogWarning("Invalid scheduling ambiguity policy: {Policy}", dto.SchedulingAmbiguityPolicy);
+            var error = Error.Validation("Flight.InvalidSchedulingAmbiguityPolicy", "Invalid scheduling ambiguity policy");
+            return ErrorHandlingHelper.HandleProblem(error);
+        }
         var flight = await ctx.Flights
                               .FirstOrDefaultAsync(a => a.Id == id, ct);
         if (flight is null)
         {
             logger.LogWarning("Flight with ID {Id} not found", id);
             var error = Error.NotFound("Flight.NotFound", $"Flight with ID {id} not found");
-            return ErrorHandlingHelper.HandleProblem(error);
-        }
-        if (!Enum.TryParse<SchedulingAmbiguityPolicy>(dto.SchedulingAmbiguityPolicy, out var schedulingAmbiguityPolicy))
-        {
-            logger.LogWarning("Invalid scheduling ambiguity policy: {Policy}", dto.SchedulingAmbiguityPolicy);
-            var error = Error.Validation("Flight.InvalidSchedulingAmbiguityPolicy", "Invalid scheduling ambiguity policy");
             return ErrorHandlingHelper.HandleProblem(error);
         }
         try

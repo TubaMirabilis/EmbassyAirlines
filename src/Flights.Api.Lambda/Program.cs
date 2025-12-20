@@ -21,7 +21,7 @@ if (!builder.Environment.IsEnvironment("FunctionalTests"))
 {
     services.AddDatabaseConnection(config);
 }
-services.AddSingleton<IValidator<CreateOrUpdateFlightDto>, CreateOrUpdateFlightDtoValidator>();
+services.AddSingleton<IValidator<ScheduleFlightDto>, ScheduleFlightDtoValidator>();
 services.AddOpenApi();
 builder.Services.AddAWSMessageBus(bus =>
 {

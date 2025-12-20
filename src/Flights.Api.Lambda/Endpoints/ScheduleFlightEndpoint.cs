@@ -20,8 +20,8 @@ internal sealed class ScheduleFlightEndpoint : IEndpoint
     private static async Task<IResult> InvokeAsync(ApplicationDbContext ctx,
                                             ILogger<ScheduleFlightEndpoint> logger,
                                             IMessagePublisher publisher,
-                                            IValidator<CreateOrUpdateFlightDto> validator,
-                                            CreateOrUpdateFlightDto dto,
+                                            IValidator<ScheduleFlightDto> validator,
+                                            ScheduleFlightDto dto,
                                             CancellationToken ct)
     {
         var validationResult = await validator.ValidateAsync(dto, ct);
@@ -29,6 +29,12 @@ internal sealed class ScheduleFlightEndpoint : IEndpoint
         {
             logger.LogWarning("Validation failed for flight creation: {Errors}", formattedErrors);
             var error = Error.Validation("Flight.ValidationFailed", formattedErrors);
+            return ErrorHandlingHelper.HandleProblem(error);
+        }
+        if (!Enum.TryParse<SchedulingAmbiguityPolicy>(dto.SchedulingAmbiguityPolicy, out var schedulingAmbiguityPolicy))
+        {
+            logger.LogWarning("Invalid scheduling ambiguity policy: {Policy}", dto.SchedulingAmbiguityPolicy);
+            var error = Error.Validation("Flight.InvalidSchedulingAmbiguityPolicy", "Invalid scheduling ambiguity policy");
             return ErrorHandlingHelper.HandleProblem(error);
         }
         var departureAirport = await ctx.Airports
@@ -47,12 +53,6 @@ internal sealed class ScheduleFlightEndpoint : IEndpoint
         {
             logger.LogWarning("Arrival airport with ID {Id} not found", dto.ArrivalAirportId);
             var error = Error.NotFound("Flight.ArrivalAirportNotFound", "Arrival airport not found");
-            return ErrorHandlingHelper.HandleProblem(error);
-        }
-        if (!Enum.TryParse<SchedulingAmbiguityPolicy>(dto.SchedulingAmbiguityPolicy, out var schedulingAmbiguityPolicy))
-        {
-            logger.LogWarning("Invalid scheduling ambiguity policy: {Policy}", dto.SchedulingAmbiguityPolicy);
-            var error = Error.Validation("Flight.InvalidSchedulingAmbiguityPolicy", "Invalid scheduling ambiguity policy");
             return ErrorHandlingHelper.HandleProblem(error);
         }
         var aircraft = await ctx.Aircraft

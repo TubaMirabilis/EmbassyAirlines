@@ -1,6 +1,6 @@
 namespace Flights.Api.Lambda;
 
-internal sealed record CreateOrUpdateFlightDto
+internal sealed record ScheduleFlightDto
 {
     public required Guid AircraftId { get; init; }
     public required string FlightNumberIata { get; init; }
