@@ -355,6 +355,36 @@ public class FlightsTests : BaseFunctionalTest
     }
 
     [Fact, TestPriority(13)]
+    public async Task AdjustFlightStatus_Should_ReturnBadRequest_WhenFlightStatusIsInvalid()
+    {
+        // Arrange
+        var id = Guid.NewGuid();
+        var dto = new AdjustFlightStatusDto("Asdf");
+        var error = "Invalid flight status: Asdf";
+
+        // Act
+        var response = await HttpClient.PatchAsJsonAsync($"flights/{id}/status", dto, TestContext.Current.CancellationToken);
+
+        // Assert
+        await GetProblemDetailsFromResponseAndAssert(response, error);
+    }
+
+    [Fact, TestPriority(14)]
+    public async Task AdjustFlightStatus_Should_ReturnNotFound_WhenFlightDoesNotExist()
+    {
+        // Arrange
+        var id = Guid.NewGuid();
+        var dto = new AdjustFlightStatusDto("EnRoute");
+        var error = $"Flight with ID {id} not found";
+
+        // Act
+        var response = await HttpClient.PatchAsJsonAsync($"flights/{id}/status", dto, TestContext.Current.CancellationToken);
+
+        // Assert
+        await GetProblemDetailsFromResponseAndAssert(response, error);
+    }
+
+    [Fact, TestPriority(15)]
     public async Task AdjustFlightStatus_Should_ReturnOk_WhenRequestIsValid()
     {
         // Arrange
