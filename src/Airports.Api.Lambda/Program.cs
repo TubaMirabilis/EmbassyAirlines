@@ -25,15 +25,9 @@ builder.Services.AddOpenApi();
 builder.Services.AddAWSMessageBus(bus =>
 {
     var airportCreatedTopicArn = config["SNS:AirportCreatedTopicArn"];
-    if (string.IsNullOrWhiteSpace(airportCreatedTopicArn))
-    {
-        throw new InvalidOperationException("SNS Topic ARN for AirportCreatedEvent is not configured.");
-    }
     var airportUpdatedTopicArn = config["SNS:AirportUpdatedTopicArn"];
-    if (string.IsNullOrWhiteSpace(airportUpdatedTopicArn))
-    {
-        throw new InvalidOperationException("SNS Topic ARN for AirportUpdatedEvent is not configured.");
-    }
+    Ensure.NotNullOrEmpty(airportCreatedTopicArn);
+    Ensure.NotNullOrEmpty(airportUpdatedTopicArn);
     bus.AddSNSPublisher<AirportCreatedEvent>(airportCreatedTopicArn);
     bus.AddSNSPublisher<AirportUpdatedEvent>(airportUpdatedTopicArn);
 });

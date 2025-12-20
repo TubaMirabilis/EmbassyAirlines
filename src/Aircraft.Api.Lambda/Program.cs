@@ -43,10 +43,7 @@ builder.Services.AddOpenApi();
 builder.Services.AddAWSMessageBus(bus =>
 {
     var aircraftCreatedTopicArn = config["SNS:AircraftCreatedTopicArn"];
-    if (string.IsNullOrWhiteSpace(aircraftCreatedTopicArn))
-    {
-        throw new InvalidOperationException("SNS Topic ARN for AircraftCreatedEvent is not configured.");
-    }
+    Ensure.NotNullOrEmpty(aircraftCreatedTopicArn);
     bus.AddSNSPublisher<AircraftCreatedEvent>(aircraftCreatedTopicArn);
 });
 var app = builder.Build();

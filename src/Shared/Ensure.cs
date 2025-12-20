@@ -5,7 +5,6 @@ namespace Shared;
 
 public static class Ensure
 {
-    // Method to guard against Guid.Empty:
     public static void NotEmpty(
         Guid value,
         [CallerArgumentExpression(nameof(value))] string? paramName = null)
