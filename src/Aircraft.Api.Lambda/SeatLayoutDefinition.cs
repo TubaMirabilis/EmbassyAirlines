@@ -11,7 +11,7 @@ internal sealed class SeatLayoutDefinition
     [JsonPropertyName("BusinessRows")]
     public Dictionary<string, SeatSectionDefinition> BusinessRowsRaw { get; init; } = [];
     [JsonIgnore]
-    public Dictionary<RowRange, SeatSectionDefinition> BusinessRows => _businessRows ??=
+    public IReadOnlyDictionary<RowRange, SeatSectionDefinition> BusinessRows => _businessRows ??=
         BusinessRowsRaw.ToDictionary(
             kvp => RowRange.Parse(kvp.Key),
             kvp => kvp.Value
@@ -19,7 +19,7 @@ internal sealed class SeatLayoutDefinition
     [JsonPropertyName("EconomyRows")]
     public Dictionary<string, SeatSectionDefinition> EconomyRowsRaw { get; init; } = [];
     [JsonIgnore]
-    public Dictionary<RowRange, SeatSectionDefinition> EconomyRows => _economyRows ??=
+    public IReadOnlyDictionary<RowRange, SeatSectionDefinition> EconomyRows => _economyRows ??=
         EconomyRowsRaw.ToDictionary(
             kvp => RowRange.Parse(kvp.Key),
             kvp => kvp.Value
