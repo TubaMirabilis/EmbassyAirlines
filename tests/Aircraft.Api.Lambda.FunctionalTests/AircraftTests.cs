@@ -52,7 +52,7 @@ public class AircraftTests : BaseFunctionalTest
             x.MaximumLandingWeight == request.MaximumLandingWeight &&
             x.MaximumTakeoffWeight == request.MaximumTakeoffWeight &&
             x.MaximumZeroFuelWeight == request.MaximumZeroFuelWeight &&
-            x.Seats.Count() == 337);
+            x.Seats == 337);
     }
 
     [Fact, TestPriority(2)]
