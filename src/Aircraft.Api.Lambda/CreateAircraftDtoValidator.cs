@@ -6,6 +6,28 @@ internal sealed class CreateAircraftDtoValidator : AbstractValidator<CreateAircr
 {
     public CreateAircraftDtoValidator()
     {
+        When(x => x.Status == Status.Parked.ToString(), () =>
+        {
+            RuleFor(x => x.ParkedAt)
+                .NotEmpty()
+                .WithMessage("ParkedAt must be provided when status is Parked.")
+                .MaximumLength(4)
+                .WithMessage("ParkedAt must be no longer than 4 characters.");
+            RuleFor(x => x.EnRouteTo)
+                .Empty()
+                .WithMessage("EnRouteTo must be empty when status is Parked.");
+        });
+        When(x => x.Status == Status.EnRoute.ToString(), () =>
+        {
+            RuleFor(x => x.EnRouteTo)
+                .NotEmpty()
+                .WithMessage("EnRouteTo must be provided when status is EnRoute.")
+                .MaximumLength(4)
+                .WithMessage("EnRouteTo must be no longer than 4 characters.");
+            RuleFor(x => x.ParkedAt)
+                .Empty()
+                .WithMessage("ParkedAt must be empty when status is EnRoute.");
+        });
         RuleFor(x => x.TailNumber)
             .Matches(@"^[A-Z0-9\-]+$")
             .WithMessage("Tail number must only contain uppercase letters, numbers, and dashes.")

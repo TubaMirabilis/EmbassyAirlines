@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Aircraft.Api.Lambda.Database.Configurations;
 
@@ -8,11 +9,22 @@ internal sealed class AircraftConfiguration : IEntityTypeConfiguration<Aircraft>
     public void Configure(EntityTypeBuilder<Aircraft> builder)
     {
         builder.Property(a => a.TailNumber)
-            .IsRequired()
-            .HasMaxLength(12);
+               .IsRequired()
+                .IsUnicode(false)
+               .HasMaxLength(12);
+        builder.Property(a => a.ParkedAt)
+               .HasMaxLength(4)
+                .IsUnicode(false)
+                .IsRequired(false);
+        builder.Property(a => a.EnRouteTo)
+               .HasMaxLength(4)
+                .IsUnicode(false)
+                .IsRequired(false);
         builder.Property(a => a.EquipmentCode)
-            .IsRequired()
-            .HasMaxLength(4);
+               .IsRequired()
+               .IsUnicode(false)
+               .HasMaxLength(4);
+        builder.Property(a => a.Status).HasConversion(new EnumToStringConverter<Status>()).HasMaxLength(12).IsUnicode(false).IsRequired();
         builder.ComplexProperty(a => a.DryOperatingWeight, b => b.Property(e => e.Kilograms).IsRequired());
         builder.ComplexProperty(a => a.MaximumTakeoffWeight, b => b.Property(e => e.Kilograms).IsRequired());
         builder.ComplexProperty(a => a.MaximumLandingWeight, b => b.Property(e => e.Kilograms).IsRequired());

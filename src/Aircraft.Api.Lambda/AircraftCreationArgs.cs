@@ -9,5 +9,8 @@ internal sealed record AircraftCreationArgs
     public required Weight MaximumLandingWeight { get; init; }
     public required Weight MaximumZeroFuelWeight { get; init; }
     public required Weight MaximumFuelWeight { get; init; }
+    public required Status Status { get; init; }
+    public string? ParkedAt { get; init; }
+    public string? EnRouteTo { get; init; }
     public required SeatLayoutDefinition Seats { get; init; }
 }

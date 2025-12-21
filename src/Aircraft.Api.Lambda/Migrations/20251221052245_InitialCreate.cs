@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Aircraft.Api.Lambda.Migrations;
 
 /// <inheritdoc />
-internal partial class InitialCreate : Migration
+internal sealed partial class InitialCreate : Migration
 {
     /// <inheritdoc />
     protected override void Up(MigrationBuilder migrationBuilder)
@@ -20,8 +20,11 @@ internal partial class InitialCreate : Migration
             {
                 id = table.Column<Guid>(type: "uuid", nullable: false),
                 created_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                tail_number = table.Column<string>(type: "character varying(12)", maxLength: 12, nullable: false),
-                equipment_code = table.Column<string>(type: "character varying(4)", maxLength: 4, nullable: false),
+                tail_number = table.Column<string>(type: "character varying(12)", unicode: false, maxLength: 12, nullable: false),
+                equipment_code = table.Column<string>(type: "character varying(4)", unicode: false, maxLength: 4, nullable: false),
+                status = table.Column<string>(type: "character varying(12)", unicode: false, maxLength: 12, nullable: false),
+                parked_at = table.Column<string>(type: "character varying(4)", unicode: false, maxLength: 4, nullable: true),
+                en_route_to = table.Column<string>(type: "character varying(4)", unicode: false, maxLength: 4, nullable: true),
                 dry_operating_weight_kilograms = table.Column<int>(type: "integer", nullable: false),
                 maximum_fuel_weight_kilograms = table.Column<int>(type: "integer", nullable: false),
                 maximum_landing_weight_kilograms = table.Column<int>(type: "integer", nullable: false),

@@ -35,15 +35,36 @@ namespace Aircraft.Api.Lambda.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at");
 
+                    b.Property<string>("EnRouteTo")
+                        .HasMaxLength(4)
+                        .IsUnicode(false)
+                        .HasColumnType("character varying(4)")
+                        .HasColumnName("en_route_to");
+
                     b.Property<string>("EquipmentCode")
                         .IsRequired()
                         .HasMaxLength(4)
+                        .IsUnicode(false)
                         .HasColumnType("character varying(4)")
                         .HasColumnName("equipment_code");
+
+                    b.Property<string>("ParkedAt")
+                        .HasMaxLength(4)
+                        .IsUnicode(false)
+                        .HasColumnType("character varying(4)")
+                        .HasColumnName("parked_at");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(12)
+                        .IsUnicode(false)
+                        .HasColumnType("character varying(12)")
+                        .HasColumnName("status");
 
                     b.Property<string>("TailNumber")
                         .IsRequired()
                         .HasMaxLength(12)
+                        .IsUnicode(false)
                         .HasColumnType("character varying(12)")
                         .HasColumnName("tail_number");
 

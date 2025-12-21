@@ -30,13 +30,19 @@ internal sealed class CreateAircraftEndpoint : IEndpoint
         if (!validationResult.IsValid(out var formattedErrors))
         {
             logger.LogWarning("Validation failed for creation of aircraft: {Errors}", formattedErrors);
-            var error = Error.Validation("Aircraft.Validation", formattedErrors);
+            var error = Error.Validation("Aircraft.ValidationFailed", formattedErrors);
+            return ErrorHandlingHelper.HandleProblem(error);
+        }
+        if (!Enum.TryParse<Status>(dto.Status, out var status))
+        {
+            logger.LogWarning("Invalid status value: {Status}", dto.Status);
+            var error = Error.Validation("Aircraft.InvalidStatus", $"Invalid status value: {dto.Status}");
             return ErrorHandlingHelper.HandleProblem(error);
         }
         if (await ctx.Aircraft.AnyAsync(a => a.TailNumber == dto.TailNumber, ct))
         {
             logger.LogWarning("Aircraft with tail number {TailNumber} already exists", dto.TailNumber);
-            var error = Error.Conflict("Aircraft.TailNumber", $"Aircraft with tail number {dto.TailNumber} already exists");
+            var error = Error.Conflict("Aircraft.TailNumberDuplicate", $"Aircraft with tail number {dto.TailNumber} already exists");
             return ErrorHandlingHelper.HandleProblem(error);
         }
         var equipmentCode = dto.EquipmentCode;
@@ -46,7 +52,7 @@ internal sealed class CreateAircraftEndpoint : IEndpoint
             if (string.IsNullOrEmpty(bucketName))
             {
                 logger.LogWarning("Bucket name is not configured");
-                var error = Error.Validation("Aircraft.BucketName", "Bucket name is not configured");
+                var error = Error.Validation("Aircraft.BucketMalfunction", "Bucket name is not configured");
                 return ErrorHandlingHelper.HandleProblem(error);
             }
             var response = await client.GetObjectAsync(bucketName, $"seat-layouts/{equipmentCode}.json", ct);
@@ -54,7 +60,7 @@ internal sealed class CreateAircraftEndpoint : IEndpoint
             if (def is null)
             {
                 logger.LogWarning("Seat layout definition for {EquipmentCode} is null", equipmentCode);
-                var error = Error.Validation("Aircraft.SeatLayoutDefinition", $"Seat layout definition for {equipmentCode} is null");
+                var error = Error.Validation("Aircraft.SeatLayoutDefinitionMalfunction", $"Seat layout definition for {equipmentCode} is null");
                 return ErrorHandlingHelper.HandleProblem(error);
             }
             var args = new AircraftCreationArgs
@@ -66,13 +72,22 @@ internal sealed class CreateAircraftEndpoint : IEndpoint
                 MaximumLandingWeight = new Weight(dto.MaximumLandingWeight),
                 MaximumZeroFuelWeight = new Weight(dto.MaximumZeroFuelWeight),
                 MaximumFuelWeight = new Weight(dto.MaximumFuelWeight),
-                Seats = def
+                Seats = def,
+                ParkedAt = dto.ParkedAt,
+                EnRouteTo = dto.EnRouteTo,
+                Status = status
             };
             var aircraft = Aircraft.Create(args);
             ctx.Aircraft.Add(aircraft);
             await ctx.SaveChangesAsync(ct);
             await publisher.PublishAsync(new AircraftCreatedEvent(aircraft.Id, aircraft.TailNumber, aircraft.EquipmentCode), ct);
             return TypedResults.Created($"/aircraft/{aircraft.Id}", aircraft.ToDto());
+        }
+        catch (ArgumentException e)
+        {
+            logger.LogError(e, "Error creating aircraft with tail number {TailNumber}", dto.TailNumber);
+            var error = Error.Validation("Aircraft.CreationFailed", $"Error creating aircraft: {e.Message}");
+            return ErrorHandlingHelper.HandleProblem(error);
         }
         catch (AmazonS3Exception e)
         {
