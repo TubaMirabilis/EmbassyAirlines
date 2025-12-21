@@ -11,4 +11,5 @@ public sealed record FlightCreationArgs
     public required string FlightNumberIata { get; init; }
     public required string FlightNumberIcao { get; init; }
     public required FlightSchedule Schedule { get; init; }
+    public required OperationType OperationType { get; init; }
 }

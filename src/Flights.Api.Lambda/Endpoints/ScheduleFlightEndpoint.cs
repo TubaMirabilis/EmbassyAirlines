@@ -31,6 +31,12 @@ internal sealed class ScheduleFlightEndpoint : IEndpoint
             var error = Error.Validation("Flight.ValidationFailed", formattedErrors);
             return ErrorHandlingHelper.HandleProblem(error);
         }
+        if (!Enum.TryParse<OperationType>(dto.OperationType, out var operationType))
+        {
+            logger.LogWarning("Invalid operation type: {Type}", dto.OperationType);
+            var error = Error.Validation("Flight.InvalidOperationType", $"Invalid operation type: {dto.OperationType}");
+            return ErrorHandlingHelper.HandleProblem(error);
+        }
         if (!Enum.TryParse<SchedulingAmbiguityPolicy>(dto.SchedulingAmbiguityPolicy, out var schedulingAmbiguityPolicy))
         {
             logger.LogWarning("Invalid scheduling ambiguity policy: {Policy}", dto.SchedulingAmbiguityPolicy);
@@ -85,7 +91,8 @@ internal sealed class ScheduleFlightEndpoint : IEndpoint
                 EconomyPrice = economyPrice,
                 FlightNumberIata = dto.FlightNumberIata,
                 FlightNumberIcao = dto.FlightNumberIcao,
-                Schedule = schedule
+                Schedule = schedule,
+                OperationType = operationType
             });
             ctx.Flights.Add(flight);
             await ctx.SaveChangesAsync(ct);

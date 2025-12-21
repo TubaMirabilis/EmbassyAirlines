@@ -49,7 +49,8 @@ public class FlightsTests : BaseFunctionalTest
             ArrivalLocalTime = arrivalAtSchipol,
             EconomyPrice = 400,
             BusinessPrice = 4000,
-            SchedulingAmbiguityPolicy = "ThrowWhenAmbiguous"
+            SchedulingAmbiguityPolicy = "ThrowWhenAmbiguous",
+            OperationType = "RevenuePassenger"
         };
         var error = "Departure time cannot be in the past (Parameter 'args')";
 
@@ -81,7 +82,8 @@ public class FlightsTests : BaseFunctionalTest
             ArrivalLocalTime = arrivalAtSchipol,
             EconomyPrice = 400,
             BusinessPrice = 4000,
-            SchedulingAmbiguityPolicy = "ThrowWhenAmbiguous"
+            SchedulingAmbiguityPolicy = "ThrowWhenAmbiguous",
+            OperationType = "RevenuePassenger"
         };
         var error = "Arrival time cannot be before departure time (Parameter 'args')";
 
@@ -113,7 +115,8 @@ public class FlightsTests : BaseFunctionalTest
             ArrivalLocalTime = arrivalAtSchipol,
             EconomyPrice = 400,
             BusinessPrice = 4000,
-            SchedulingAmbiguityPolicy = "ThrowWhenAmbiguous"
+            SchedulingAmbiguityPolicy = "ThrowWhenAmbiguous",
+            OperationType = "RevenuePassenger"
         };
         var error = $"Aircraft with ID {id} not found";
 
@@ -145,7 +148,8 @@ public class FlightsTests : BaseFunctionalTest
             ArrivalLocalTime = arrivalAtSchipol,
             EconomyPrice = 400,
             BusinessPrice = 4000,
-            SchedulingAmbiguityPolicy = "ThrowWhenAmbiguous"
+            SchedulingAmbiguityPolicy = "ThrowWhenAmbiguous",
+            OperationType = "RevenuePassenger"
         };
         var error = $"Departure airport with ID {id} not found";
 
@@ -177,7 +181,8 @@ public class FlightsTests : BaseFunctionalTest
             ArrivalLocalTime = arrivalAtSchipol,
             EconomyPrice = 400,
             BusinessPrice = 4000,
-            SchedulingAmbiguityPolicy = "ThrowWhenAmbiguous"
+            SchedulingAmbiguityPolicy = "ThrowWhenAmbiguous",
+            OperationType = "RevenuePassenger"
         };
         var error = $"Arrival airport with ID {id} not found";
 
@@ -208,7 +213,8 @@ public class FlightsTests : BaseFunctionalTest
             ArrivalLocalTime = arrivalAtSchipol,
             EconomyPrice = 400,
             BusinessPrice = 4000,
-            SchedulingAmbiguityPolicy = "None"
+            SchedulingAmbiguityPolicy = "None",
+            OperationType = "RevenuePassenger"
         };
         var error = "Invalid scheduling ambiguity policy: None";
 
@@ -241,7 +247,8 @@ public class FlightsTests : BaseFunctionalTest
             ArrivalLocalTime = arrivalAtSchipol,
             EconomyPrice = 400,
             BusinessPrice = 4000,
-            SchedulingAmbiguityPolicy = "ThrowWhenAmbiguous"
+            SchedulingAmbiguityPolicy = "ThrowWhenAmbiguous",
+            OperationType = "RevenuePassenger"
         };
 
         // Act

@@ -12,4 +12,5 @@ internal sealed record ScheduleFlightDto
     public required decimal EconomyPrice { get; init; }
     public required decimal BusinessPrice { get; init; }
     public required string SchedulingAmbiguityPolicy { get; init; }
+    public required string OperationType { get; init; }
 }
