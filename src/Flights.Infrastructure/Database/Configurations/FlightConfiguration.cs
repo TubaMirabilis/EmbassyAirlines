@@ -9,41 +9,46 @@ internal sealed class FlightConfiguration : IEntityTypeConfiguration<Flight>
 {
     public void Configure(EntityTypeBuilder<Flight> builder)
     {
+        builder.Property(f => f.OperationType)
+               .HasConversion(new EnumToStringConverter<OperationType>())
+               .HasMaxLength(24)
+               .IsUnicode(false)
+               .IsRequired();
         builder.Property(f => f.SchedulingAmbiguityPolicy)
-            .HasConversion(new EnumToStringConverter<SchedulingAmbiguityPolicy>())
-            .HasMaxLength(20)
-            .IsUnicode(false)
-            .IsRequired();
+               .HasConversion(new EnumToStringConverter<SchedulingAmbiguityPolicy>())
+               .HasMaxLength(20)
+               .IsUnicode(false)
+               .IsRequired();
         builder.Property(f => f.Status)
-            .HasConversion(new EnumToStringConverter<FlightStatus>())
-            .HasMaxLength(20)
-            .IsUnicode(false)
-            .IsRequired();
+               .HasConversion(new EnumToStringConverter<FlightStatus>())
+               .HasMaxLength(20)
+               .IsUnicode(false)
+               .IsRequired();
         builder.ComplexProperty(f => f.BusinessPrice, b => b.Property(e => e.Amount).IsRequired());
         builder.ComplexProperty(f => f.EconomyPrice, b => b.Property(e => e.Amount).IsRequired());
         builder.Property(f => f.FlightNumberIcao)
-            .HasMaxLength(7)
-            .IsRequired();
+               .HasMaxLength(7)
+               .IsRequired();
         builder.Property(f => f.FlightNumberIata)
-            .HasMaxLength(6)
-            .IsRequired();
+               .HasMaxLength(6)
+               .IsRequired();
         builder.Navigation(f => f.Aircraft)
-            .AutoInclude();
+               .AutoInclude();
         builder.Navigation(f => f.DepartureAirport)
-            .AutoInclude();
+               .AutoInclude();
         builder.Navigation(f => f.ArrivalAirport)
-            .AutoInclude();
+               .AutoInclude();
         builder.HasOne(f => f.DepartureAirport)
-            .WithMany()
-            .IsRequired()
-            .OnDelete(DeleteBehavior.Restrict);
+               .WithMany()
+               .IsRequired()
+               .OnDelete(DeleteBehavior.Restrict);
         builder.HasOne(f => f.ArrivalAirport)
-            .WithMany()
-            .IsRequired()
-            .OnDelete(DeleteBehavior.Restrict);
+               .WithMany()
+               .IsRequired()
+               .OnDelete(DeleteBehavior.Restrict);
         builder.HasOne(f => f.Aircraft)
-            .WithMany()
-            .IsRequired()
-            .OnDelete(DeleteBehavior.Restrict);
+               .WithMany()
+               .IsRequired()
+               .OnDelete(DeleteBehavior.Restrict);
     }
 }

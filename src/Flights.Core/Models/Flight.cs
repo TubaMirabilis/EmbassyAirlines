@@ -24,6 +24,7 @@ public sealed class Flight
         EconomyPrice = args.EconomyPrice;
         BusinessPrice = args.BusinessPrice;
         SchedulingAmbiguityPolicy = args.Schedule.SchedulingAmbiguityPolicy;
+        OperationType = args.OperationType;
     }
 #pragma warning disable CS8618
     private Flight()
@@ -62,6 +63,7 @@ public sealed class Flight
     public Airport DepartureAirport { get; init; }
     public Instant DepartureInstant => DepartureZonedTime.ToInstant();
     public Money EconomyPrice { get; private set; }
+    public OperationType OperationType { get; init; }
     public static Flight Create(FlightCreationArgs args) => new(args);
     public void AssignAircraft(Aircraft aircraft, Instant instant)
     {
