@@ -45,10 +45,10 @@ internal sealed class AdjustFlightStatusEndpoint : IEndpoint
             IFlightStatusManagementEvent message = newStatus switch
             {
                 FlightStatus.Cancelled => new FlightCancelledEvent(flight.Id),
-                FlightStatus.Arrived => new FlightArrivedEvent(flight.Id),
+                FlightStatus.Arrived => new FlightArrivedEvent(flight.Id, flight.ArrivalAirport.IcaoCode),
                 FlightStatus.Delayed => new FlightDelayedEvent(flight.Id),
-                FlightStatus.DelayedEnRoute => new FlightDelayedEnRouteEvent(flight.Id),
-                FlightStatus.EnRoute => new FlightEnRouteEvent(flight.Id),
+                FlightStatus.DelayedEnRoute => new FlightMarkedAsDelayedEnRouteEvent(flight.Id, flight.ArrivalAirport.IcaoCode),
+                FlightStatus.EnRoute => new FlightMarkedAsEnRouteEvent(flight.Id, flight.ArrivalAirport.IcaoCode),
                 _ => throw new InvalidOperationException("No event defined for the given flight status.")
             };
             await publisher.PublishAsync(message, ct);

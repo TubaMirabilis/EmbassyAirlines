@@ -33,8 +33,8 @@ public class FunctionalTestWebAppFactory : WebApplicationFactory<Program>, IAsyn
         builder.UseSetting("SNS:FlightCancelledTopicArn", "testFlightCancelledTopicArn");
         builder.UseSetting("SNS:FlightArrivedTopicArn", "testFlightArrivedTopicArn");
         builder.UseSetting("SNS:FlightDelayedTopicArn", "testFlightDelayedTopicArn");
-        builder.UseSetting("SNS:FlightEnRouteTopicArn", "testFlightEnRouteTopicArn");
-        builder.UseSetting("SNS:FlightDelayedEnRouteTopicArn", "testFlightDelayedEnRouteTopicArn");
+        builder.UseSetting("SNS:FlightMarkedAsEnRouteTopicArn", "testFlightMarkedAsEnRouteTopicArn");
+        builder.UseSetting("SNS:FlightMarkedAsDelayedEnRouteTopicArn", "testFlightMarkedAsDelayedEnRouteTopicArn");
         builder.ConfigureTestServices(services =>
         {
             services.RemoveAll<IMessagePublisher>();

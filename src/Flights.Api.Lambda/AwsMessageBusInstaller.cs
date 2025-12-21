@@ -14,8 +14,8 @@ internal static class AwsMessageBusInstaller
         var flightCancelledTopicArn = config["SNS:FlightCancelledTopicArn"];
         var flightArrivedTopicArn = config["SNS:FlightArrivedTopicArn"];
         var flightDelayedTopicArn = config["SNS:FlightDelayedTopicArn"];
-        var flightEnRouteTopicArn = config["SNS:FlightEnRouteTopicArn"];
-        var flightDelayedEnRouteTopicArn = config["SNS:FlightDelayedEnRouteTopicArn"];
+        var flightMarkedAsEnRouteTopicArn = config["SNS:FlightMarkedAsEnRouteTopicArn"];
+        var flightMarkedAsDelayedEnRouteTopicArn = config["SNS:FlightMarkedAsDelayedEnRouteTopicArn"];
         Ensure.NotNullOrEmpty(aircraftAssignedTopicArn);
         Ensure.NotNullOrEmpty(flightPricingAdjustedTopicArn);
         Ensure.NotNullOrEmpty(flightRescheduledTopicArn);
@@ -23,8 +23,8 @@ internal static class AwsMessageBusInstaller
         Ensure.NotNullOrEmpty(flightCancelledTopicArn);
         Ensure.NotNullOrEmpty(flightArrivedTopicArn);
         Ensure.NotNullOrEmpty(flightDelayedTopicArn);
-        Ensure.NotNullOrEmpty(flightEnRouteTopicArn);
-        Ensure.NotNullOrEmpty(flightDelayedEnRouteTopicArn);
+        Ensure.NotNullOrEmpty(flightMarkedAsEnRouteTopicArn);
+        Ensure.NotNullOrEmpty(flightMarkedAsDelayedEnRouteTopicArn);
         bus.AddSNSPublisher<AircraftAssignedToFlightEvent>(aircraftAssignedTopicArn);
         bus.AddSNSPublisher<FlightPricingAdjustedEvent>(flightPricingAdjustedTopicArn);
         bus.AddSNSPublisher<FlightRescheduledEvent>(flightRescheduledTopicArn);
@@ -32,7 +32,7 @@ internal static class AwsMessageBusInstaller
         bus.AddSNSPublisher<FlightCancelledEvent>(flightCancelledTopicArn);
         bus.AddSNSPublisher<FlightArrivedEvent>(flightArrivedTopicArn);
         bus.AddSNSPublisher<FlightDelayedEvent>(flightDelayedTopicArn);
-        bus.AddSNSPublisher<FlightEnRouteEvent>(flightEnRouteTopicArn);
-        bus.AddSNSPublisher<FlightDelayedEnRouteEvent>(flightDelayedEnRouteTopicArn);
+        bus.AddSNSPublisher<FlightMarkedAsEnRouteEvent>(flightMarkedAsEnRouteTopicArn);
+        bus.AddSNSPublisher<FlightMarkedAsDelayedEnRouteEvent>(flightMarkedAsDelayedEnRouteTopicArn);
     });
 }
