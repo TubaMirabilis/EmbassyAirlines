@@ -296,6 +296,24 @@ public class FlightsTests : BaseFunctionalTest
     }
 
     [Fact, TestPriority(8)]
+    public async Task List_Should_ReturnOk_WhenFlightsExistAndQueryStringParametersAreUsed()
+    {
+        // Arrange
+        ArgumentNullException.ThrowIfNull(s_dto);
+        var expected = new FlightListDto([s_dto], 1, 50, 1, false);
+        var from = _incheon.IataCode;
+        var to = _schipol.IataCode;
+
+        // Act
+        var uri = new Uri($"flights?from={from}&to={to}&page=1&pageSize=50", UriKind.Relative);
+        var response = await HttpClient.GetAsync(uri, TestContext.Current.CancellationToken);
+        var flightDtos = await response.Content.ReadFromJsonAsync<FlightListDto>(TestContext.Current.CancellationToken);
+
+        // Assert
+        flightDtos.Should().BeEquivalentTo(expected);
+    }
+
+    [Fact, TestPriority(9)]
     public async Task GetById_Should_ReturnNotFound_WhenFlightDoesNotExist()
     {
         // Arrange
@@ -310,7 +328,7 @@ public class FlightsTests : BaseFunctionalTest
         await GetProblemDetailsFromResponseAndAssert(response, error);
     }
 
-    [Fact, TestPriority(9)]
+    [Fact, TestPriority(10)]
     public async Task GetById_Should_ReturnOk_WhenFlightExists()
     {
         // Arrange
@@ -326,7 +344,7 @@ public class FlightsTests : BaseFunctionalTest
         flightDto.Should().BeEquivalentTo(s_dto);
     }
 
-    [Fact, TestPriority(10)]
+    [Fact, TestPriority(11)]
     public async Task AssignAircraft_Should_ReturnNotFound_WhenFlightDoesNotExist()
     {
         // Arrange
@@ -341,7 +359,7 @@ public class FlightsTests : BaseFunctionalTest
         await GetProblemDetailsFromResponseAndAssert(response, error);
     }
 
-    [Fact, TestPriority(11)]
+    [Fact, TestPriority(12)]
     public async Task AssignAircraft_Should_ReturnNotFound_WhenAircraftDoesNotExist()
     {
         // Arrange
@@ -356,7 +374,7 @@ public class FlightsTests : BaseFunctionalTest
         await GetProblemDetailsFromResponseAndAssert(response, error);
     }
 
-    [Fact, TestPriority(12)]
+    [Fact, TestPriority(13)]
     public async Task AssignAircraft_Should_ReturnOk_WhenRequestIsValid()
     {
         // Arrange
@@ -377,7 +395,7 @@ public class FlightsTests : BaseFunctionalTest
         s_dto.AircraftId.Should().Be(_aircraft2.Id);
     }
 
-    [Fact, TestPriority(13)]
+    [Fact, TestPriority(14)]
     public async Task AdjustFlightPricing_Should_ReturnNotFound_WhenFlightDoesNotExist()
     {
         // Arrange
@@ -392,7 +410,7 @@ public class FlightsTests : BaseFunctionalTest
         await GetProblemDetailsFromResponseAndAssert(response, error);
     }
 
-    [Fact, TestPriority(14)]
+    [Fact, TestPriority(15)]
     public async Task AdjustFlightPricing_Should_ReturnOk_WhenRequestIsValid()
     {
         // Arrange
@@ -417,7 +435,7 @@ public class FlightsTests : BaseFunctionalTest
             x.BusinessPrice == dto.BusinessPrice);
     }
 
-    [Fact, TestPriority(15)]
+    [Fact, TestPriority(16)]
     public async Task Reschedule_Should_ReturnOk_WhenRequestIsValid()
     {
         // Arrange
@@ -449,7 +467,7 @@ public class FlightsTests : BaseFunctionalTest
             x.AircraftId == _aircraft2.Id);
     }
 
-    [Fact, TestPriority(16)]
+    [Fact, TestPriority(17)]
     public async Task AdjustFlightStatus_Should_ReturnBadRequest_WhenFlightStatusIsInvalid()
     {
         // Arrange
@@ -464,7 +482,7 @@ public class FlightsTests : BaseFunctionalTest
         await GetProblemDetailsFromResponseAndAssert(response, error);
     }
 
-    [Fact, TestPriority(17)]
+    [Fact, TestPriority(18)]
     public async Task AdjustFlightStatus_Should_ReturnNotFound_WhenFlightDoesNotExist()
     {
         // Arrange
@@ -479,7 +497,7 @@ public class FlightsTests : BaseFunctionalTest
         await GetProblemDetailsFromResponseAndAssert(response, error);
     }
 
-    [Fact, TestPriority(18)]
+    [Fact, TestPriority(19)]
     public async Task AdjustFlightStatus_Should_ReturnOk_WhenRequestIsValid()
     {
         // Arrange
