@@ -4,12 +4,14 @@ namespace Aircraft.Api.Lambda;
 
 internal sealed class SeatLayoutDefinition
 {
+    private Dictionary<RowRange, SeatSectionDefinition>? _businessRows;
+    private Dictionary<RowRange, SeatSectionDefinition>? _economyRows;
     [JsonPropertyName("EquipmentType")]
     public string EquipmentType { get; init; } = null!;
     [JsonPropertyName("BusinessRows")]
     public Dictionary<string, SeatSectionDefinition> BusinessRowsRaw { get; init; } = [];
     [JsonIgnore]
-    public Dictionary<RowRange, SeatSectionDefinition> BusinessRows =>
+    public Dictionary<RowRange, SeatSectionDefinition> BusinessRows => _businessRows ??=
         BusinessRowsRaw.ToDictionary(
             kvp => RowRange.Parse(kvp.Key),
             kvp => kvp.Value
@@ -17,7 +19,7 @@ internal sealed class SeatLayoutDefinition
     [JsonPropertyName("EconomyRows")]
     public Dictionary<string, SeatSectionDefinition> EconomyRowsRaw { get; init; } = [];
     [JsonIgnore]
-    public Dictionary<RowRange, SeatSectionDefinition> EconomyRows =>
+    public Dictionary<RowRange, SeatSectionDefinition> EconomyRows => _economyRows ??=
         EconomyRowsRaw.ToDictionary(
             kvp => RowRange.Parse(kvp.Key),
             kvp => kvp.Value

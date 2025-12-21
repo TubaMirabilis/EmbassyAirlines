@@ -45,11 +45,5 @@ internal readonly struct RowRange : IEnumerable<int>, IEquatable<RowRange>
     public bool Equals(RowRange other) => Start == other.Start && End == other.End;
     public static bool operator ==(RowRange left, RowRange right) => left.Equals(right);
     public static bool operator !=(RowRange left, RowRange right) => !(left == right);
-    public override int GetHashCode()
-    {
-        unchecked
-        {
-            return (Start * 397) ^ End;
-        }
-    }
+    public override int GetHashCode() => HashCode.Combine(Start, End);
 }
