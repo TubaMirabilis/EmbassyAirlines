@@ -99,4 +99,37 @@ public class AircraftTests : BaseFunctionalTest
         // Assert
         aircraftDto.Should().BeEquivalentTo(s_dto);
     }
+
+    [Fact, TestPriority(5)]
+    public async Task List_Should_ReturnOk_WhenAircraftExist()
+    {
+        // Arrange
+        ArgumentNullException.ThrowIfNull(s_dto);
+        var expected = new AircraftListDto([s_dto], 1, 50, 1, false);
+
+        // Act
+        var uri = new Uri("aircraft", UriKind.Relative);
+        var response = await HttpClient.GetAsync(uri, TestContext.Current.CancellationToken);
+        var aircraftListDto = await response.Content.ReadFromJsonAsync<AircraftListDto>(TestContext.Current.CancellationToken);
+
+        // Assert
+        aircraftListDto.Should().BeEquivalentTo(expected);
+    }
+
+    [Fact, TestPriority(6)]
+    public async Task List_Should_ReturnOk_WhenAircraftExistAndQueryStringParametersAreUsed()
+    {
+        // Arrange
+        ArgumentNullException.ThrowIfNull(s_dto);
+        var expected = new AircraftListDto([s_dto], 1, 50, 1, false);
+        var parkedAt = "CYVR";
+
+        // Act
+        var uri = new Uri($"aircraft?parkedAt={parkedAt}", UriKind.Relative);
+        var response = await HttpClient.GetAsync(uri, TestContext.Current.CancellationToken);
+        var aircraftListDto = await response.Content.ReadFromJsonAsync<AircraftListDto>(TestContext.Current.CancellationToken);
+
+        // Assert
+        aircraftListDto.Should().BeEquivalentTo(expected);
+    }
 }

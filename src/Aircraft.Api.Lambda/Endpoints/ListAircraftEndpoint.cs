@@ -21,15 +21,11 @@ internal sealed class ListAircraftEndpoint : IEndpoint
         var query = ctx.Aircraft
                        .Include(a => a.Seats)
                        .AsNoTracking();
-        if (!string.IsNullOrWhiteSpace(parkedAt))
+        if (!string.IsNullOrWhiteSpace(parkedAt) || !string.IsNullOrWhiteSpace(enRouteTo))
         {
-            var parkedAtNorm = parkedAt.Trim().ToUpperInvariant();
-            query = query.Where(a => a.ParkedAt == parkedAtNorm);
-        }
-        if (!string.IsNullOrWhiteSpace(enRouteTo))
-        {
-            var enRouteToNorm = enRouteTo.Trim().ToUpperInvariant();
-            query = query.Where(a => a.EnRouteTo == enRouteToNorm);
+            var parkedAtNorm = parkedAt?.Trim().ToUpperInvariant();
+            var enRouteToNorm = enRouteTo?.Trim().ToUpperInvariant();
+            query = query.Where(a => a.ParkedAt == parkedAtNorm || a.EnRouteTo == enRouteToNorm);
         }
         var count = await query.CountAsync(ct);
         var pages = (int)Math.Ceiling(count / (double)pageSize);
