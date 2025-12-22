@@ -9,13 +9,9 @@ internal sealed class Aircraft
     {
         Ensure.NotNullOrEmpty(args.TailNumber);
         Ensure.NotNullOrEmpty(args.EquipmentCode);
-        if (string.IsNullOrWhiteSpace(args.ParkedAt) && string.IsNullOrWhiteSpace(args.EnRouteTo))
+        if (string.IsNullOrWhiteSpace(args.ParkedAt) == string.IsNullOrWhiteSpace(args.EnRouteTo))
         {
-            throw new ArgumentException("Either ParkedAt or EnRouteTo must be provided.");
-        }
-        if (!string.IsNullOrWhiteSpace(args.ParkedAt) && !string.IsNullOrWhiteSpace(args.EnRouteTo))
-        {
-            throw new ArgumentException("Only one of ParkedAt or EnRouteTo can be provided.");
+            throw new ArgumentException("Aircraft must be either parked or en route, but not both.");
         }
         if (args.Status == Status.Parked && string.IsNullOrWhiteSpace(args.ParkedAt))
         {
