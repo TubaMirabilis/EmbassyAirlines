@@ -1,5 +1,7 @@
 using Aircraft.Api.Lambda.Database;
+using ErrorOr;
 using Microsoft.EntityFrameworkCore;
+using Shared;
 using Shared.Contracts;
 using Shared.Endpoints;
 
@@ -16,16 +18,25 @@ internal sealed class ListAircraftEndpoint : IEndpoint
                                                    string? enRouteTo = null,
                                                    CancellationToken ct = default)
     {
+        if (!string.IsNullOrWhiteSpace(parkedAt) && !string.IsNullOrWhiteSpace(enRouteTo))
+        {
+            var error = Error.Validation("Aircraft.InvalidQuery", "Cannot filter by both parkedAt and enRouteTo simultaneously.");
+            return ErrorHandlingHelper.HandleProblem(error);
+        }
         page = Math.Max(page, 1);
         pageSize = Math.Clamp(pageSize, 1, 200);
         var query = ctx.Aircraft
                        .Include(a => a.Seats)
                        .AsNoTracking();
-        if (!string.IsNullOrWhiteSpace(parkedAt) || !string.IsNullOrWhiteSpace(enRouteTo))
+        if (!string.IsNullOrWhiteSpace(parkedAt))
         {
-            var parkedAtNorm = parkedAt?.Trim().ToUpperInvariant();
-            var enRouteToNorm = enRouteTo?.Trim().ToUpperInvariant();
-            query = query.Where(a => a.ParkedAt == parkedAtNorm || a.EnRouteTo == enRouteToNorm);
+            var parkedAtNorm = parkedAt.Trim().ToUpperInvariant();
+            query = query.Where(a => a.ParkedAt == parkedAtNorm);
+        }
+        if (!string.IsNullOrWhiteSpace(enRouteTo))
+        {
+            var enRouteToNorm = enRouteTo.Trim().ToUpperInvariant();
+            query = query.Where(a => a.EnRouteTo == enRouteToNorm);
         }
         var count = await query.CountAsync(ct);
         var pages = (int)Math.Ceiling(count / (double)pageSize);
