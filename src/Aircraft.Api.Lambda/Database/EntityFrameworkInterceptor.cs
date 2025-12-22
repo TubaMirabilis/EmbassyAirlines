@@ -24,19 +24,10 @@ internal sealed class EntityFrameworkInterceptor : IDbConnectionInterceptor
         connection.ConnectionString = cs;
         return result;
     }
-    public async ValueTask<InterceptionResult> ConnectionOpeningAsync(DbConnection connection,
-                                                                      ConnectionEventData eventData,
-                                                                      InterceptionResult result,
-                                                                      CancellationToken cancellationToken = new CancellationToken())
+    public ValueTask<InterceptionResult> ConnectionOpeningAsync(DbConnection connection, ConnectionEventData eventData, InterceptionResult result, CancellationToken cancellationToken = new CancellationToken())
     {
-        var host = _config["DbConnection:Host"];
-        var dbName = _config["DbConnection:Database"];
-        var user = _config["DbConnection:Username"];
-        _logger.LogInformation("Generating auth token for database connection to {Host}:{Database} with user {User}", host, dbName, user);
-        var authToken = RDSAuthTokenGenerator.GenerateAuthToken(host, 5432, user);
-        var cs = $"Server={host};Database={dbName};User Id={user};Password={authToken};SslMode=Require;TrustServerCertificate=true;";
-        connection.ConnectionString = cs;
-        return result;
+        var r = ConnectionOpening(connection, eventData, result);
+        return ValueTask.FromResult(r);
     }
     public void ConnectionOpened(DbConnection connection, ConnectionEndEventData eventData)
     {
