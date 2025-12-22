@@ -14,10 +14,8 @@ public class GlobalExceptionHandler : IExceptionHandler
         Exception exception,
         CancellationToken cancellationToken)
     {
-        ArgumentNullException.ThrowIfNull(exception);
         _logger.LogError(exception, "Exception occurred: {Message}",
             exception.Message);
-        ArgumentNullException.ThrowIfNull(httpContext);
         var problemDetails = new ProblemDetails
         {
             Status = StatusCodes.Status500InternalServerError,
