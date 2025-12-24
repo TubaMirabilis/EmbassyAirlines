@@ -1,8 +1,8 @@
 using System.Text.Json.Serialization;
 
-namespace Aircraft.Api.Lambda;
+namespace Aircraft.Core.Models;
 
-internal sealed class SeatLayoutDefinition
+public sealed class SeatLayoutDefinition
 {
     private Dictionary<RowRange, SeatSectionDefinition>? _businessRows;
     private Dictionary<RowRange, SeatSectionDefinition>? _economyRows;

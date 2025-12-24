@@ -1,8 +1,9 @@
+using Aircraft.Core.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
-namespace Aircraft.Api.Lambda.Database.Configurations;
+namespace Aircraft.Infrastructure.Database.Configurations;
 
 internal sealed class SeatConfiguration : IEntityTypeConfiguration<Seat>
 {

@@ -1,9 +1,7 @@
 using Aircraft.Api.Lambda;
-using Aircraft.Api.Lambda.Database;
+using Aircraft.Infrastructure;
 using Amazon.S3;
 using FluentValidation;
-using Microsoft.EntityFrameworkCore;
-using Npgsql;
 using Serilog;
 using Shared;
 using Shared.Contracts;
@@ -22,21 +20,7 @@ builder.Services.AddAWSService<IAmazonS3>();
 builder.Services.AddProblemDetails();
 if (!builder.Environment.IsEnvironment("FunctionalTests"))
 {
-    var host = config["DbConnection:Host"];
-    var dbName = config["DbConnection:Database"];
-    var connectionString = new NpgsqlConnectionStringBuilder
-    {
-        Host = host,
-        Database = dbName
-    }.ConnectionString;
-    builder.Services.AddSingleton<EntityFrameworkInterceptor>();
-    builder.Services.AddDbContext<ApplicationDbContext>((sp, options) => options.UseNpgsql(new NpgsqlConnection(connectionString), x =>
-    {
-        x.MigrationsHistoryTable("__EFMigrationsHistory", "aircraft");
-        x.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
-    })
-    .UseSnakeCaseNamingConvention()
-    .AddInterceptors(sp.GetRequiredService<EntityFrameworkInterceptor>()));
+    builder.Services.AddDatabaseConnection(config);
 }
 builder.Services.AddSingleton<IValidator<CreateAircraftDto>, CreateAircraftDtoValidator>();
 builder.Services.AddOpenApi();

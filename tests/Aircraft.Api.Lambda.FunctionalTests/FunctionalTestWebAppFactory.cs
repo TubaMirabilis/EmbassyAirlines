@@ -1,5 +1,5 @@
 using System.Text.Json;
-using Aircraft.Api.Lambda.Database;
+using Aircraft.Infrastructure.Database;
 using Amazon.Runtime;
 using Amazon.S3;
 using Amazon.S3.Model;

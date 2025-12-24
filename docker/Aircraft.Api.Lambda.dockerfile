@@ -1,6 +1,8 @@
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /src
 COPY ./src/Aircraft.Api.Lambda/ /src/Aircraft.Api.Lambda/
+COPY ./src/Aircraft.Core/ /src/Aircraft.Core/
+COPY ./src/Aircraft.Infrastructure/ /src/Aircraft.Infrastructure/
 COPY ./src/Shared/ /src/Shared/
 COPY ./Directory.Packages.props /Directory.Packages.props
 WORKDIR /src/Aircraft.Api.Lambda

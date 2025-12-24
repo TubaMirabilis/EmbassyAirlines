@@ -1,6 +1,6 @@
-namespace Aircraft.Api.Lambda;
+namespace Aircraft.Core.Models;
 
-internal sealed class Seat
+public sealed class Seat
 {
     public Guid Id { get; init; }
     public DateTime CreatedAt { get; init; }

@@ -4,7 +4,7 @@ namespace Aircraft.Api.Lambda;
 
 internal static class AircraftExtensions
 {
-    public static AircraftDto ToDto(this Aircraft aircraft) => new(
+    public static AircraftDto ToDto(this Core.Models.Aircraft aircraft) => new(
         aircraft.Id,
         aircraft.TailNumber,
         aircraft.EquipmentCode,

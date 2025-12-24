@@ -1,6 +1,7 @@
 using System.Net;
 using System.Text.Json;
-using Aircraft.Api.Lambda.Database;
+using Aircraft.Core.Models;
+using Aircraft.Infrastructure.Database;
 using Amazon.S3;
 using AWS.Messaging;
 using ErrorOr;
@@ -17,7 +18,7 @@ internal sealed class CreateAircraftEndpoint : IEndpoint
 {
     public void MapEndpoint(IEndpointRouteBuilder app)
         => app.MapPost("aircraft", InvokeAsync);
-    private async Task<IResult> InvokeAsync(IAmazonS3 client,
+    private static async Task<IResult> InvokeAsync(IAmazonS3 client,
                                             IConfiguration config,
                                             ApplicationDbContext ctx,
                                             ILogger<CreateAircraftEndpoint> logger,
@@ -77,7 +78,7 @@ internal sealed class CreateAircraftEndpoint : IEndpoint
                 EnRouteTo = dto.EnRouteTo,
                 Status = status
             };
-            var aircraft = Aircraft.Create(args);
+            var aircraft = Core.Models.Aircraft.Create(args);
             ctx.Aircraft.Add(aircraft);
             await ctx.SaveChangesAsync(ct);
             await publisher.PublishAsync(new AircraftCreatedEvent(aircraft.Id, aircraft.TailNumber, aircraft.EquipmentCode), ct);

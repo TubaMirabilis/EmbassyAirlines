@@ -1,3 +1,4 @@
+using Aircraft.Core.Models;
 using Shared.Contracts;
 
 namespace Aircraft.Api.Lambda;

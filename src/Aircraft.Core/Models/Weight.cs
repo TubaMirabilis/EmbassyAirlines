@@ -1,8 +1,8 @@
 using Shared;
 
-namespace Aircraft.Api.Lambda;
+namespace Aircraft.Core.Models;
 
-internal sealed record Weight
+public sealed record Weight
 {
     public Weight(int kilograms)
     {

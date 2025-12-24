@@ -2,10 +2,10 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace Aircraft.Api.Lambda.Migrations;
+namespace Aircraft.Infrastructure.Migrations;
 
 /// <inheritdoc />
-internal sealed partial class InitialCreate : Migration
+public partial class InitialCreate : Migration
 {
     /// <inheritdoc />
     protected override void Up(MigrationBuilder migrationBuilder)

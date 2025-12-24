@@ -1,8 +1,8 @@
 using System.Text.Json.Serialization;
 
-namespace Aircraft.Api.Lambda;
+namespace Aircraft.Core.Models;
 
-internal sealed class SeatSectionDefinition
+public sealed class SeatSectionDefinition
 {
     [JsonPropertyName("Seats")]
     public IEnumerable<char> Seats { get; init; } = [];

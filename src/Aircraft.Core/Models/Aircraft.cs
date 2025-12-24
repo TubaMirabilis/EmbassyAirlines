@@ -1,8 +1,8 @@
 using Shared;
 
-namespace Aircraft.Api.Lambda;
+namespace Aircraft.Core.Models;
 
-internal sealed class Aircraft
+public sealed class Aircraft
 {
     private readonly List<Seat> _seats = [];
     private Aircraft(AircraftCreationArgs args)

@@ -1,4 +1,4 @@
-using Aircraft.Api.Lambda.Database;
+using Aircraft.Infrastructure.Database;
 using Microsoft.EntityFrameworkCore;
 
 namespace Aircraft.Api.Lambda;

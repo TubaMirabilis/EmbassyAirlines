@@ -1,8 +1,10 @@
 using System.Data.Common;
 using Amazon.RDS.Util;
 using Microsoft.EntityFrameworkCore.Diagnostics;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 
-namespace Aircraft.Api.Lambda.Database;
+namespace Aircraft.Infrastructure.Database;
 
 internal sealed class EntityFrameworkInterceptor : IDbConnectionInterceptor
 {

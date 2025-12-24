@@ -2,9 +2,9 @@ using System.Collections;
 using System.Globalization;
 using Shared;
 
-namespace Aircraft.Api.Lambda;
+namespace Aircraft.Core.Models;
 
-internal readonly struct RowRange : IEnumerable<int>, IEquatable<RowRange>
+public readonly struct RowRange : IEnumerable<int>, IEquatable<RowRange>
 {
     public int Start { get; }
     public int End { get; }

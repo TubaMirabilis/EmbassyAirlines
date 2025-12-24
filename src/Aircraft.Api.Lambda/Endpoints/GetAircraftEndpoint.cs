@@ -1,4 +1,4 @@
-using Aircraft.Api.Lambda.Database;
+using Aircraft.Infrastructure.Database;
 using ErrorOr;
 using Microsoft.EntityFrameworkCore;
 using Shared;

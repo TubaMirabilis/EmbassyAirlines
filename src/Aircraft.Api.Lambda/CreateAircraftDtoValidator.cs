@@ -1,3 +1,4 @@
+using Aircraft.Core.Models;
 using FluentValidation;
 
 namespace Aircraft.Api.Lambda;
