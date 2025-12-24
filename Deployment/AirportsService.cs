@@ -3,7 +3,6 @@ using Amazon.CDK.AWS.Apigatewayv2;
 using Amazon.CDK.AWS.DynamoDB;
 using Amazon.CDK.AWS.EC2;
 using Amazon.CDK.AWS.Lambda;
-using Amazon.CDK.AWS.SNS;
 using Amazon.CDK.AwsApigatewayv2Integrations;
 using Constructs;
 
@@ -24,14 +23,6 @@ internal sealed class AirportsService : Construct
             BillingMode = BillingMode.PAY_PER_REQUEST,
             RemovalPolicy = RemovalPolicy.DESTROY
         });
-        var airportCreatedTopic = new Topic(this, "AirportCreatedTopic", new TopicProps
-        {
-            TopicName = "AirportCreatedTopic"
-        });
-        var airportUpdatedTopic = new Topic(this, "AirportUpdatedTopic", new TopicProps
-        {
-            TopicName = "AirportUpdatedTopic"
-        });
         var imageCode = DockerImageCode.FromImageAsset(directory: ".", new AssetImageCodeProps
         {
             File = "docker/Airports.Api.Lambda.dockerfile"
@@ -50,8 +41,8 @@ internal sealed class AirportsService : Construct
             Environment = new Dictionary<string, string>
             {
                 { "AIRPORTS_DynamoDb__TableName", airportsTable.TableName },
-                { "AIRPORTS_SNS__AirportCreatedTopicArn", airportCreatedTopic.TopicArn },
-                { "AIRPORTS_SNS__AirportUpdatedTopicArn", airportUpdatedTopic.TopicArn }
+                { "AIRPORTS_SNS__AirportCreatedTopicArn", props.AirportCreatedTopic.TopicArn },
+                { "AIRPORTS_SNS__AirportUpdatedTopicArn", props.AirportUpdatedTopic.TopicArn }
             },
             Vpc = props.Vpc,
             VpcSubnets = new SubnetSelection
@@ -61,8 +52,8 @@ internal sealed class AirportsService : Construct
             SecurityGroups = [lambdaSg]
         });
         airportsTable.GrantReadWriteData(lambda);
-        airportCreatedTopic.GrantPublish(lambda);
-        airportUpdatedTopic.GrantPublish(lambda);
+        props.AirportCreatedTopic.GrantPublish(lambda);
+        props.AirportUpdatedTopic.GrantPublish(lambda);
         props.Api.AddRoutes(new AddRoutesOptions
         {
             Path = "/airports",

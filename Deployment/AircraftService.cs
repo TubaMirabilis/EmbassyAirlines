@@ -3,7 +3,6 @@ using Amazon.CDK.AWS.Apigatewayv2;
 using Amazon.CDK.AWS.EC2;
 using Amazon.CDK.AWS.Lambda;
 using Amazon.CDK.AWS.S3;
-using Amazon.CDK.AWS.SNS;
 using Amazon.CDK.AwsApigatewayv2Integrations;
 using Constructs;
 
@@ -13,11 +12,7 @@ internal sealed class AircraftService : Construct
 {
     internal AircraftService(Construct scope, string id, AircraftServiceProps props) : base(scope, id)
     {
-        var aircraftCreatedTopic = new Topic(this, "AircraftCreatedTopic", new TopicProps
-        {
-            TopicName = "AircraftCreatedTopic"
-        });
-        var bucket = new Bucket(this, "AircraftBucket", new Amazon.CDK.AWS.S3.BucketProps
+        var bucket = new Bucket(this, "AircraftBucket", new BucketProps
         {
             BucketName = $"aircraft-bucket-{Aws.ACCOUNT_ID}-{Aws.REGION}",
             BlockPublicAccess = BlockPublicAccess.BLOCK_ALL,
@@ -45,7 +40,7 @@ internal sealed class AircraftService : Construct
                 { "AIRCRAFT_DbConnection__Database", "embassyairlinesdb" },
                 { "AIRCRAFT_DbConnection__Username", "embassyadmin" },
                 { "AIRCRAFT_S3__BucketName", bucket.BucketName },
-                { "AIRCRAFT_SNS__AircraftCreatedTopicArn", aircraftCreatedTopic.TopicArn }
+                { "AIRCRAFT_SNS__AircraftCreatedTopicArn", props.AircraftCreatedTopic.TopicArn }
             },
             Vpc = props.Vpc,
             VpcSubnets = new SubnetSelection
@@ -62,7 +57,7 @@ internal sealed class AircraftService : Construct
         });
         props.DbProxy.GrantConnect(lambda, "embassyadmin");
         lambdaSg.Connections.AllowTo(props.DbProxySecurityGroup, Port.Tcp(5432), "Allow Lambda to access RDS Proxy");
-        aircraftCreatedTopic.GrantPublish(lambda);
+        props.AircraftCreatedTopic.GrantPublish(lambda);
         bucket.GrantRead(lambda);
     }
 }

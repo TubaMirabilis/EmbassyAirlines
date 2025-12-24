@@ -40,7 +40,7 @@ public class FunctionalTestWebAppFactory : WebApplicationFactory<Program>, IAsyn
             services.RemoveAll<IMessagePublisher>();
             services.RemoveAll<DbContextOptions<ApplicationDbContext>>();
             services.AddSingleton<IMessagePublisher, FakeMessagePublisher>();
-            services.AddSingleton<JsonSerializerOptions>(_ => new JsonSerializerOptions
+            services.AddSingleton(_ => new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true
             });

@@ -23,7 +23,7 @@ public class FunctionalTestWebAppFactory : WebApplicationFactory<Program>, IAsyn
         builder.UseSetting("DynamoDb:TableName", "airports-test");
         builder.ConfigureTestServices(services =>
         {
-            services.AddSingleton<JsonSerializerOptions>(_ => new JsonSerializerOptions
+            services.AddSingleton(_ => new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true
             });

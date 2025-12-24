@@ -34,7 +34,7 @@ public sealed class FunctionalTestWebAppFactory : WebApplicationFactory<Program>
         builder.ConfigureTestServices(services =>
         {
             var credentials = new BasicAWSCredentials("test-access-key", "test-secret-key");
-            services.AddSingleton<JsonSerializerOptions>(_ => new JsonSerializerOptions
+            services.AddSingleton(_ => new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true
             });

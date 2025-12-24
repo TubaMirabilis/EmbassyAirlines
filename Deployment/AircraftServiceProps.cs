@@ -1,11 +1,13 @@
 using Amazon.CDK.AWS.Apigatewayv2;
 using Amazon.CDK.AWS.EC2;
 using Amazon.CDK.AWS.RDS;
+using Amazon.CDK.AWS.SNS;
 
 namespace Deployment;
 
 internal sealed record AircraftServiceProps
 {
+    internal required Topic AircraftCreatedTopic { get; init; }
     internal required HttpApi Api { get; init; }
     internal required DatabaseProxy DbProxy { get; init; }
     internal required SecurityGroup DbProxySecurityGroup { get; init; }
