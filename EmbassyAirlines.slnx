@@ -4,6 +4,7 @@
     <Project Path="src/Aircraft.Core/Aircraft.Core.csproj" />
     <Project Path="src/Aircraft.Infrastructure/Aircraft.Infrastructure.csproj" />
     <Project Path="src/Airports.Api.Lambda/Airports.Api.Lambda.csproj" />
+    <Project Path="src/Flights.Api.Lambda.MessageHandlers.AircraftCreated/Flights.Api.Lambda.MessageHandlers.AircraftCreated.csproj" />
     <Project Path="src/Flights.Api.Lambda/Flights.Api.Lambda.csproj" />
     <Project Path="src/Flights.Core/Flights.Core.csproj" />
     <Project Path="src/Flights.Infrastructure/Flights.Infrastructure.csproj" />

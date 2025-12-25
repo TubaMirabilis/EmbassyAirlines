@@ -81,7 +81,7 @@ internal sealed class CreateAircraftEndpoint : IEndpoint
             var aircraft = Core.Models.Aircraft.Create(args);
             ctx.Aircraft.Add(aircraft);
             await ctx.SaveChangesAsync(ct);
-            await publisher.PublishAsync(new AircraftCreatedEvent(aircraft.Id, aircraft.TailNumber, aircraft.EquipmentCode), ct);
+            await publisher.PublishAsync(new AircraftCreatedEvent(Guid.NewGuid(), aircraft.Id, aircraft.TailNumber, aircraft.EquipmentCode), ct);
             return TypedResults.Created($"/aircraft/{aircraft.Id}", aircraft.ToDto());
         }
         catch (ArgumentException e)

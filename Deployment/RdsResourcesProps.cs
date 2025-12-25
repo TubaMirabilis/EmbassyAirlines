@@ -5,4 +5,5 @@ namespace Deployment;
 internal sealed record RdsResourcesProps
 {
     internal required Vpc Vpc { get; init; }
+    internal required string DbUsername { get; init; }
 }

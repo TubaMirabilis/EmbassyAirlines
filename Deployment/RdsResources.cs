@@ -21,7 +21,7 @@ internal sealed class RdsResources : Construct
             {
                 SubnetType = SubnetType.PRIVATE_ISOLATED
             },
-            Credentials = Credentials.FromGeneratedSecret("embassyadmin"),
+            Credentials = Credentials.FromGeneratedSecret(props.DbUsername),
             InstanceType = InstanceType.Of(InstanceClass.T4G, InstanceSize.MICRO),
             DatabaseName = "embassyairlinesdb",
             AllocatedStorage = 20,

@@ -3,7 +3,11 @@
         "Apigatewayv",
         "AWSSDK",
         "dbname",
+        "dcproj",
         "embassyadmin",
-        "embassyairlinesdb"
+        "embassyairlinesdb",
+        "evnt",
+        "JSII",
+        "Testcontainers"
     ]
 }

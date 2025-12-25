@@ -38,7 +38,7 @@ internal sealed class AircraftService : Construct
             {
                 { "AIRCRAFT_DbConnection__Host", props.DbProxy.Endpoint },
                 { "AIRCRAFT_DbConnection__Database", "embassyairlinesdb" },
-                { "AIRCRAFT_DbConnection__Username", "embassyadmin" },
+                { "AIRCRAFT_DbConnection__Username", props.DbUsername },
                 { "AIRCRAFT_S3__BucketName", bucket.BucketName },
                 { "AIRCRAFT_SNS__AircraftCreatedTopicArn", props.AircraftCreatedTopic.TopicArn }
             },
@@ -55,7 +55,7 @@ internal sealed class AircraftService : Construct
             Integration = new HttpLambdaIntegration("AircraftApiIntegration", lambda),
             Methods = [Amazon.CDK.AWS.Apigatewayv2.HttpMethod.ANY]
         });
-        props.DbProxy.GrantConnect(lambda, "embassyadmin");
+        props.DbProxy.GrantConnect(lambda, props.DbUsername);
         lambdaSg.Connections.AllowTo(props.DbProxySecurityGroup, Port.Tcp(5432), "Allow Lambda to access RDS Proxy");
         props.AircraftCreatedTopic.GrantPublish(lambda);
         bucket.GrantRead(lambda);

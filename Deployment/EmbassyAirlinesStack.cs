@@ -12,7 +12,8 @@ internal sealed class EmbassyAirlinesStack : Stack
         var shared = new SharedInfra(this, "Shared");
         var rds = new RdsResources(this, "RDS", new RdsResourcesProps()
         {
-            Vpc = network.Vpc
+            Vpc = network.Vpc,
+            DbUsername = "embassyadmin"
         });
         new AirportsService(this, "AirportsService", new AirportsServiceProps()
         {
@@ -27,7 +28,18 @@ internal sealed class EmbassyAirlinesStack : Stack
             Api = shared.Api,
             DbProxy = rds.DbProxy,
             DbProxySecurityGroup = rds.DbProxySecurityGroup,
+            DbUsername = "embassyadmin",
             Vpc = network.Vpc
+        });
+        new FlightsService(this, "FlightsService", new FlightsServiceProps()
+        {
+            FlightScheduledTopic = messaging.FlightScheduledTopic,
+            Api = shared.Api,
+            DbProxy = rds.DbProxy,
+            DbProxySecurityGroup = rds.DbProxySecurityGroup,
+            DbUsername = "embassyadmin",
+            Vpc = network.Vpc,
+            ProcessingQueue = messaging.ProcessingQueue
         });
     }
 }
