@@ -3,7 +3,8 @@ using Amazon.CDK.AWS.Apigatewayv2;
 using Amazon.CDK.AWS.EC2;
 using Amazon.CDK.AWS.Lambda;
 using Amazon.CDK.AWS.Lambda.EventSources;
-using Amazon.CDK.AWS.Logs;
+using Amazon.CDK.AWS.SNS.Subscriptions;
+using Amazon.CDK.AWS.SQS;
 using Amazon.CDK.AwsApigatewayv2Integrations;
 using Constructs;
 
@@ -88,11 +89,21 @@ internal sealed class FlightsService : Construct
             SecurityGroups = [handlerSg]
         });
         props.DbProxy.GrantConnect(aircraftCreatedHandler, props.DbUsername);
-        aircraftCreatedHandler.AddEventSource(new SqsEventSource(props.ProcessingQueue, new SqsEventSourceProps
+        var aircraftCreatedDlq = new Queue(this, "FlightsAircraftCreatedDLQ");
+        var aircraftCreatedQueue = new Queue(this, "FlightsAircraftCreatedQueue", new QueueProps
+        {
+            DeadLetterQueue = new DeadLetterQueue
+            {
+                MaxReceiveCount = 3,
+                Queue = aircraftCreatedDlq
+            }
+        });
+        props.AircraftCreatedTopic.AddSubscription(new SqsSubscription(aircraftCreatedQueue));
+        aircraftCreatedHandler.AddEventSource(new SqsEventSource(aircraftCreatedQueue, new SqsEventSourceProps
         {
             BatchSize = 10,
             ReportBatchItemFailures = true
         }));
-        props.ProcessingQueue.GrantConsumeMessages(aircraftCreatedHandler);
+        aircraftCreatedQueue.GrantConsumeMessages(aircraftCreatedHandler);
     }
 }

@@ -33,13 +33,13 @@ internal sealed class EmbassyAirlinesStack : Stack
         });
         new FlightsService(this, "FlightsService", new FlightsServiceProps()
         {
+            AircraftCreatedTopic = messaging.AircraftCreatedTopic,
             FlightScheduledTopic = messaging.FlightScheduledTopic,
             Api = shared.Api,
             DbProxy = rds.DbProxy,
             DbProxySecurityGroup = rds.DbProxySecurityGroup,
             DbUsername = "embassyadmin",
             Vpc = network.Vpc,
-            ProcessingQueue = messaging.ProcessingQueue
         });
     }
 }
