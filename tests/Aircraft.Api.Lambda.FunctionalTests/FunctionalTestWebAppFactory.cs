@@ -19,13 +19,12 @@ namespace Aircraft.Api.Lambda.FunctionalTests;
 
 public sealed class FunctionalTestWebAppFactory : WebApplicationFactory<Program>, IAsyncLifetime
 {
-    private readonly LocalStackContainer _localStackContainer = new LocalStackBuilder().Build();
-    private readonly PostgreSqlContainer _dbContainer = new PostgreSqlBuilder().WithImage("postgres")
-                                                                               .WithDatabase("aircraft")
-                                                                               .WithUsername("aircraft")
-                                                                               .WithPassword("aircraft")
-                                                                               .WithExposedPort(5432)
-                                                                               .Build();
+    private readonly LocalStackContainer _localStackContainer = new LocalStackBuilder("localstack/localstack:4").Build();
+    private readonly PostgreSqlContainer _dbContainer = new PostgreSqlBuilder("postgres:18").WithDatabase("aircraft")
+                                                                                            .WithUsername("aircraft")
+                                                                                            .WithPassword("aircraft")
+                                                                                            .WithExposedPort(5432)
+                                                                                            .Build();
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.UseEnvironment("FunctionalTests");

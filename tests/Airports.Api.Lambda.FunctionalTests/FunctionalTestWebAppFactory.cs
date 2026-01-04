@@ -15,7 +15,7 @@ namespace Airports.Api.Lambda.FunctionalTests;
 
 public class FunctionalTestWebAppFactory : WebApplicationFactory<Program>, IAsyncLifetime
 {
-    private readonly DynamoDbContainer _dynamoDbContainer = new DynamoDbBuilder().Build();
+    private readonly DynamoDbContainer _dynamoDbContainer = new DynamoDbBuilder("amazon/dynamodb-local:3.1.0").Build();
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.UseSetting("SNS:AirportCreatedTopicArn", "testAirportCreatedTopicArn");
@@ -29,7 +29,7 @@ public class FunctionalTestWebAppFactory : WebApplicationFactory<Program>, IAsyn
             });
             services.RemoveAll<IAmazonDynamoDB>();
             services.RemoveAll<IMessagePublisher>();
-            var credentials = new BasicAWSCredentials("test-access-key", "test-secret-key");
+            var credentials = new BasicAWSCredentials("TestAccessKey", "TestSecretKey");
             var config = new AmazonDynamoDBConfig
             {
                 ServiceURL = _dynamoDbContainer.GetConnectionString()

@@ -17,12 +17,11 @@ namespace Flights.Api.Lambda.FunctionalTests;
 
 public class FunctionalTestWebAppFactory : WebApplicationFactory<Program>, IAsyncLifetime
 {
-    private readonly PostgreSqlContainer _dbContainer = new PostgreSqlBuilder().WithImage("postgres")
-                                                                               .WithDatabase("flights")
-                                                                               .WithUsername("flights")
-                                                                               .WithPassword("flights")
-                                                                               .WithExposedPort(5432)
-                                                                               .Build();
+    private readonly PostgreSqlContainer _dbContainer = new PostgreSqlBuilder("postgres:18").WithDatabase("aircraft")
+                                                                                            .WithUsername("aircraft")
+                                                                                            .WithPassword("aircraft")
+                                                                                            .WithExposedPort(5432)
+                                                                                            .Build();
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.UseEnvironment("FunctionalTests");

@@ -5,10 +5,10 @@
   </PropertyGroup>
   <ItemGroup Condition="'$(MSBuildProjectExtension)' != '.dcproj'">
     <PackageVersion Include="Amazon.CDK.Lib" Version="2.233.0" />
-    <PackageVersion Include="Amazon.JSII.Analyzers" Version="1.122.0" />
+    <PackageVersion Include="Amazon.JSII.Analyzers" Version="1.124.0" />
     <PackageVersion Include="AWS.Messaging" Version="1.0.2" />
     <PackageVersion Include="AWSSDK.CloudWatchLogs" Version="4.0.9.3" />
-    <PackageVersion Include="AWSSDK.RDS" Version="4.0.15.2" />
+    <PackageVersion Include="AWSSDK.RDS" Version="4.0.15.3" />
     <PackageVersion Include="Constructs" Version="10.4.4" />
     <PackageVersion Include="SonarAnalyzer.CSharp" Version="10.17.0.131074" />
   </ItemGroup>
@@ -17,9 +17,9 @@
     <PackageVersion Include="Amazon.Lambda.Core" Version="2.8.0" />
     <PackageVersion Include="Amazon.Lambda.Serialization.SystemTextJson" Version="2.4.4" />
     <PackageVersion Include="Amazon.Lambda.SQSEvents" Version="2.2.0" />
-    <PackageVersion Include="AWSSDK.DynamoDBv2" Version="4.0.10.4" />
+    <PackageVersion Include="AWSSDK.DynamoDBv2" Version="4.0.10.5" />
     <PackageVersion Include="AWSSDK.Extensions.NETCore.Setup" Version="4.0.3.17" />
-    <PackageVersion Include="AWSSDK.S3" Version="4.0.16" />
+    <PackageVersion Include="AWSSDK.S3" Version="4.0.16.2" />
     <PackageVersion Include="coverlet.collector" Version="6.0.4" />
     <PackageVersion Include="EFCore.NamingConventions" Version="10.0.0-rc.2" />
     <PackageVersion Include="ErrorOr" Version="2.0.1" />
@@ -31,11 +31,11 @@
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.0.1" />
     <PackageVersion Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.0" />
     <PackageVersion Include="Npgsql.EntityFrameworkCore.PostgreSQL.NodaTime" Version="10.0.0" />
-    <PackageVersion Include="NodaTime" Version="3.2.3" />
+    <PackageVersion Include="NodaTime" Version="3.3.0" />
     <PackageVersion Include="Serilog.AspNetCore" Version="10.0.0" />
-    <PackageVersion Include="Testcontainers.DynamoDb" Version="4.9.0" />
-    <PackageVersion Include="Testcontainers.LocalStack" Version="4.9.0" />
-    <PackageVersion Include="Testcontainers.PostgreSql" Version="4.9.0" />
+    <PackageVersion Include="Testcontainers.DynamoDb" Version="4.10.0" />
+    <PackageVersion Include="Testcontainers.LocalStack" Version="4.10.0" />
+    <PackageVersion Include="Testcontainers.PostgreSql" Version="4.10.0" />
     <PackageVersion Include="xunit.v3" Version="3.2.1" />
     <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.5" />
   </ItemGroup>
