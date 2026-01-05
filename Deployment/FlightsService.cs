@@ -67,5 +67,31 @@ internal sealed class FlightsService : Construct
             Topic = props.AircraftCreatedTopic,
             Vpc = props.Vpc
         });
+        new EventHandlerLambda(this, "FlightsAirportCreatedHandlerLambda", new EventHandlerLambdaProps
+        {
+            DbPort = props.DbPort,
+            DbProxy = props.DbProxy,
+            DbProxySecurityGroup = props.DbProxySecurityGroup,
+            DbUsername = props.DbUsername,
+            Environment = new Dictionary<string, string>(commonEnv),
+            FunctionName = "FlightsAirportCreatedHandlerLambda",
+            Path = "docker/Flights.Api.Lambda.MessageHandlers.AirportCreated.dockerfile",
+            SecurityGroupDescription = "Security group for Flights AirportCreated handler Lambda",
+            Topic = props.AirportCreatedTopic,
+            Vpc = props.Vpc
+        });
+        new EventHandlerLambda(this, "FlightsAirportUpdatedHandlerLambda", new EventHandlerLambdaProps
+        {
+            DbPort = props.DbPort,
+            DbProxy = props.DbProxy,
+            DbProxySecurityGroup = props.DbProxySecurityGroup,
+            DbUsername = props.DbUsername,
+            Environment = new Dictionary<string, string>(commonEnv),
+            FunctionName = "FlightsAirportUpdatedHandlerLambda",
+            Path = "docker/Flights.Api.Lambda.MessageHandlers.AirportUpdated.dockerfile",
+            SecurityGroupDescription = "Security group for Flights AirportUpdated handler Lambda",
+            Topic = props.AirportUpdatedTopic,
+            Vpc = props.Vpc
+        });
     }
 }

@@ -6,10 +6,11 @@
         "All the command line options for the Lambda command can be specified in this file."
     ],
     "profile": "",
-    "region": "",
+    "region": "eu-west-2",
     "configuration": "Release",
-    "function-runtime": "dotnet10",
+    "package-type": "image",
     "function-memory-size": 512,
     "function-timeout": 30,
-    "function-handler": "Flights.Api.Lambda.MessageHandlers.AircraftCreated::Flights.Api.Lambda.MessageHandlers.AircraftCreated.Function::FunctionHandler"
+    "image-command": "Flights.Api.Lambda.MessageHandlers.AircraftCreated::Flights.Api.Lambda.MessageHandlers.AircraftCreated.Function::FunctionHandler",
+    "docker-host-build-output-dir": "./bin/Release/lambda-publish"
 }

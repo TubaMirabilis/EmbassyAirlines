@@ -38,6 +38,8 @@ internal sealed class EmbassyAirlinesStack : Stack
         new FlightsService(this, "FlightsService", new FlightsServiceProps
         {
             AircraftCreatedTopic = messaging.AircraftCreatedTopic,
+            AirportCreatedTopic = messaging.AirportCreatedTopic,
+            AirportUpdatedTopic = messaging.AirportUpdatedTopic,
             Api = shared.Api,
             DbName = rds.DbName,
             DbPort = rds.DbPort,

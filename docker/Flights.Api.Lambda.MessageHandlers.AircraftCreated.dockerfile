@@ -7,7 +7,7 @@ COPY ./src/Shared/ /src/Shared/
 COPY ./Directory.Packages.props /Directory.Packages.props
 WORKDIR /src/Flights.Api.Lambda.MessageHandlers.AircraftCreated
 RUN dotnet restore
-RUN dotnet publish -c Release --os linux -o /app/publish
+RUN dotnet publish -c Release -r linux-x64 --self-contained false --no-restore -o /app/publish
 
 FROM public.ecr.aws/lambda/dotnet:10
 WORKDIR /var/task

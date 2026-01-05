@@ -8,6 +8,8 @@ namespace Deployment;
 internal sealed record FlightsServiceProps
 {
     internal required Topic AircraftCreatedTopic { get; init; }
+    internal required Topic AirportCreatedTopic { get; init; }
+    internal required Topic AirportUpdatedTopic { get; init; }
     internal required HttpApi Api { get; init; }
     internal required string DbName { get; init; }
     internal required int DbPort { get; init; }
