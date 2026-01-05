@@ -3,9 +3,6 @@ using Amazon.CDK;
 using Amazon.CDK.AWS.Apigatewayv2;
 using Amazon.CDK.AWS.EC2;
 using Amazon.CDK.AWS.Lambda;
-using Amazon.CDK.AWS.Lambda.EventSources;
-using Amazon.CDK.AWS.SNS.Subscriptions;
-using Amazon.CDK.AWS.SQS;
 using Amazon.CDK.AwsApigatewayv2Integrations;
 using Constructs;
 
@@ -54,29 +51,12 @@ internal sealed class FlightsService : Construct
         props.DbProxy.GrantConnect(apiLambda, props.DbUsername);
         lambdaSg.Connections.AllowTo(props.DbProxySecurityGroup, Port.Tcp(props.DbPort), "Allow Lambda to access RDS Proxy");
         props.FlightScheduledTopic.GrantPublish(apiLambda);
-        var handlerSg = new SecurityGroup(this, "FlightsAircraftCreatedHandlerSG", new SecurityGroupProps
+        new EventHandlerLambda(this, "FlightsAircraftCreatedHandlerLambda", new EventHandlerLambdaProps
         {
-            Vpc = props.Vpc,
-            AllowAllOutbound = true,
-            Description = "Security group for Flights AircraftCreated Event Handler Lambda"
-        });
-        handlerSg.Connections.AllowTo(props.DbProxySecurityGroup, Port.Tcp(props.DbPort), "Allow handler Lambda to access RDS Proxy");
-        var handlerCode = Code.FromAsset("src/Flights.Api.Lambda.MessageHandlers.AircraftCreated", new Amazon.CDK.AWS.S3.Assets.AssetOptions
-        {
-            Bundling = new BundlingOptions
-            {
-                Image = DockerImage.FromRegistry("mcr.microsoft.com/dotnet/sdk:10.0"),
-                Command = ["bash", "-lc", "dotnet publish -c Release -o /asset-output"]
-            }
-        });
-        var aircraftCreatedHandler = new Function(this, "FlightsAircraftCreatedHandler", new FunctionProps
-        {
-            FunctionName = "FlightsAircraftCreatedHandler",
-            Runtime = Runtime.DOTNET_10,
-            Handler = "Flights.Api.Lambda.MessageHandlers.AircraftCreated::Flights.Api.Lambda.MessageHandlers.AircraftCreated.Function::FunctionHandler",
-            Code = handlerCode,
-            Timeout = Duration.Seconds(30),
-            MemorySize = 512,
+            DbPort = props.DbPort,
+            DbProxy = props.DbProxy,
+            DbProxySecurityGroup = props.DbProxySecurityGroup,
+            DbUsername = props.DbUsername,
             Environment = new Dictionary<string, string>
             {
                 { "FLIGHTS_DbConnection__Database", props.DbName },
@@ -84,29 +64,12 @@ internal sealed class FlightsService : Construct
                 { "FLIGHTS_DbConnection__Port", props.DbPort.ToString(CultureInfo.InvariantCulture) },
                 { "FLIGHTS_DbConnection__Username", props.DbUsername }
             },
-            Vpc = props.Vpc,
-            VpcSubnets = new SubnetSelection
-            {
-                SubnetType = SubnetType.PRIVATE_ISOLATED
-            },
-            SecurityGroups = [handlerSg]
+            FunctionName = "FlightsAircraftCreatedHandlerLambda",
+            Handler = "Flights.Api.Lambda.MessageHandlers.AircraftCreated::Flights.Api.Lambda.MessageHandlers.AircraftCreated.Function::FunctionHandler",
+            Path = "src/Flights.Api.Lambda.MessageHandlers.AircraftCreated",
+            SecurityGroupDescription = "Security group for Flights AircraftCreated handler Lambda",
+            Topic = props.AircraftCreatedTopic,
+            Vpc = props.Vpc
         });
-        props.DbProxy.GrantConnect(aircraftCreatedHandler, props.DbUsername);
-        var aircraftCreatedDlq = new Queue(this, "FlightsAircraftCreatedDLQ");
-        var aircraftCreatedQueue = new Queue(this, "FlightsAircraftCreatedQueue", new QueueProps
-        {
-            DeadLetterQueue = new DeadLetterQueue
-            {
-                MaxReceiveCount = 3,
-                Queue = aircraftCreatedDlq
-            }
-        });
-        props.AircraftCreatedTopic.AddSubscription(new SqsSubscription(aircraftCreatedQueue));
-        aircraftCreatedHandler.AddEventSource(new SqsEventSource(aircraftCreatedQueue, new SqsEventSourceProps
-        {
-            BatchSize = 10,
-            ReportBatchItemFailures = true
-        }));
-        aircraftCreatedQueue.GrantConsumeMessages(aircraftCreatedHandler);
     }
 }
