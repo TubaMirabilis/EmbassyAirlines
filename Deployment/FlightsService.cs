@@ -62,8 +62,7 @@ internal sealed class FlightsService : Construct
             DbUsername = props.DbUsername,
             Environment = new Dictionary<string, string>(commonEnv),
             FunctionName = "FlightsAircraftCreatedHandlerLambda",
-            Handler = "Flights.Api.Lambda.MessageHandlers.AircraftCreated::Flights.Api.Lambda.MessageHandlers.AircraftCreated.Function::FunctionHandler",
-            Path = "src/Flights.Api.Lambda.MessageHandlers.AircraftCreated",
+            Path = "docker/Flights.Api.Lambda.MessageHandlers.AircraftCreated.dockerfile",
             SecurityGroupDescription = "Security group for Flights AircraftCreated handler Lambda",
             Topic = props.AircraftCreatedTopic,
             Vpc = props.Vpc

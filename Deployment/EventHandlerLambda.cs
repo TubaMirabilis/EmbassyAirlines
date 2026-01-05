@@ -19,29 +19,23 @@ internal sealed class EventHandlerLambda : Construct
             Vpc = props.Vpc
         });
         handlerSg.Connections.AllowTo(props.DbProxySecurityGroup, Port.Tcp(props.DbPort), "Allow handler Lambda to access RDS Proxy");
-        var handlerCode = Code.FromAsset(props.Path, new Amazon.CDK.AWS.S3.Assets.AssetOptions
+        var imageCode = DockerImageCode.FromImageAsset(directory: ".", new AssetImageCodeProps
         {
-            Bundling = new BundlingOptions
-            {
-                Image = DockerImage.FromRegistry("mcr.microsoft.com/dotnet/sdk:10.0"),
-                Command = ["bash", "-lc", "dotnet publish -c Release -o /asset-output"]
-            }
+            File = props.Path
         });
-        var handler = new Function(this, "Handler", new FunctionProps
+        var handler = new DockerImageFunction(this, "Handler", new DockerImageFunctionProps
         {
-            FunctionName = props.FunctionName,
-            Runtime = Runtime.DOTNET_10,
-            Handler = props.Handler,
-            Code = handlerCode,
-            Timeout = Duration.Seconds(30),
-            MemorySize = 512,
+            Code = imageCode,
             Environment = props.Environment,
+            FunctionName = props.FunctionName,
+            MemorySize = 512,
+            SecurityGroups = [handlerSg],
+            Timeout = Duration.Seconds(30),
             Vpc = props.Vpc,
             VpcSubnets = new SubnetSelection
             {
                 SubnetType = SubnetType.PRIVATE_ISOLATED
-            },
-            SecurityGroups = [handlerSg]
+            }
         });
         props.DbProxy.GrantConnect(handler, props.DbUsername);
         var dlq = new Queue(this, "Dlq");

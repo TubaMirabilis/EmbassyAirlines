@@ -12,7 +12,6 @@ internal sealed record EventHandlerLambdaProps
     internal required string DbUsername { get; init; }
     internal required Dictionary<string, string> Environment { get; init; }
     internal required string FunctionName { get; init; }
-    internal required string Handler { get; init; }
     internal required string Path { get; init; }
     internal required string SecurityGroupDescription { get; init; }
     internal required Topic Topic { get; init; }
