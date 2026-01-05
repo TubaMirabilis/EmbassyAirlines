@@ -12,6 +12,13 @@ internal sealed class FlightsService : Construct
 {
     internal FlightsService(Construct scope, string id, FlightsServiceProps props) : base(scope, id)
     {
+        var commonEnv = new Dictionary<string, string>
+            {
+                { "FLIGHTS_DbConnection__Database", props.DbName },
+                { "FLIGHTS_DbConnection__Host", props.DbProxy.Endpoint },
+                { "FLIGHTS_DbConnection__Port", props.DbPort.ToString(CultureInfo.InvariantCulture) },
+                { "FLIGHTS_DbConnection__Username", props.DbUsername }
+            };
         var imageCode = DockerImageCode.FromImageAsset(directory: ".", new AssetImageCodeProps
         {
             File = "docker/Flights.Api.Lambda.dockerfile"
@@ -27,12 +34,8 @@ internal sealed class FlightsService : Construct
             FunctionName = "FlightsApiLambda",
             Code = imageCode,
             Timeout = Duration.Seconds(30),
-            Environment = new Dictionary<string, string>
+            Environment = new Dictionary<string, string>(commonEnv)
             {
-                { "FLIGHTS_DbConnection__Database", props.DbName },
-                { "FLIGHTS_DbConnection__Host", props.DbProxy.Endpoint },
-                { "FLIGHTS_DbConnection__Port", props.DbPort.ToString(CultureInfo.InvariantCulture) },
-                { "FLIGHTS_DbConnection__Username", props.DbUsername },
                 { "FLIGHTS_SNS__FlightScheduledTopicArn", props.FlightScheduledTopic.TopicArn }
             },
             Vpc = props.Vpc,
@@ -57,13 +60,7 @@ internal sealed class FlightsService : Construct
             DbProxy = props.DbProxy,
             DbProxySecurityGroup = props.DbProxySecurityGroup,
             DbUsername = props.DbUsername,
-            Environment = new Dictionary<string, string>
-            {
-                { "FLIGHTS_DbConnection__Database", props.DbName },
-                { "FLIGHTS_DbConnection__Host", props.DbProxy.Endpoint },
-                { "FLIGHTS_DbConnection__Port", props.DbPort.ToString(CultureInfo.InvariantCulture) },
-                { "FLIGHTS_DbConnection__Username", props.DbUsername }
-            },
+            Environment = new Dictionary<string, string>(commonEnv),
             FunctionName = "FlightsAircraftCreatedHandlerLambda",
             Handler = "Flights.Api.Lambda.MessageHandlers.AircraftCreated::Flights.Api.Lambda.MessageHandlers.AircraftCreated.Function::FunctionHandler",
             Path = "src/Flights.Api.Lambda.MessageHandlers.AircraftCreated",
