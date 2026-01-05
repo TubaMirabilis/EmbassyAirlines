@@ -1,3 +1,4 @@
+using System.Globalization;
 using Amazon.CDK;
 using Amazon.CDK.AWS.Apigatewayv2;
 using Amazon.CDK.AWS.EC2;
@@ -31,8 +32,9 @@ internal sealed class FlightsService : Construct
             Timeout = Duration.Seconds(30),
             Environment = new Dictionary<string, string>
             {
+                { "FLIGHTS_DbConnection__Database", props.DbName },
                 { "FLIGHTS_DbConnection__Host", props.DbProxy.Endpoint },
-                { "FLIGHTS_DbConnection__Database", "embassyairlinesdb" },
+                { "FLIGHTS_DbConnection__Port", props.DbPort.ToString(CultureInfo.InvariantCulture) },
                 { "FLIGHTS_DbConnection__Username", props.DbUsername },
                 { "FLIGHTS_SNS__FlightScheduledTopicArn", props.FlightScheduledTopic.TopicArn }
             },
@@ -50,7 +52,7 @@ internal sealed class FlightsService : Construct
             Methods = [Amazon.CDK.AWS.Apigatewayv2.HttpMethod.ANY]
         });
         props.DbProxy.GrantConnect(apiLambda, props.DbUsername);
-        lambdaSg.Connections.AllowTo(props.DbProxySecurityGroup, Port.Tcp(5432), "Allow Lambda to access RDS Proxy");
+        lambdaSg.Connections.AllowTo(props.DbProxySecurityGroup, Port.Tcp(props.DbPort), "Allow Lambda to access RDS Proxy");
         props.FlightScheduledTopic.GrantPublish(apiLambda);
         var handlerSg = new SecurityGroup(this, "FlightsAircraftCreatedHandlerSG", new SecurityGroupProps
         {
@@ -58,7 +60,7 @@ internal sealed class FlightsService : Construct
             AllowAllOutbound = true,
             Description = "Security group for Flights AircraftCreated Event Handler Lambda"
         });
-        handlerSg.Connections.AllowTo(props.DbProxySecurityGroup, Port.Tcp(5432), "Allow handler Lambda to access RDS Proxy");
+        handlerSg.Connections.AllowTo(props.DbProxySecurityGroup, Port.Tcp(props.DbPort), "Allow handler Lambda to access RDS Proxy");
         var handlerCode = Code.FromAsset("src/Flights.Api.Lambda.MessageHandlers.AircraftCreated", new Amazon.CDK.AWS.S3.Assets.AssetOptions
         {
             Bundling = new BundlingOptions
@@ -77,8 +79,9 @@ internal sealed class FlightsService : Construct
             MemorySize = 512,
             Environment = new Dictionary<string, string>
             {
+                { "FLIGHTS_DbConnection__Database", props.DbName },
                 { "FLIGHTS_DbConnection__Host", props.DbProxy.Endpoint },
-                { "FLIGHTS_DbConnection__Database", "embassyairlinesdb" },
+                { "FLIGHTS_DbConnection__Port", props.DbPort.ToString(CultureInfo.InvariantCulture) },
                 { "FLIGHTS_DbConnection__Username", props.DbUsername }
             },
             Vpc = props.Vpc,

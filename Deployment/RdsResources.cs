@@ -10,6 +10,8 @@ internal sealed class RdsResources : Construct
 {
     internal RdsResources(Construct scope, string id, RdsResourcesProps props) : base(scope, id)
     {
+        DbName = props.DbName;
+        DbPort = props.DbPort;
         DbInstance = new DatabaseInstance(this, "EmbassyAirlinesDb", new DatabaseInstanceProps
         {
             Engine = DatabaseInstanceEngine.Postgres(new PostgresInstanceEngineProps
@@ -23,7 +25,8 @@ internal sealed class RdsResources : Construct
             },
             Credentials = Credentials.FromGeneratedSecret(props.DbUsername),
             InstanceType = InstanceType.Of(InstanceClass.T4G, InstanceSize.MICRO),
-            DatabaseName = "embassyairlinesdb",
+            DatabaseName = DbName,
+            Port = DbPort,
             AllocatedStorage = 20,
             MultiAz = false,
             DeletionProtection = false,
@@ -39,14 +42,16 @@ internal sealed class RdsResources : Construct
         ArgumentNullException.ThrowIfNull(DbInstance.Secret);
         DbProxy = new DatabaseProxy(this, "EmbassyAirlinesDbProxy", new DatabaseProxyProps
         {
+            IamAuth = true,
             ProxyTarget = ProxyTarget.FromInstance(DbInstance),
-            Vpc = props.Vpc,
             Secrets = [DbInstance.Secret],
             SecurityGroups = [DbProxySecurityGroup],
-            IamAuth = true
+            Vpc = props.Vpc
         });
     }
     internal DatabaseInstance DbInstance { get; }
+    internal string DbName { get; }
+    internal int DbPort { get; }
     internal DatabaseProxy DbProxy { get; }
     internal SecurityGroup DbProxySecurityGroup { get; }
 }

@@ -1,4 +1,5 @@
 using System.Data.Common;
+using System.Globalization;
 using Amazon.RDS.Util;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Configuration;
@@ -20,9 +21,15 @@ internal sealed class EntityFrameworkInterceptor : IDbConnectionInterceptor
         var host = _config["DbConnection:Host"];
         var dbName = _config["DbConnection:Database"];
         var user = _config["DbConnection:Username"];
-        _logger.LogInformation("Generating auth token for database connection to {Host}:{Database} with user {User}", host, dbName, user);
-        var authToken = RDSAuthTokenGenerator.GenerateAuthToken(host, 5432, user);
-        var cs = $"Server={host};Database={dbName};User Id={user};Password={authToken};SslMode=Require;TrustServerCertificate=true;";
+        var portStr = _config["DbConnection:Port"];
+        if (!int.TryParse(portStr, NumberStyles.Integer, CultureInfo.InvariantCulture, out var port))
+        {
+            _logger.LogError("Invalid port number in configuration: {PortStr}", portStr);
+            throw new InvalidOperationException("Invalid port number in configuration.");
+        }
+        _logger.LogInformation("Generating auth token for database connection to {Host}:{Port}/{Database} with user {User}", host, port, dbName, user);
+        var authToken = RDSAuthTokenGenerator.GenerateAuthToken(host, port, user);
+        var cs = $"Server={host};Port={port};Database={dbName};User Id={user};Password={authToken};SslMode=Require;TrustServerCertificate=true;";
         connection.ConnectionString = cs;
         return result;
     }
