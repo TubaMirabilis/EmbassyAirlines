@@ -24,12 +24,28 @@ public class Function
         services.AddDatabaseConnection(config);
         _serviceProvider = services.BuildServiceProvider();
     }
-    public async Task FunctionHandler(SQSEvent evnt, ILambdaContext context)
+    public async Task<SQSBatchResponse> FunctionHandler(SQSEvent evnt, ILambdaContext context)
     {
+        var failures = new List<SQSBatchResponse.BatchItemFailure>();
         foreach (var message in evnt.Records)
         {
-            await ProcessMessageAsync(message, context);
+            try
+            {
+                await ProcessMessageAsync(message, context);
+            }
+            catch (Exception ex)
+            {
+                failures.Add(new SQSBatchResponse.BatchItemFailure
+                {
+                    ItemIdentifier = message.MessageId
+                });
+                context.Logger.LogError($"Error processing message {message.MessageId}: {ex.Message}");
+            }
         }
+        return new SQSBatchResponse
+        {
+            BatchItemFailures = failures
+        };
     }
 
     private async Task ProcessMessageAsync(SQSEvent.SQSMessage message, ILambdaContext context)
@@ -48,23 +64,16 @@ public class Function
             return;
         }
         context.Logger.LogInformation($"Processing AircraftCreatedEvent with ID: {aircraftCreatedEvent.Id}");
-        try
+        using var scope = _serviceProvider.CreateScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        if (await dbContext.Aircraft.FindAsync(aircraftCreatedEvent.AircraftId) is not null)
         {
-            using var scope = _serviceProvider.CreateScope();
-            var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-            if (await dbContext.Aircraft.FindAsync(aircraftCreatedEvent.AircraftId) is not null)
-            {
-                context.Logger.LogInformation($"Aircraft with ID: {aircraftCreatedEvent.AircraftId} already exists. Skipping creation.");
-                return;
-            }
-            var aircraft = Aircraft.Create(aircraftCreatedEvent.AircraftId, aircraftCreatedEvent.TailNumber, aircraftCreatedEvent.EquipmentCode, SystemClock.Instance.GetCurrentInstant());
-            dbContext.Aircraft.Add(aircraft);
-            await dbContext.SaveChangesAsync();
-            context.Logger.LogInformation($"Successfully processed AircraftCreatedEvent with ID: {aircraftCreatedEvent.Id}");
+            context.Logger.LogInformation($"Aircraft with ID: {aircraftCreatedEvent.AircraftId} already exists. Skipping creation.");
+            return;
         }
-        catch (ArgumentException ex)
-        {
-            context.Logger.LogError($"Error processing AircraftCreatedEvent with ID: {aircraftCreatedEvent.Id}. Exception: {ex.Message}");
-        }
+        var aircraft = Aircraft.Create(aircraftCreatedEvent.AircraftId, aircraftCreatedEvent.TailNumber, aircraftCreatedEvent.EquipmentCode, SystemClock.Instance.GetCurrentInstant());
+        dbContext.Aircraft.Add(aircraft);
+        await dbContext.SaveChangesAsync();
+        context.Logger.LogInformation($"Successfully processed AircraftCreatedEvent with ID: {aircraftCreatedEvent.Id}");
     }
 }
