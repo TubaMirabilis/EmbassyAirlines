@@ -4,6 +4,7 @@ using Amazon.Lambda.SQSEvents;
 using Flights.Core.Models;
 using Flights.Infrastructure;
 using Flights.Infrastructure.Database;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using NodaTime;
@@ -66,7 +67,7 @@ public class Function
         context.Logger.LogInformation($"Processing AirportCreatedEvent with ID: {airportCreatedEvent.Id}");
         using var scope = _serviceProvider.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-        if (await dbContext.Airports.FindAsync(airportCreatedEvent.AirportId) is not null)
+        if (await dbContext.Airports.AsNoTracking().AnyAsync(a => a.Id == airportCreatedEvent.AirportId))
         {
             context.Logger.LogInformation($"Airport with ID: {airportCreatedEvent.AirportId} already exists. Skipping creation.");
             return;

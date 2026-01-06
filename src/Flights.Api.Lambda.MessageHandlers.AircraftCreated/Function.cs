@@ -4,6 +4,7 @@ using Amazon.Lambda.SQSEvents;
 using Flights.Core.Models;
 using Flights.Infrastructure;
 using Flights.Infrastructure.Database;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using NodaTime;
@@ -67,7 +68,7 @@ public class Function
         context.Logger.LogInformation($"Processing AircraftCreatedEvent with ID: {aircraftCreatedEvent.Id}");
         using var scope = _serviceProvider.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-        if (await dbContext.Aircraft.FindAsync(aircraftCreatedEvent.AircraftId) is not null)
+        if (await dbContext.Aircraft.AsNoTracking().AnyAsync(a => a.Id == aircraftCreatedEvent.AircraftId))
         {
             context.Logger.LogInformation($"Aircraft with ID: {aircraftCreatedEvent.AircraftId} already exists. Skipping creation.");
             return;
