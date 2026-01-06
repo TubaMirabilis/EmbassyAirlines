@@ -16,6 +16,7 @@ internal sealed class GetFlightEndpoint : IEndpoint
     private async Task<IResult> InvokeAsync(ApplicationDbContext ctx, Guid id, CancellationToken ct)
     {
         var flight = await ctx.Flights
+                              .AsNoTracking()
                               .FirstOrDefaultAsync(a => a.Id == id, ct);
         if (flight is null)
         {

@@ -14,6 +14,11 @@ internal sealed class MessagingResources : Construct
         FlightMarkedAsDelayedEnRouteTopic = new Topic(this, "FlightMarkedAsDelayedEnRouteTopic");
         FlightMarkedAsEnRouteTopic = new Topic(this, "FlightMarkedAsEnRouteTopic");
         FlightScheduledTopic = new Topic(this, "FlightScheduledTopic");
+        AircraftAssignedToFlightTopic = new Topic(this, "AircraftAssignedToFlightTopic");
+        FlightPricingAdjustedTopic = new Topic(this, "FlightPricingAdjustedTopic");
+        FlightRescheduledTopic = new Topic(this, "FlightRescheduledTopic");
+        FlightCancelledTopic = new Topic(this, "FlightCancelledTopic");
+        FlightDelayedTopic = new Topic(this, "FlightDelayedTopic");
     }
     internal Topic AircraftCreatedTopic { get; }
     internal Topic AirportCreatedTopic { get; }
@@ -22,4 +27,9 @@ internal sealed class MessagingResources : Construct
     internal Topic FlightMarkedAsDelayedEnRouteTopic { get; }
     internal Topic FlightMarkedAsEnRouteTopic { get; }
     internal Topic FlightScheduledTopic { get; }
+    internal Topic AircraftAssignedToFlightTopic { get; }
+    internal Topic FlightPricingAdjustedTopic { get; }
+    internal Topic FlightRescheduledTopic { get; }
+    internal Topic FlightCancelledTopic { get; }
+    internal Topic FlightDelayedTopic { get; }
 }

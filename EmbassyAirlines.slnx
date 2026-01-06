@@ -6,6 +6,7 @@
     <Project Path="src/Airports.Api.Lambda/Airports.Api.Lambda.csproj" />
     <Project Path="src/Flights.Api.Lambda.MessageHandlers.AircraftCreated/Flights.Api.Lambda.MessageHandlers.AircraftCreated.csproj" />
     <Project Path="src/Flights.Api.Lambda.MessageHandlers.AirportCreated/Flights.Api.Lambda.MessageHandlers.AirportCreated.csproj" />
+    <Project Path="src/Flights.Api.Lambda.MessageHandlers.AirportUpdated/Flights.Api.Lambda.MessageHandlers.AirportUpdated.csproj" />
     <Project Path="src/Flights.Api.Lambda/Flights.Api.Lambda.csproj" />
     <Project Path="src/Flights.Core/Flights.Core.csproj" />
     <Project Path="src/Flights.Infrastructure/Flights.Infrastructure.csproj" />

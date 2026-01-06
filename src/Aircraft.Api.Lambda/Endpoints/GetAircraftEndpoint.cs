@@ -17,6 +17,7 @@ internal sealed class GetAircraftEndpoint : IEndpoint
     {
         var aircraft = await ctx.Aircraft
                                  .Include(a => a.Seats)
+                                 .AsNoTracking()
                                  .FirstOrDefaultAsync(a => a.Id == id, ct);
         if (aircraft is null)
         {

@@ -47,6 +47,14 @@ internal sealed class EmbassyAirlinesStack : Stack
             DbProxySecurityGroup = rds.DbProxySecurityGroup,
             DbUsername = "embassyadmin",
             FlightScheduledTopic = messaging.FlightScheduledTopic,
+            AircraftAssignedToFlightTopic = messaging.AircraftAssignedToFlightTopic,
+            FlightPricingAdjustedTopic = messaging.FlightPricingAdjustedTopic,
+            FlightRescheduledTopic = messaging.FlightRescheduledTopic,
+            FlightCancelledTopic = messaging.FlightCancelledTopic,
+            FlightDelayedTopic = messaging.FlightDelayedTopic,
+            FlightMarkedAsEnRouteTopic = messaging.FlightMarkedAsEnRouteTopic,
+            FlightMarkedAsDelayedEnRouteTopic = messaging.FlightMarkedAsDelayedEnRouteTopic,
+            FlightArrivedTopic = messaging.FlightArrivedTopic,
             Vpc = network.Vpc,
         });
     }

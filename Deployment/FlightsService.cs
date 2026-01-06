@@ -36,7 +36,15 @@ internal sealed class FlightsService : Construct
             Timeout = Duration.Seconds(30),
             Environment = new Dictionary<string, string>(commonEnv)
             {
-                { "FLIGHTS_SNS__FlightScheduledTopicArn", props.FlightScheduledTopic.TopicArn }
+                { "FLIGHTS_SNS__FlightScheduledTopicArn", props.FlightScheduledTopic.TopicArn },
+                { "FLIGHTS_SNS__AircraftAssignedToFlightTopicArn", props.AircraftAssignedToFlightTopic.TopicArn },
+                { "FLIGHTS_SNS__FlightPricingAdjustedTopicArn", props.FlightPricingAdjustedTopic.TopicArn },
+                { "FLIGHTS_SNS__FlightRescheduledTopicArn", props.FlightRescheduledTopic.TopicArn },
+                { "FLIGHTS_SNS__FlightCancelledTopicArn", props.FlightCancelledTopic.TopicArn },
+                { "FLIGHTS_SNS__FlightDelayedTopicArn", props.FlightDelayedTopic.TopicArn },
+                { "FLIGHTS_SNS__FlightMarkedAsEnRouteTopicArn", props.FlightMarkedAsEnRouteTopic.TopicArn },
+                { "FLIGHTS_SNS__FlightMarkedAsDelayedEnRouteTopicArn", props.FlightMarkedAsDelayedEnRouteTopic.TopicArn },
+                { "FLIGHTS_SNS__FlightArrivedTopicArn", props.FlightArrivedTopic.TopicArn }
             },
             Vpc = props.Vpc,
             VpcSubnets = new SubnetSelection
