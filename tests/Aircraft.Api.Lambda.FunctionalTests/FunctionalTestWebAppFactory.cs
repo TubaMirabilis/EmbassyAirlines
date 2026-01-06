@@ -1,4 +1,3 @@
-using System.Text.Json;
 using Aircraft.Infrastructure.Database;
 using Amazon.Runtime;
 using Amazon.S3;
@@ -29,10 +28,6 @@ public sealed class FunctionalTestWebAppFactory : WebApplicationFactory<Program>
         builder.ConfigureTestServices(services =>
         {
             var credentials = new BasicAWSCredentials("test-access-key", "test-secret-key");
-            services.AddSingleton(_ => new JsonSerializerOptions
-            {
-                PropertyNameCaseInsensitive = true
-            });
             services.RemoveAll<IAmazonS3>();
             services.RemoveAll<IMessagePublisher>();
             services.RemoveAll<DbContextOptions<ApplicationDbContext>>();

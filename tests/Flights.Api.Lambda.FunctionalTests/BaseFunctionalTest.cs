@@ -3,20 +3,14 @@ using System.Text.Json;
 using Flights.Api.Lambda.FunctionalTests.Extensions;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Flights.Api.Lambda.FunctionalTests;
 
 public abstract class BaseFunctionalTest : IClassFixture<FunctionalTestWebAppFactory>
 {
-    protected BaseFunctionalTest(FunctionalTestWebAppFactory factory)
-    {
-        JsonSerializerOptions = factory.Services.GetRequiredService<JsonSerializerOptions>();
-        HttpClient = factory.CreateClient();
-    }
-    protected JsonSerializerOptions JsonSerializerOptions { get; }
+    protected BaseFunctionalTest(FunctionalTestWebAppFactory factory) => HttpClient = factory.CreateClient();
     protected HttpClient HttpClient { get; }
-    protected async Task GetProblemDetailsFromResponseAndAssert(HttpResponseMessage response, string detail)
+    protected static async Task GetProblemDetailsFromResponseAndAssert(HttpResponseMessage response, string detail)
     {
         var expectedProblemDetails = response.StatusCode switch
         {
@@ -26,7 +20,7 @@ public abstract class BaseFunctionalTest : IClassFixture<FunctionalTestWebAppFac
         };
         var content = await response.Content
                                     .ReadAsStreamAsync();
-        var actualProblemDetails = await JsonSerializer.DeserializeAsync<ProblemDetails>(content, JsonSerializerOptions);
+        var actualProblemDetails = await JsonSerializer.DeserializeAsync<ProblemDetails>(content);
         ArgumentNullException.ThrowIfNull(actualProblemDetails);
         actualProblemDetails.Should()
                             .BeEquivalentTo(expectedProblemDetails, options => options.Excluding(p => p.Extensions));

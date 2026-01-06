@@ -1,4 +1,3 @@
-using System.Text.Json;
 using AWS.Messaging;
 using Flights.Core.Models;
 using Flights.Infrastructure.Database;
@@ -35,10 +34,6 @@ public class FunctionalTestWebAppFactory : WebApplicationFactory<Program>, IAsyn
             services.RemoveAll<IMessagePublisher>();
             services.RemoveAll<DbContextOptions<ApplicationDbContext>>();
             services.AddSingleton<IMessagePublisher, FakeMessagePublisher>();
-            services.AddSingleton(_ => new JsonSerializerOptions
-            {
-                PropertyNameCaseInsensitive = true
-            });
             services.AddDbContext<ApplicationDbContext>(options => options.UseNpgsql(_dbContainer.GetConnectionString(), x =>
             {
                 x.MigrationsHistoryTable("__EFMigrationsHistory", "flights");

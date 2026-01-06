@@ -254,7 +254,7 @@ public class FlightsTests : BaseFunctionalTest
         // Act
         var response = await HttpClient.PostAsJsonAsync("flights", request, TestContext.Current.CancellationToken);
         var content = await response.Content.ReadAsStreamAsync(TestContext.Current.CancellationToken);
-        var flight = await JsonSerializer.DeserializeAsync<FlightDto>(content, JsonSerializerOptions, TestContext.Current.CancellationToken);
+        var flight = await JsonSerializer.DeserializeAsync<FlightDto>(content, JsonSerializerOptions.Web, TestContext.Current.CancellationToken);
         if (flight is null)
         {
             throw new JsonException();
@@ -391,7 +391,7 @@ public class FlightsTests : BaseFunctionalTest
         // Act
         var response = await HttpClient.PatchAsJsonAsync($"flights/{s_dto.Id}/aircraft", dto, TestContext.Current.CancellationToken);
         var content = await response.Content.ReadAsStreamAsync(TestContext.Current.CancellationToken);
-        var flight = await JsonSerializer.DeserializeAsync<FlightDto>(content, JsonSerializerOptions, TestContext.Current.CancellationToken);
+        var flight = await JsonSerializer.DeserializeAsync<FlightDto>(content, JsonSerializerOptions.Web, TestContext.Current.CancellationToken);
         if (flight is null)
         {
             throw new JsonException();
@@ -427,7 +427,7 @@ public class FlightsTests : BaseFunctionalTest
         // Act
         var response = await HttpClient.PatchAsJsonAsync($"flights/{s_dto.Id}/pricing", dto, TestContext.Current.CancellationToken);
         var content = await response.Content.ReadAsStreamAsync(TestContext.Current.CancellationToken);
-        var flight = await JsonSerializer.DeserializeAsync<FlightDto>(content, JsonSerializerOptions, TestContext.Current.CancellationToken);
+        var flight = await JsonSerializer.DeserializeAsync<FlightDto>(content, JsonSerializerOptions.Web, TestContext.Current.CancellationToken);
         if (flight is null)
         {
             throw new JsonException();
@@ -457,7 +457,7 @@ public class FlightsTests : BaseFunctionalTest
         // Act
         var response = await HttpClient.PatchAsJsonAsync($"flights/{s_dto.Id}/schedule", request, TestContext.Current.CancellationToken);
         var content = await response.Content.ReadAsStreamAsync(TestContext.Current.CancellationToken);
-        var flight = await JsonSerializer.DeserializeAsync<FlightDto>(content, JsonSerializerOptions, TestContext.Current.CancellationToken);
+        var flight = await JsonSerializer.DeserializeAsync<FlightDto>(content, JsonSerializerOptions.Web, TestContext.Current.CancellationToken);
         if (flight is null)
         {
             throw new JsonException();
@@ -514,7 +514,7 @@ public class FlightsTests : BaseFunctionalTest
         // Act
         var response = await HttpClient.PatchAsJsonAsync($"flights/{s_dto.Id}/status", dto, TestContext.Current.CancellationToken);
         var content = await response.Content.ReadAsStreamAsync(TestContext.Current.CancellationToken);
-        var flight = await JsonSerializer.DeserializeAsync<FlightDto>(content, JsonSerializerOptions, TestContext.Current.CancellationToken);
+        var flight = await JsonSerializer.DeserializeAsync<FlightDto>(content, JsonSerializerOptions.Web, TestContext.Current.CancellationToken);
         if (flight is null)
         {
             throw new JsonException();

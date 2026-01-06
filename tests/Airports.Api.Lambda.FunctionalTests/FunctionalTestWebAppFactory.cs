@@ -1,4 +1,3 @@
-using System.Text.Json;
 using Amazon.DynamoDBv2;
 using Amazon.DynamoDBv2.Model;
 using Amazon.Runtime;
@@ -23,10 +22,6 @@ public class FunctionalTestWebAppFactory : WebApplicationFactory<Program>, IAsyn
         builder.UseSetting("DynamoDb:TableName", "airports-test");
         builder.ConfigureTestServices(services =>
         {
-            services.AddSingleton(_ => new JsonSerializerOptions
-            {
-                PropertyNameCaseInsensitive = true
-            });
             services.RemoveAll<IAmazonDynamoDB>();
             services.RemoveAll<IMessagePublisher>();
             var credentials = new BasicAWSCredentials("TestAccessKey", "TestSecretKey");

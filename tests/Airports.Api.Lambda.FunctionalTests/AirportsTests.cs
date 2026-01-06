@@ -162,7 +162,7 @@ public class AirportsTests : BaseFunctionalTest
         // Act
         var response = await HttpClient.PostAsJsonAsync("airports", request, TestContext.Current.CancellationToken);
         var content = await response.Content.ReadAsStreamAsync(TestContext.Current.CancellationToken);
-        var airport = await JsonSerializer.DeserializeAsync<AirportDto>(content, JsonSerializerOptions, TestContext.Current.CancellationToken);
+        var airport = await JsonSerializer.DeserializeAsync<AirportDto>(content, JsonSerializerOptions.Web, TestContext.Current.CancellationToken);
         if (airport is null)
         {
             throw new JsonException("Expected airport object not returned");
