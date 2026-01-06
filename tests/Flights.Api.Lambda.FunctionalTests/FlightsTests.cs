@@ -2,6 +2,7 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using Flights.Core.Models;
 using FluentAssertions;
+using Microsoft.Extensions.DependencyInjection;
 using NodaTime;
 using Shared.Contracts;
 
@@ -15,6 +16,7 @@ public class FlightsTests : BaseFunctionalTest
     private readonly Airport _schipol;
     private readonly Aircraft _aircraft1;
     private readonly Aircraft _aircraft2;
+    private readonly IClock _clock;
     public FlightsTests(FunctionalTestWebAppFactory factory) : base(factory)
     {
         ArgumentNullException.ThrowIfNull(factory.IncheonAirport);
@@ -25,6 +27,7 @@ public class FlightsTests : BaseFunctionalTest
         _schipol = factory.SchipolAirport;
         _aircraft1 = factory.Aircraft1;
         _aircraft2 = factory.Aircraft2;
+        _clock = factory.Services.GetRequiredService<IClock>();
     }
 
     [Fact, TestPriority(0)]
@@ -33,8 +36,8 @@ public class FlightsTests : BaseFunctionalTest
         // Arrange
         var tz1 = DateTimeZoneProviders.Tzdb["Asia/Seoul"];
         var tz2 = DateTimeZoneProviders.Tzdb["Europe/Amsterdam"];
-        var recently = SystemClock.Instance.GetCurrentInstant().Minus(Duration.FromMinutes(30));
-        var now = SystemClock.Instance.GetCurrentInstant();
+        var recently = _clock.GetCurrentInstant().Minus(Duration.FromMinutes(30));
+        var now = _clock.GetCurrentInstant();
         var soon = now.Plus(Duration.FromMinutes(30));
         var departureFromIncheon = recently.InZone(tz1).ToDateTimeUnspecified();
         var arrivalAtSchipol = soon.InZone(tz2).ToDateTimeUnspecified().AddHours(10).AddMinutes(30);
@@ -67,7 +70,7 @@ public class FlightsTests : BaseFunctionalTest
         // Arrange
         var tz1 = DateTimeZoneProviders.Tzdb["Asia/Seoul"];
         var tz2 = DateTimeZoneProviders.Tzdb["Europe/Amsterdam"];
-        var now = SystemClock.Instance.GetCurrentInstant();
+        var now = _clock.GetCurrentInstant();
         var soon = now.Plus(Duration.FromMinutes(30));
         var departureFromIncheon = soon.InZone(tz1).ToDateTimeUnspecified();
         var arrivalAtSchipol = now.InZone(tz2).ToDateTimeUnspecified();
@@ -101,7 +104,7 @@ public class FlightsTests : BaseFunctionalTest
         var id = Guid.NewGuid();
         var tz1 = DateTimeZoneProviders.Tzdb["Asia/Seoul"];
         var tz2 = DateTimeZoneProviders.Tzdb["Europe/Amsterdam"];
-        var soon = SystemClock.Instance.GetCurrentInstant().Plus(Duration.FromMinutes(30));
+        var soon = _clock.GetCurrentInstant().Plus(Duration.FromMinutes(30));
         var departureFromIncheon = soon.InZone(tz1).ToDateTimeUnspecified();
         var arrivalAtSchipol = soon.InZone(tz2).ToDateTimeUnspecified().AddHours(10).AddMinutes(30);
         var request = new ScheduleFlightDto
@@ -134,7 +137,7 @@ public class FlightsTests : BaseFunctionalTest
         var id = Guid.NewGuid();
         var tz1 = DateTimeZoneProviders.Tzdb["Asia/Seoul"];
         var tz2 = DateTimeZoneProviders.Tzdb["Europe/Amsterdam"];
-        var soon = SystemClock.Instance.GetCurrentInstant().Plus(Duration.FromMinutes(30));
+        var soon = _clock.GetCurrentInstant().Plus(Duration.FromMinutes(30));
         var departureFromIncheon = soon.InZone(tz1).ToDateTimeUnspecified();
         var arrivalAtSchipol = soon.InZone(tz2).ToDateTimeUnspecified().AddHours(10).AddMinutes(30);
         var request = new ScheduleFlightDto
@@ -167,7 +170,7 @@ public class FlightsTests : BaseFunctionalTest
         var id = Guid.NewGuid();
         var tz1 = DateTimeZoneProviders.Tzdb["Asia/Seoul"];
         var tz2 = DateTimeZoneProviders.Tzdb["Europe/Amsterdam"];
-        var soon = SystemClock.Instance.GetCurrentInstant().Plus(Duration.FromMinutes(30));
+        var soon = _clock.GetCurrentInstant().Plus(Duration.FromMinutes(30));
         var departureFromIncheon = soon.InZone(tz1).ToDateTimeUnspecified();
         var arrivalAtSchipol = soon.InZone(tz2).ToDateTimeUnspecified().AddHours(10).AddMinutes(30);
         var request = new ScheduleFlightDto
@@ -199,7 +202,7 @@ public class FlightsTests : BaseFunctionalTest
         // Arrange
         var tz1 = DateTimeZoneProviders.Tzdb["Asia/Seoul"];
         var tz2 = DateTimeZoneProviders.Tzdb["Europe/Amsterdam"];
-        var soon = SystemClock.Instance.GetCurrentInstant().Plus(Duration.FromMinutes(30));
+        var soon = _clock.GetCurrentInstant().Plus(Duration.FromMinutes(30));
         var departureFromIncheon = soon.InZone(tz1).ToDateTimeUnspecified();
         var arrivalAtSchipol = soon.InZone(tz2).ToDateTimeUnspecified().AddHours(10).AddMinutes(30);
         var request = new ScheduleFlightDto
@@ -231,7 +234,7 @@ public class FlightsTests : BaseFunctionalTest
         // Arrange
         var tz1 = DateTimeZoneProviders.Tzdb["Asia/Seoul"];
         var tz2 = DateTimeZoneProviders.Tzdb["Europe/Amsterdam"];
-        var soon = SystemClock.Instance.GetCurrentInstant().Plus(Duration.FromMinutes(30));
+        var soon = _clock.GetCurrentInstant().Plus(Duration.FromMinutes(30));
         soon = Instant.FromUnixTimeTicks((soon.ToUnixTimeTicks() / NodaConstants.TicksPerMinute + 1) * NodaConstants.TicksPerMinute);
         var departureFromIncheon = soon.InZone(tz1).ToDateTimeUnspecified();
         var arrivalAtSchipol = soon.InZone(tz2).ToDateTimeUnspecified().AddHours(10).AddMinutes(30);
@@ -449,7 +452,7 @@ public class FlightsTests : BaseFunctionalTest
         ArgumentNullException.ThrowIfNull(s_dto);
         var tz1 = DateTimeZoneProviders.Tzdb["Asia/Seoul"];
         var tz2 = DateTimeZoneProviders.Tzdb["Europe/Amsterdam"];
-        var tomorrow = SystemClock.Instance.GetCurrentInstant().Plus(Duration.FromDays(1));
+        var tomorrow = _clock.GetCurrentInstant().Plus(Duration.FromDays(1));
         var departureFromIncheon = tomorrow.InZone(tz1).ToDateTimeUnspecified();
         var arrivalAtSchipol = tomorrow.InZone(tz2).ToDateTimeUnspecified().AddHours(10).AddMinutes(30);
         var request = new RescheduleFlightDto(departureFromIncheon, arrivalAtSchipol, "ThrowWhenAmbiguous");

@@ -16,6 +16,7 @@ internal sealed class RescheduleFlightEndpoint : IEndpoint
     public void MapEndpoint(IEndpointRouteBuilder app)
         => app.MapPatch("flights/{id}/schedule", InvokeAsync);
     private static async Task<IResult> InvokeAsync(ApplicationDbContext ctx,
+                                                   IClock clock,
                                                    ILogger<RescheduleFlightEndpoint> logger,
                                                    IMessagePublisher publisher,
                                                    Guid id,
@@ -44,10 +45,10 @@ internal sealed class RescheduleFlightEndpoint : IEndpoint
                 DepartureLocalTime = LocalDateTime.FromDateTime(dto.DepartureLocalTime),
                 ArrivalAirport = flight.ArrivalAirport,
                 ArrivalLocalTime = LocalDateTime.FromDateTime(dto.ArrivalLocalTime),
-                Now = SystemClock.Instance.GetCurrentInstant(),
+                Now = clock.GetCurrentInstant(),
                 SchedulingAmbiguityPolicy = schedulingAmbiguityPolicy
             });
-            flight.Reschedule(schedule, SystemClock.Instance.GetCurrentInstant());
+            flight.Reschedule(schedule, clock.GetCurrentInstant());
             await ctx.SaveChangesAsync(ct);
             logger.LogInformation("Rescheduled flight {Id}: Departure - {DepartureLocalTime}, Arrival - {ArrivalLocalTime}", id, dto.DepartureLocalTime, dto.ArrivalLocalTime);
             await publisher.PublishAsync(new FlightRescheduledEvent(id, dto.DepartureLocalTime, dto.ArrivalLocalTime), ct);

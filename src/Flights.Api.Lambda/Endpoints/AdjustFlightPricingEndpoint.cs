@@ -16,6 +16,7 @@ internal sealed class AdjustFlightPricingEndpoint : IEndpoint
     public void MapEndpoint(IEndpointRouteBuilder app)
         => app.MapPatch("flights/{id}/pricing", InvokeAsync);
     private static async Task<IResult> InvokeAsync(ApplicationDbContext ctx,
+                                                   IClock clock,
                                                    ILogger<AdjustFlightPricingEndpoint> logger,
                                                    IMessagePublisher publisher,
                                                    Guid id,
@@ -32,7 +33,7 @@ internal sealed class AdjustFlightPricingEndpoint : IEndpoint
         }
         var economyPrice = new Money(dto.EconomyPrice);
         var businessPrice = new Money(dto.BusinessPrice);
-        flight.AdjustPricing(economyPrice, businessPrice, SystemClock.Instance.GetCurrentInstant());
+        flight.AdjustPricing(economyPrice, businessPrice, clock.GetCurrentInstant());
         await ctx.SaveChangesAsync(ct);
         logger.LogInformation("Adjusted pricing for flight {Id}: Economy - {EconomyPrice}, Business - {BusinessPrice}", id, economyPrice, businessPrice);
         await publisher.PublishAsync(new FlightPricingAdjustedEvent(flight.Id, economyPrice.Amount, businessPrice.Amount), ct);

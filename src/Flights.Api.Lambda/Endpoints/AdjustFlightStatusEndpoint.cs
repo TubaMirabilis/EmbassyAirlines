@@ -17,6 +17,7 @@ internal sealed class AdjustFlightStatusEndpoint : IEndpoint
     public void MapEndpoint(IEndpointRouteBuilder app)
         => app.MapPatch("flights/{id}/status", InvokeAsync);
     private static async Task<IResult> InvokeAsync(ApplicationDbContext ctx,
+                                                   IClock clock,
                                                    ILogger<AdjustFlightStatusEndpoint> logger,
                                                    IMessagePublisher publisher,
                                                    Guid id,
@@ -39,7 +40,7 @@ internal sealed class AdjustFlightStatusEndpoint : IEndpoint
         }
         try
         {
-            flight.AdjustStatus(newStatus, SystemClock.Instance.GetCurrentInstant());
+            flight.AdjustStatus(newStatus, clock.GetCurrentInstant());
             await ctx.SaveChangesAsync(ct);
             logger.LogInformation("Adjusted status for flight {Id}: New Status - {NewStatus}", id, newStatus);
             IFlightStatusManagementEvent message = newStatus switch

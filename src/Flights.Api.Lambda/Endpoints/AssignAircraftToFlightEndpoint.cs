@@ -15,6 +15,7 @@ internal sealed class AssignAircraftToFlightEndpoint : IEndpoint
     public void MapEndpoint(IEndpointRouteBuilder app)
         => app.MapPatch("flights/{id}/aircraft", InvokeAsync);
     private static async Task<IResult> InvokeAsync(ApplicationDbContext ctx,
+                                                   IClock clock,
                                                    ILogger<AssignAircraftToFlightEndpoint> logger,
                                                    IMessagePublisher publisher,
                                                    Guid id,
@@ -37,7 +38,7 @@ internal sealed class AssignAircraftToFlightEndpoint : IEndpoint
             var error = Error.NotFound("Aircraft.NotFound", $"Aircraft with ID {dto.AircraftId} not found");
             return ErrorHandlingHelper.HandleProblem(error);
         }
-        flight.AssignAircraft(aircraft, SystemClock.Instance.GetCurrentInstant());
+        flight.AssignAircraft(aircraft, clock.GetCurrentInstant());
         await ctx.SaveChangesAsync(ct);
         logger.LogInformation("Assigned aircraft {AircraftId} to flight {FlightId}", aircraft.Id, flight.Id);
         await publisher.PublishAsync(new AircraftAssignedToFlightEvent(flight.Id, aircraft.Id), ct);

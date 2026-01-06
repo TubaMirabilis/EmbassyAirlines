@@ -22,6 +22,7 @@ public class Function
         var services = new ServiceCollection();
         services.AddSingleton<IConfiguration>(config);
         services.AddDatabaseConnection(config);
+        services.AddSingleton<IClock>(SystemClock.Instance);
         _serviceProvider = services.BuildServiceProvider();
     }
     public async Task<SQSBatchResponse> FunctionHandler(SQSEvent evnt, ILambdaContext context)
@@ -70,9 +71,10 @@ public class Function
             context.Logger.LogInformation($"Airport with ID: {airportCreatedEvent.AirportId} already exists. Skipping creation.");
             return;
         }
+        var clock = _serviceProvider.GetRequiredService<IClock>();
         var airport = Airport.Create(new AirportCreationArgs
         {
-            CreatedAt = SystemClock.Instance.GetCurrentInstant(),
+            CreatedAt = clock.GetCurrentInstant(),
             IataCode = airportCreatedEvent.IataCode,
             IcaoCode = airportCreatedEvent.IcaoCode,
             Id = airportCreatedEvent.AirportId,

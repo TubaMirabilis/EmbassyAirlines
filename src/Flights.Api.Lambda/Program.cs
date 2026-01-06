@@ -1,6 +1,7 @@
 using Flights.Api.Lambda;
 using Flights.Infrastructure;
 using FluentValidation;
+using NodaTime;
 using Serilog;
 using Shared;
 using Shared.Extensions;
@@ -23,6 +24,7 @@ if (!builder.Environment.IsEnvironment("FunctionalTests"))
 services.AddSingleton<IValidator<ScheduleFlightDto>, ScheduleFlightDtoValidator>();
 services.AddOpenApi();
 services.AddAWSMessageBus(config);
+services.AddSingleton<IClock>(SystemClock.Instance);
 var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {

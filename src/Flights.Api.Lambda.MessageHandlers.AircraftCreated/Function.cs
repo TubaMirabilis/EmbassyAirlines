@@ -22,6 +22,7 @@ public class Function
         var services = new ServiceCollection();
         services.AddSingleton<IConfiguration>(config);
         services.AddDatabaseConnection(config);
+        services.AddSingleton<IClock>(SystemClock.Instance);
         _serviceProvider = services.BuildServiceProvider();
     }
     public async Task<SQSBatchResponse> FunctionHandler(SQSEvent evnt, ILambdaContext context)
@@ -71,7 +72,8 @@ public class Function
             context.Logger.LogInformation($"Aircraft with ID: {aircraftCreatedEvent.AircraftId} already exists. Skipping creation.");
             return;
         }
-        var aircraft = Aircraft.Create(aircraftCreatedEvent.AircraftId, aircraftCreatedEvent.TailNumber, aircraftCreatedEvent.EquipmentCode, SystemClock.Instance.GetCurrentInstant());
+        var clock = _serviceProvider.GetRequiredService<IClock>();
+        var aircraft = Aircraft.Create(aircraftCreatedEvent.AircraftId, aircraftCreatedEvent.TailNumber, aircraftCreatedEvent.EquipmentCode, clock.GetCurrentInstant());
         dbContext.Aircraft.Add(aircraft);
         await dbContext.SaveChangesAsync();
         context.Logger.LogInformation($"Successfully processed AircraftCreatedEvent with ID: {aircraftCreatedEvent.Id}");

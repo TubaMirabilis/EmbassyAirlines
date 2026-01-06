@@ -47,9 +47,10 @@ public class FunctionalTestWebAppFactory : WebApplicationFactory<Program>, IAsyn
     public async ValueTask InitializeAsync()
     {
         await _dbContainer.StartAsync();
+        var clock = Services.GetRequiredService<IClock>();
         IncheonAirport = Airport.Create(new AirportCreationArgs
         {
-            CreatedAt = SystemClock.Instance.GetCurrentInstant(),
+            CreatedAt = clock.GetCurrentInstant(),
             IataCode = "ICN",
             IcaoCode = "RKSI",
             Id = Guid.NewGuid(),
@@ -58,15 +59,15 @@ public class FunctionalTestWebAppFactory : WebApplicationFactory<Program>, IAsyn
         });
         SchipolAirport = Airport.Create(new AirportCreationArgs
         {
-            CreatedAt = SystemClock.Instance.GetCurrentInstant(),
+            CreatedAt = clock.GetCurrentInstant(),
             IataCode = "AMS",
             IcaoCode = "EHAM",
             Id = Guid.NewGuid(),
             Name = "Schipol Airport",
             TimeZoneId = "Europe/Amsterdam"
         });
-        Aircraft1 = Aircraft.Create(Guid.NewGuid(), "C-FJRN", "B78X", SystemClock.Instance.GetCurrentInstant());
-        Aircraft2 = Aircraft.Create(Guid.NewGuid(), "C-FJRO", "B78X", SystemClock.Instance.GetCurrentInstant());
+        Aircraft1 = Aircraft.Create(Guid.NewGuid(), "C-FJRN", "B78X", clock.GetCurrentInstant());
+        Aircraft2 = Aircraft.Create(Guid.NewGuid(), "C-FJRO", "B78X", clock.GetCurrentInstant());
         using var scope = Services.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
         dbContext.Airports.AddRange(IncheonAirport, SchipolAirport);

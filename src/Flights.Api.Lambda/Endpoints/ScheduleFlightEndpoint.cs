@@ -18,6 +18,7 @@ internal sealed class ScheduleFlightEndpoint : IEndpoint
     public void MapEndpoint(IEndpointRouteBuilder app)
         => app.MapPost("flights", InvokeAsync);
     private static async Task<IResult> InvokeAsync(ApplicationDbContext ctx,
+                                            IClock clock,
                                             ILogger<ScheduleFlightEndpoint> logger,
                                             IMessagePublisher publisher,
                                             IValidator<ScheduleFlightDto> validator,
@@ -80,14 +81,14 @@ internal sealed class ScheduleFlightEndpoint : IEndpoint
                 ArrivalLocalTime = LocalDateTime.FromDateTime(dto.ArrivalLocalTime),
                 DepartureAirport = departureAirport,
                 DepartureLocalTime = LocalDateTime.FromDateTime(dto.DepartureLocalTime),
-                Now = SystemClock.Instance.GetCurrentInstant(),
+                Now = clock.GetCurrentInstant(),
                 SchedulingAmbiguityPolicy = schedulingAmbiguityPolicy
             });
             var flight = Flight.Create(new FlightCreationArgs
             {
                 Aircraft = aircraft,
                 BusinessPrice = businessPrice,
-                CreatedAt = SystemClock.Instance.GetCurrentInstant(),
+                CreatedAt = clock.GetCurrentInstant(),
                 EconomyPrice = economyPrice,
                 FlightNumberIata = dto.FlightNumberIata,
                 FlightNumberIcao = dto.FlightNumberIcao,
