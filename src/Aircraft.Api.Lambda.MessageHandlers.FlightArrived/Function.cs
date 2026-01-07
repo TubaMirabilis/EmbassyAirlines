@@ -1,8 +1,8 @@
 using System.Text.Json;
-using Amazon.Lambda.Core;
-using Amazon.Lambda.SQSEvents;
 using Aircraft.Infrastructure;
 using Aircraft.Infrastructure.Database;
+using Amazon.Lambda.Core;
+using Amazon.Lambda.SQSEvents;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Shared.Contracts;
