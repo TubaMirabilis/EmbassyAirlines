@@ -62,6 +62,14 @@ internal sealed class FlightsService : Construct
         props.DbProxy.GrantConnect(apiLambda, props.DbUsername);
         lambdaSg.Connections.AllowTo(props.DbProxySecurityGroup, Port.Tcp(props.DbPort), "Allow Lambda to access RDS Proxy");
         props.FlightScheduledTopic.GrantPublish(apiLambda);
+        props.AircraftAssignedToFlightTopic.GrantPublish(apiLambda);
+        props.FlightPricingAdjustedTopic.GrantPublish(apiLambda);
+        props.FlightRescheduledTopic.GrantPublish(apiLambda);
+        props.FlightCancelledTopic.GrantPublish(apiLambda);
+        props.FlightDelayedTopic.GrantPublish(apiLambda);
+        props.FlightMarkedAsEnRouteTopic.GrantPublish(apiLambda);
+        props.FlightMarkedAsDelayedEnRouteTopic.GrantPublish(apiLambda);
+        props.FlightArrivedTopic.GrantPublish(apiLambda);
         new EventHandlerLambda(this, "FlightsAircraftCreatedHandlerLambda", new EventHandlerLambdaProps
         {
             DbPort = props.DbPort,
