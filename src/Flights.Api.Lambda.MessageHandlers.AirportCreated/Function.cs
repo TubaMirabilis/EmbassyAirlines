@@ -69,7 +69,7 @@ public class Function
         var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
         if (await dbContext.Airports.AsNoTracking().AnyAsync(a => a.Id == airportCreatedEvent.AirportId))
         {
-            context.Logger.LogInformation($"Airport with ID: {airportCreatedEvent.AirportId} already exists. Skipping creation.");
+            context.Logger.LogWarning($"Airport with ID: {airportCreatedEvent.AirportId} already exists. Skipping creation.");
             return;
         }
         var clock = _serviceProvider.GetRequiredService<IClock>();

@@ -1,5 +1,8 @@
 <Solution>
   <Folder Name="/src/">
+    <Project Path="src/Aircraft.Api.Lambda.MessageHandlers.FlightArrived/Aircraft.Api.Lambda.MessageHandlers.FlightArrived.csproj" />
+    <Project Path="src/Aircraft.Api.Lambda.MessageHandlers.FlightMarkedAsDelayedEnRoute/Aircraft.Api.Lambda.MessageHandlers.FlightMarkedAsDelayedEnRoute.csproj" />
+    <Project Path="src/Aircraft.Api.Lambda.MessageHandlers.FlightMarkedAsEnRoute/Aircraft.Api.Lambda.MessageHandlers.FlightMarkedAsEnRoute.csproj" />
     <Project Path="src/Aircraft.Api.Lambda/Aircraft.Api.Lambda.csproj" />
     <Project Path="src/Aircraft.Core/Aircraft.Core.csproj" />
     <Project Path="src/Aircraft.Infrastructure/Aircraft.Infrastructure.csproj" />

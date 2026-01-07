@@ -2,4 +2,4 @@ using Shared.Abstractions;
 
 namespace Shared.Contracts;
 
-public sealed record FlightArrivedEvent(Guid FlightId, string ArrivalAirportIcaoCode) : IFlightStatusManagementEvent;
+public sealed record FlightArrivedEvent(Guid Id, Guid AircraftId, Guid FlightId, string ArrivalAirportIcaoCode) : IFlightStatusManagementEvent;

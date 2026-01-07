@@ -2,4 +2,4 @@ using Shared.Abstractions;
 
 namespace Shared.Contracts;
 
-public sealed record FlightMarkedAsDelayedEnRouteEvent(Guid FlightId, string ArrivalAirportIcaoCode) : IFlightStatusManagementEvent;
+public sealed record FlightMarkedAsDelayedEnRouteEvent(Guid Id, Guid AircraftId, Guid FlightId, string ArrivalAirportIcaoCode) : IFlightStatusManagementEvent;

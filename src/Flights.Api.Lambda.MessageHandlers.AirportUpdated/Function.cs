@@ -68,7 +68,7 @@ public class Function
         var airport = await dbContext.Airports.FindAsync(airportUpdatedEvent.AirportId);
         if (airport is null)
         {
-            context.Logger.LogInformation($"Airport with ID {airportUpdatedEvent.AirportId} not found. Skipping update.");
+            context.Logger.LogWarning($"Airport with ID {airportUpdatedEvent.AirportId} not found. Skipping update.");
             return;
         }
         var clock = _serviceProvider.GetRequiredService<IClock>();

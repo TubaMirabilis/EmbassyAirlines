@@ -1,18 +1,15 @@
 using System.Text.Json;
 using Amazon.Lambda.Core;
 using Amazon.Lambda.SQSEvents;
-using Flights.Core.Models;
-using Flights.Infrastructure;
-using Flights.Infrastructure.Database;
-using Microsoft.EntityFrameworkCore;
+using Aircraft.Infrastructure;
+using Aircraft.Infrastructure.Database;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using NodaTime;
 using Shared.Contracts;
 
 [assembly: LambdaSerializer(typeof(Amazon.Lambda.Serialization.SystemTextJson.DefaultLambdaJsonSerializer))]
 
-namespace Flights.Api.Lambda.MessageHandlers.AircraftCreated;
+namespace Aircraft.Api.Lambda.MessageHandlers.FlightArrived;
 
 public class Function
 {
@@ -23,7 +20,7 @@ public class Function
         var services = new ServiceCollection();
         services.AddSingleton<IConfiguration>(config);
         services.AddDatabaseConnection(config);
-        services.AddSingleton<IClock>(SystemClock.Instance);
+        services.AddSingleton(TimeProvider.System);
         _serviceProvider = services.BuildServiceProvider();
     }
     public async Task<SQSBatchResponse> FunctionHandler(SQSEvent evnt, ILambdaContext context)
@@ -49,7 +46,6 @@ public class Function
             BatchItemFailures = failures
         };
     }
-
     private async Task ProcessMessageAsync(SQSEvent.SQSMessage message, ILambdaContext context)
     {
         context.Logger.LogInformation($"Processed message {message.Body}");
@@ -59,24 +55,24 @@ public class Function
             context.Logger.LogWarning("Message element is null or empty.");
             return;
         }
-        var aircraftCreatedEvent = JsonDocument.Parse(messageElement).RootElement.GetProperty("data").Deserialize<AircraftCreatedEvent>();
-        if (aircraftCreatedEvent is null)
+        var flightArrivedEvent = JsonDocument.Parse(messageElement).RootElement.GetProperty("data").Deserialize<FlightArrivedEvent>();
+        if (flightArrivedEvent is null)
         {
-            context.Logger.LogWarning("Failed to deserialize AircraftCreatedEvent.");
+            context.Logger.LogWarning("Failed to deserialize flightArrivedEvent.");
             return;
         }
-        context.Logger.LogInformation($"Processing AircraftCreatedEvent with ID: {aircraftCreatedEvent.Id}");
+        context.Logger.LogInformation($"Processing flightArrivedEvent with ID: {flightArrivedEvent.Id}");
         using var scope = _serviceProvider.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-        if (await dbContext.Aircraft.AsNoTracking().AnyAsync(a => a.Id == aircraftCreatedEvent.AircraftId))
+        var aircraft = await dbContext.Aircraft.FindAsync(flightArrivedEvent.AircraftId);
+        if (aircraft is null)
         {
-            context.Logger.LogWarning($"Aircraft with ID: {aircraftCreatedEvent.AircraftId} already exists. Skipping creation.");
+            context.Logger.LogWarning($"Aircraft with ID {flightArrivedEvent.AircraftId} not found.");
             return;
         }
-        var clock = _serviceProvider.GetRequiredService<IClock>();
-        var aircraft = Aircraft.Create(aircraftCreatedEvent.AircraftId, aircraftCreatedEvent.TailNumber, aircraftCreatedEvent.EquipmentCode, clock.GetCurrentInstant());
-        dbContext.Aircraft.Add(aircraft);
+        var timeProvider = _serviceProvider.GetRequiredService<TimeProvider>();
+        aircraft.MarkAsParked(flightArrivedEvent.ArrivalAirportIcaoCode, timeProvider.GetUtcNow());
         await dbContext.SaveChangesAsync();
-        context.Logger.LogInformation($"Successfully processed AircraftCreatedEvent with ID: {aircraftCreatedEvent.Id}");
+        context.Logger.LogInformation($"Aircraft with ID {aircraft.Id} marked as parked at {flightArrivedEvent.ArrivalAirportIcaoCode}.");
     }
 }
