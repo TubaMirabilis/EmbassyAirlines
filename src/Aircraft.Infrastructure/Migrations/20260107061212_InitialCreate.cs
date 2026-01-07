@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore.Migrations;
+﻿using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
@@ -19,7 +19,8 @@ public partial class InitialCreate : Migration
             columns: table => new
             {
                 id = table.Column<Guid>(type: "uuid", nullable: false),
-                created_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                created_at = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                updated_at = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                 tail_number = table.Column<string>(type: "character varying(12)", unicode: false, maxLength: 12, nullable: false),
                 equipment_code = table.Column<string>(type: "character varying(4)", unicode: false, maxLength: 4, nullable: false),
                 status = table.Column<string>(type: "character varying(12)", unicode: false, maxLength: 12, nullable: false),
@@ -39,7 +40,7 @@ public partial class InitialCreate : Migration
             columns: table => new
             {
                 id = table.Column<Guid>(type: "uuid", nullable: false),
-                created_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                created_at = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                 aircraft_id = table.Column<Guid>(type: "uuid", nullable: false),
                 row_number = table.Column<byte>(type: "smallint", nullable: false),
                 letter = table.Column<char>(type: "character(1)", nullable: false),

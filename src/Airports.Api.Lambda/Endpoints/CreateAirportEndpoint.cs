@@ -22,6 +22,7 @@ internal sealed class CreateAirportEndpoint : IEndpoint
                                             ILogger<CreateAirportEndpoint> logger,
                                             IMessagePublisher publisher,
                                             IValidator<CreateOrUpdateAirportDto> validator,
+                                            TimeProvider timeProvider,
                                             CreateOrUpdateAirportDto dto,
                                             CancellationToken ct)
     {
@@ -48,7 +49,7 @@ internal sealed class CreateAirportEndpoint : IEndpoint
             var error = Error.Conflict("Airport.Conflict", $"Airport with IATA code {dto.IataCode} already exists");
             return ErrorHandlingHelper.HandleProblem(error);
         }
-        var airport = Airport.Create(dto.IcaoCode, dto.IataCode, dto.Name, dto.TimeZoneId);
+        var airport = Airport.Create(dto.IcaoCode, dto.IataCode, dto.Name, dto.TimeZoneId, timeProvider.GetUtcNow());
         var airportAsJson = JsonSerializer.Serialize(airport);
         var itemAsDocument = Document.FromJson(airportAsJson);
         var itemAsAttributes = itemAsDocument.ToAttributeMap();

@@ -22,6 +22,7 @@ builder.Services.AddSingleton<IAirportRepository, AirportRepository>();
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddProblemDetails();
 builder.Services.AddOpenApi();
+builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddAWSMessageBus(bus =>
 {
     var airportCreatedTopicArn = config["SNS:AirportCreatedTopicArn"];

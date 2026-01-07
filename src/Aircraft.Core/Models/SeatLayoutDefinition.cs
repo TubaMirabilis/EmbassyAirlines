@@ -24,7 +24,7 @@ public sealed class SeatLayoutDefinition
             kvp => RowRange.Parse(kvp.Key),
             kvp => kvp.Value
         );
-    public IEnumerable<Seat> ToSeatsCollection(Guid aircraftId)
+    public IEnumerable<Seat> ToSeatsCollection(Guid aircraftId, DateTimeOffset createdAt)
     {
         var business = BusinessRows.Select(kvp => (Range: kvp.Key, Section: kvp.Value));
         var economy = EconomyRows.Select(kvp => (Range: kvp.Key, Section: kvp.Value));
@@ -43,7 +43,7 @@ public sealed class SeatLayoutDefinition
                     yield return new Seat
                     {
                         Id = Guid.NewGuid(),
-                        CreatedAt = DateTime.UtcNow,
+                        CreatedAt = createdAt,
                         RowNumber = (byte)row,
                         Letter = letter,
                         Type = section.SeatType,

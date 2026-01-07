@@ -16,6 +16,7 @@ internal sealed class UpdateAirportEndpoint : IEndpoint
                                             IMessagePublisher publisher,
                                             IAirportRepository repository,
                                             IValidator<CreateOrUpdateAirportDto> validator,
+                                            TimeProvider timeProvider,
                                             Guid id,
                                             CreateOrUpdateAirportDto dto,
                                             CancellationToken ct)
@@ -34,7 +35,7 @@ internal sealed class UpdateAirportEndpoint : IEndpoint
             return ErrorHandlingHelper.HandleProblem(error);
         }
         var airport = getAirportResult.Value;
-        airport.Update(dto.IcaoCode, dto.IataCode, dto.Name, dto.TimeZoneId);
+        airport.Update(dto.IcaoCode, dto.IataCode, dto.Name, dto.TimeZoneId, timeProvider.GetUtcNow());
         var updated = await repository.UpdateAirportAsync(airport, ct);
         if (!updated)
         {

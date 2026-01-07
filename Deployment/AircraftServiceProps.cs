@@ -14,5 +14,8 @@ internal sealed record AircraftServiceProps
     internal required DatabaseProxy DbProxy { get; init; }
     internal required SecurityGroup DbProxySecurityGroup { get; init; }
     internal required string DbUsername { get; init; }
+    internal required Topic FlightArrivedTopic { get; init; }
+    internal required Topic FlightMarkedAsDelayedEnRouteTopic { get; init; }
+    internal required Topic FlightMarkedAsEnRouteTopic { get; init; }
     internal required Vpc Vpc { get; init; }
 }

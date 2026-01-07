@@ -12,5 +12,6 @@ public sealed record AircraftCreationArgs
     public required Status Status { get; init; }
     public string? ParkedAt { get; init; }
     public string? EnRouteTo { get; init; }
+    public required DateTimeOffset CreatedAt { get; init; }
     public required SeatLayoutDefinition Seats { get; init; }
 }

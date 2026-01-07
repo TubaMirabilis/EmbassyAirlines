@@ -22,7 +22,8 @@ public sealed class Aircraft
             throw new ArgumentException("Destination must be provided for en route aircraft.");
         }
         Id = Guid.NewGuid();
-        CreatedAt = DateTime.UtcNow;
+        CreatedAt = args.CreatedAt;
+        UpdatedAt = CreatedAt;
         TailNumber = args.TailNumber;
         EquipmentCode = args.EquipmentCode;
         DryOperatingWeight = args.DryOperatingWeight;
@@ -33,7 +34,7 @@ public sealed class Aircraft
         Status = args.Status;
         ParkedAt = args.ParkedAt?.Trim().ToUpperInvariant();
         EnRouteTo = args.EnRouteTo?.Trim().ToUpperInvariant();
-        var seats = args.Seats.ToSeatsCollection(Id).ToList();
+        var seats = args.Seats.ToSeatsCollection(Id, args.CreatedAt).ToList();
         var seen = new HashSet<(byte RowNumber, char Letter)>();
         if (seats.Any(seat => !seen.Add((seat.RowNumber, seat.Letter))))
         {
@@ -47,7 +48,8 @@ public sealed class Aircraft
     }
 #pragma warning restore CS8618
     public Guid Id { get; init; }
-    public DateTime CreatedAt { get; init; }
+    public DateTimeOffset CreatedAt { get; init; }
+    public DateTimeOffset UpdatedAt { get; private set; }
     public string TailNumber { get; private set; }
     public string EquipmentCode { get; private set; }
     public Weight DryOperatingWeight { get; private set; }
@@ -60,18 +62,20 @@ public sealed class Aircraft
     public string? EnRouteTo { get; private set; }
     public IReadOnlyList<Seat> Seats => _seats.AsReadOnly();
     public static Aircraft Create(AircraftCreationArgs args) => new(args);
-    public void MarkAsEnRoute(string destination)
+    public void MarkAsEnRoute(string destination, DateTimeOffset updatedAt)
     {
         Ensure.NotNullOrEmpty(destination);
         EnRouteTo = destination.Trim().ToUpperInvariant();
         ParkedAt = null;
         Status = Status.EnRoute;
+        UpdatedAt = updatedAt;
     }
-    public void MarkAsParked(string location)
+    public void MarkAsParked(string location, DateTimeOffset updatedAt)
     {
         Ensure.NotNullOrEmpty(location);
         ParkedAt = location.Trim().ToUpperInvariant();
         EnRouteTo = null;
         Status = Status.Parked;
+        UpdatedAt = updatedAt;
     }
 }

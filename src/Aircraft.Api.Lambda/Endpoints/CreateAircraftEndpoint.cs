@@ -24,6 +24,7 @@ internal sealed class CreateAircraftEndpoint : IEndpoint
                                             ILogger<CreateAircraftEndpoint> logger,
                                             IMessagePublisher publisher,
                                             IValidator<CreateAircraftDto> validator,
+                                            TimeProvider timeProvider,
                                             CreateAircraftDto dto,
                                             CancellationToken ct)
     {
@@ -73,6 +74,7 @@ internal sealed class CreateAircraftEndpoint : IEndpoint
                 MaximumLandingWeight = new Weight(dto.MaximumLandingWeight),
                 MaximumZeroFuelWeight = new Weight(dto.MaximumZeroFuelWeight),
                 MaximumFuelWeight = new Weight(dto.MaximumFuelWeight),
+                CreatedAt = timeProvider.GetUtcNow(),
                 Seats = def,
                 ParkedAt = dto.ParkedAt,
                 EnRouteTo = dto.EnRouteTo,

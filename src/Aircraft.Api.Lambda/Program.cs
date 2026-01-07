@@ -24,6 +24,7 @@ if (!builder.Environment.IsEnvironment("FunctionalTests"))
 }
 builder.Services.AddSingleton<IValidator<CreateAircraftDto>, CreateAircraftDtoValidator>();
 builder.Services.AddOpenApi();
+builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddAWSMessageBus(bus =>
 {
     var aircraftCreatedTopicArn = config["SNS:AircraftCreatedTopicArn"];

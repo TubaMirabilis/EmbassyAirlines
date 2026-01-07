@@ -13,6 +13,13 @@ internal sealed class AircraftService : Construct
 {
     internal AircraftService(Construct scope, string id, AircraftServiceProps props) : base(scope, id)
     {
+        var commonEnv = new Dictionary<string, string>
+        {
+            { "AIRCRAFT_DbConnection__Database", props.DbName },
+                { "AIRCRAFT_DbConnection__Host", props.DbProxy.Endpoint },
+                { "AIRCRAFT_DbConnection__Port", props.DbPort.ToString(CultureInfo.InvariantCulture) },
+                { "AIRCRAFT_DbConnection__Username", props.DbUsername }
+        };
         var bucket = new Bucket(this, "AircraftBucket", new BucketProps
         {
             BucketName = $"aircraft-bucket-{Aws.ACCOUNT_ID}-{Aws.REGION}",
@@ -35,12 +42,8 @@ internal sealed class AircraftService : Construct
             FunctionName = "AircraftApiLambda",
             Code = imageCode,
             Timeout = Duration.Seconds(30),
-            Environment = new Dictionary<string, string>
+            Environment = new Dictionary<string, string>(commonEnv)
             {
-                { "AIRCRAFT_DbConnection__Database", props.DbName },
-                { "AIRCRAFT_DbConnection__Host", props.DbProxy.Endpoint },
-                { "AIRCRAFT_DbConnection__Port", props.DbPort.ToString(CultureInfo.InvariantCulture) },
-                { "AIRCRAFT_DbConnection__Username", props.DbUsername },
                 { "AIRCRAFT_S3__BucketName", bucket.BucketName },
                 { "AIRCRAFT_SNS__AircraftCreatedTopicArn", props.AircraftCreatedTopic.TopicArn }
             },
@@ -61,5 +64,44 @@ internal sealed class AircraftService : Construct
         lambdaSg.Connections.AllowTo(props.DbProxySecurityGroup, Port.Tcp(props.DbPort), "Allow Lambda to access RDS Proxy");
         props.AircraftCreatedTopic.GrantPublish(lambda);
         bucket.GrantRead(lambda);
+        new EventHandlerLambda(this, "AircraftFlightArrivedHandlerLambda", new EventHandlerLambdaProps
+        {
+            DbPort = props.DbPort,
+            DbProxy = props.DbProxy,
+            DbProxySecurityGroup = props.DbProxySecurityGroup,
+            DbUsername = props.DbUsername,
+            Environment = new Dictionary<string, string>(commonEnv),
+            FunctionName = "AircraftFlightArrivedHandlerLambda",
+            Path = "docker/Aircraft.Api.Lambda.MessageHandlers.FlightArrived.dockerfile",
+            SecurityGroupDescription = "Security group for Aircraft FlightArrived handler Lambda",
+            Topic = props.FlightArrivedTopic,
+            Vpc = props.Vpc
+        });
+        new EventHandlerLambda(this, "AircraftFlightMarkedAsDelayedEnRouteHandlerLambda", new EventHandlerLambdaProps
+        {
+            DbPort = props.DbPort,
+            DbProxy = props.DbProxy,
+            DbProxySecurityGroup = props.DbProxySecurityGroup,
+            DbUsername = props.DbUsername,
+            Environment = new Dictionary<string, string>(commonEnv),
+            FunctionName = "AircraftFlightMarkedAsDelayedEnRouteHandlerLambda",
+            Path = "docker/Aircraft.Api.Lambda.MessageHandlers.FlightMarkedAsDelayedEnRoute.dockerfile",
+            SecurityGroupDescription = "Security group for Aircraft FlightMarkedAsDelayedEnRoute handler Lambda",
+            Topic = props.FlightMarkedAsDelayedEnRouteTopic,
+            Vpc = props.Vpc
+        });
+        new EventHandlerLambda(this, "AircraftFlightMarkedAsEnRouteHandlerLambda", new EventHandlerLambdaProps
+        {
+            DbPort = props.DbPort,
+            DbProxy = props.DbProxy,
+            DbProxySecurityGroup = props.DbProxySecurityGroup,
+            DbUsername = props.DbUsername,
+            Environment = new Dictionary<string, string>(commonEnv),
+            FunctionName = "AircraftFlightMarkedAsEnRouteHandlerLambda",
+            Path = "docker/Aircraft.Api.Lambda.MessageHandlers.FlightMarkedAsEnRoute.dockerfile",
+            SecurityGroupDescription = "Security group for Aircraft FlightMarkedAsEnRoute handler Lambda",
+            Topic = props.FlightMarkedAsEnRouteTopic,
+            Vpc = props.Vpc
+        });
     }
 }
