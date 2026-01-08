@@ -23,6 +23,10 @@ internal sealed class Network : Construct
                 }
             ]
         });
+        Vpc.AddInterfaceEndpoint("SqsInterfaceEndpoint", new InterfaceVpcEndpointOptions
+        {
+            Service = InterfaceVpcEndpointAwsService.SQS
+        });
         Vpc.AddInterfaceEndpoint("SnsInterfaceEndpoint", new InterfaceVpcEndpointOptions
         {
             Service = InterfaceVpcEndpointAwsService.SNS
