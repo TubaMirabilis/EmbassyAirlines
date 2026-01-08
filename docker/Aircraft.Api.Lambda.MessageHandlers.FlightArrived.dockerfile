@@ -6,7 +6,7 @@ COPY ./src/Aircraft.Infrastructure/ /src/Aircraft.Infrastructure/
 COPY ./src/Shared/ /src/Shared/
 COPY ./Directory.Packages.props /Directory.Packages.props
 WORKDIR /src/Aircraft.Api.Lambda.MessageHandlers.FlightArrived
-RUN dotnet restore
+RUN dotnet restore -r linux-x64
 RUN dotnet publish -c Release -r linux-x64 --self-contained false --no-restore -o /app/publish
 
 FROM public.ecr.aws/lambda/dotnet:10
