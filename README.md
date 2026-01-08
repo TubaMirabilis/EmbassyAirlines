@@ -194,9 +194,7 @@ Within the `Deployment` project there is an `EmbassyAirlinesStack` which inherit
 - **SNS topics** as the service-to-service event bus
 - **A private network** (VPC) with **isolated subnets only** and **VPC endpoints** so workloads can run without NAT
 
-The architecture blends synchronous HTTP for commands/queries with asynchronous event processing for cross-service reactions.
-
-This configuration is intended for non-production environments unless explicitly modified.
+Many resources are configured with **RemovalPolicy.DESTROY** (DynamoDB table, S3 bucket, DB instance). This is convenient for dev/test but risky for production unless changed. Therefore this configuration is intended for non-production environments unless explicitly modified.
 
 ### Stack composition (what gets created)
 
