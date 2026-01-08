@@ -4,55 +4,55 @@ Embassy Airlines is a cloud-native airline management platform built with .NET 1
 
 ## Project Structure \& Infrastructure
 
--   **Multi-service architecture** with 3 main APIs and shared libraries
--   **AWS CDK deployment** configuration for cloud infrastructure
--   **Docker containerization** for each service
--   **GitHub Actions CI/CD pipeline** with build and test stages
+- **Multi-service architecture** with 3 main APIs and shared libraries
+- **AWS CDK deployment** configuration for cloud infrastructure
+- **Docker containerization** for each service
+- **GitHub Actions CI/CD pipeline** with build and test stages
 
 ## Core Services
 
 ### 1\. **Aircraft API (Lambda)**
 
--   Manages aircraft fleet with seat configurations
--   **PostgreSQL database** with Entity Framework Core
--   **S3 integration** for manually-uploaded seat layout definitions (JSON files)
--   **SNS publishing** for aircraft creation events
--   **Event-driven architecture** consuming flight status management events via SQS
--   Complex seat layout system with business/economy configurations facilitated by manually-uploaded JSON files in S3. Example JSON files reside in the Resources/Layouts folder.
+- Manages aircraft fleet with seat configurations
+- **PostgreSQL database** with Entity Framework Core
+- **S3 integration** for manually-uploaded seat layout definitions (JSON files)
+- **SNS publishing** for aircraft creation events
+- **Event-driven architecture** consuming flight status management events via SQS
+- Complex seat layout system with business/economy configurations facilitated by manually-uploaded JSON files in S3. Example JSON files reside in the Resources/Layouts folder.
 
 ### 2\. **Airports API (Lambda)**
 
--   Airport management with IATA/ICAO codes and timezone handling
--   **DynamoDB storage** with custom repository pattern
--   **SNS publishing** for airport created/updated events
--   Full CRUD operations with validation
+- Airport management with IATA/ICAO codes and timezone handling
+- **DynamoDB storage** with custom repository pattern
+- **SNS publishing** for airport created/updated events
+- Full CRUD operations with validation
 
 ### 3\. **Flights API (Lambda)**
 
--   Flight scheduling and management system
--   **PostgreSQL database** with NodaTime for timezone-aware scheduling
--   **Event-driven architecture** consuming aircraft/airport events via SQS
--   **SNS publishing** for flight scheduling and flight operations management
+- Flight scheduling and management system
+- **PostgreSQL database** with NodaTime for timezone-aware scheduling
+- **Event-driven architecture** consuming aircraft/airport events via SQS
+- **SNS publishing** for flight scheduling and flight operations management
 
 ## Technical Features
 
--   **Shared library** with common contracts, validation, error handling, and middleware
--   **Comprehensive validation** using FluentValidation
--   **Error handling** with ErrorOr pattern and standardized problem details
--   **Structured logging** with Serilog and correlation IDs
--   **Extensive functional tests** with test containers (PostgreSQL, DynamoDB, LocalStack)
--   **Code quality enforcement** with EditorConfig, analyzers, and formatting rules
+- **Shared library** with common contracts, validation, error handling, and middleware
+- **Comprehensive validation** using FluentValidation
+- **Error handling** with ErrorOr pattern and standardized problem details
+- **Structured logging** with Serilog and correlation IDs
+- **Extensive functional tests** with test containers (PostgreSQL, DynamoDB, LocalStack)
+- **Code quality enforcement** with EditorConfig, analyzers, and formatting rules
 
 ## Architecture Patterns
 
 ### Domain-Driven Design (DDD) Patterns
 
--   **Bounded Contexts** in the Aircraft.Core and Flights.Core class library projects
--   Aircraft.Core.Models.Aircraft and Flights.Core.Models.Flight are **aggregate roots**
--   **Entities** show up clearly via identity (Id) attributes, lifecycle timestamps and behavior-driven state mutations.
--   Immutable, validated, concept-focused **value objects** such as Weight and Money
--   Consistent hiding of constructors and exposure of static **factory methods**
--   Clean **repository** interface and implementation in Airports.Api.Lambda
+- **Bounded Contexts** in the Aircraft.Core and Flights.Core class library projects
+- Aircraft.Core.Models.Aircraft and Flights.Core.Models.Flight are **aggregate roots**
+- **Entities** show up clearly via identity (Id) attributes, lifecycle timestamps and behavior-driven state mutations.
+- Immutable, validated, concept-focused **value objects** such as Weight and Money
+- Consistent hiding of constructors and exposure of static **factory methods**
+- Clean **repository** interface and implementation in Airports.Api.Lambda
 
 ### Event-Driven Architecture (EDA)
 
@@ -60,17 +60,17 @@ This system uses **asynchronous, event-driven communication** to decouple servic
 
 #### High-level pattern
 
--   Services **publish domain events** to SNS topics
--   Each event type is delivered to one or more **SQS queues**
--   Lambda functions consume messages from queues and execute handlers
--   Each queue has an associated **Dead Letter Queue (DLQ)**
+- Services **publish domain events** to SNS topics
+- Each event type is delivered to one or more **SQS queues**
+- Lambda functions consume messages from queues and execute handlers
+- Each queue has an associated **Dead Letter Queue (DLQ)**
 
 This design provides:
 
--   **Loose coupling** between services
--   **Independent scaling** of producers and consumers
--   **Failure isolation** (one failing consumer does not block others)
--   **Retry and recovery** via SQS redrive policies
+- **Loose coupling** between services
+- **Independent scaling** of producers and consumers
+- **Failure isolation** (one failing consumer does not block others)
+- **Retry and recovery** via SQS redrive policies
 
 Services never call each other directly for domain state changes.
 
@@ -78,12 +78,11 @@ Services never call each other directly for domain state changes.
 
 When a meaningful domain action occurs (e.g. an entity is created or updated):
 
--   The owning service publishes a domain event to its SNS topic
--   Events should be:
-
-    -   Immutable
-    -   Explicitly versioned if schemas evolve
-    -   Focused on _what happened_, not _what should happen_
+- The owning service publishes a domain event to its SNS topic
+- Events should be:
+    - Immutable
+    - Explicitly versioned if schemas evolve
+    - Focused on _what happened_, not _what should happen_
 
 At the moment no events are published to signalize entity deletion and there are no HTTP DELETE endpoints. This is because I want to preserve an accurate historical record of airline operations which have completed.
 
@@ -91,23 +90,23 @@ At the moment no events are published to signalize entity deletion and there are
 
 Consumers subscribe via SQS queues:
 
--   Each queue represents a **single responsibility** handler
--   Lambda functions process messages in batches
--   Handlers are expected to be **idempotent**
--   Failures result in retries; repeated failures move messages to the DLQ
+- Each queue represents a **single responsibility** handler
+- Lambda functions process messages in batches
+- Handlers are expected to be **idempotent**
+- Failures result in retries; repeated failures move messages to the DLQ
 
 #### Dead Letter Queues (DLQs)
 
 Every consumer queue has a DLQ:
 
--   Messages land in the DLQ after exceeding retry limits
--   DLQs are a **signal**, not an error sink
+- Messages land in the DLQ after exceeding retry limits
+- DLQs are a **signal**, not an error sink
 
 Operational expectations:
 
--   DLQs should be monitored
--   Messages should be inspected and replayed when appropriate
--   Silent DLQ growth indicates a broken consumer or contract mismatch
+- DLQs should be monitored
+- Messages should be inspected and replayed when appropriate
+- Silent DLQ growth indicates a broken consumer or contract mismatch
 
 #### Active Publishers and Consumers
 
@@ -136,9 +135,9 @@ Operational expectations:
 Events are treated as **first-class domain concepts**, not side effects.
 If a workflow feels difficult to express with events, that is usually a signal to revisit:
 
--   Service boundaries
--   Event granularity
--   Ownership of state
+- Service boundaries
+- Event granularity
+- Ownership of state
 
 ### Middleware Pipelines
 
@@ -150,16 +149,16 @@ The `GlobalExceptionHandler` implements `IExceptionHandler` and acts as a centra
 
 **Responsibilities:**
 
--   Catches any unhandled exception thrown during request processing.
--   Logs the exception with structured logging using `ILogger`.
--   Returns a standardized RFC 7231–compliant `ProblemDetails` JSON response.
--   Ensures clients always receive a consistent `500 Internal Server Error` response format.
+- Catches any unhandled exception thrown during request processing.
+- Logs the exception with structured logging using `ILogger`.
+- Returns a standardized RFC 7231–compliant `ProblemDetails` JSON response.
+- Ensures clients always receive a consistent `500 Internal Server Error` response format.
 
 **Key benefits:**
 
--   Prevents exception details from leaking to clients.
--   Improves observability by logging full exception context.
--   Eliminates repetitive try/catch logic in controllers and endpoints.
+- Prevents exception details from leaking to clients.
+- Improves observability by logging full exception context.
+- Eliminates repetitive try/catch logic in controllers and endpoints.
 
 This handler is designed to be registered with ASP.NET Core’s built-in exception handling infrastructure, keeping error handling centralized and declarative.
 
@@ -169,16 +168,16 @@ The `RequestContextLoggingMiddleware` enriches all log entries for a request wit
 
 **How it works:**
 
--   Reads the `X-Correlation-Id` header from incoming requests.
--   Falls back to `HttpContext.TraceIdentifier` if the header is missing.
--   Pushes the correlation ID into the logging scope using `LogContext`.
--   Ensures all logs written during the request include the same correlation identifier.
+- Reads the `X-Correlation-Id` header from incoming requests.
+- Falls back to `HttpContext.TraceIdentifier` if the header is missing.
+- Pushes the correlation ID into the logging scope using `LogContext`.
+- Ensures all logs written during the request include the same correlation identifier.
 
 **Key benefits:**
 
--   Makes it easy to trace a single request across logs.
--   Improves debugging in distributed or microservice-based systems.
--   Requires no changes to controllers or business logic.
+- Makes it easy to trace a single request across logs.
+- Improves debugging in distributed or microservice-based systems.
+- Requires no changes to controllers or business logic.
 
 ## Infrastructure as Code (IaC)
 
@@ -186,15 +185,14 @@ Within the `Deployment` project there is an `EmbassyAirlinesStack` which inherit
 
 `EmbassyAirlinesStack` provisions a small, event-driven microservices backend on AWS. It combines:
 
--   **A shared HTTP entrypoint** (API Gateway HTTP API) exposed under a custom domain (`embassyairlines.com/api/*`)
--   **Three domain services** implemented as **container-image Lambda functions**:
+- **A shared HTTP entrypoint** (API Gateway HTTP API) exposed under a custom domain (`embassyairlines.com/api/*`)
+- **Three domain services** implemented as **container-image Lambda functions**:
+    - Airports (DynamoDB-backed)
+    - Flights (PostgreSQL-backed via RDS Proxy)
+    - Aircraft (PostgreSQL-backed via RDS Proxy + S3 bucket)
 
-    -   Airports (DynamoDB-backed)
-    -   Flights (PostgreSQL-backed via RDS Proxy)
-    -   Aircraft (PostgreSQL-backed via RDS Proxy + S3 bucket)
-
--   **SNS topics** as the service-to-service event bus
--   **A private network** (VPC) with **isolated subnets only** and **VPC endpoints** so workloads can run without NAT
+- **SNS topics** as the service-to-service event bus
+- **A private network** (VPC) with **isolated subnets only** and **VPC endpoints** so workloads can run without NAT
 
 The architecture blends synchronous HTTP for commands/queries with asynchronous event processing for cross-service reactions.
 
@@ -206,12 +204,11 @@ This configuration is intended for non-production environments unless explicitly
 
 `Network` creates a VPC (`MaxAzs=2`) with **no NAT gateways** and relies on private connectivity:
 
--   **Private isolated subnets** are used by Lambdas and RDS.
--   VPC endpoints:
-
-    -   **S3 Gateway Endpoint** (for Aircraft service S3 access)
-    -   **DynamoDB Gateway Endpoint** (for Airports DynamoDB access)
-    -   **SNS Interface Endpoint** (for publishing/consuming SNS without public egress)
+- **Private isolated subnets** are used by Lambdas and RDS.
+- VPC endpoints:
+    - **S3 Gateway Endpoint** (for Aircraft service S3 access)
+    - **DynamoDB Gateway Endpoint** (for Airports DynamoDB access)
+    - **SNS Interface Endpoint** (for publishing/consuming SNS without public egress)
 
 **Implication:** anything that requires public internet egress (e.g., pulling external APIs, calling 3rd-party services) would not work unless additional egress is introduced.
 
@@ -219,10 +216,10 @@ This configuration is intended for non-production environments unless explicitly
 
 `MessagingResources` defines the system’s event channels as **SNS Topics**, including:
 
--   Airport events: `AirportCreatedTopic`, `AirportUpdatedTopic`
--   Aircraft events: `AircraftCreatedTopic`
--   Flight lifecycle events:
-    `FlightScheduledTopic`, `AircraftAssignedToFlightTopic`, `FlightPricingAdjustedTopic`, `FlightRescheduledTopic`, `FlightCancelledTopic`, `FlightDelayedTopic`, `FlightMarkedAsEnRouteTopic`, `FlightMarkedAsDelayedEnRouteTopic`, `FlightArrivedTopic`
+- Airport events: `AirportCreatedTopic`, `AirportUpdatedTopic`
+- Aircraft events: `AircraftCreatedTopic`
+- Flight lifecycle events:
+  `FlightScheduledTopic`, `AircraftAssignedToFlightTopic`, `FlightPricingAdjustedTopic`, `FlightRescheduledTopic`, `FlightCancelledTopic`, `FlightDelayedTopic`, `FlightMarkedAsEnRouteTopic`, `FlightMarkedAsDelayedEnRouteTopic`, `FlightArrivedTopic`
 
 These topics are used both for **publishing domain events from APIs** and for **triggering handler Lambdas** through an SQS fan-out pattern (below).
 
@@ -232,13 +229,12 @@ These topics are used both for **publishing domain events from APIs** and for **
 
 `SharedInfra` centralizes the public ingress:
 
--   **Route 53 Hosted Zone**: `embassyairlines.com` (imported by ID)
--   **ACM Certificate** validated via DNS; explicitly **retained** on deletion
--   **API Gateway v2 HTTP API** with a custom domain mapping:
-
-    -   Custom domain: `embassyairlines.com`
-    -   Mapping key: `api`
-    -   **Route53 A-record alias** to the API Gateway domain
+- **Route 53 Hosted Zone**: `embassyairlines.com` (imported by ID)
+- **ACM Certificate** validated via DNS; explicitly **retained** on deletion
+- **API Gateway v2 HTTP API** with a custom domain mapping:
+    - Custom domain: `embassyairlines.com`
+    - Mapping key: `api`
+    - **Route53 A-record alias** to the API Gateway domain
 
 This gives all services a single consistent entrypoint and domain.
 
@@ -248,22 +244,20 @@ This gives all services a single consistent entrypoint and domain.
 
 `RdsResources` provisions a relational backend used by Flights and Aircraft:
 
--   **RDS PostgreSQL instance**:
+- **RDS PostgreSQL instance**:
+    - Engine: Postgres `18.1`
+    - Instance type: `t4g.micro`
+    - Storage: 20GB
+    - Subnets: private isolated
+    - Credentials: generated secret for user `embassyadmin`
+    - RemovalPolicy: **DESTROY**, no deletion protection (dev/test-friendly)
 
-    -   Engine: Postgres `18.1`
-    -   Instance type: `t4g.micro`
-    -   Storage: 20GB
-    -   Subnets: private isolated
-    -   Credentials: generated secret for user `embassyadmin`
-    -   RemovalPolicy: **DESTROY**, no deletion protection (dev/test-friendly)
+- **RDS Proxy**:
+    - IAM auth enabled
+    - Uses the DB secret
+    - Dedicated security group
 
--   **RDS Proxy**:
-
-    -   IAM auth enabled
-    -   Uses the DB secret
-    -   Dedicated security group
-
--   Security: DB allows default port access from the proxy SG
+- Security: DB allows default port access from the proxy SG
 
 **Pattern:** application Lambdas connect to **RDS Proxy**, not directly to the DB.
 
@@ -277,21 +271,18 @@ This gives all services a single consistent entrypoint and domain.
 
 Resources and flow:
 
--   **DynamoDB table** `airports` (PAY_PER_REQUEST, partition key `Id` string)
--   **Lambda (container image)** `AirportsApiLambda`
+- **DynamoDB table** `airports` (PAY_PER_REQUEST, partition key `Id` string)
+- **Lambda (container image)** `AirportsApiLambda`
+    - Runs in VPC private isolated subnet
+    - Env config includes:
+        - `AIRPORTS_DynamoDb__TableName`
+        - `AIRPORTS_SNS__AirportCreatedTopicArn`
+        - `AIRPORTS_SNS__AirportUpdatedTopicArn`
 
-    -   Runs in VPC private isolated subnet
-    -   Env config includes:
-
-        -   `AIRPORTS_DynamoDb__TableName`
-        -   `AIRPORTS_SNS__AirportCreatedTopicArn`
-        -   `AIRPORTS_SNS__AirportUpdatedTopicArn`
-
--   **API route:** `ANY /airports` → Lambda integration
--   Permissions:
-
-    -   Lambda has read/write to DynamoDB
-    -   Lambda can publish to AirportCreated and AirportUpdated topics
+- **API route:** `ANY /airports` → Lambda integration
+- Permissions:
+    - Lambda has read/write to DynamoDB
+    - Lambda can publish to AirportCreated and AirportUpdated topics
 
 **Synchronous:** HTTP requests to `/airports`
 **Asynchronous output:** publishes airport created/updated events to SNS
@@ -304,27 +295,24 @@ Resources and flow:
 
 Resources and flow:
 
--   **Lambda (container image)** `FlightsApiLambda`
+- **Lambda (container image)** `FlightsApiLambda`
+    - VPC private isolated
+    - Common DB env:
+        - `FLIGHTS_DbConnection__Database`, `Host` (proxy endpoint), `Port`, `Username`
 
-    -   VPC private isolated
-    -   Common DB env:
+    - SNS env includes many topic ARNs for flight lifecycle events
 
-        -   `FLIGHTS_DbConnection__Database`, `Host` (proxy endpoint), `Port`, `Username`
-
-    -   SNS env includes many topic ARNs for flight lifecycle events
-
--   **API route:** `ANY /flights`
--   Permissions:
-
-    -   Can connect to RDS Proxy (IAM auth)
-    -   SG allows egress to DB proxy SG on 5432
-    -   Can publish to at least `FlightScheduledTopic` (explicitly granted in the snippet)
+- **API route:** `ANY /flights`
+- Permissions:
+    - Can connect to RDS Proxy (IAM auth)
+    - SG allows egress to DB proxy SG on 5432
+    - Can publish to at least `FlightScheduledTopic` (explicitly granted in the snippet)
 
 **Event consumption:** Flights also reacts to other services via handler Lambdas (below):
 
--   `FlightsAircraftCreatedHandlerLambda` subscribes to `AircraftCreatedTopic`
--   `FlightsAirportCreatedHandlerLambda` subscribes to `AirportCreatedTopic`
--   `FlightsAirportUpdatedHandlerLambda` subscribes to `AirportUpdatedTopic`
+- `FlightsAircraftCreatedHandlerLambda` subscribes to `AircraftCreatedTopic`
+- `FlightsAirportCreatedHandlerLambda` subscribes to `AirportCreatedTopic`
+- `FlightsAirportUpdatedHandlerLambda` subscribes to `AirportUpdatedTopic`
 
 These handlers update/query the Flights DB via the proxy.
 
@@ -336,33 +324,29 @@ These handlers update/query the Flights DB via the proxy.
 
 Resources and flow:
 
--   **S3 bucket** `aircraft-bucket-{account}-{region}`
+- **S3 bucket** `aircraft-bucket-{account}-{region}`
+    - Block public access
+    - RemovalPolicy: DESTROY
+    - AutoDeleteObjects: true
 
-    -   Block public access
-    -   RemovalPolicy: DESTROY
-    -   AutoDeleteObjects: true
+- **Lambda (container image)** `AircraftApiLambda`
+    - VPC private isolated
+    - Common DB env like Flights (AIRCRAFT\_\* keys)
+    - Also configured with:
+        - `AIRCRAFT_S3__BucketName`
+        - `AIRCRAFT_SNS__AircraftCreatedTopicArn`
 
--   **Lambda (container image)** `AircraftApiLambda`
-
-    -   VPC private isolated
-    -   Common DB env like Flights (AIRCRAFT\_\* keys)
-    -   Also configured with:
-
-        -   `AIRCRAFT_S3__BucketName`
-        -   `AIRCRAFT_SNS__AircraftCreatedTopicArn`
-
--   **API route:** `ANY /aircraft`
--   Permissions:
-
-    -   Connect to RDS Proxy (IAM auth + SG rule)
-    -   Publish to `AircraftCreatedTopic`
-    -   Read from S3 bucket (note: code grants **read**, not write)
+- **API route:** `ANY /aircraft`
+- Permissions:
+    - Connect to RDS Proxy (IAM auth + SG rule)
+    - Publish to `AircraftCreatedTopic`
+    - Read from S3 bucket (note: code grants **read**, not write)
 
 **Event consumption:** Aircraft reacts to flight lifecycle topics via handler Lambdas:
 
--   `AircraftFlightArrivedHandlerLambda` ← `FlightArrivedTopic`
--   `AircraftFlightMarkedAsDelayedEnRouteHandlerLambda` ← `FlightMarkedAsDelayedEnRouteTopic`
--   `AircraftFlightMarkedAsEnRouteHandlerLambda` ← `FlightMarkedAsEnRouteTopic`
+- `AircraftFlightArrivedHandlerLambda` ← `FlightArrivedTopic`
+- `AircraftFlightMarkedAsDelayedEnRouteHandlerLambda` ← `FlightMarkedAsDelayedEnRouteTopic`
+- `AircraftFlightMarkedAsEnRouteHandlerLambda` ← `FlightMarkedAsEnRouteTopic`
 
 ---
 
@@ -370,36 +354,35 @@ Resources and flow:
 
 The `EventHandlerLambda` construct standardizes event-driven consumers:
 
--   Creates a dedicated **handler Lambda** (container image) in private isolated subnet
--   Subscribes an **SQS queue** to the SNS topic (`SqsSubscription`)
--   Connects the queue to the Lambda via **SQS event source mapping**
+- Creates a dedicated **handler Lambda** (container image) in private isolated subnet
+- Subscribes an **SQS queue** to the SNS topic (`SqsSubscription`)
+- Connects the queue to the Lambda via **SQS event source mapping**
+    - Batch size: 10
+    - `ReportBatchItemFailures = true` (partial failure reporting)
 
-    -   Batch size: 10
-    -   `ReportBatchItemFailures = true` (partial failure reporting)
-
--   Adds a **DLQ** with `MaxReceiveCount = 3`
--   Grants the Lambda permission to consume from the queue
--   Grants DB proxy connect and opens SG egress to proxy SG
+- Adds a **DLQ** with `MaxReceiveCount = 3`
+- Grants the Lambda permission to consume from the queue
+- Grants DB proxy connect and opens SG egress to proxy SG
 
 **Why this matters:**
 
--   SNS → SQS provides buffering and retry semantics.
--   After 3 failed receives, messages land in the DLQ for investigation/replay.
--   Handler Lambdas can be independently scaled and deployed per event type.
+- SNS → SQS provides buffering and retry semantics.
+- After 3 failed receives, messages land in the DLQ for investigation/replay.
+- Handler Lambdas can be independently scaled and deployed per event type.
 
 ---
 
 ### Security & isolation model
 
--   All Lambdas (API and handlers) run in **private isolated subnets**.
--   No NAT: services rely on VPC endpoints for AWS service access.
--   DB access is strictly via **RDS Proxy SG** rules + IAM auth.
--   S3 bucket blocks public access; bucket is environment-specific via account/region naming.
+- All Lambdas (API and handlers) run in **private isolated subnets**.
+- No NAT: services rely on VPC endpoints for AWS service access.
+- DB access is strictly via **RDS Proxy SG** rules + IAM auth.
+- S3 bucket blocks public access; bucket is environment-specific via account/region naming.
 
 ---
 
 ### Notable operational characteristics (as implied by CDK choices)
 
--   Many resources are configured with **RemovalPolicy.DESTROY** (DynamoDB table, S3 bucket, DB instance). This is convenient for dev/test but risky for production unless changed.
--   The ACM certificate is explicitly **retained**, preventing accidental loss of a validated cert on stack teardown.
--   Using container-image Lambdas standardizes runtime packaging across services and handlers.
+- Many resources are configured with **RemovalPolicy.DESTROY** (DynamoDB table, S3 bucket, DB instance). This is convenient for dev/test but risky for production unless changed.
+- The ACM certificate is explicitly **retained**, preventing accidental loss of a validated cert on stack teardown.
+- Using container-image Lambdas standardizes runtime packaging across services and handlers.

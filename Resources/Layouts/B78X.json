@@ -2,10 +2,14 @@
     "EquipmentType": "B78X",
     "BusinessRows": {
         "1-17": {
-            "Seats": ["A", "K"], "SeatType": "Business", "EveryNthRowOnly": 2
+            "Seats": ["A", "K"],
+            "SeatType": "Business",
+            "EveryNthRowOnly": 2
         },
         "2-18": {
-            "Seats": ["D", "F"], "SeatType": "Business", "EveryNthRowOnly": 2
+            "Seats": ["D", "F"],
+            "SeatType": "Business",
+            "EveryNthRowOnly": 2
         }
     },
     "EconomyRows": {
