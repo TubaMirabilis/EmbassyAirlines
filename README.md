@@ -194,7 +194,7 @@ Within the `Deployment` project there is an `EmbassyAirlinesStack` which inherit
 - **SNS topics** as the service-to-service event bus
 - **A private network** (VPC) with **isolated subnets only** and **VPC endpoints** so workloads can run without NAT
 
-Many resources are configured with **RemovalPolicy.DESTROY** (DynamoDB table, S3 bucket, DB instance). This is convenient for dev/test but risky for production unless changed. Therefore this configuration is intended for non-production environments unless explicitly modified.
+This configuration should be used only in non-production environments unless explicitly modified because many resources are configured with **RemovalPolicy.DESTROY** to facilitate experimentation and reduce costs.
 
 ### Stack composition (what gets created)
 
@@ -207,6 +207,7 @@ Many resources are configured with **RemovalPolicy.DESTROY** (DynamoDB table, S3
     - **S3 Gateway Endpoint** (for Aircraft service S3 access)
     - **DynamoDB Gateway Endpoint** (for Airports DynamoDB access)
     - **SNS Interface Endpoint** (for publishing/consuming SNS without public egress)
+    - **SQS Interface Endpoint** (for sending/receiving SQS messages without public egress)
 
 **Implication:** anything that requires public internet egress (e.g., pulling external APIs, calling 3rd-party services) would not work unless additional egress is introduced.
 
