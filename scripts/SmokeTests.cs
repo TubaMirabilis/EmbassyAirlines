@@ -61,23 +61,26 @@ var jsonContext = new SmokeTestJsonContext();
 var req1 = new CreateOrUpdateAirportDto("RKSI", "ICN", "Incheon International Airport", "Asia/Seoul");
 Console.WriteLine($"Attempting to create resource for {req1.Name} ({req1.IataCode})");
 var res1 = await client.PostAsJsonAsync("airports", req1, jsonContext.CreateOrUpdateAirportDto);
+res1.EnsureSuccessStatusCode();
 var stream1 = await res1.Content.ReadAsStreamAsync();
 var airport1 = await JsonSerializer.DeserializeAsync<AirportDto>(stream1, SmokeTestJsonContext.Default.AirportDto) ?? throw new JsonException("Deserialization returned null");
 Console.WriteLine($"Created airport with ID: {airport1.Id}");
 var req2 = new CreateOrUpdateAirportDto("EHAM", "AMS", "Schipol Airport", "Europe/Amsterdam");
 Console.WriteLine($"Attempting to create resource for {req2.Name} ({req2.IataCode})");
 var res2 = await client.PostAsJsonAsync("airports", req2, jsonContext.CreateOrUpdateAirportDto);
+res2.EnsureSuccessStatusCode();
 var stream2 = await res2.Content.ReadAsStreamAsync();
 var airport2 = await JsonSerializer.DeserializeAsync<AirportDto>(stream2, SmokeTestJsonContext.Default.AirportDto) ?? throw new JsonException("Deserialization returned null");
 Console.WriteLine($"Created airport with ID: {airport2.Id}");
 var req3 = new CreateAircraftDto("PH-JRN", "B78X", 135500, "Parked", 254011, "RKSI", null, 201848, 192777, 101522);
 Console.WriteLine($"Attempting to create aircraft with tail number {req3.TailNumber}");
 var res3 = await client.PostAsJsonAsync("aircraft", req3, jsonContext.CreateAircraftDto);
+res3.EnsureSuccessStatusCode();
 var stream3 = await res3.Content.ReadAsStreamAsync();
 var aircraft = await JsonSerializer.DeserializeAsync<AircraftDto>(stream3, SmokeTestJsonContext.Default.AircraftDto) ?? throw new JsonException("Deserialization returned null");
 Console.WriteLine($"Created aircraft with ID: {aircraft.Id}");
-var tz1 = DateTimeZoneProviders.Tzdb["Asia/Seoul"];
 Console.WriteLine($"Scheduling flight from {airport1.IataCode} to {airport2.IataCode}");
+var tz1 = DateTimeZoneProviders.Tzdb["Asia/Seoul"];
 var tz2 = DateTimeZoneProviders.Tzdb["Europe/Amsterdam"];
 var soon = SystemClock.Instance.GetCurrentInstant().Plus(Duration.FromMinutes(30));
 soon = Instant.FromUnixTimeTicks((soon.ToUnixTimeTicks() / NodaConstants.TicksPerMinute + 1) * NodaConstants.TicksPerMinute);
@@ -98,6 +101,7 @@ var req4 = new ScheduleFlightDto
     OperationType = "RevenuePassenger"
 };
 var res4 = await client.PostAsJsonAsync("flights", req4, jsonContext.ScheduleFlightDto);
+res4.EnsureSuccessStatusCode();
 var stream4 = await res4.Content.ReadAsStreamAsync();
 var flight = await JsonSerializer.DeserializeAsync<FlightDto>(stream4, SmokeTestJsonContext.Default.FlightDto) ?? throw new JsonException("Deserialization returned null");
 Console.WriteLine($"Scheduled flight with ID: {flight.Id}");
@@ -110,7 +114,7 @@ namespace SmokeTests
     [JsonSerializable(typeof(CreateAircraftDto))]
     [JsonSerializable(typeof(FlightDto))]
     [JsonSerializable(typeof(ScheduleFlightDto))]
-    internal partial class SmokeTestJsonContext : JsonSerializerContext
+    internal sealed partial class SmokeTestJsonContext : JsonSerializerContext
     {
     }
 }

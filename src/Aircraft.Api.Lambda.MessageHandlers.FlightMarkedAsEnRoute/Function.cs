@@ -19,6 +19,7 @@ public class Function
         var config = new ConfigurationBuilder().AddEnvironmentVariables(prefix: "FLIGHTS_").Build();
         var services = new ServiceCollection();
         services.AddSingleton<IConfiguration>(config);
+        services.AddLogging();
         services.AddDatabaseConnection(config);
         services.AddSingleton(TimeProvider.System);
         _serviceProvider = services.BuildServiceProvider();
