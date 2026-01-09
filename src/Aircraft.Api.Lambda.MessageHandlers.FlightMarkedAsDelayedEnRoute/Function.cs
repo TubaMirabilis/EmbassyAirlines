@@ -39,7 +39,7 @@ public class Function
                 {
                     ItemIdentifier = message.MessageId
                 });
-                context.Logger.LogError($"Error processing message {message.MessageId}: {ex.Message}");
+                context.Logger.LogError($"Error processing message {message.MessageId}: {ex}");
             }
         }
         return new SQSBatchResponse

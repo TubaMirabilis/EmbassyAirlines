@@ -17,8 +17,11 @@ public static class ServiceCollectionExtensions
             Host = host,
             Database = dbName
         }.ConnectionString;
+        var dataSourceBuilder = new NpgsqlDataSourceBuilder(connectionString);
+        dataSourceBuilder.UseNodaTime();
+        var dataSource = dataSourceBuilder.Build();
         services.AddSingleton<EntityFrameworkInterceptor>();
-        services.AddDbContext<ApplicationDbContext>((sp, options) => options.UseNpgsql(new NpgsqlConnection(connectionString), x =>
+        services.AddDbContext<ApplicationDbContext>((sp, options) => options.UseNpgsql(dataSource, x =>
         {
             x.MigrationsHistoryTable("__EFMigrationsHistory", "flights");
             x.UseNodaTime();

@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Aircraft.Infrastructure.Migrations;
 
 /// <inheritdoc />
-public partial class InitialCreate : Migration
+internal sealed partial class InitialCreate : Migration
 {
     /// <inheritdoc />
     protected override void Up(MigrationBuilder migrationBuilder)
