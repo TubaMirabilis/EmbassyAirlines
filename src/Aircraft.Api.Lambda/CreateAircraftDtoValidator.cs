@@ -1,5 +1,6 @@
 using Aircraft.Core.Models;
 using FluentValidation;
+using Shared.Contracts;
 
 namespace Aircraft.Api.Lambda;
 

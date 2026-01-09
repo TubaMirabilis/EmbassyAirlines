@@ -1,4 +1,5 @@
 using FluentValidation;
+using Shared.Contracts;
 
 namespace Airports.Api.Lambda;
 

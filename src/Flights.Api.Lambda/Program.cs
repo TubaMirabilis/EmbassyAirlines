@@ -4,6 +4,7 @@ using FluentValidation;
 using NodaTime;
 using Serilog;
 using Shared;
+using Shared.Contracts;
 using Shared.Extensions;
 using Shared.Middleware;
 
