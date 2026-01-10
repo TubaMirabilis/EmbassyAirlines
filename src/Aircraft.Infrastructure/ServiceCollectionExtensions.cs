@@ -36,7 +36,7 @@ public static class ServiceCollectionExtensions
             passwordProviderAsync: async (builder, ct) => await RDSAuthTokenGenerator.GenerateAuthTokenAsync(host, port, username));
         var dataSource = dataSourceBuilder.Build();
         services.AddSingleton(dataSource);
-        services.AddDbContext<ApplicationDbContext>((sp, options) => options.UseNpgsql(new NpgsqlConnection(connectionString), x =>
+        services.AddDbContext<ApplicationDbContext>((sp, options) => options.UseNpgsql(dataSource, x =>
         {
             x.MigrationsHistoryTable("__EFMigrationsHistory", "aircraft");
             x.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
