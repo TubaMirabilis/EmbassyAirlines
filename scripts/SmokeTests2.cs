@@ -22,12 +22,12 @@ var departureFromIncheon = soon.InZone(tz1).ToDateTimeUnspecified();
 var arrivalAtSchipol = soon.InZone(tz2).ToDateTimeUnspecified().AddHours(10).AddMinutes(30);
 var req4 = new ScheduleFlightDto
 {
-    AircraftId = new Guid("23167325-0acb-422e-a679-6e7e23b9ac51"),
+    AircraftId = new Guid("087163c3-d8b7-4edc-9552-e68b6367087f"),
     FlightNumberIata = "EB1",
     FlightNumberIcao = "EBY1",
-    DepartureAirportId = new Guid("21217064-fba2-4295-90ff-962b5a8def7a"),
+    DepartureAirportId = new Guid("f7c33b38-d04d-48a8-99f0-5e943208a68f"),
     DepartureLocalTime = departureFromIncheon,
-    ArrivalAirportId = new Guid("dffb2ee4-c81e-42fc-8af8-b355d9d379db"),
+    ArrivalAirportId = new Guid("458024b2-a321-4fb1-aed0-e69cd9a468f9"),
     ArrivalLocalTime = arrivalAtSchipol,
     EconomyPrice = 400,
     BusinessPrice = 4000,
