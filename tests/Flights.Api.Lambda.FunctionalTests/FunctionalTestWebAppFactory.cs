@@ -57,20 +57,20 @@ public class FunctionalTestWebAppFactory : WebApplicationFactory<Program>, IAsyn
             Name = "Incheon International Airport",
             TimeZoneId = "Asia/Seoul"
         });
-        SchipolAirport = Airport.Create(new AirportCreationArgs
+        SchipholAirport = Airport.Create(new AirportCreationArgs
         {
             CreatedAt = clock.GetCurrentInstant(),
             IataCode = "AMS",
             IcaoCode = "EHAM",
             Id = Guid.NewGuid(),
-            Name = "Schipol Airport",
+            Name = "Schiphol Airport",
             TimeZoneId = "Europe/Amsterdam"
         });
         Aircraft1 = Aircraft.Create(Guid.NewGuid(), "C-FJRN", "B78X", clock.GetCurrentInstant());
         Aircraft2 = Aircraft.Create(Guid.NewGuid(), "C-FJRO", "B78X", clock.GetCurrentInstant());
         using var scope = Services.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-        dbContext.Airports.AddRange(IncheonAirport, SchipolAirport);
+        dbContext.Airports.AddRange(IncheonAirport, SchipholAirport);
         dbContext.Aircraft.AddRange(Aircraft1, Aircraft2);
         await dbContext.SaveChangesAsync();
     }
@@ -82,7 +82,7 @@ public class FunctionalTestWebAppFactory : WebApplicationFactory<Program>, IAsyn
         GC.SuppressFinalize(this);
     }
     internal Airport? IncheonAirport { get; private set; }
-    internal Airport? SchipolAirport { get; private set; }
+    internal Airport? SchipholAirport { get; private set; }
     internal Aircraft? Aircraft1 { get; private set; }
     internal Aircraft? Aircraft2 { get; private set; }
 }

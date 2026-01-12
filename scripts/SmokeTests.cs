@@ -57,24 +57,23 @@ if (s3Response.HttpStatusCode is not HttpStatusCode.OK)
     throw new InvalidOperationException("Failed to upload seat layout to S3");
 }
 Console.WriteLine($"AWS S3 upload of file {path} to bucket aircraft-bucket-{accountId}-{region} completed successfully");
-var jsonContext = new SmokeTestJsonContext();
 var req1 = new CreateOrUpdateAirportDto("RKSI", "ICN", "Incheon International Airport", "Asia/Seoul");
 Console.WriteLine($"Attempting to create resource for {req1.Name} ({req1.IataCode})");
-var res1 = await client.PostAsJsonAsync("airports", req1, jsonContext.CreateOrUpdateAirportDto);
+var res1 = await client.PostAsJsonAsync("airports", req1, SmokeTestJsonContext.Default.CreateOrUpdateAirportDto);
 res1.EnsureSuccessStatusCode();
 var stream1 = await res1.Content.ReadAsStreamAsync();
 var airport1 = await JsonSerializer.DeserializeAsync<AirportDto>(stream1, SmokeTestJsonContext.Default.AirportDto) ?? throw new JsonException("Deserialization returned null");
 Console.WriteLine($"Created airport with ID: {airport1.Id}");
-var req2 = new CreateOrUpdateAirportDto("EHAM", "AMS", "Schipol Airport", "Europe/Amsterdam");
+var req2 = new CreateOrUpdateAirportDto("EHAM", "AMS", "Schiphol Airport", "Europe/Amsterdam");
 Console.WriteLine($"Attempting to create resource for {req2.Name} ({req2.IataCode})");
-var res2 = await client.PostAsJsonAsync("airports", req2, jsonContext.CreateOrUpdateAirportDto);
+var res2 = await client.PostAsJsonAsync("airports", req2, SmokeTestJsonContext.Default.CreateOrUpdateAirportDto);
 res2.EnsureSuccessStatusCode();
 var stream2 = await res2.Content.ReadAsStreamAsync();
 var airport2 = await JsonSerializer.DeserializeAsync<AirportDto>(stream2, SmokeTestJsonContext.Default.AirportDto) ?? throw new JsonException("Deserialization returned null");
 Console.WriteLine($"Created airport with ID: {airport2.Id}");
 var req3 = new CreateAircraftDto("PH-JRN", "B78X", 135500, "Parked", 254011, "RKSI", null, 201848, 192777, 101522);
 Console.WriteLine($"Attempting to create aircraft with tail number {req3.TailNumber}");
-var res3 = await client.PostAsJsonAsync("aircraft", req3, jsonContext.CreateAircraftDto);
+var res3 = await client.PostAsJsonAsync("aircraft", req3, SmokeTestJsonContext.Default.CreateAircraftDto);
 res3.EnsureSuccessStatusCode();
 var stream3 = await res3.Content.ReadAsStreamAsync();
 var aircraft = await JsonSerializer.DeserializeAsync<AircraftDto>(stream3, SmokeTestJsonContext.Default.AircraftDto) ?? throw new JsonException("Deserialization returned null");
@@ -85,16 +84,16 @@ var tz2 = DateTimeZoneProviders.Tzdb["Europe/Amsterdam"];
 var soon = SystemClock.Instance.GetCurrentInstant().Plus(Duration.FromMinutes(30));
 soon = Instant.FromUnixTimeTicks((soon.ToUnixTimeTicks() / NodaConstants.TicksPerMinute + 1) * NodaConstants.TicksPerMinute);
 var departureFromIncheon = soon.InZone(tz1).ToDateTimeUnspecified();
-var arrivalAtSchipol = soon.InZone(tz2).ToDateTimeUnspecified().AddHours(10).AddMinutes(30);
+var arrivalAtSchiphol = soon.InZone(tz2).ToDateTimeUnspecified().AddHours(10).AddMinutes(30);
 var req4 = new ScheduleFlightDto
 {
     AircraftId = aircraft.Id,
     FlightNumberIata = "EB1",
     FlightNumberIcao = "EBY1",
-    DepartureAirportId = airport2.Id,
+    DepartureAirportId = airport1.Id,
     DepartureLocalTime = departureFromIncheon,
-    ArrivalAirportId = airport1.Id,
-    ArrivalLocalTime = arrivalAtSchipol,
+    ArrivalAirportId = airport2.Id,
+    ArrivalLocalTime = arrivalAtSchiphol,
     EconomyPrice = 400,
     BusinessPrice = 4000,
     SchedulingAmbiguityPolicy = "ThrowWhenAmbiguous",

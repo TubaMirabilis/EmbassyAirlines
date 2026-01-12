@@ -13,18 +13,18 @@ public class FlightsTests : BaseFunctionalTest
 {
     private static FlightDto? s_dto;
     private readonly Airport _incheon;
-    private readonly Airport _schipol;
+    private readonly Airport _schiphol;
     private readonly Aircraft _aircraft1;
     private readonly Aircraft _aircraft2;
     private readonly IClock _clock;
     public FlightsTests(FunctionalTestWebAppFactory factory) : base(factory)
     {
         ArgumentNullException.ThrowIfNull(factory.IncheonAirport);
-        ArgumentNullException.ThrowIfNull(factory.SchipolAirport);
+        ArgumentNullException.ThrowIfNull(factory.SchipholAirport);
         ArgumentNullException.ThrowIfNull(factory.Aircraft1);
         ArgumentNullException.ThrowIfNull(factory.Aircraft2);
         _incheon = factory.IncheonAirport;
-        _schipol = factory.SchipolAirport;
+        _schiphol = factory.SchipholAirport;
         _aircraft1 = factory.Aircraft1;
         _aircraft2 = factory.Aircraft2;
         _clock = factory.Services.GetRequiredService<IClock>();
@@ -40,7 +40,7 @@ public class FlightsTests : BaseFunctionalTest
         var now = _clock.GetCurrentInstant();
         var soon = now.Plus(Duration.FromMinutes(30));
         var departureFromIncheon = recently.InZone(tz1).ToDateTimeUnspecified();
-        var arrivalAtSchipol = soon.InZone(tz2).ToDateTimeUnspecified().AddHours(10).AddMinutes(30);
+        var arrivalAtSchiphol = soon.InZone(tz2).ToDateTimeUnspecified().AddHours(10).AddMinutes(30);
         var request = new ScheduleFlightDto
         {
             AircraftId = _aircraft1.Id,
@@ -48,8 +48,8 @@ public class FlightsTests : BaseFunctionalTest
             FlightNumberIcao = "EBY1",
             DepartureAirportId = _incheon.Id,
             DepartureLocalTime = departureFromIncheon,
-            ArrivalAirportId = _schipol.Id,
-            ArrivalLocalTime = arrivalAtSchipol,
+            ArrivalAirportId = _schiphol.Id,
+            ArrivalLocalTime = arrivalAtSchiphol,
             EconomyPrice = 400,
             BusinessPrice = 4000,
             SchedulingAmbiguityPolicy = "ThrowWhenAmbiguous",
@@ -73,7 +73,7 @@ public class FlightsTests : BaseFunctionalTest
         var now = _clock.GetCurrentInstant();
         var soon = now.Plus(Duration.FromMinutes(30));
         var departureFromIncheon = soon.InZone(tz1).ToDateTimeUnspecified();
-        var arrivalAtSchipol = now.InZone(tz2).ToDateTimeUnspecified();
+        var arrivalAtSchiphol = now.InZone(tz2).ToDateTimeUnspecified();
         var request = new ScheduleFlightDto
         {
             AircraftId = _aircraft1.Id,
@@ -81,8 +81,8 @@ public class FlightsTests : BaseFunctionalTest
             FlightNumberIcao = "EBY1",
             DepartureAirportId = _incheon.Id,
             DepartureLocalTime = departureFromIncheon,
-            ArrivalAirportId = _schipol.Id,
-            ArrivalLocalTime = arrivalAtSchipol,
+            ArrivalAirportId = _schiphol.Id,
+            ArrivalLocalTime = arrivalAtSchiphol,
             EconomyPrice = 400,
             BusinessPrice = 4000,
             SchedulingAmbiguityPolicy = "ThrowWhenAmbiguous",
@@ -106,7 +106,7 @@ public class FlightsTests : BaseFunctionalTest
         var tz2 = DateTimeZoneProviders.Tzdb["Europe/Amsterdam"];
         var soon = _clock.GetCurrentInstant().Plus(Duration.FromMinutes(30));
         var departureFromIncheon = soon.InZone(tz1).ToDateTimeUnspecified();
-        var arrivalAtSchipol = soon.InZone(tz2).ToDateTimeUnspecified().AddHours(10).AddMinutes(30);
+        var arrivalAtSchiphol = soon.InZone(tz2).ToDateTimeUnspecified().AddHours(10).AddMinutes(30);
         var request = new ScheduleFlightDto
         {
             AircraftId = id,
@@ -114,8 +114,8 @@ public class FlightsTests : BaseFunctionalTest
             FlightNumberIcao = "EBY1",
             DepartureAirportId = _incheon.Id,
             DepartureLocalTime = departureFromIncheon,
-            ArrivalAirportId = _schipol.Id,
-            ArrivalLocalTime = arrivalAtSchipol,
+            ArrivalAirportId = _schiphol.Id,
+            ArrivalLocalTime = arrivalAtSchiphol,
             EconomyPrice = 400,
             BusinessPrice = 4000,
             SchedulingAmbiguityPolicy = "ThrowWhenAmbiguous",
@@ -139,7 +139,7 @@ public class FlightsTests : BaseFunctionalTest
         var tz2 = DateTimeZoneProviders.Tzdb["Europe/Amsterdam"];
         var soon = _clock.GetCurrentInstant().Plus(Duration.FromMinutes(30));
         var departureFromIncheon = soon.InZone(tz1).ToDateTimeUnspecified();
-        var arrivalAtSchipol = soon.InZone(tz2).ToDateTimeUnspecified().AddHours(10).AddMinutes(30);
+        var arrivalAtSchiphol = soon.InZone(tz2).ToDateTimeUnspecified().AddHours(10).AddMinutes(30);
         var request = new ScheduleFlightDto
         {
             AircraftId = _aircraft1.Id,
@@ -147,8 +147,8 @@ public class FlightsTests : BaseFunctionalTest
             FlightNumberIcao = "EBY1",
             DepartureAirportId = id,
             DepartureLocalTime = departureFromIncheon,
-            ArrivalAirportId = _schipol.Id,
-            ArrivalLocalTime = arrivalAtSchipol,
+            ArrivalAirportId = _schiphol.Id,
+            ArrivalLocalTime = arrivalAtSchiphol,
             EconomyPrice = 400,
             BusinessPrice = 4000,
             SchedulingAmbiguityPolicy = "ThrowWhenAmbiguous",
@@ -172,7 +172,7 @@ public class FlightsTests : BaseFunctionalTest
         var tz2 = DateTimeZoneProviders.Tzdb["Europe/Amsterdam"];
         var soon = _clock.GetCurrentInstant().Plus(Duration.FromMinutes(30));
         var departureFromIncheon = soon.InZone(tz1).ToDateTimeUnspecified();
-        var arrivalAtSchipol = soon.InZone(tz2).ToDateTimeUnspecified().AddHours(10).AddMinutes(30);
+        var arrivalAtSchiphol = soon.InZone(tz2).ToDateTimeUnspecified().AddHours(10).AddMinutes(30);
         var request = new ScheduleFlightDto
         {
             AircraftId = _aircraft1.Id,
@@ -181,7 +181,7 @@ public class FlightsTests : BaseFunctionalTest
             DepartureAirportId = _incheon.Id,
             DepartureLocalTime = departureFromIncheon,
             ArrivalAirportId = id,
-            ArrivalLocalTime = arrivalAtSchipol,
+            ArrivalLocalTime = arrivalAtSchiphol,
             EconomyPrice = 400,
             BusinessPrice = 4000,
             SchedulingAmbiguityPolicy = "ThrowWhenAmbiguous",
@@ -204,7 +204,7 @@ public class FlightsTests : BaseFunctionalTest
         var tz2 = DateTimeZoneProviders.Tzdb["Europe/Amsterdam"];
         var soon = _clock.GetCurrentInstant().Plus(Duration.FromMinutes(30));
         var departureFromIncheon = soon.InZone(tz1).ToDateTimeUnspecified();
-        var arrivalAtSchipol = soon.InZone(tz2).ToDateTimeUnspecified().AddHours(10).AddMinutes(30);
+        var arrivalAtSchiphol = soon.InZone(tz2).ToDateTimeUnspecified().AddHours(10).AddMinutes(30);
         var request = new ScheduleFlightDto
         {
             AircraftId = _aircraft1.Id,
@@ -212,8 +212,8 @@ public class FlightsTests : BaseFunctionalTest
             FlightNumberIcao = "EBY1",
             DepartureAirportId = _incheon.Id,
             DepartureLocalTime = departureFromIncheon,
-            ArrivalAirportId = _schipol.Id,
-            ArrivalLocalTime = arrivalAtSchipol,
+            ArrivalAirportId = _schiphol.Id,
+            ArrivalLocalTime = arrivalAtSchiphol,
             EconomyPrice = 400,
             BusinessPrice = 4000,
             SchedulingAmbiguityPolicy = "None",
@@ -237,7 +237,7 @@ public class FlightsTests : BaseFunctionalTest
         var soon = _clock.GetCurrentInstant().Plus(Duration.FromMinutes(30));
         soon = Instant.FromUnixTimeTicks((soon.ToUnixTimeTicks() / NodaConstants.TicksPerMinute + 1) * NodaConstants.TicksPerMinute);
         var departureFromIncheon = soon.InZone(tz1).ToDateTimeUnspecified();
-        var arrivalAtSchipol = soon.InZone(tz2).ToDateTimeUnspecified().AddHours(10).AddMinutes(30);
+        var arrivalAtSchiphol = soon.InZone(tz2).ToDateTimeUnspecified().AddHours(10).AddMinutes(30);
         var duration = TimeSpan.FromHours(10).Add(TimeSpan.FromMinutes(30));
         var request = new ScheduleFlightDto
         {
@@ -246,8 +246,8 @@ public class FlightsTests : BaseFunctionalTest
             FlightNumberIcao = "EBY1",
             DepartureAirportId = _incheon.Id,
             DepartureLocalTime = departureFromIncheon,
-            ArrivalAirportId = _schipol.Id,
-            ArrivalLocalTime = arrivalAtSchipol,
+            ArrivalAirportId = _schiphol.Id,
+            ArrivalLocalTime = arrivalAtSchiphol,
             EconomyPrice = 400,
             BusinessPrice = 4000,
             SchedulingAmbiguityPolicy = "ThrowWhenAmbiguous",
@@ -274,10 +274,10 @@ public class FlightsTests : BaseFunctionalTest
             x.DepartureAirportName == _incheon.Name &&
             x.DepartureAirportTimeZoneId == _incheon.TimeZoneId &&
             x.ArrivalAirportId == request.ArrivalAirportId &&
-            x.ArrivalAirportIataCode == _schipol.IataCode &&
-            x.ArrivalAirportIcaoCode == _schipol.IcaoCode &&
-            x.ArrivalAirportName == _schipol.Name &&
-            x.ArrivalAirportTimeZoneId == _schipol.TimeZoneId &&
+            x.ArrivalAirportIataCode == _schiphol.IataCode &&
+            x.ArrivalAirportIcaoCode == _schiphol.IcaoCode &&
+            x.ArrivalAirportName == _schiphol.Name &&
+            x.ArrivalAirportTimeZoneId == _schiphol.TimeZoneId &&
             x.DepartureTime == soon.InZone(tz1).ToDateTimeOffset() &&
             x.ArrivalTime == soon.InZone(tz2).ToDateTimeOffset().AddHours(10).AddMinutes(30) &&
             x.Duration == duration &&
@@ -312,7 +312,7 @@ public class FlightsTests : BaseFunctionalTest
         ArgumentNullException.ThrowIfNull(s_dto);
         var expected = new FlightListDto([s_dto], 1, 50, 1, false);
         var from = _incheon.IataCode;
-        var to = _schipol.IataCode;
+        var to = _schiphol.IataCode;
 
         // Act
         var uri = new Uri($"flights?from={from}&to={to}&page=1&pageSize=50", UriKind.Relative);
@@ -454,8 +454,8 @@ public class FlightsTests : BaseFunctionalTest
         var tz2 = DateTimeZoneProviders.Tzdb["Europe/Amsterdam"];
         var tomorrow = _clock.GetCurrentInstant().Plus(Duration.FromDays(1));
         var departureFromIncheon = tomorrow.InZone(tz1).ToDateTimeUnspecified();
-        var arrivalAtSchipol = tomorrow.InZone(tz2).ToDateTimeUnspecified().AddHours(10).AddMinutes(30);
-        var request = new RescheduleFlightDto(departureFromIncheon, arrivalAtSchipol, "ThrowWhenAmbiguous");
+        var arrivalAtSchiphol = tomorrow.InZone(tz2).ToDateTimeUnspecified().AddHours(10).AddMinutes(30);
+        var request = new RescheduleFlightDto(departureFromIncheon, arrivalAtSchiphol, "ThrowWhenAmbiguous");
 
         // Act
         var response = await HttpClient.PatchAsJsonAsync($"flights/{s_dto.Id}/schedule", request, TestContext.Current.CancellationToken);
