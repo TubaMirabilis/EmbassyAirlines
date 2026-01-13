@@ -9,7 +9,6 @@ public sealed class Aircraft
     {
         Ensure.NotNullOrEmpty(args.TailNumber);
         Ensure.NotNullOrEmpty(args.EquipmentCode);
-        ValidateLocationConsistency(args.Status, args.ParkedAt, args.EnRouteTo);
         Id = Guid.NewGuid();
         CreatedAt = args.CreatedAt;
         UpdatedAt = CreatedAt;
@@ -20,9 +19,9 @@ public sealed class Aircraft
         MaximumLandingWeight = args.MaximumLandingWeight;
         MaximumZeroFuelWeight = args.MaximumZeroFuelWeight;
         MaximumFuelWeight = args.MaximumFuelWeight;
-        Status = args.Status;
-        ParkedAt = args.ParkedAt?.Trim().ToUpperInvariant();
-        EnRouteTo = args.EnRouteTo?.Trim().ToUpperInvariant();
+        Status = args.AircraftLocationData.Status;
+        ParkedAt = args.AircraftLocationData.ParkedAt;
+        EnRouteTo = args.AircraftLocationData.EnRouteTo;
         var seats = args.Seats.ToSeatsCollection(Id, args.CreatedAt).ToList();
         var seen = new HashSet<(byte RowNumber, char Letter)>();
         if (seats.Any(seat => !seen.Add((seat.RowNumber, seat.Letter))))
@@ -66,32 +65,5 @@ public sealed class Aircraft
         EnRouteTo = null;
         Status = Status.Parked;
         UpdatedAt = updatedAt;
-    }
-    private static void ValidateLocationConsistency(Status status, string? parkedAt, string? enRouteTo)
-    {
-        var hasParkedAt = !string.IsNullOrWhiteSpace(parkedAt);
-        var hasEnRouteTo = !string.IsNullOrWhiteSpace(enRouteTo);
-        if (status == Status.Parked)
-        {
-            if (!hasParkedAt)
-            {
-                throw new ArgumentException("Status is Parked, so ParkedAt must be provided.");
-            }
-            if (hasEnRouteTo)
-            {
-                throw new ArgumentException("Status is Parked, so EnRouteTo must be empty.");
-            }
-        }
-        if (status == Status.EnRoute)
-        {
-            if (!hasEnRouteTo)
-            {
-                throw new ArgumentException("Status is EnRoute, so EnRouteTo must be provided.");
-            }
-            if (hasParkedAt)
-            {
-                throw new ArgumentException("Status is EnRoute, so ParkedAt must be empty.");
-            }
-        }
     }
 }

@@ -76,9 +76,7 @@ internal sealed class CreateAircraftEndpoint : IEndpoint
                 MaximumFuelWeight = new Weight(dto.MaximumFuelWeight),
                 CreatedAt = timeProvider.GetUtcNow(),
                 Seats = def,
-                ParkedAt = dto.ParkedAt,
-                EnRouteTo = dto.EnRouteTo,
-                Status = status
+                AircraftLocationData = new AircraftLocationData(status, dto.ParkedAt, dto.EnRouteTo)
             };
             var aircraft = Core.Models.Aircraft.Create(args);
             ctx.Aircraft.Add(aircraft);
