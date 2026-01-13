@@ -13,13 +13,13 @@
     <PackageVersion Include="SonarAnalyzer.CSharp" Version="10.18.0.131500" />
   </ItemGroup>
   <ItemGroup>
-    <PackageVersion Include="Amazon.Lambda.AspNetCoreServer.Hosting" Version="1.9.0" />
+    <PackageVersion Include="Amazon.Lambda.AspNetCoreServer.Hosting" Version="1.9.1" />
     <PackageVersion Include="Amazon.Lambda.Core" Version="2.8.0" />
     <PackageVersion Include="Amazon.Lambda.Serialization.SystemTextJson" Version="2.4.4" />
     <PackageVersion Include="Amazon.Lambda.SQSEvents" Version="2.2.0" />
     <PackageVersion Include="AWSSDK.DynamoDBv2" Version="4.0.10.7" />
     <PackageVersion Include="AWSSDK.Extensions.NETCore.Setup" Version="4.0.3.19" />
-    <PackageVersion Include="AWSSDK.S3" Version="4.0.17" />
+    <PackageVersion Include="AWSSDK.S3" Version="4.0.17.1" />
     <PackageVersion Include="CliWrap" Version="3.10.0" />
     <PackageVersion Include="coverlet.collector" Version="6.0.4" />
     <PackageVersion Include="EFCore.NamingConventions" Version="10.0.0" />

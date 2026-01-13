@@ -9,18 +9,7 @@ public sealed class Aircraft
     {
         Ensure.NotNullOrEmpty(args.TailNumber);
         Ensure.NotNullOrEmpty(args.EquipmentCode);
-        if (string.IsNullOrWhiteSpace(args.ParkedAt) == string.IsNullOrWhiteSpace(args.EnRouteTo))
-        {
-            throw new ArgumentException("Aircraft must be either parked or en route, but not both.");
-        }
-        if (args.Status == Status.Parked && string.IsNullOrWhiteSpace(args.ParkedAt))
-        {
-            throw new ArgumentException("Parked aircraft must have a ParkedAt location.");
-        }
-        if (args.Status == Status.EnRoute && string.IsNullOrWhiteSpace(args.EnRouteTo))
-        {
-            throw new ArgumentException("Destination must be provided for en route aircraft.");
-        }
+        ValidateLocationConsistency(args.Status, args.ParkedAt, args.EnRouteTo);
         Id = Guid.NewGuid();
         CreatedAt = args.CreatedAt;
         UpdatedAt = CreatedAt;
@@ -77,5 +66,32 @@ public sealed class Aircraft
         EnRouteTo = null;
         Status = Status.Parked;
         UpdatedAt = updatedAt;
+    }
+    private static void ValidateLocationConsistency(Status status, string? parkedAt, string? enRouteTo)
+    {
+        var hasParkedAt = !string.IsNullOrWhiteSpace(parkedAt);
+        var hasEnRouteTo = !string.IsNullOrWhiteSpace(enRouteTo);
+        if (status == Status.Parked)
+        {
+            if (!hasParkedAt)
+            {
+                throw new ArgumentException("Status is Parked, so ParkedAt must be provided.");
+            }
+            if (hasEnRouteTo)
+            {
+                throw new ArgumentException("Status is Parked, so EnRouteTo must be empty.");
+            }
+        }
+        if (status == Status.EnRoute)
+        {
+            if (!hasEnRouteTo)
+            {
+                throw new ArgumentException("Status is EnRoute, so EnRouteTo must be provided.");
+            }
+            if (hasParkedAt)
+            {
+                throw new ArgumentException("Status is EnRoute, so ParkedAt must be empty.");
+            }
+        }
     }
 }
