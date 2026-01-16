@@ -38,7 +38,7 @@ internal sealed class CreateAircraftEndpoint : IEndpoint
         if (!Enum.TryParse<Status>(dto.Status, out var status))
         {
             logger.LogWarning("Invalid status value: {Status}", dto.Status);
-            var error = Error.Validation("Aircraft.InvalidStatus", $"Invalid status value: {dto.Status}");
+            var error = Error.Validation("Aircraft.InvalidStatus", $"{dto.Status} is not a valid status");
             return ErrorHandlingHelper.HandleProblem(error);
         }
         if (await ctx.Aircraft.AnyAsync(a => a.TailNumber == dto.TailNumber, ct))

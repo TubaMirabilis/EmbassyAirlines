@@ -6,27 +6,21 @@ public sealed record AircraftLocationData
     {
         var hasParkedAt = !string.IsNullOrWhiteSpace(parkedAt);
         var hasEnRouteTo = !string.IsNullOrWhiteSpace(enRouteTo);
-        if (status == Status.Parked)
+        if (status == Status.Parked && !hasParkedAt)
         {
-            if (!hasParkedAt)
-            {
-                throw new ArgumentException("Status is Parked, so ParkedAt must be provided.");
-            }
-            if (hasEnRouteTo)
-            {
-                throw new ArgumentException("Status is Parked, so EnRouteTo must be empty.");
-            }
+            throw new ArgumentException("Status is Parked, so ParkedAt must be provided.");
         }
-        if (status == Status.EnRoute)
+        if (status == Status.Parked && hasEnRouteTo)
         {
-            if (!hasEnRouteTo)
-            {
-                throw new ArgumentException("Status is EnRoute, so EnRouteTo must be provided.");
-            }
-            if (hasParkedAt)
-            {
-                throw new ArgumentException("Status is EnRoute, so ParkedAt must be empty.");
-            }
+            throw new ArgumentException("Status is Parked, so EnRouteTo must be empty.");
+        }
+        if (status == Status.EnRoute && !hasEnRouteTo)
+        {
+            throw new ArgumentException("Status is EnRoute, so EnRouteTo must be provided.");
+        }
+        if (status == Status.EnRoute && hasParkedAt)
+        {
+            throw new ArgumentException("Status is EnRoute, so ParkedAt must be empty.");
         }
         Status = status;
         ParkedAt = parkedAt?.Trim().ToUpperInvariant();

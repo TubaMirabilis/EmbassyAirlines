@@ -28,6 +28,34 @@ public class AircraftTests : BaseFunctionalTest
     }
 
     [Fact, TestPriority(1)]
+    public async Task Create_Should_ReturnBadRequest_WhenRequestIsInvalid()
+    {
+        // Arrange
+        var request = new CreateAircraftDto("C-FJRN", "B78X", 135500, "Parked", 0, "CYVR", null, 201848, 192777, 101522);
+        var error = "Maximum takeoff weight must be greater than zero.";
+
+        // Act
+        var response = await HttpClient.PostAsJsonAsync("aircraft", request, TestContext.Current.CancellationToken);
+
+        // Assert
+        await GetProblemDetailsFromResponseAndAssert(response, error);
+    }
+
+    [Fact, TestPriority(2)]
+    public async Task Create_Should_ReturnBadRequest_WhenStatusIsInvalid()
+    {
+        // Arrange
+        var request = new CreateAircraftDto("C-FJRN", "B78X", 135500, "Delayed", 254011, null, null, 201848, 192777, 101522);
+        var error = "Delayed is not a valid status";
+
+        // Act
+        var response = await HttpClient.PostAsJsonAsync("aircraft", request, TestContext.Current.CancellationToken);
+
+        // Assert
+        await GetProblemDetailsFromResponseAndAssert(response, error);
+    }
+
+    [Fact, TestPriority(3)]
     public async Task Create_Should_ReturnBadRequest_WhenStatusIsParkedAndParkedAtIsNotProvided()
     {
         // Arrange
@@ -41,7 +69,7 @@ public class AircraftTests : BaseFunctionalTest
         await GetProblemDetailsFromResponseAndAssert(response, error);
     }
 
-    [Fact, TestPriority(2)]
+    [Fact, TestPriority(4)]
     public async Task Create_Should_ReturnBadRequest_WhenStatusIsParkedAndEnRouteToIsProvided()
     {
         // Arrange
@@ -55,7 +83,7 @@ public class AircraftTests : BaseFunctionalTest
         await GetProblemDetailsFromResponseAndAssert(response, error);
     }
 
-    [Fact, TestPriority(3)]
+    [Fact, TestPriority(5)]
     public async Task Create_Should_ReturnBadRequest_WhenStatusIsEnRouteAndEnRouteToIsNotProvided()
     {
         // Arrange
@@ -69,7 +97,7 @@ public class AircraftTests : BaseFunctionalTest
         await GetProblemDetailsFromResponseAndAssert(response, error);
     }
 
-    [Fact, TestPriority(4)]
+    [Fact, TestPriority(6)]
     public async Task Create_Should_ReturnBadRequest_WhenStatusIsEnRouteAndParkedAtIsProvided()
     {
         // Arrange
@@ -83,7 +111,7 @@ public class AircraftTests : BaseFunctionalTest
         await GetProblemDetailsFromResponseAndAssert(response, error);
     }
 
-    [Fact, TestPriority(5)]
+    [Fact, TestPriority(7)]
     public async Task Create_Should_ReturnCreated_WhenRequestIsValid()
     {
         // Arrange
@@ -111,7 +139,7 @@ public class AircraftTests : BaseFunctionalTest
             x.Seats == 337);
     }
 
-    [Fact, TestPriority(6)]
+    [Fact, TestPriority(8)]
     public async Task Create_Should_ReturnConflict_WhenAircraftAlreadyExists()
     {
         // Arrange
@@ -125,7 +153,7 @@ public class AircraftTests : BaseFunctionalTest
         await GetProblemDetailsFromResponseAndAssert(response, error);
     }
 
-    [Fact, TestPriority(7)]
+    [Fact, TestPriority(9)]
     public async Task GetById_Should_ReturnNotFound_WhenAircraftDoesNotExist()
     {
         // Arrange
@@ -140,7 +168,7 @@ public class AircraftTests : BaseFunctionalTest
         await GetProblemDetailsFromResponseAndAssert(response, error);
     }
 
-    [Fact, TestPriority(8)]
+    [Fact, TestPriority(10)]
     public async Task GetById_Should_ReturnOk_WhenAircraftExists()
     {
         // Arrange
@@ -156,7 +184,7 @@ public class AircraftTests : BaseFunctionalTest
         aircraftDto.Should().BeEquivalentTo(s_dto);
     }
 
-    [Fact, TestPriority(9)]
+    [Fact, TestPriority(11)]
     public async Task List_Should_ReturnOk_WhenAircraftExist()
     {
         // Arrange
@@ -172,7 +200,7 @@ public class AircraftTests : BaseFunctionalTest
         aircraftListDto.Should().BeEquivalentTo(expected);
     }
 
-    [Fact, TestPriority(10)]
+    [Fact, TestPriority(12)]
     public async Task List_Should_ReturnOk_WhenAircraftExistAndQueryStringParametersAreUsed()
     {
         // Arrange
