@@ -4,12 +4,12 @@
     <CentralPackageTransitivePinningEnabled>false</CentralPackageTransitivePinningEnabled>
   </PropertyGroup>
   <ItemGroup Condition="'$(MSBuildProjectExtension)' != '.dcproj'">
-    <PackageVersion Include="Amazon.CDK.Lib" Version="2.235.0" />
+    <PackageVersion Include="Amazon.CDK.Lib" Version="2.235.1" />
     <PackageVersion Include="Amazon.JSII.Analyzers" Version="1.125.0" />
     <PackageVersion Include="AWS.Messaging" Version="1.0.2" />
     <PackageVersion Include="AWSSDK.CloudWatchLogs" Version="4.0.9.3" />
     <PackageVersion Include="AWSSDK.RDS" Version="4.0.16.1" />
-    <PackageVersion Include="Constructs" Version="10.4.4" />
+    <PackageVersion Include="Constructs" Version="10.4.5" />
     <PackageVersion Include="SonarAnalyzer.CSharp" Version="10.18.0.131500" />
   </ItemGroup>
   <ItemGroup>
