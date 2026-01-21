@@ -4,6 +4,5 @@ namespace Flights.Api.Lambda.FunctionalTests;
 public sealed class TestPriorityAttribute : Attribute
 {
     public TestPriorityAttribute(int priority) => Priority = priority;
-
-    public int Priority { get; private set; }
+    public int Priority { get; }
 }
