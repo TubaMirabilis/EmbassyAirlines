@@ -2,6 +2,9 @@ using System.Text.Json;
 using Amazon.DynamoDBv2;
 using Amazon.DynamoDBv2.DocumentModel;
 using Amazon.DynamoDBv2.Model;
+using ErrorOr;
+using Microsoft.AspNetCore.Http.HttpResults;
+using Shared;
 using Shared.Contracts;
 using Shared.Endpoints;
 
@@ -9,28 +12,33 @@ namespace Airports.Api.Lambda.Endpoints;
 
 internal sealed class ListAirportsEndpoint : IEndpoint
 {
-    private readonly IConfiguration _config;
-    private readonly IAmazonDynamoDB _dynamoDb;
-    public ListAirportsEndpoint(IConfiguration config, IAmazonDynamoDB dynamoDb)
-    {
-        _config = config;
-        _dynamoDb = dynamoDb;
-    }
     public void MapEndpoint(IEndpointRouteBuilder app)
-        => app.MapGet("airports", InvokeAsync);
-    private async Task<IResult> InvokeAsync(CancellationToken ct)
+        => app.MapGet("airports", InvokeAsync)
+              .WithSummary("List all airports")
+              .Produces<IEnumerable<AirportDto>>(StatusCodes.Status200OK)
+              .ProducesProblem(StatusCodes.Status500InternalServerError);
+    private async Task<Results<Ok<IEnumerable<AirportDto>>, ProblemHttpResult>> InvokeAsync(IConfiguration config, IAmazonDynamoDB dynamoDb, CancellationToken ct)
     {
         var scanRequest = new ScanRequest
         {
-            TableName = _config["DynamoDb:TableName"]
+            TableName = config["DynamoDb:TableName"]
         };
-        var response = await _dynamoDb.ScanAsync(scanRequest, ct);
-        var airports = response.Items.Select(item =>
+        var response = await dynamoDb.ScanAsync(scanRequest, ct);
+        try
         {
-            var itemAsDocument = Document.FromAttributeMap(item);
-            var airportAsJson = itemAsDocument.ToJson();
-            return JsonSerializer.Deserialize<AirportDto>(airportAsJson);
-        });
-        return TypedResults.Ok(airports);
+            var airports = response.Items.Select(item =>
+            {
+                var itemAsDocument = Document.FromAttributeMap(item);
+                var airportAsJson = itemAsDocument.ToJson();
+                var airport = JsonSerializer.Deserialize<AirportDto>(airportAsJson) ?? throw new JsonException("Deserialization resulted in null");
+                return airport;
+            });
+            return TypedResults.Ok(airports);
+        }
+        catch (JsonException)
+        {
+            var error = Error.Unexpected("Airport.ListingError", "An error occurred while processing the airport data.");
+            return TypedResults.Problem(ErrorHandlingHelper.GetProblemDetails(error));
+        }
     }
 }

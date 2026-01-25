@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using ErrorOr;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Shared;
 
@@ -12,7 +13,7 @@ public static class ErrorHandlingHelper
         { 409, "Conflict Error" },
         { 404, "Query Error" }
     }.AsReadOnly();
-    public static IResult HandleProblem(Error error)
+    public static ProblemDetails GetProblemDetails(Error error)
     {
         var statusCode = error.Type switch
         {
@@ -23,8 +24,17 @@ public static class ErrorHandlingHelper
         };
         return statusCode switch
         {
-            StatusCodes.Status500InternalServerError => Results.Problem(statusCode: statusCode, title: error.Description),
-            _ => Results.Problem(statusCode: statusCode, title: ErrorMessages[statusCode], detail: error.Description)
+            StatusCodes.Status500InternalServerError => new ProblemDetails
+            {
+                Status = statusCode,
+                Title = error.Description
+            },
+            _ => new ProblemDetails
+            {
+                Status = statusCode,
+                Title = ErrorMessages[statusCode],
+                Detail = error.Description
+            }
         };
     }
 }

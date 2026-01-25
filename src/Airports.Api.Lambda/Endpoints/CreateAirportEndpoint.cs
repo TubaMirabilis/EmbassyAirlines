@@ -6,6 +6,7 @@ using Amazon.DynamoDBv2.Model;
 using AWS.Messaging;
 using ErrorOr;
 using FluentValidation;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Shared;
 using Shared.Contracts;
 using Shared.Endpoints;
@@ -16,22 +17,28 @@ namespace Airports.Api.Lambda.Endpoints;
 internal sealed class CreateAirportEndpoint : IEndpoint
 {
     public void MapEndpoint(IEndpointRouteBuilder app)
-        => app.MapPost("airports", InvokeAsync);
-    private async Task<IResult> InvokeAsync(IConfiguration config,
-                                            IAmazonDynamoDB dynamoDb,
-                                            ILogger<CreateAirportEndpoint> logger,
-                                            IMessagePublisher publisher,
-                                            IValidator<CreateOrUpdateAirportDto> validator,
-                                            TimeProvider timeProvider,
-                                            CreateOrUpdateAirportDto dto,
-                                            CancellationToken ct)
+        => app.MapPost("airports", InvokeAsync)
+              .WithSummary("Create an airport")
+              .Accepts<CreateOrUpdateAirportDto>("application/json")
+              .Produces<AirportDto>(StatusCodes.Status201Created)
+              .ProducesProblem(StatusCodes.Status400BadRequest)
+              .ProducesProblem(StatusCodes.Status409Conflict)
+              .ProducesProblem(StatusCodes.Status500InternalServerError);
+    private async Task<Results<Created<AirportDto>, ProblemHttpResult>> InvokeAsync(IConfiguration config,
+                                                                                    IAmazonDynamoDB dynamoDb,
+                                                                                    ILogger<CreateAirportEndpoint> logger,
+                                                                                    IMessagePublisher publisher,
+                                                                                    IValidator<CreateOrUpdateAirportDto> validator,
+                                                                                    TimeProvider timeProvider,
+                                                                                    CreateOrUpdateAirportDto dto,
+                                                                                    CancellationToken ct)
     {
         var validationResult = await validator.ValidateAsync(dto, ct);
         if (!validationResult.IsValid(out var formattedErrors))
         {
             logger.LogWarning("Validation failed for creation of airport: {Errors}", formattedErrors);
             var error = Error.Validation("Airport.Validation", formattedErrors);
-            return ErrorHandlingHelper.HandleProblem(error);
+            return TypedResults.Problem(ErrorHandlingHelper.GetProblemDetails(error));
         }
         var scanRequest = new ScanRequest
         {
@@ -47,7 +54,7 @@ internal sealed class CreateAirportEndpoint : IEndpoint
         {
             logger.LogWarning("Conflict: Airport with IATA code {IataCode} already exists", dto.IataCode);
             var error = Error.Conflict("Airport.Conflict", $"Airport with IATA code {dto.IataCode} already exists");
-            return ErrorHandlingHelper.HandleProblem(error);
+            return TypedResults.Problem(ErrorHandlingHelper.GetProblemDetails(error));
         }
         var airport = Airport.Create(dto.IcaoCode, dto.IataCode, dto.Name, dto.TimeZoneId, timeProvider.GetUtcNow());
         var airportAsJson = JsonSerializer.Serialize(airport);
@@ -63,9 +70,10 @@ internal sealed class CreateAirportEndpoint : IEndpoint
         {
             logger.LogError("Failed to create airport: {Errors}", response);
             var error = Error.Failure("Airport.Create", "Failed to create airport");
-            return ErrorHandlingHelper.HandleProblem(error);
+            return TypedResults.Problem(ErrorHandlingHelper.GetProblemDetails(error));
         }
         await publisher.PublishAsync(new AirportCreatedEvent(Guid.NewGuid(), airport.Id, airport.Name, airport.IcaoCode, airport.IataCode, airport.TimeZoneId), ct);
-        return TypedResults.Created($"/airports/{airport.Id}", airport);
+        var body = new AirportDto(airport.Id, airport.Name, airport.IcaoCode, airport.IataCode, airport.TimeZoneId);
+        return TypedResults.Created($"/airports/{airport.Id}", body);
     }
 }

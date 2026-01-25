@@ -15,7 +15,7 @@ internal sealed class Airport
         CreatedAt = createdAt;
         UpdatedAt = createdAt;
         Name = name;
-        IcaoCode = iataCode;
+        IcaoCode = icaoCode;
         IataCode = iataCode;
         TimeZoneId = timeZoneId;
     }
