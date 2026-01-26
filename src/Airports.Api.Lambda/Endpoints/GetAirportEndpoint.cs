@@ -13,7 +13,7 @@ internal sealed class GetAirportEndpoint : IEndpoint
               .Produces<AirportDto>(StatusCodes.Status200OK)
               .ProducesProblem(StatusCodes.Status404NotFound)
               .ProducesProblem(StatusCodes.Status500InternalServerError);
-    static private async Task<Results<Ok<AirportDto>, ProblemHttpResult>> InvokeAsync(IAirportRepository repository, ILogger<GetAirportEndpoint> logger, Guid id, CancellationToken ct)
+    private static async Task<Results<Ok<AirportDto>, ProblemHttpResult>> InvokeAsync(IAirportRepository repository, ILogger<GetAirportEndpoint> logger, Guid id, CancellationToken ct)
     {
         var getAirportResult = await repository.GetAirportByIdAsync(id, ct);
         if (getAirportResult.IsError)

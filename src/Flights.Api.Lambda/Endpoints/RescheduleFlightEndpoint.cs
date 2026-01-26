@@ -3,6 +3,7 @@ using ErrorOr;
 using Flights.Api.Lambda.Extensions;
 using Flights.Core.Models;
 using Flights.Infrastructure.Database;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 using NodaTime;
 using Shared;
@@ -14,8 +15,14 @@ namespace Flights.Api.Lambda.Endpoints;
 internal sealed class RescheduleFlightEndpoint : IEndpoint
 {
     public void MapEndpoint(IEndpointRouteBuilder app)
-        => app.MapPatch("flights/{id}/schedule", InvokeAsync);
-    private static async Task<IResult> InvokeAsync(ApplicationDbContext ctx,
+        => app.MapPatch("flights/{id}/schedule", InvokeAsync)
+              .WithSummary("Reschedule an existing flight")
+              .Accepts<RescheduleFlightDto>("application/json")
+              .Produces<FlightDto>(StatusCodes.Status200OK)
+              .ProducesProblem(StatusCodes.Status400BadRequest)
+              .ProducesProblem(StatusCodes.Status404NotFound)
+              .ProducesProblem(StatusCodes.Status500InternalServerError);
+    private static async Task<Results<Ok<FlightDto>, ProblemHttpResult>> InvokeAsync(ApplicationDbContext ctx,
                                                    IClock clock,
                                                    ILogger<RescheduleFlightEndpoint> logger,
                                                    IMessagePublisher publisher,
@@ -27,7 +34,7 @@ internal sealed class RescheduleFlightEndpoint : IEndpoint
         {
             logger.LogWarning("Invalid scheduling ambiguity policy: {Policy}", dto.SchedulingAmbiguityPolicy);
             var error = Error.Validation("Flight.InvalidSchedulingAmbiguityPolicy", "Invalid scheduling ambiguity policy");
-            return ErrorHandlingHelper.HandleProblem(error);
+            return TypedResults.Problem(ErrorHandlingHelper.GetProblemDetails(error));
         }
         var flight = await ctx.Flights
                               .FirstOrDefaultAsync(a => a.Id == id, ct);
@@ -35,7 +42,7 @@ internal sealed class RescheduleFlightEndpoint : IEndpoint
         {
             logger.LogWarning("Flight with ID {Id} not found", id);
             var error = Error.NotFound("Flight.NotFound", $"Flight with ID {id} not found");
-            return ErrorHandlingHelper.HandleProblem(error);
+            return TypedResults.Problem(ErrorHandlingHelper.GetProblemDetails(error));
         }
         try
         {
@@ -58,7 +65,7 @@ internal sealed class RescheduleFlightEndpoint : IEndpoint
         {
             logger.LogWarning(ex, "Invalid operation while rescheduling flight: {Message}", ex.Message);
             var error = Error.Validation("Flight.ReschedulingFailed", ex.Message);
-            return ErrorHandlingHelper.HandleProblem(error);
+            return TypedResults.Problem(ErrorHandlingHelper.GetProblemDetails(error));
         }
     }
 }

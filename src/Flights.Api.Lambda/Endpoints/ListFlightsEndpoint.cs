@@ -1,5 +1,6 @@
 using Flights.Api.Lambda.Extensions;
 using Flights.Infrastructure.Database;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 using Shared.Contracts;
 using Shared.Endpoints;
@@ -9,13 +10,16 @@ namespace Flights.Api.Lambda.Endpoints;
 internal sealed class ListFlightsEndpoint : IEndpoint
 {
     public void MapEndpoint(IEndpointRouteBuilder app)
-        => app.MapGet("flights", InvokeAsync);
-    private static async Task<IResult> InvokeAsync(ApplicationDbContext ctx,
-                                                   int page = 1,
-                                                   int pageSize = 50,
-                                                   string? from = null,
-                                                   string? to = null,
-                                                   CancellationToken ct = default)
+        => app.MapGet("flights", InvokeAsync)
+              .WithSummary("List flights with optional filtering and pagination")
+              .Produces<FlightListDto>(StatusCodes.Status200OK)
+              .ProducesProblem(StatusCodes.Status500InternalServerError);
+    private static async Task<Results<Ok<FlightListDto>, ProblemHttpResult>> InvokeAsync(ApplicationDbContext ctx,
+                                                                                         int page = 1,
+                                                                                         int pageSize = 50,
+                                                                                         string? from = null,
+                                                                                         string? to = null,
+                                                                                         CancellationToken ct = default)
     {
         page = Math.Max(page, 1);
         pageSize = Math.Clamp(pageSize, 1, 200);

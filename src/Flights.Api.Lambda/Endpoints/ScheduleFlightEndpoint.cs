@@ -4,6 +4,7 @@ using Flights.Api.Lambda.Extensions;
 using Flights.Core.Models;
 using Flights.Infrastructure.Database;
 using FluentValidation;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 using NodaTime;
 using Shared;
@@ -16,33 +17,39 @@ namespace Flights.Api.Lambda.Endpoints;
 internal sealed class ScheduleFlightEndpoint : IEndpoint
 {
     public void MapEndpoint(IEndpointRouteBuilder app)
-        => app.MapPost("flights", InvokeAsync);
-    private static async Task<IResult> InvokeAsync(ApplicationDbContext ctx,
-                                            IClock clock,
-                                            ILogger<ScheduleFlightEndpoint> logger,
-                                            IMessagePublisher publisher,
-                                            IValidator<ScheduleFlightDto> validator,
-                                            ScheduleFlightDto dto,
-                                            CancellationToken ct)
+        => app.MapPost("flights", InvokeAsync)
+              .WithSummary("Schedule a new flight")
+              .Accepts<ScheduleFlightDto>("application/json")
+              .Produces<FlightDto>(StatusCodes.Status201Created)
+              .ProducesProblem(StatusCodes.Status400BadRequest)
+              .ProducesProblem(StatusCodes.Status404NotFound)
+              .ProducesProblem(StatusCodes.Status500InternalServerError);
+    private static async Task<Results<Created<FlightDto>, ProblemHttpResult>> InvokeAsync(ApplicationDbContext ctx,
+                                                                                          IClock clock,
+                                                                                          ILogger<ScheduleFlightEndpoint> logger,
+                                                                                          IMessagePublisher publisher,
+                                                                                          IValidator<ScheduleFlightDto> validator,
+                                                                                          ScheduleFlightDto dto,
+                                                                                          CancellationToken ct)
     {
         var validationResult = await validator.ValidateAsync(dto, ct);
         if (!validationResult.IsValid(out var formattedErrors))
         {
             logger.LogWarning("Validation failed for flight creation: {Errors}", formattedErrors);
             var error = Error.Validation("Flight.ValidationFailed", formattedErrors);
-            return ErrorHandlingHelper.HandleProblem(error);
+            return TypedResults.Problem(ErrorHandlingHelper.GetProblemDetails(error));
         }
         if (!Enum.TryParse<OperationType>(dto.OperationType, out var operationType))
         {
             logger.LogWarning("Invalid operation type: {Type}", dto.OperationType);
             var error = Error.Validation("Flight.InvalidOperationType", $"Invalid operation type: {dto.OperationType}");
-            return ErrorHandlingHelper.HandleProblem(error);
+            return TypedResults.Problem(ErrorHandlingHelper.GetProblemDetails(error));
         }
         if (!Enum.TryParse<SchedulingAmbiguityPolicy>(dto.SchedulingAmbiguityPolicy, out var schedulingAmbiguityPolicy))
         {
             logger.LogWarning("Invalid scheduling ambiguity policy: {Policy}", dto.SchedulingAmbiguityPolicy);
             var error = Error.Validation("Flight.InvalidSchedulingAmbiguityPolicy", $"Invalid scheduling ambiguity policy: {dto.SchedulingAmbiguityPolicy}");
-            return ErrorHandlingHelper.HandleProblem(error);
+            return TypedResults.Problem(ErrorHandlingHelper.GetProblemDetails(error));
         }
         var departureAirport = await ctx.Airports
                                         .Where(a => a.Id == dto.DepartureAirportId)
@@ -51,7 +58,7 @@ internal sealed class ScheduleFlightEndpoint : IEndpoint
         {
             logger.LogWarning("Departure airport with ID {Id} not found", dto.DepartureAirportId);
             var error = Error.NotFound("Flight.DepartureAirportNotFound", $"Departure airport with ID {dto.DepartureAirportId} not found");
-            return ErrorHandlingHelper.HandleProblem(error);
+            return TypedResults.Problem(ErrorHandlingHelper.GetProblemDetails(error));
         }
         var arrivalAirport = await ctx.Airports
                                       .Where(a => a.Id == dto.ArrivalAirportId)
@@ -60,7 +67,7 @@ internal sealed class ScheduleFlightEndpoint : IEndpoint
         {
             logger.LogWarning("Arrival airport with ID {Id} not found", dto.ArrivalAirportId);
             var error = Error.NotFound("Flight.ArrivalAirportNotFound", $"Arrival airport with ID {dto.ArrivalAirportId} not found");
-            return ErrorHandlingHelper.HandleProblem(error);
+            return TypedResults.Problem(ErrorHandlingHelper.GetProblemDetails(error));
         }
         var aircraft = await ctx.Aircraft
                                 .Where(a => a.Id == dto.AircraftId)
@@ -69,7 +76,7 @@ internal sealed class ScheduleFlightEndpoint : IEndpoint
         {
             logger.LogWarning("Aircraft with ID {Id} not found", dto.AircraftId);
             var error = Error.NotFound("Flight.AircraftNotFound", $"Aircraft with ID {dto.AircraftId} not found");
-            return ErrorHandlingHelper.HandleProblem(error);
+            return TypedResults.Problem(ErrorHandlingHelper.GetProblemDetails(error));
         }
         try
         {
@@ -105,7 +112,7 @@ internal sealed class ScheduleFlightEndpoint : IEndpoint
         {
             logger.LogWarning(ex, "Invalid operation while scheduling flight: {Message}", ex.Message);
             var error = Error.Validation("Flight.SchedulingFailed", ex.Message);
-            return ErrorHandlingHelper.HandleProblem(error);
+            return TypedResults.Problem(ErrorHandlingHelper.GetProblemDetails(error));
         }
     }
 }
