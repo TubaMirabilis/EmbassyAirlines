@@ -1,5 +1,6 @@
 using Aircraft.Infrastructure.Database;
 using ErrorOr;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 using Shared;
 using Shared.Contracts;
@@ -10,18 +11,22 @@ namespace Aircraft.Api.Lambda.Endpoints;
 internal sealed class ListAircraftEndpoint : IEndpoint
 {
     public void MapEndpoint(IEndpointRouteBuilder app)
-        => app.MapGet("aircraft", InvokeAsync);
-    private static async Task<IResult> InvokeAsync(ApplicationDbContext ctx,
-                                                   int page = 1,
-                                                   int pageSize = 50,
-                                                   string? parkedAt = null,
-                                                   string? enRouteTo = null,
-                                                   CancellationToken ct = default)
+        => app.MapGet("aircraft", InvokeAsync)
+              .WithSummary("List all aircraft with optional filtering and pagination")
+              .Produces<AircraftListDto>(StatusCodes.Status200OK)
+              .ProducesProblem(StatusCodes.Status400BadRequest)
+              .ProducesProblem(StatusCodes.Status500InternalServerError);
+    private static async Task<Results<Ok<AircraftListDto>, ProblemHttpResult>> InvokeAsync(ApplicationDbContext ctx,
+                                                                                           int page = 1,
+                                                                                           int pageSize = 50,
+                                                                                           string? parkedAt = null,
+                                                                                           string? enRouteTo = null,
+                                                                                           CancellationToken ct = default)
     {
         if (!string.IsNullOrWhiteSpace(parkedAt) && !string.IsNullOrWhiteSpace(enRouteTo))
         {
             var error = Error.Validation("Aircraft.InvalidQuery", "Cannot filter by both parkedAt and enRouteTo simultaneously.");
-            return ErrorHandlingHelper.HandleProblem(error);
+            return TypedResults.Problem(ErrorHandlingHelper.GetProblemDetails(error));
         }
         page = Math.Max(page, 1);
         pageSize = Math.Clamp(pageSize, 1, 200);
