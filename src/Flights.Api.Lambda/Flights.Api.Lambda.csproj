@@ -3,6 +3,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Shared\Shared.csproj" />
     <ProjectReference Include="..\Flights.Infrastructure\Flights.Infrastructure.csproj" />
+    <ProjectReference Include="..\AWS.Aspire.ServiceDefaults\AWS.Aspire.ServiceDefaults.csproj" />
   </ItemGroup>
 
   <ItemGroup>

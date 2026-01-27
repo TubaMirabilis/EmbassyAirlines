@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Text.Json;
 using Aircraft.Infrastructure;
 using Aircraft.Infrastructure.Database;
@@ -5,6 +6,9 @@ using Amazon.Lambda.Core;
 using Amazon.Lambda.SQSEvents;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using OpenTelemetry.Instrumentation.AWSLambda;
+using OpenTelemetry.Trace;
 using Shared.Contracts;
 
 [assembly: LambdaSerializer(typeof(Amazon.Lambda.Serialization.SystemTextJson.DefaultLambdaJsonSerializer))]
@@ -13,42 +17,30 @@ namespace Aircraft.Api.Lambda.MessageHandlers.FlightMarkedAsDelayedEnRoute;
 
 public class Function
 {
-    private readonly IServiceProvider _serviceProvider;
+    private readonly IHost _host;
+    private readonly TracerProvider _traceProvider;
     public Function()
     {
-        var config = new ConfigurationBuilder().AddEnvironmentVariables(prefix: "FLIGHTS_").Build();
-        var services = new ServiceCollection();
-        services.AddSingleton<IConfiguration>(config);
-        services.AddLogging();
-        services.AddDatabaseConnection(config);
-        services.AddSingleton(TimeProvider.System);
-        _serviceProvider = services.BuildServiceProvider();
+        var builder = new HostApplicationBuilder();
+        var config = builder.Configuration;
+        config.AddEnvironmentVariables(prefix: "AIRCRAFT_");
+        builder.AddServiceDefaults();
+        builder.Services.AddLogging();
+        builder.Services.AddDatabaseConnection(config);
+        builder.Services.AddSingleton(TimeProvider.System);
+        _host = builder.Build();
+        _traceProvider = _host.Services.GetRequiredService<TracerProvider>();
     }
-    public async Task<SQSBatchResponse> FunctionHandler(SQSEvent evnt, ILambdaContext context)
+    public async Task FunctionHandler(SQSEvent evnt, ILambdaContext context) => await AWSLambdaWrapper.TraceAsync(_traceProvider, async (e, ctx) =>
     {
-        var failures = new List<SQSBatchResponse.BatchItemFailure>();
-        foreach (var message in evnt.Records)
+        foreach (var message in e.Records)
         {
-            try
-            {
-                await ProcessMessageAsync(message, context);
-            }
-            catch (Exception ex)
-            {
-                failures.Add(new SQSBatchResponse.BatchItemFailure
-                {
-                    ItemIdentifier = message.MessageId
-                });
-                context.Logger.LogError($"Error processing message {message.MessageId}: {ex}");
-            }
+            await ProcessMessageAsync(message, ctx);
         }
-        return new SQSBatchResponse
-        {
-            BatchItemFailures = failures
-        };
-    }
+    }, evnt, context);
     private async Task ProcessMessageAsync(SQSEvent.SQSMessage message, ILambdaContext context)
     {
+        using var activity = Activity.Current?.Source.StartActivity("FlightMarkedAsDelayedEnRouteEventHandler.ProcessMessage");
         context.Logger.LogInformation($"Processed message {message.Body}");
         var messageElement = JsonDocument.Parse(message.Body).RootElement.GetProperty("Message").GetString();
         if (string.IsNullOrWhiteSpace(messageElement))
@@ -62,8 +54,11 @@ public class Function
             context.Logger.LogWarning("Failed to deserialize flightMarkedAsDelayedEnRouteEvent.");
             return;
         }
+        activity?.SetTag("flight.id", flightMarkedAsDelayedEnRouteEvent.FlightId);
+        activity?.SetTag("flight.aircraft_id", flightMarkedAsDelayedEnRouteEvent.AircraftId);
+        activity?.SetTag("flight.arrival_airport_icao_code", flightMarkedAsDelayedEnRouteEvent.ArrivalAirportIcaoCode);
         context.Logger.LogInformation($"Processing flightMarkedAsDelayedEnRouteEvent with ID: {flightMarkedAsDelayedEnRouteEvent.Id}");
-        using var scope = _serviceProvider.CreateScope();
+        using var scope = _host.Services.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
         var aircraft = await dbContext.Aircraft.FindAsync(flightMarkedAsDelayedEnRouteEvent.AircraftId);
         if (aircraft is null)
@@ -71,7 +66,7 @@ public class Function
             context.Logger.LogWarning($"Aircraft with ID {flightMarkedAsDelayedEnRouteEvent.AircraftId} not found.");
             return;
         }
-        var timeProvider = _serviceProvider.GetRequiredService<TimeProvider>();
+        var timeProvider = _host.Services.GetRequiredService<TimeProvider>();
         aircraft.MarkAsEnRoute(flightMarkedAsDelayedEnRouteEvent.ArrivalAirportIcaoCode, timeProvider.GetUtcNow());
         await dbContext.SaveChangesAsync();
         context.Logger.LogInformation($"Aircraft with ID {aircraft.Id} marked as EnRoute to {aircraft.EnRouteTo}.");

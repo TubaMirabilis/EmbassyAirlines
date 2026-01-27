@@ -2,6 +2,7 @@ using Aircraft.Api.Lambda;
 using Aircraft.Infrastructure;
 using Amazon.S3;
 using FluentValidation;
+using OpenTelemetry.Resources;
 using Serilog;
 using Shared;
 using Shared.Contracts;
@@ -12,6 +13,7 @@ var builder = WebApplication.CreateBuilder(args);
 var config = builder.Configuration;
 config.AddEnvironmentVariables(prefix: "AIRCRAFT_");
 builder.Host.UseSerilog((context, loggerConfig) => loggerConfig.ReadFrom.Configuration(context.Configuration));
+builder.AddServiceDefaults();
 var assembly = typeof(Program).Assembly;
 builder.Services.AddEndpoints(assembly);
 builder.Services.AddAWSLambdaHosting(LambdaEventSource.HttpApi);
@@ -31,7 +33,12 @@ builder.Services.AddAWSMessageBus(bus =>
     Ensure.NotNullOrEmpty(aircraftCreatedTopicArn);
     bus.AddSNSPublisher<AircraftCreatedEvent>(aircraftCreatedTopicArn);
 });
+builder.Services
+    .AddOpenTelemetry()
+    .ConfigureResource(resource => resource.AddService(DiagnosticsConfig.ActivitySource.Name))
+    .WithTracing(tracing => tracing.AddSource(DiagnosticsConfig.ActivitySource.Name));
 var app = builder.Build();
+app.MapDefaultEndpoints();
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();

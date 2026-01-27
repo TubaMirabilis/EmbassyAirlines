@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Text.Json;
 using Amazon.Lambda.Core;
 using Amazon.Lambda.SQSEvents;
@@ -7,7 +8,10 @@ using Flights.Infrastructure.Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using NodaTime;
+using OpenTelemetry.Instrumentation.AWSLambda;
+using OpenTelemetry.Trace;
 using Shared.Contracts;
 
 [assembly: LambdaSerializer(typeof(Amazon.Lambda.Serialization.SystemTextJson.DefaultLambdaJsonSerializer))]
@@ -16,42 +20,30 @@ namespace Flights.Api.Lambda.MessageHandlers.AirportCreated;
 
 public class Function
 {
-    private readonly IServiceProvider _serviceProvider;
+    private readonly IHost _host;
+    private readonly TracerProvider _traceProvider;
     public Function()
     {
-        var config = new ConfigurationBuilder().AddEnvironmentVariables(prefix: "FLIGHTS_").Build();
-        var services = new ServiceCollection();
-        services.AddSingleton<IConfiguration>(config);
-        services.AddLogging();
-        services.AddDatabaseConnection(config);
-        services.AddSingleton<IClock>(SystemClock.Instance);
-        _serviceProvider = services.BuildServiceProvider();
+        var builder = new HostApplicationBuilder();
+        var config = builder.Configuration;
+        config.AddEnvironmentVariables(prefix: "FLIGHTS_");
+        builder.AddServiceDefaults();
+        builder.Services.AddLogging();
+        builder.Services.AddDatabaseConnection(config);
+        builder.Services.AddSingleton<IClock>(SystemClock.Instance);
+        _host = builder.Build();
+        _traceProvider = _host.Services.GetRequiredService<TracerProvider>();
     }
-    public async Task<SQSBatchResponse> FunctionHandler(SQSEvent evnt, ILambdaContext context)
+    public async Task FunctionHandler(SQSEvent evnt, ILambdaContext context) => await AWSLambdaWrapper.TraceAsync(_traceProvider, async (e, ctx) =>
     {
-        var failures = new List<SQSBatchResponse.BatchItemFailure>();
-        foreach (var message in evnt.Records)
+        foreach (var message in e.Records)
         {
-            try
-            {
-                await ProcessMessageAsync(message, context);
-            }
-            catch (Exception ex)
-            {
-                failures.Add(new SQSBatchResponse.BatchItemFailure
-                {
-                    ItemIdentifier = message.MessageId
-                });
-                context.Logger.LogError($"Error processing message {message.MessageId}: {ex}");
-            }
+            await ProcessMessageAsync(message, ctx);
         }
-        return new SQSBatchResponse
-        {
-            BatchItemFailures = failures
-        };
-    }
+    }, evnt, context);
     private async Task ProcessMessageAsync(SQSEvent.SQSMessage message, ILambdaContext context)
     {
+        using var activity = Activity.Current?.Source.StartActivity("AirportCreatedEventHandler.ProcessMessage");
         context.Logger.LogInformation($"Processed message {message.Body}");
         var messageElement = JsonDocument.Parse(message.Body).RootElement.GetProperty("Message").GetString();
         if (string.IsNullOrWhiteSpace(messageElement))
@@ -65,15 +57,20 @@ public class Function
             context.Logger.LogWarning("Failed to deserialize AirportCreatedEvent.");
             return;
         }
+        activity?.SetTag("airport.id", airportCreatedEvent.AirportId);
+        activity?.SetTag("airport.icao_code", airportCreatedEvent.IcaoCode);
+        activity?.SetTag("airport.iata_code", airportCreatedEvent.IataCode);
+        activity?.SetTag("airport.name", airportCreatedEvent.Name);
+        activity?.SetTag("airport.time_zone_id", airportCreatedEvent.TimeZoneId);
         context.Logger.LogInformation($"Processing AirportCreatedEvent with ID: {airportCreatedEvent.Id}");
-        using var scope = _serviceProvider.CreateScope();
+        using var scope = _host.Services.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
         if (await dbContext.Airports.AsNoTracking().AnyAsync(a => a.Id == airportCreatedEvent.AirportId))
         {
             context.Logger.LogWarning($"Airport with ID: {airportCreatedEvent.AirportId} already exists. Skipping creation.");
             return;
         }
-        var clock = _serviceProvider.GetRequiredService<IClock>();
+        var clock = _host.Services.GetRequiredService<IClock>();
         var airport = Airport.Create(new AirportCreationArgs
         {
             CreatedAt = clock.GetCurrentInstant(),

@@ -2,6 +2,7 @@ using Flights.Api.Lambda;
 using Flights.Infrastructure;
 using FluentValidation;
 using NodaTime;
+using OpenTelemetry.Resources;
 using Serilog;
 using Shared;
 using Shared.Contracts;
@@ -12,6 +13,7 @@ var builder = WebApplication.CreateBuilder(args);
 var config = builder.Configuration;
 config.AddEnvironmentVariables(prefix: "FLIGHTS_");
 builder.Host.UseSerilog((context, loggerConfig) => loggerConfig.ReadFrom.Configuration(context.Configuration));
+builder.AddServiceDefaults();
 var assembly = typeof(Program).Assembly;
 var services = builder.Services;
 services.AddEndpoints(assembly);
@@ -26,7 +28,12 @@ services.AddSingleton<IValidator<ScheduleFlightDto>, ScheduleFlightDtoValidator>
 services.AddOpenApi();
 services.AddAWSMessageBus(config);
 services.AddSingleton<IClock>(SystemClock.Instance);
+builder.Services
+    .AddOpenTelemetry()
+    .ConfigureResource(resource => resource.AddService(DiagnosticsConfig.ActivitySource.Name))
+    .WithTracing(tracing => tracing.AddSource(DiagnosticsConfig.ActivitySource.Name));
 var app = builder.Build();
+app.MapDefaultEndpoints();
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();

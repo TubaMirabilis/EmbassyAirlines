@@ -15,5 +15,6 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Aircraft.Infrastructure\Aircraft.Infrastructure.csproj" />
+    <ProjectReference Include="..\AWS.Aspire.ServiceDefaults\AWS.Aspire.ServiceDefaults.csproj" />
   </ItemGroup>
 </Project>
