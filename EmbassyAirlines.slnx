@@ -7,6 +7,7 @@
     <Project Path="src/Aircraft.Core/Aircraft.Core.csproj" />
     <Project Path="src/Aircraft.Infrastructure/Aircraft.Infrastructure.csproj" />
     <Project Path="src/Airports.Api.Lambda/Airports.Api.Lambda.csproj" />
+    <Project Path="src/AWS.Aspire.ServiceDefaults/AWS.Aspire.ServiceDefaults.csproj" />
     <Project Path="src/Flights.Api.Lambda.MessageHandlers.AircraftCreated/Flights.Api.Lambda.MessageHandlers.AircraftCreated.csproj" />
     <Project Path="src/Flights.Api.Lambda.MessageHandlers.AirportCreated/Flights.Api.Lambda.MessageHandlers.AirportCreated.csproj" />
     <Project Path="src/Flights.Api.Lambda.MessageHandlers.AirportUpdated/Flights.Api.Lambda.MessageHandlers.AirportUpdated.csproj" />

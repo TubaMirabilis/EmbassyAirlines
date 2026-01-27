@@ -15,6 +15,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Shared\Shared.csproj" />
+    <ProjectReference Include="..\AWS.Aspire.ServiceDefaults\AWS.Aspire.ServiceDefaults.csproj" />
   </ItemGroup>
 
   <ItemGroup>

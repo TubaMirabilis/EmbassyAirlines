@@ -2,6 +2,7 @@ using Airports.Api.Lambda;
 using Amazon;
 using Amazon.DynamoDBv2;
 using FluentValidation;
+using OpenTelemetry.Resources;
 using Serilog;
 using Shared;
 using Shared.Contracts;
@@ -12,6 +13,7 @@ var builder = WebApplication.CreateBuilder(args);
 var config = builder.Configuration;
 config.AddEnvironmentVariables(prefix: "AIRPORTS_");
 builder.Host.UseSerilog((context, loggerConfig) => loggerConfig.ReadFrom.Configuration(context.Configuration));
+builder.AddServiceDefaults();
 var region = Environment.GetEnvironmentVariable("AWS_REGION") ?? "eu-west-2";
 var assembly = typeof(Program).Assembly;
 builder.Services.AddEndpoints(assembly);
@@ -32,7 +34,12 @@ builder.Services.AddAWSMessageBus(bus =>
     bus.AddSNSPublisher<AirportCreatedEvent>(airportCreatedTopicArn);
     bus.AddSNSPublisher<AirportUpdatedEvent>(airportUpdatedTopicArn);
 });
+builder.Services
+    .AddOpenTelemetry()
+    .ConfigureResource(resource => resource.AddService(DiagnosticsConfig.ActivitySource.Name))
+    .WithTracing(tracing => tracing.AddSource(DiagnosticsConfig.ActivitySource.Name));
 var app = builder.Build();
+app.MapDefaultEndpoints();
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
