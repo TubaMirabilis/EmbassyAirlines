@@ -60,7 +60,11 @@ public class Function
         activity?.SetTag("aircraft.id", aircraftCreatedEvent.AircraftId);
         activity?.SetTag("aircraft.tail_number", aircraftCreatedEvent.TailNumber);
         activity?.SetTag("aircraft.equipment_code", aircraftCreatedEvent.EquipmentCode);
-        context.Logger.LogInformation($"Processing creation of Aircraft with ID: {aircraftCreatedEvent.AircraftId} and Tail Number: {aircraftCreatedEvent.TailNumber}. Event ID: {aircraftCreatedEvent.Id}");
+        context.Logger.LogInformation(
+            "Processing creation of Aircraft with ID: {AircraftId} and Tail Number: {TailNumber}. Event ID: {EventId}",
+            aircraftCreatedEvent.AircraftId,
+            aircraftCreatedEvent.TailNumber,
+            aircraftCreatedEvent.Id);
         using var scope = _host.Services.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
         if (await dbContext.Aircraft.AsNoTracking().AnyAsync(a => a.Id == aircraftCreatedEvent.AircraftId))
@@ -69,7 +73,8 @@ public class Function
             return;
         }
         var clock = _host.Services.GetRequiredService<IClock>();
-        var aircraft = Aircraft.Create(aircraftCreatedEvent.AircraftId, aircraftCreatedEvent.TailNumber, aircraftCreatedEvent.EquipmentCode, clock.GetCurrentInstant());
+        var now = clock.GetCurrentInstant();
+        var aircraft = Aircraft.Create(aircraftCreatedEvent.AircraftId, aircraftCreatedEvent.TailNumber, aircraftCreatedEvent.EquipmentCode, now);
         dbContext.Aircraft.Add(aircraft);
         await dbContext.SaveChangesAsync();
         context.Logger.LogInformation($"Successfully processed AircraftCreatedEvent with ID: {aircraftCreatedEvent.Id}");

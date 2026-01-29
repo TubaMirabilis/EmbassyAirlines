@@ -104,8 +104,13 @@ internal sealed class ScheduleFlightEndpoint : IEndpoint
             });
             ctx.Flights.Add(flight);
             await ctx.SaveChangesAsync(ct);
-            logger.LogInformation("Scheduled new flight {Id}: Departure - {DepartureLocalTime}, Arrival - {ArrivalLocalTime}", flight.Id, dto.DepartureLocalTime, dto.ArrivalLocalTime);
-            await publisher.PublishAsync(new FlightScheduledEvent(flight.Id, flight.OperationType.ToString(), flight.BusinessPrice.Amount, flight.EconomyPrice.Amount), ct);
+            logger.LogInformation(
+                "Scheduled new flight {Id}: Departure - {DepartureLocalTime}, Arrival - {ArrivalLocalTime}",
+                flight.Id,
+                dto.DepartureLocalTime,
+                dto.ArrivalLocalTime);
+            var evnt = new FlightScheduledEvent(flight.Id, flight.OperationType.ToString(), flight.BusinessPrice.Amount, flight.EconomyPrice.Amount);
+            await publisher.PublishAsync(evnt, ct);
             return TypedResults.Created($"/flights/{flight.Id}", flight.ToDto());
         }
         catch (ArgumentOutOfRangeException ex)

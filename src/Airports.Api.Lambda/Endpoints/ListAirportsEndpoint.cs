@@ -17,7 +17,9 @@ internal sealed class ListAirportsEndpoint : IEndpoint
               .WithSummary("List all airports")
               .Produces<IEnumerable<AirportDto>>(StatusCodes.Status200OK)
               .ProducesProblem(StatusCodes.Status500InternalServerError);
-    private async Task<Results<Ok<IEnumerable<AirportDto>>, ProblemHttpResult>> InvokeAsync(IConfiguration config, IAmazonDynamoDB dynamoDb, CancellationToken ct)
+    private async Task<Results<Ok<IEnumerable<AirportDto>>, ProblemHttpResult>> InvokeAsync(IConfiguration config,
+                                                                                            IAmazonDynamoDB dynamoDb,
+                                                                                            CancellationToken ct)
     {
         var scanRequest = new ScanRequest
         {

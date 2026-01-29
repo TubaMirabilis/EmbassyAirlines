@@ -18,7 +18,12 @@ var airportsTable = awsResources.AddDynamoDBTable("AirportsTable", new TableProp
 var topic1 = awsResources.AddSNSTopic("AirportCreatedTopic");
 var topic2 = awsResources.AddSNSTopic("AirportUpdatedTopic");
 builder.AddAWSLambdaServiceEmulator();
-var airportsApiLambda = builder.AddAWSLambdaFunction<Projects.Airports_Api_Lambda>("airports-api", "Airports.Api.Lambda").WithReference(awsSdkConfig).WithReference(topic1).WithReference(topic2).WithReference(airportsTable).WithEnvironment("AIRPORTS_DynamoDb__TableName", "airports");
+var airportsApiLambda = builder.AddAWSLambdaFunction<Projects.Airports_Api_Lambda>("airports-api", "Airports.Api.Lambda")
+                               .WithReference(awsSdkConfig)
+                               .WithReference(topic1)
+                               .WithReference(topic2)
+                               .WithReference(airportsTable)
+                               .WithEnvironment("AIRPORTS_DynamoDb__TableName", "airports");
 builder.AddAWSAPIGatewayEmulator("api-gateway", APIGatewayType.HttpV2, new APIGatewayEmulatorOptions
 {
     Port = 3000

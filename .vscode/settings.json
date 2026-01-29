@@ -12,6 +12,7 @@
         "evnt",
         "JSII",
         "localstack",
+        "Schiphol",
         "Testcontainers"
     ]
 }

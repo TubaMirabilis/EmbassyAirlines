@@ -50,7 +50,8 @@ internal sealed class UpdateAirportEndpoint : IEndpoint
             var error = Error.Failure("Airport.Update", $"Failed to update airport with id {id}");
             return TypedResults.Problem(ErrorHandlingHelper.GetProblemDetails(error));
         }
-        await publisher.PublishAsync(new AirportUpdatedEvent(Guid.NewGuid(), airport.Id, airport.Name, airport.IcaoCode, airport.IataCode, airport.TimeZoneId), ct);
+        var evnt = new AirportUpdatedEvent(Guid.NewGuid(), airport.Id, airport.Name, airport.IcaoCode, airport.IataCode, airport.TimeZoneId);
+        await publisher.PublishAsync(evnt, ct);
         var response = new AirportDto(airport.Id, airport.Name, airport.IcaoCode, airport.IataCode, airport.TimeZoneId);
         return TypedResults.Ok(response);
     }

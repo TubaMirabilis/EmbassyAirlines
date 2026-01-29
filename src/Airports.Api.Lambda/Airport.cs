@@ -39,7 +39,8 @@ internal sealed class Airport
     public string IataCode { get; private set; }
     [JsonInclude]
     public string TimeZoneId { get; private set; }
-    public static Airport Create(string icaoCode, string iataCode, string name, string timeZoneId, DateTimeOffset createdAt) => new(icaoCode, iataCode, name, timeZoneId, createdAt);
+    public static Airport Create(string icaoCode, string iataCode, string name, string timeZoneId, DateTimeOffset createdAt)
+        => new(icaoCode, iataCode, name, timeZoneId, createdAt);
     public void Update(string icaoCode, string iataCode, string name, string timeZoneId, DateTimeOffset updatedAt)
     {
         IcaoCode = icaoCode;

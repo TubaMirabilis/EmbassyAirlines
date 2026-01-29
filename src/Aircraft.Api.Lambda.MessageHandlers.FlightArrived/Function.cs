@@ -57,7 +57,13 @@ public class Function
         activity?.SetTag("flight.id", flightArrivedEvent.FlightId);
         activity?.SetTag("flight.aircraft_id", flightArrivedEvent.AircraftId);
         activity?.SetTag("flight.arrival_airport_icao_code", flightArrivedEvent.ArrivalAirportIcaoCode);
-        context.Logger.LogInformation($"Processing arrival of flight {flightArrivedEvent.FlightId} operated by aircraft {flightArrivedEvent.AircraftId} at airport {flightArrivedEvent.ArrivalAirportIcaoCode}. Event ID: {flightArrivedEvent.Id}");
+        context.Logger.LogInformation(
+            "Processing arrival of flight {FlightId} operated by aircraft {AircraftId} " +
+            "at airport {ArrivalAirportIcaoCode}. Event ID: {EventId}",
+            flightArrivedEvent.FlightId,
+            flightArrivedEvent.AircraftId,
+            flightArrivedEvent.ArrivalAirportIcaoCode,
+            flightArrivedEvent.Id);
         using var scope = _host.Services.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
         var aircraft = await dbContext.Aircraft.FindAsync(flightArrivedEvent.AircraftId);

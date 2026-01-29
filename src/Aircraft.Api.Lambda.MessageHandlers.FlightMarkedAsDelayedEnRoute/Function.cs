@@ -48,7 +48,10 @@ public class Function
             context.Logger.LogWarning("Message element is null or empty.");
             return;
         }
-        var flightMarkedAsDelayedEnRouteEvent = JsonDocument.Parse(messageElement).RootElement.GetProperty("data").Deserialize<FlightMarkedAsDelayedEnRouteEvent>();
+        var flightMarkedAsDelayedEnRouteEvent = JsonDocument.Parse(messageElement)
+                                                            .RootElement
+                                                            .GetProperty("data")
+                                                            .Deserialize<FlightMarkedAsDelayedEnRouteEvent>();
         if (flightMarkedAsDelayedEnRouteEvent is null)
         {
             context.Logger.LogWarning("Failed to deserialize flightMarkedAsDelayedEnRouteEvent.");

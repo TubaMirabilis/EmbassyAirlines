@@ -45,7 +45,13 @@ public static class Extensions
                }).WithTracing(tracing =>
                {
                    tracing.AddSource(builder.Environment.ApplicationName);
-                   tracing.AddAspNetCoreInstrumentation(tracing => tracing.Filter = context => !context.Request.Path.StartsWithSegments(HealthEndpointPath, StringComparison.OrdinalIgnoreCase) && !context.Request.Path.StartsWithSegments(AlivenessEndpointPath, StringComparison.OrdinalIgnoreCase));
+                   tracing.AddAspNetCoreInstrumentation(tracing => tracing.Filter = context =>
+                   {
+                       var path = context.Request.Path;
+                       var stringComparison = StringComparison.OrdinalIgnoreCase;
+                       return !path.StartsWithSegments(HealthEndpointPath, stringComparison) &&
+                              !path.StartsWithSegments(AlivenessEndpointPath, stringComparison);
+                   });
                    tracing.AddHttpClientInstrumentation();
                    tracing.AddAWSInstrumentation();
                    tracing.AddAWSMessagingInstrumentation();

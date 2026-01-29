@@ -70,7 +70,8 @@ public class Function
             return;
         }
         var clock = _host.Services.GetRequiredService<IClock>();
-        airport.Update(airportUpdatedEvent.IcaoCode, airportUpdatedEvent.IataCode, airportUpdatedEvent.Name, airportUpdatedEvent.TimeZoneId, clock.GetCurrentInstant());
+        var now = clock.GetCurrentInstant();
+        airport.Update(airportUpdatedEvent.IcaoCode, airportUpdatedEvent.IataCode, airportUpdatedEvent.Name, airportUpdatedEvent.TimeZoneId, now);
         await dbContext.SaveChangesAsync();
         context.Logger.LogInformation($"Airport with ID {airportUpdatedEvent.AirportId} updated successfully.");
     }

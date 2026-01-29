@@ -72,7 +72,8 @@ internal sealed class CreateAirportEndpoint : IEndpoint
             var error = Error.Failure("Airport.Create", "Failed to create airport");
             return TypedResults.Problem(ErrorHandlingHelper.GetProblemDetails(error));
         }
-        await publisher.PublishAsync(new AirportCreatedEvent(Guid.NewGuid(), airport.Id, airport.Name, airport.IcaoCode, airport.IataCode, airport.TimeZoneId), ct);
+        var evnt = new AirportCreatedEvent(Guid.NewGuid(), airport.Id, airport.Name, airport.IcaoCode, airport.IataCode, airport.TimeZoneId);
+        await publisher.PublishAsync(evnt, ct);
         var body = new AirportDto(airport.Id, airport.Name, airport.IcaoCode, airport.IataCode, airport.TimeZoneId);
         return TypedResults.Created($"/airports/{airport.Id}", body);
     }
