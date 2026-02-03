@@ -41,22 +41,23 @@ The Flights service uses **NodaTime** for robust timezone-aware scheduling that 
 **Key components:**
 
 - **SchedulingAmbiguityPolicy enum** — Controls behavior during DST transitions:
-  - `ThrowWhenAmbiguous` — Rejects scheduling during ambiguous times (e.g., when clocks fall back)
-  - `PreferEarlier` — Chooses the earlier occurrence during ambiguous times
-  - `PreferLater` — Chooses the later occurrence during ambiguous times
+    - `ThrowWhenAmbiguous` — Rejects scheduling during ambiguous times (e.g., when clocks fall back)
+    - `PreferEarlier` — Chooses the earlier occurrence during ambiguous times
+    - `PreferLater` — Chooses the later occurrence during ambiguous times
 
 - **InZone() extension method** — Converts UTC `Instant` values to local `ZonedDateTime` in a specific timezone
-  - Used extensively in flight scheduling tests
-  - Ensures departure/arrival times are correctly interpreted in local airport timezones
+    - Used extensively in flight scheduling tests
+    - Ensures departure/arrival times are correctly interpreted in local airport timezones
 
 - **ZoneLocalMappingResolver** — NodaTime's resolver system for handling DST edge cases:
-  - Configured via `FromSchedulingAmbiguityPolicy()` extension method in Flights.Core
-  - Always uses `Resolvers.ThrowWhenSkipped` for skipped times (e.g., spring forward)
-  - User-selected policy determines behavior for ambiguous times (fall back)
+    - Configured via `FromSchedulingAmbiguityPolicy()` extension method in Flights.Core
+    - Always uses `Resolvers.ThrowWhenSkipped` for skipped times (e.g., spring forward)
+    - User-selected policy determines behavior for ambiguous times (fall back)
 
 **Example DST handling:**
 
 When scheduling a flight departing at 2:30 AM on a DST transition day:
+
 - If clocks fall back (2:00 AM → 1:00 AM), the local time 2:30 AM occurs twice
 - `ThrowWhenAmbiguous` rejects the request, forcing explicit clarification
 - `PreferEarlier` chooses the first 2:30 AM (before the fallback)
@@ -210,15 +211,15 @@ The system currently defines 12 SNS topics, of which 6 have active publishers an
 
 **Planned Event Flows (Topics provisioned, no current consumers):**
 
-| Integration Event            | SNS Topic                        | Status       |
-| ---------------------------- | -------------------------------- | ------------ |
-| FlightScheduledEvent         | FlightScheduledTopic             | No consumers |
-| FlightAircraftAssignedEvent  | AircraftAssignedToFlightTopic    | No consumers |
-| FlightPricingAdjustedEvent   | FlightPricingAdjustedTopic       | No consumers |
-| FlightRescheduledEvent       | FlightRescheduledTopic           | No consumers |
-| FlightCancelledEvent         | FlightCancelledTopic             | No consumers |
-| FlightDelayedEvent           | FlightDelayedTopic               | No consumers |
-| AircraftUpdatedEvent         | AircraftUpdatedTopic (if added)  | No consumers |
+| Integration Event           | SNS Topic                       | Status       |
+| --------------------------- | ------------------------------- | ------------ |
+| FlightScheduledEvent        | FlightScheduledTopic            | No consumers |
+| FlightAircraftAssignedEvent | AircraftAssignedToFlightTopic   | No consumers |
+| FlightPricingAdjustedEvent  | FlightPricingAdjustedTopic      | No consumers |
+| FlightRescheduledEvent      | FlightRescheduledTopic          | No consumers |
+| FlightCancelledEvent        | FlightCancelledTopic            | No consumers |
+| FlightDelayedEvent          | FlightDelayedTopic              | No consumers |
+| AircraftUpdatedEvent        | AircraftUpdatedTopic (if added) | No consumers |
 
 #### Adding a new event or consumer
 
