@@ -4,14 +4,14 @@
     <CentralPackageTransitivePinningEnabled>false</CentralPackageTransitivePinningEnabled>
   </PropertyGroup>
   <ItemGroup Condition="'$(MSBuildProjectExtension)' != '.dcproj'">
-    <PackageVersion Include="Amazon.CDK.Lib" Version="2.236.0" />
+    <PackageVersion Include="Amazon.CDK.Lib" Version="2.237.0" />
     <PackageVersion Include="Amazon.JSII.Analyzers" Version="1.126.0" />
     <PackageVersion Include="Aspire.Hosting.AppHost" Version="13.1.0" />
     <PackageVersion Include="Aspire.Hosting.AWS" Version="9.3.1" />
     <PackageVersion Include="AWS.Messaging" Version="1.1.0" />
     <PackageVersion Include="AWS.Messaging.Telemetry.OpenTelemetry" Version="1.0.0" />
     <PackageVersion Include="AWSSDK.CloudWatchLogs" Version="4.0.9.3" />
-    <PackageVersion Include="AWSSDK.RDS" Version="4.0.16.2" />
+    <PackageVersion Include="AWSSDK.RDS" Version="4.0.16.3" />
     <PackageVersion Include="Constructs" Version="10.4.5" />
     <PackageVersion Include="Microsoft.Extensions.Http.Resilience" Version="10.2.0" />
     <PackageVersion Include="Microsoft.Extensions.ServiceDiscovery" Version="10.2.0" />
@@ -22,16 +22,16 @@
     <PackageVersion Include="OpenTelemetry.Instrumentation.AWSLambda" Version="1.15.0" />
     <PackageVersion Include="OpenTelemetry.Instrumentation.Http" Version="1.15.0" />
     <PackageVersion Include="OpenTelemetry.Instrumentation.Runtime" Version="1.15.0" />
-    <PackageVersion Include="SonarAnalyzer.CSharp" Version="10.18.0.131500" />
+    <PackageVersion Include="SonarAnalyzer.CSharp" Version="10.19.0.132793" />
   </ItemGroup>
   <ItemGroup>
     <PackageVersion Include="Amazon.Lambda.AspNetCoreServer.Hosting" Version="1.9.1" />
     <PackageVersion Include="Amazon.Lambda.Core" Version="2.8.0" />
     <PackageVersion Include="Amazon.Lambda.Serialization.SystemTextJson" Version="2.4.5" />
     <PackageVersion Include="Amazon.Lambda.SQSEvents" Version="2.2.1" />
-    <PackageVersion Include="AWSSDK.DynamoDBv2" Version="4.0.12" />
-    <PackageVersion Include="AWSSDK.Extensions.NETCore.Setup" Version="4.0.3.21" />
-    <PackageVersion Include="AWSSDK.S3" Version="4.0.18" />
+    <PackageVersion Include="AWSSDK.DynamoDBv2" Version="4.0.13" />
+    <PackageVersion Include="AWSSDK.Extensions.NETCore.Setup" Version="4.0.3.22" />
+    <PackageVersion Include="AWSSDK.S3" Version="4.0.18.1" />
     <PackageVersion Include="CliWrap" Version="3.10.0" />
     <PackageVersion Include="coverlet.collector" Version="6.0.4" />
     <PackageVersion Include="EFCore.NamingConventions" Version="10.0.1" />
