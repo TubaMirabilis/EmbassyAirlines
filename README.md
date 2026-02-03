@@ -34,12 +34,43 @@ Embassy Airlines is a cloud-native airline management platform built with .NET 1
 - **Event-driven architecture** consuming aircraft/airport events via SQS
 - **SNS publishing** for flight scheduling and flight operations management
 
+#### Advanced Timezone Handling
+
+The Flights service uses **NodaTime** for robust timezone-aware scheduling that handles real-world complexities:
+
+**Key components:**
+
+- **SchedulingAmbiguityPolicy enum** — Controls behavior during DST transitions:
+  - `ThrowWhenAmbiguous` — Rejects scheduling during ambiguous times (e.g., when clocks fall back)
+  - `PreferEarlier` — Chooses the earlier occurrence during ambiguous times
+  - `PreferLater` — Chooses the later occurrence during ambiguous times
+
+- **InZone() extension method** — Converts UTC `Instant` values to local `ZonedDateTime` in a specific timezone
+  - Used extensively in flight scheduling tests
+  - Ensures departure/arrival times are correctly interpreted in local airport timezones
+
+- **ZoneLocalMappingResolver** — NodaTime's resolver system for handling DST edge cases:
+  - Configured via `FromSchedulingAmbiguityPolicy()` extension method in Flights.Core
+  - Always uses `Resolvers.ThrowWhenSkipped` for skipped times (e.g., spring forward)
+  - User-selected policy determines behavior for ambiguous times (fall back)
+
+**Example DST handling:**
+
+When scheduling a flight departing at 2:30 AM on a DST transition day:
+- If clocks fall back (2:00 AM → 1:00 AM), the local time 2:30 AM occurs twice
+- `ThrowWhenAmbiguous` rejects the request, forcing explicit clarification
+- `PreferEarlier` chooses the first 2:30 AM (before the fallback)
+- `PreferLater` chooses the second 2:30 AM (after the fallback)
+
+This design ensures **flight times are never ambiguous** and clients explicitly handle edge cases rather than silently accepting potentially incorrect schedules.
+
 ## Technical Features
 
 - **Shared library** with common contracts, validation, error handling, and middleware
 - **Comprehensive validation** using FluentValidation
 - **Error handling** with ErrorOr pattern and standardized problem details
 - **Structured logging** with Serilog and correlation IDs
+- **OpenTelemetry distributed tracing** with Activity-based instrumentation in message handlers, correlation ID propagation, and detailed entity tagging for observability
 - **Extensive functional tests** with test containers (PostgreSQL, DynamoDB, LocalStack)
 - **Code quality enforcement** with EditorConfig, analyzers, and formatting rules
 
@@ -53,6 +84,25 @@ Embassy Airlines is a cloud-native airline management platform built with .NET 1
 - Immutable, validated, concept-focused **value objects** such as Weight and Money
 - Consistent hiding of constructors and exposure of static **factory methods**
 - Clean **repository** interface and implementation in Airports.Api.Lambda
+
+**Architectural variation in Airports service:**
+
+The Airports.Api.Lambda differs from the Aircraft and Flights services by **placing domain logic directly in the Lambda project** without a separate `.Core` bounded context library. This is an intentional design choice because:
+
+- The Airport entity has simpler business logic compared to Aircraft and Flight
+- There are no complex value objects or aggregate relationships
+- CRUD operations dominate over complex domain behavior
+
+This demonstrates that **bounded context complexity should match domain complexity** — not every service requires the same level of architectural separation.
+
+**Dual Airport representations:**
+
+The system contains two distinct `Airport` entity representations:
+
+- **Airports.Api.Lambda.Airport** — The authoritative source of truth with full domain logic and persistence
+- **Flights.Core.Models.Airport** — A lightweight read model synchronized via events (see "Read models and CQRS pattern" section)
+
+This duality is intentional and reflects the **CQRS pattern** where each service maintains its own optimized representation of cross-cutting entities.
 
 ### Event-Driven Architecture (EDA)
 
@@ -73,6 +123,41 @@ This design provides:
 - **Retry and recovery** via SQS redrive policies
 
 Services never call each other directly for domain state changes.
+
+#### Read models and CQRS pattern
+
+The Flights service maintains **lightweight read models** of entities from other bounded contexts to support query operations and validation without cross-service API calls.
+
+**Current read models in Flights.Core:**
+
+- **Airport** — Cached representation of airport data (IataCode, IcaoCode, Name, TimeZoneId)
+- **Aircraft** — Cached representation of aircraft data (TailNumber, EquipmentCode)
+
+These read models are:
+
+- Created and updated via **event handlers** consuming `AircraftCreatedEvent`, `AirportCreatedEvent`, and `AirportUpdatedEvent`
+- Stored in the Flights PostgreSQL database alongside the Flight aggregate root
+- Used for **query-side operations** such as validating flight scheduling requests
+- Deliberately simplified — they contain only the subset of data needed by the Flights service
+
+This demonstrates a **CQRS-like pattern** where:
+
+- The **command side** (source of truth) lives in the owning service (Aircraft.Api.Lambda, Airports.Api.Lambda)
+- The **query side** (denormalized read model) lives in the consuming service (Flights.Api.Lambda)
+- Synchronization happens asynchronously via domain events
+
+**Benefits:**
+
+- Flights can validate that referenced airports and aircraft exist without synchronous HTTP calls
+- Each service maintains its own optimized query model
+- Services remain loosely coupled and can scale independently
+- Read models can be rebuilt by replaying events if needed
+
+**Trade-offs:**
+
+- Eventual consistency — there may be a brief delay between an aircraft being created and being available for flight scheduling
+- Storage overhead — data is duplicated across services
+- Maintenance complexity — event handlers must be kept in sync with schema changes
 
 #### Event publishing
 
@@ -108,7 +193,11 @@ Operational expectations:
 - Messages should be inspected and replayed when appropriate
 - Silent DLQ growth indicates a broken consumer or contract mismatch
 
-#### Active Publishers and Consumers
+#### Event Flow Status
+
+The system currently defines 12 SNS topics, of which 6 have active publishers and consumers. The remaining 6 topics are provisioned but have no current consumers, representing planned event flows.
+
+**Implemented Event Flows:**
 
 | Integration Event                 | Publisher           | Consumer                                                         |
 | --------------------------------- | ------------------- | ---------------------------------------------------------------- |
@@ -118,6 +207,18 @@ Operational expectations:
 | FlightArrivedEvent                | Flights.Api.Lambda  | Aircraft.Api.Lambda.MessageHandlers.FlightArrived                |
 | FlightMarkedAsDelayedEnRouteEvent | Flights.Api.Lambda  | Aircraft.Api.Lambda.MessageHandlers.FlightMarkedAsDelayedEnRoute |
 | FlightMarkedAsEnRouteEvent        | Flights.Api.Lambda  | Aircraft.Api.Lambda.MessageHandlers.FlightMarkedAsEnRoute        |
+
+**Planned Event Flows (Topics provisioned, no current consumers):**
+
+| Integration Event            | SNS Topic                        | Status       |
+| ---------------------------- | -------------------------------- | ------------ |
+| FlightScheduledEvent         | FlightScheduledTopic             | No consumers |
+| FlightAircraftAssignedEvent  | AircraftAssignedToFlightTopic    | No consumers |
+| FlightPricingAdjustedEvent   | FlightPricingAdjustedTopic       | No consumers |
+| FlightRescheduledEvent       | FlightRescheduledTopic           | No consumers |
+| FlightCancelledEvent         | FlightCancelledTopic             | No consumers |
+| FlightDelayedEvent           | FlightDelayedTopic               | No consumers |
+| AircraftUpdatedEvent         | AircraftUpdatedTopic (if added)  | No consumers |
 
 #### Adding a new event or consumer
 
