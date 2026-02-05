@@ -4,6 +4,7 @@ COPY ./src/Aircraft.Api.Lambda/ /src/Aircraft.Api.Lambda/
 COPY ./src/Aircraft.Core/ /src/Aircraft.Core/
 COPY ./src/Aircraft.Infrastructure/ /src/Aircraft.Infrastructure/
 COPY ./src/Shared/ /src/Shared/
+COPY ./src/AWS.Aspire.ServiceDefaults/ /src/AWS.Aspire.ServiceDefaults/
 COPY ./Directory.Packages.props /Directory.Packages.props
 WORKDIR /src/Aircraft.Api.Lambda
 RUN dotnet restore

@@ -4,6 +4,7 @@ COPY ./src/Flights.Api.Lambda.MessageHandlers.AircraftCreated/ /src/Flights.Api.
 COPY ./src/Flights.Core/ /src/Flights.Core/
 COPY ./src/Flights.Infrastructure/ /src/Flights.Infrastructure/
 COPY ./src/Shared/ /src/Shared/
+COPY ./src/AWS.Aspire.ServiceDefaults/ /src/AWS.Aspire.ServiceDefaults/
 COPY ./Directory.Packages.props /Directory.Packages.props
 WORKDIR /src/Flights.Api.Lambda.MessageHandlers.AircraftCreated
 RUN dotnet restore -r linux-x64
