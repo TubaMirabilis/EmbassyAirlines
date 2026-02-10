@@ -90,6 +90,7 @@ if (aircraft is null)
     throw new JsonException("Deserialization returned null");
 }
 Console.WriteLine($"Created aircraft with ID: {aircraft.Id}");
+await Task.Delay(10000);
 Console.WriteLine($"Attempting to schedule flight from {airport1.IcaoCode} to {airport2.IcaoCode}");
 var tz1 = DateTimeZoneProviders.Tzdb["Asia/Seoul"];
 var tz2 = DateTimeZoneProviders.Tzdb["Europe/Amsterdam"];
