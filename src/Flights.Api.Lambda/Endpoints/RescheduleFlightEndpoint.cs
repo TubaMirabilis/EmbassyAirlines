@@ -1,3 +1,5 @@
+using System.Globalization;
+using System.Text;
 using AWS.Messaging;
 using ErrorOr;
 using Flights.Api.Lambda.Extensions;
@@ -57,11 +59,13 @@ internal sealed class RescheduleFlightEndpoint : IEndpoint
             });
             flight.Reschedule(schedule, clock.GetCurrentInstant());
             await ctx.SaveChangesAsync(ct);
-            logger.LogInformation(
-                "Rescheduled flight {Id}: Departure - {DepartureLocalTime}, Arrival - {ArrivalLocalTime}",
-                id,
-                dto.DepartureLocalTime,
-                dto.ArrivalLocalTime);
+            if (logger.IsEnabled(LogLevel.Information))
+            {
+                var details = new StringBuilder();
+                details.AppendLine(CultureInfo.InvariantCulture, $"New departure time: {dto.DepartureLocalTime}.");
+                details.AppendLine(CultureInfo.InvariantCulture, $"New arrival time: {dto.ArrivalLocalTime}.");
+                logger.LogInformation("Flight with ID {Id} rescheduled. {Details}", id, details.ToString());
+            }
             await publisher.PublishAsync(new FlightRescheduledEvent(id, dto.DepartureLocalTime, dto.ArrivalLocalTime), ct);
             return TypedResults.Ok(flight.ToDto());
         }

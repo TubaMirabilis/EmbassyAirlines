@@ -1,3 +1,5 @@
+using System.Globalization;
+using System.Text;
 using AWS.Messaging;
 using ErrorOr;
 using Flights.Api.Lambda.Extensions;
@@ -104,11 +106,13 @@ internal sealed class ScheduleFlightEndpoint : IEndpoint
             });
             ctx.Flights.Add(flight);
             await ctx.SaveChangesAsync(ct);
-            logger.LogInformation(
-                "Scheduled new flight {Id}: Departure - {DepartureLocalTime}, Arrival - {ArrivalLocalTime}",
-                flight.Id,
-                dto.DepartureLocalTime,
-                dto.ArrivalLocalTime);
+            if (logger.IsEnabled(LogLevel.Information))
+            {
+                var details = new StringBuilder();
+                details.AppendLine(CultureInfo.InvariantCulture, $"Departure time: {dto.DepartureLocalTime}.");
+                details.AppendLine(CultureInfo.InvariantCulture, $"Arrival time: {dto.ArrivalLocalTime}.");
+                logger.LogInformation("Scheduled new flight {Id}. {Details}", flight.Id, details.ToString());
+            }
             var evnt = new FlightScheduledEvent(flight.Id, flight.OperationType.ToString(), flight.BusinessPrice.Amount, flight.EconomyPrice.Amount);
             await publisher.PublishAsync(evnt, ct);
             return TypedResults.Created($"/flights/{flight.Id}", flight.ToDto());

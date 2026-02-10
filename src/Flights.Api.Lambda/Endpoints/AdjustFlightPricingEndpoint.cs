@@ -1,3 +1,5 @@
+using System.Globalization;
+using System.Text;
 using AWS.Messaging;
 using ErrorOr;
 using Flights.Api.Lambda.Extensions;
@@ -44,7 +46,13 @@ internal sealed class AdjustFlightPricingEndpoint : IEndpoint
             var businessPrice = new Money(dto.BusinessPrice);
             flight.AdjustPricing(economyPrice, businessPrice, clock.GetCurrentInstant());
             await ctx.SaveChangesAsync(ct);
-            logger.LogInformation("Adjusted pricing for flight {Id}: Economy - {EconomyPrice}, Business - {BusinessPrice}", id, economyPrice, businessPrice);
+            if (logger.IsEnabled(LogLevel.Information))
+            {
+                var details = new StringBuilder();
+                details.AppendLine(CultureInfo.InvariantCulture, $"New economy price: {economyPrice.Amount}.");
+                details.AppendLine(CultureInfo.InvariantCulture, $"New business price: {businessPrice.Amount}.");
+                logger.LogInformation("Adjusted pricing for flight {Id}. {Details}", id, details.ToString());
+            }
             await publisher.PublishAsync(new FlightPricingAdjustedEvent(flight.Id, economyPrice.Amount, businessPrice.Amount), ct);
             return TypedResults.Ok(flight.ToDto());
         }

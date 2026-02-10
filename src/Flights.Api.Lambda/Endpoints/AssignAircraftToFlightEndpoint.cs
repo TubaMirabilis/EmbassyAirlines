@@ -46,7 +46,10 @@ internal sealed class AssignAircraftToFlightEndpoint : IEndpoint
         }
         flight.AssignAircraft(aircraft, clock.GetCurrentInstant());
         await ctx.SaveChangesAsync(ct);
-        logger.LogInformation("Assigned aircraft {AircraftId} to flight {FlightId}", aircraft.Id, flight.Id);
+        if (logger.IsEnabled(LogLevel.Information))
+        {
+            logger.LogInformation("Assigned aircraft {AircraftId} to flight {FlightId}", aircraft.Id, flight.Id);
+        }
         await publisher.PublishAsync(new AircraftAssignedToFlightEvent(flight.Id, aircraft.Id), ct);
         return TypedResults.Ok(flight.ToDto());
     }
