@@ -26,7 +26,7 @@ var airportsApiLambda = builder.AddAWSLambdaFunction<Projects.Airports_Api_Lambd
                                .WithEnvironment("AIRPORTS_DynamoDb__TableName", "airports");
 builder.AddAWSAPIGatewayEmulator("api-gateway", APIGatewayType.HttpV2, new APIGatewayEmulatorOptions
 {
-    Port = 3000
+    HttpPort = 3000
 })
 .WithReference(airportsApiLambda, Method.Any, "/")
 .WithReference(airportsApiLambda, Method.Any, "/{proxy+}");
