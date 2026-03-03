@@ -4,11 +4,11 @@
     <CentralPackageTransitivePinningEnabled>false</CentralPackageTransitivePinningEnabled>
   </PropertyGroup>
   <ItemGroup Condition="'$(MSBuildProjectExtension)' != '.dcproj'">
-    <PackageVersion Include="Amazon.CDK.Lib" Version="2.240.0" />
-    <PackageVersion Include="Amazon.JSII.Analyzers" Version="1.126.0" />
-    <PackageVersion Include="Aspire.Hosting.AppHost" Version="13.1.1" />
-    <PackageVersion Include="Aspire.Hosting.AWS" Version="9.4.1" />
-    <PackageVersion Include="AWS.Messaging" Version="1.1.1" />
+    <PackageVersion Include="Amazon.CDK.Lib" Version="2.241.0" />
+    <PackageVersion Include="Amazon.JSII.Analyzers" Version="1.127.0" />
+    <PackageVersion Include="Aspire.Hosting.AppHost" Version="13.1.2" />
+    <PackageVersion Include="Aspire.Hosting.AWS" Version="13.0.0" />
+    <PackageVersion Include="AWS.Messaging" Version="1.1.2" />
     <PackageVersion Include="AWS.Messaging.Telemetry.OpenTelemetry" Version="1.0.0" />
     <PackageVersion Include="AWSSDK.CloudWatchLogs" Version="4.0.9.3" />
     <PackageVersion Include="AWSSDK.RDS" Version="4.0.18.1" />
@@ -22,7 +22,7 @@
     <PackageVersion Include="OpenTelemetry.Instrumentation.AWSLambda" Version="1.15.0" />
     <PackageVersion Include="OpenTelemetry.Instrumentation.Http" Version="1.15.0" />
     <PackageVersion Include="OpenTelemetry.Instrumentation.Runtime" Version="1.15.0" />
-    <PackageVersion Include="SonarAnalyzer.CSharp" Version="10.19.0.132793" />
+    <PackageVersion Include="SonarAnalyzer.CSharp" Version="10.20.0.135146" />
   </ItemGroup>
   <ItemGroup>
     <PackageVersion Include="Amazon.Lambda.AspNetCoreServer.Hosting" Version="1.10.0" />
@@ -44,7 +44,7 @@
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.3.0" />
     <PackageVersion Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.0" />
     <PackageVersion Include="Npgsql.EntityFrameworkCore.PostgreSQL.NodaTime" Version="10.0.0" />
-    <PackageVersion Include="NodaTime" Version="3.3.0" />
+    <PackageVersion Include="NodaTime" Version="3.3.1" />
     <PackageVersion Include="Serilog.AspNetCore" Version="10.0.0" />
     <PackageVersion Include="Testcontainers.DynamoDb" Version="4.10.0" />
     <PackageVersion Include="Testcontainers.LocalStack" Version="4.10.0" />
