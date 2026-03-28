@@ -4,36 +4,36 @@
     <CentralPackageTransitivePinningEnabled>false</CentralPackageTransitivePinningEnabled>
   </PropertyGroup>
   <ItemGroup Condition="'$(MSBuildProjectExtension)' != '.dcproj'">
-    <PackageVersion Include="Amazon.CDK.Lib" Version="2.243.0" />
+    <PackageVersion Include="Amazon.CDK.Lib" Version="2.245.0" />
     <PackageVersion Include="Amazon.JSII.Analyzers" Version="1.127.0" />
-    <PackageVersion Include="Aspire.Hosting.AppHost" Version="13.1.2" />
+    <PackageVersion Include="Aspire.Hosting.AppHost" Version="13.2.0" />
     <PackageVersion Include="Aspire.Hosting.AWS" Version="13.0.0" />
     <PackageVersion Include="AWS.Messaging" Version="1.1.2" />
     <PackageVersion Include="AWS.Messaging.Telemetry.OpenTelemetry" Version="1.0.0" />
     <PackageVersion Include="AWSSDK.CloudWatchLogs" Version="4.0.9.3" />
-    <PackageVersion Include="AWSSDK.RDS" Version="4.0.18.3" />
-    <PackageVersion Include="Constructs" Version="10.5.1" />
+    <PackageVersion Include="AWSSDK.RDS" Version="4.0.19.2" />
+    <PackageVersion Include="Constructs" Version="10.6.0" />
     <PackageVersion Include="Microsoft.Extensions.Http.Resilience" Version="10.4.0" />
     <PackageVersion Include="Microsoft.Extensions.ServiceDiscovery" Version="10.4.0" />
-    <PackageVersion Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.15.0" />
-    <PackageVersion Include="OpenTelemetry.Extensions.Hosting" Version="1.15.0" />
+    <PackageVersion Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.15.1" />
+    <PackageVersion Include="OpenTelemetry.Extensions.Hosting" Version="1.15.1" />
     <PackageVersion Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.15.1" />
     <PackageVersion Include="OpenTelemetry.Instrumentation.AWS" Version="1.15.0" />
     <PackageVersion Include="OpenTelemetry.Instrumentation.AWSLambda" Version="1.15.0" />
     <PackageVersion Include="OpenTelemetry.Instrumentation.Http" Version="1.15.0" />
     <PackageVersion Include="OpenTelemetry.Instrumentation.Runtime" Version="1.15.0" />
-    <PackageVersion Include="SonarAnalyzer.CSharp" Version="10.21.0.135717" />
+    <PackageVersion Include="SonarAnalyzer.CSharp" Version="10.22.0.136894" />
   </ItemGroup>
   <ItemGroup>
     <PackageVersion Include="Amazon.Lambda.AspNetCoreServer.Hosting" Version="1.10.0" />
     <PackageVersion Include="Amazon.Lambda.Core" Version="2.8.1" />
     <PackageVersion Include="Amazon.Lambda.Serialization.SystemTextJson" Version="2.4.5" />
     <PackageVersion Include="Amazon.Lambda.SQSEvents" Version="2.2.1" />
-    <PackageVersion Include="AWSSDK.DynamoDBv2" Version="4.0.15.2" />
-    <PackageVersion Include="AWSSDK.Extensions.NETCore.Setup" Version="4.0.3.25" />
-    <PackageVersion Include="AWSSDK.S3" Version="4.0.19" />
+    <PackageVersion Include="AWSSDK.DynamoDBv2" Version="4.0.17.3" />
+    <PackageVersion Include="AWSSDK.Extensions.NETCore.Setup" Version="4.0.3.28" />
+    <PackageVersion Include="AWSSDK.S3" Version="4.0.19.4" />
     <PackageVersion Include="CliWrap" Version="3.10.0" />
-    <PackageVersion Include="coverlet.collector" Version="8.0.0" />
+    <PackageVersion Include="coverlet.collector" Version="8.0.1" />
     <PackageVersion Include="EFCore.NamingConventions" Version="10.0.1" />
     <PackageVersion Include="ErrorOr" Version="2.0.1" />
     <PackageVersion Include="FluentAssertions" Version="[7.0.0]" />

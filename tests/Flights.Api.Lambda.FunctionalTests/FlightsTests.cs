@@ -234,11 +234,15 @@ public class FlightsTests : BaseFunctionalTest
         // Arrange
         var tz1 = DateTimeZoneProviders.Tzdb["Asia/Seoul"];
         var tz2 = DateTimeZoneProviders.Tzdb["Europe/Amsterdam"];
-        var soon = _clock.GetCurrentInstant().Plus(Duration.FromMinutes(30));
-        soon = Instant.FromUnixTimeTicks((soon.ToUnixTimeTicks() / NodaConstants.TicksPerMinute + 1) * NodaConstants.TicksPerMinute);
-        var departureFromIncheon = soon.InZone(tz1).ToDateTimeUnspecified();
-        var arrivalAtSchiphol = soon.InZone(tz2).ToDateTimeUnspecified().AddHours(10).AddMinutes(30);
-        var duration = TimeSpan.FromHours(10).Add(TimeSpan.FromMinutes(30));
+        var flightDuration = Duration.FromHours(10) + Duration.FromMinutes(30);
+        var soon = TimeHelpers.MinutesFromNowRoundedUp(_clock, 30);
+        var departureInstant = soon;
+        var arrivalInstant = departureInstant + flightDuration;
+        var departureZoned = departureInstant.InZone(tz1);
+        var arrivalZoned = arrivalInstant.InZone(tz2);
+        var departureFromIncheon = departureZoned.ToDateTimeUnspecified();
+        var arrivalAtSchiphol = arrivalZoned.ToDateTimeUnspecified();
+        var duration = flightDuration.ToTimeSpan();
         var request = new ScheduleFlightDto
         {
             AircraftId = _aircraft1.Id,
@@ -278,8 +282,8 @@ public class FlightsTests : BaseFunctionalTest
             x.ArrivalAirportIcaoCode == _schiphol.IcaoCode &&
             x.ArrivalAirportName == _schiphol.Name &&
             x.ArrivalAirportTimeZoneId == _schiphol.TimeZoneId &&
-            x.DepartureTime == soon.InZone(tz1).ToDateTimeOffset() &&
-            x.ArrivalTime == soon.InZone(tz2).ToDateTimeOffset().AddHours(10).AddMinutes(30) &&
+            x.DepartureTime == departureZoned.ToDateTimeOffset() &&
+            x.ArrivalTime == arrivalZoned.ToDateTimeOffset() &&
             x.Duration == duration &&
             x.EconomyPrice == request.EconomyPrice &&
             x.BusinessPrice == request.BusinessPrice &&
