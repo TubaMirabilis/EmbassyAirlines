@@ -15,6 +15,9 @@ public class FlightsTests : BaseFunctionalTest
     private readonly Aircraft _aircraft1;
     private readonly Aircraft _aircraft2;
     private readonly IClock _clock;
+    private static readonly DateTimeZone _incheonTimeZone = DateTimeZoneProviders.Tzdb["Asia/Seoul"];
+    private static readonly DateTimeZone _schipholTimeZone = DateTimeZoneProviders.Tzdb["Europe/Amsterdam"];
+    private static readonly Duration _flightDuration = Duration.FromHours(10) + Duration.FromMinutes(30);
     public FlightsTests(FunctionalTestWebAppFactory factory) : base(factory)
     {
         ArgumentNullException.ThrowIfNull(factory.IncheonAirport);
@@ -31,13 +34,11 @@ public class FlightsTests : BaseFunctionalTest
     [Fact]
     public async Task Schedule_Should_ReturnBadRequest_WhenDepartureTimeIsInThePast()
     {
-        var tz1 = DateTimeZoneProviders.Tzdb["Asia/Seoul"];
-        var tz2 = DateTimeZoneProviders.Tzdb["Europe/Amsterdam"];
         var recently = _clock.GetCurrentInstant().Minus(Duration.FromMinutes(30));
         var soon = _clock.GetCurrentInstant().Plus(Duration.FromMinutes(30));
         var request = CreateValidScheduleRequest(
-            departureLocalTime: recently.InZone(tz1).ToDateTimeUnspecified(),
-            arrivalLocalTime: soon.InZone(tz2).ToDateTimeUnspecified().AddHours(10).AddMinutes(30));
+            departureLocalTime: recently.InZone(_incheonTimeZone).ToDateTimeUnspecified(),
+            arrivalLocalTime: soon.InZone(_schipholTimeZone).ToDateTimeUnspecified().AddHours(10).AddMinutes(30));
         var response = await HttpClient.PostAsJsonAsync("flights", request, TestContext.Current.CancellationToken);
         await GetProblemDetailsFromResponseAndAssert(
             response,
@@ -47,13 +48,11 @@ public class FlightsTests : BaseFunctionalTest
     [Fact]
     public async Task Schedule_Should_ReturnBadRequest_WhenArrivalTimeIsBeforeDepartureTime()
     {
-        var tz1 = DateTimeZoneProviders.Tzdb["Asia/Seoul"];
-        var tz2 = DateTimeZoneProviders.Tzdb["Europe/Amsterdam"];
         var now = _clock.GetCurrentInstant();
         var soon = now.Plus(Duration.FromMinutes(30));
         var request = CreateValidScheduleRequest(
-            departureLocalTime: soon.InZone(tz1).ToDateTimeUnspecified(),
-            arrivalLocalTime: now.InZone(tz2).ToDateTimeUnspecified());
+            departureLocalTime: soon.InZone(_incheonTimeZone).ToDateTimeUnspecified(),
+            arrivalLocalTime: now.InZone(_schipholTimeZone).ToDateTimeUnspecified());
         var response = await HttpClient.PostAsJsonAsync("flights", request, TestContext.Current.CancellationToken);
         await GetProblemDetailsFromResponseAndAssert(
             response,
@@ -143,17 +142,14 @@ public class FlightsTests : BaseFunctionalTest
     [Fact]
     public async Task Flight_Lifecycle_Should_Succeed()
     {
-        var tz1 = DateTimeZoneProviders.Tzdb["Asia/Seoul"];
-        var tz2 = DateTimeZoneProviders.Tzdb["Europe/Amsterdam"];
-        var flightDuration = Duration.FromHours(10) + Duration.FromMinutes(30);
         var departureInstant = TimeHelpers.MinutesFromNowRoundedUp(_clock, 30);
-        var arrivalInstant = departureInstant + flightDuration;
-        var departureZoned = departureInstant.InZone(tz1);
-        var arrivalZoned = arrivalInstant.InZone(tz2);
+        var arrivalInstant = departureInstant + _flightDuration;
+        var departureZoned = departureInstant.InZone(_incheonTimeZone);
+        var arrivalZoned = arrivalInstant.InZone(_schipholTimeZone);
         var scheduleRequest = CreateValidScheduleRequest(
             departureLocalTime: departureZoned.ToDateTimeUnspecified(),
             arrivalLocalTime: arrivalZoned.ToDateTimeUnspecified());
-        var duration = flightDuration.ToTimeSpan();
+        var duration = _flightDuration.ToTimeSpan();
 
         // Schedule
         var scheduleResponse = await HttpClient.PostAsJsonAsync("flights", scheduleRequest, TestContext.Current.CancellationToken);
@@ -230,8 +226,8 @@ public class FlightsTests : BaseFunctionalTest
         // Reschedule
         var tomorrow = _clock.GetCurrentInstant().Plus(Duration.FromDays(1));
         var rescheduleRequest = new RescheduleFlightDto(
-            tomorrow.InZone(tz1).ToDateTimeUnspecified(),
-            tomorrow.InZone(tz2).ToDateTimeUnspecified().AddHours(10).AddMinutes(30),
+            tomorrow.InZone(_incheonTimeZone).ToDateTimeUnspecified(),
+            tomorrow.InZone(_schipholTimeZone).ToDateTimeUnspecified().AddHours(10).AddMinutes(30),
             "ThrowWhenAmbiguous");
         var rescheduleResponse = await HttpClient.PatchAsJsonAsync(
             $"flights/{flight.Id}/schedule",
@@ -240,8 +236,8 @@ public class FlightsTests : BaseFunctionalTest
         rescheduleResponse.EnsureSuccessStatusCode();
         flight = await DeserializeAsync<FlightDto>(rescheduleResponse);
         flight.Should().Match<FlightDto>(x =>
-            x.DepartureTime == tomorrow.InZone(tz1).ToDateTimeOffset() &&
-            x.ArrivalTime == tomorrow.InZone(tz2).ToDateTimeOffset().AddHours(10).AddMinutes(30) &&
+            x.DepartureTime == tomorrow.InZone(_incheonTimeZone).ToDateTimeOffset() &&
+            x.ArrivalTime == tomorrow.InZone(_schipholTimeZone).ToDateTimeOffset().AddHours(10).AddMinutes(30) &&
             x.Status == "Scheduled" &&
             x.EconomyPrice == 500 &&
             x.BusinessPrice == 5000 &&
@@ -268,8 +264,6 @@ public class FlightsTests : BaseFunctionalTest
         DateTime? arrivalLocalTime = null,
         string schedulingAmbiguityPolicy = "ThrowWhenAmbiguous")
     {
-        var tz1 = DateTimeZoneProviders.Tzdb["Asia/Seoul"];
-        var tz2 = DateTimeZoneProviders.Tzdb["Europe/Amsterdam"];
         var flightDuration = Duration.FromHours(10) + Duration.FromMinutes(30);
         var departureInstant = TimeHelpers.MinutesFromNowRoundedUp(_clock, 30);
         var arrivalInstant = departureInstant + flightDuration;
@@ -279,9 +273,9 @@ public class FlightsTests : BaseFunctionalTest
             FlightNumberIata = "EB1",
             FlightNumberIcao = "EBY1",
             DepartureAirportId = departureAirportId ?? _incheon.Id,
-            DepartureLocalTime = departureLocalTime ?? departureInstant.InZone(tz1).ToDateTimeUnspecified(),
+            DepartureLocalTime = departureLocalTime ?? departureInstant.InZone(_incheonTimeZone).ToDateTimeUnspecified(),
             ArrivalAirportId = arrivalAirportId ?? _schiphol.Id,
-            ArrivalLocalTime = arrivalLocalTime ?? arrivalInstant.InZone(tz2).ToDateTimeUnspecified(),
+            ArrivalLocalTime = arrivalLocalTime ?? arrivalInstant.InZone(_schipholTimeZone).ToDateTimeUnspecified(),
             EconomyPrice = 400,
             BusinessPrice = 4000,
             SchedulingAmbiguityPolicy = schedulingAmbiguityPolicy,
