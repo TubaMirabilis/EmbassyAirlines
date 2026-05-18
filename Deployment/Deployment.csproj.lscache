@@ -76,7 +76,7 @@ RdsResourcesProps.cs
 SharedInfra.cs
 
 [metadataReferences]
-../../../../../Program Files/dotnet/packs/Microsoft.NETCore.App.Ref/10.0.2/ref/net10.0/
+<DOTNET>/packs/Microsoft.NETCore.App.Ref/10.0.2/ref/net10.0/
  Microsoft.CSharp.dll
  Microsoft.VisualBasic.Core.dll
  Microsoft.VisualBasic.dll
@@ -247,10 +247,10 @@ SharedInfra.cs
 <NUGET>/
  amazon.cdk.asset.awscliv1/2.2.273/lib/net6.0/Amazon.CDK.Asset.AwsCliV1.dll
  amazon.cdk.asset.nodeproxyagentv6/2.1.1/lib/net6.0/Amazon.CDK.Asset.NodeProxyAgentV6.dll
- amazon.cdk.cloudassembly.schema/53.0.0/lib/net6.0/Amazon.CDK.CloudAssembly.Schema.dll
- amazon.cdk.lib/2.250.0/lib/net6.0/Amazon.CDK.Lib.dll
- amazon.jsii.analyzers/1.128.0/lib/netstandard2.0/Amazon.JSII.Analyzers.dll
- amazon.jsii.runtime/1.127.0/lib/net6.0/Amazon.JSII.Runtime.dll
+ amazon.cdk.cloudassembly.schema/53.21.0/lib/net6.0/Amazon.CDK.CloudAssembly.Schema.dll
+ amazon.cdk.lib/2.254.0/lib/net6.0/Amazon.CDK.Lib.dll
+ amazon.jsii.analyzers/1.130.0/lib/netstandard2.0/Amazon.JSII.Analyzers.dll
+ amazon.jsii.runtime/1.129.0/lib/net6.0/Amazon.JSII.Runtime.dll
  constructs/10.6.0/lib/net6.0/Constructs.dll
  microsoft.extensions.configuration.abstractions/9.0.1/lib/net9.0/Microsoft.Extensions.Configuration.Abstractions.dll
  microsoft.extensions.configuration.binder/9.0.1/lib/net9.0/Microsoft.Extensions.Configuration.Binder.dll
@@ -267,30 +267,29 @@ SharedInfra.cs
  newtonsoft.json/13.0.3/lib/net6.0/Newtonsoft.Json.dll
 
 [analyzerReferences]
-../../../../../Program Files/dotnet/packs/Microsoft.NETCore.App.Ref/10.0.2/analyzers/dotnet/cs/
+<DOTNET>/packs/Microsoft.NETCore.App.Ref/10.0.2/analyzers/dotnet/cs/
  Microsoft.Interop.ComInterfaceGenerator.dll
  Microsoft.Interop.JavaScript.JSImportGenerator.dll
  Microsoft.Interop.LibraryImportGenerator.dll
  Microsoft.Interop.SourceGeneration.dll
  System.Text.Json.SourceGeneration.dll
  System.Text.RegularExpressions.Generator.dll
-../../../../../Program Files/dotnet/sdk/10.0.102/Sdks/Microsoft.NET.Sdk/analyzers/
+<DOTNET>/sdk/10.0.102/Sdks/Microsoft.NET.Sdk/analyzers/
  Microsoft.CodeAnalysis.CSharp.NetAnalyzers.dll
  Microsoft.CodeAnalysis.NetAnalyzers.dll
-../../../../../Program Files/dotnet/sdk/10.0.102/Sdks/Microsoft.NET.Sdk/codestyle/cs/
+<DOTNET>/sdk/10.0.102/Sdks/Microsoft.NET.Sdk/codestyle/cs/
  Microsoft.CodeAnalysis.CodeStyle.dll
  Microsoft.CodeAnalysis.CodeStyle.Fixes.dll
  Microsoft.CodeAnalysis.CSharp.CodeStyle.dll
  Microsoft.CodeAnalysis.CSharp.CodeStyle.Fixes.dll
 <NUGET>/
- amazon.jsii.analyzers/1.128.0/analyzers/dotnet/cs/Amazon.JSII.Analyzers.dll
+ amazon.jsii.analyzers/1.130.0/analyzers/dotnet/cs/Amazon.JSII.Analyzers.dll
  microsoft.extensions.logging.abstractions/9.0.1/analyzers/dotnet/roslyn4.4/cs/Microsoft.Extensions.Logging.Generators.dll
  microsoft.extensions.options/9.0.1/analyzers/dotnet/roslyn4.4/cs/Microsoft.Extensions.Options.SourceGeneration.dll
- sonaranalyzer.csharp/10.24.0.138807/analyzers/SonarAnalyzer.CSharp.dll
+ sonaranalyzer.csharp/10.25.0.139117/analyzers/SonarAnalyzer.CSharp.dll
 
 [analyzerConfigFiles]
-../
- ../../../../Program Files/dotnet/sdk/10.0.102/Sdks/Microsoft.NET.Sdk/analyzers/build/config/analysislevel_9_all_warnaserror.globalconfig
- .editorconfig
+../.editorconfig
 .editorconfig
+<DOTNET>/sdk/10.0.102/Sdks/Microsoft.NET.Sdk/analyzers/build/config/analysislevel_9_all_warnaserror.globalconfig
 obj/Debug/net10.0/Deployment.GeneratedMSBuildEditorConfig.editorconfig

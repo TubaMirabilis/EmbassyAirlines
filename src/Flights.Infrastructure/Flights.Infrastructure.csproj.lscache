@@ -72,7 +72,10 @@ obj/Debug/net10.0/
 ServiceCollectionExtensions.cs
 
 [metadataReferences]
-../../../../../../Program Files/dotnet/packs/Microsoft.AspNetCore.App.Ref/10.0.2/ref/net10.0/
+../
+ Flights.Core/obj/Debug/net10.0/ref/Flights.Core.dll
+ Shared/obj/Debug/net10.0/ref/Shared.dll
+<DOTNET>/packs/Microsoft.AspNetCore.App.Ref/10.0.2/ref/net10.0/
  Microsoft.AspNetCore.Antiforgery.dll
  Microsoft.AspNetCore.Authentication.Abstractions.dll
  Microsoft.AspNetCore.Authentication.BearerToken.dll
@@ -204,7 +207,7 @@ ServiceCollectionExtensions.cs
  System.Formats.Cbor.dll
  System.Security.Cryptography.Xml.dll
  System.Threading.RateLimiting.dll
-../../../../../../Program Files/dotnet/packs/Microsoft.NETCore.App.Ref/10.0.2/ref/net10.0/
+<DOTNET>/packs/Microsoft.NETCore.App.Ref/10.0.2/ref/net10.0/
  Microsoft.CSharp.dll
  Microsoft.VisualBasic.Core.dll
  Microsoft.VisualBasic.dll
@@ -372,14 +375,11 @@ ServiceCollectionExtensions.cs
  System.Xml.XPath.dll
  System.Xml.XPath.XDocument.dll
  WindowsBase.dll
-../
- Flights.Core/obj/Debug/net10.0/ref/Flights.Core.dll
- Shared/obj/Debug/net10.0/ref/Shared.dll
 <NUGET>/
- awssdk.core/4.0.3.32/lib/net8.0/AWSSDK.Core.dll
- awssdk.rds/4.0.20.1/lib/net8.0/AWSSDK.RDS.dll
+ awssdk.core/4.0.7.1/lib/net8.0/AWSSDK.Core.dll
+ awssdk.rds/4.0.20.6/lib/net8.0/AWSSDK.RDS.dll
  efcore.namingconventions/10.0.1/lib/net10.0/EFCore.NamingConventions.dll
- erroror/2.0.1/lib/net6.0/ErrorOr.dll
+ erroror/2.1.1/lib/net10.0/ErrorOr.dll
  fluentvalidation/12.1.1/lib/net8.0/FluentValidation.dll
  microsoft.entityframeworkcore.abstractions/10.0.4/lib/net10.0/Microsoft.EntityFrameworkCore.Abstractions.dll
  microsoft.entityframeworkcore.relational/10.0.4/lib/net10.0/Microsoft.EntityFrameworkCore.Relational.dll
@@ -410,38 +410,37 @@ ServiceCollectionExtensions.cs
  serilog/4.3.0/lib/net9.0/Serilog.dll
 
 [analyzerReferences]
-../../../../../../Program Files/dotnet/packs/Microsoft.AspNetCore.App.Ref/10.0.2/analyzers/dotnet/cs/
+<DOTNET>/packs/Microsoft.AspNetCore.App.Ref/10.0.2/analyzers/dotnet/cs/
  Microsoft.AspNetCore.App.Analyzers.dll
  Microsoft.AspNetCore.App.CodeFixes.dll
  Microsoft.AspNetCore.App.SourceGenerators.dll
  Microsoft.AspNetCore.Components.Analyzers.dll
  Microsoft.Extensions.Validation.ValidationsGenerator.dll
-../../../../../../Program Files/dotnet/packs/Microsoft.NETCore.App.Ref/10.0.2/analyzers/dotnet/cs/
+<DOTNET>/packs/Microsoft.NETCore.App.Ref/10.0.2/analyzers/dotnet/cs/
  Microsoft.Interop.ComInterfaceGenerator.dll
  Microsoft.Interop.JavaScript.JSImportGenerator.dll
  Microsoft.Interop.LibraryImportGenerator.dll
  Microsoft.Interop.SourceGeneration.dll
  System.Text.Json.SourceGeneration.dll
  System.Text.RegularExpressions.Generator.dll
-../../../../../../Program Files/dotnet/sdk/10.0.102/Sdks/Microsoft.NET.Sdk/analyzers/
+<DOTNET>/sdk/10.0.102/Sdks/Microsoft.NET.Sdk/analyzers/
  Microsoft.CodeAnalysis.CSharp.NetAnalyzers.dll
  Microsoft.CodeAnalysis.NetAnalyzers.dll
-../../../../../../Program Files/dotnet/sdk/10.0.102/Sdks/Microsoft.NET.Sdk/codestyle/cs/
+<DOTNET>/sdk/10.0.102/Sdks/Microsoft.NET.Sdk/codestyle/cs/
  Microsoft.CodeAnalysis.CodeStyle.dll
  Microsoft.CodeAnalysis.CodeStyle.Fixes.dll
  Microsoft.CodeAnalysis.CSharp.CodeStyle.dll
  Microsoft.CodeAnalysis.CSharp.CodeStyle.Fixes.dll
-<NUGET>/awssdk.rds/4.0.20.1/analyzers/dotnet/cs/
+<NUGET>/awssdk.rds/4.0.20.6/analyzers/dotnet/cs/
  AWSSDK.RDS.CodeAnalysis.dll
  SharedAnalysisCode.dll
 <NUGET>/
  microsoft.entityframeworkcore.analyzers/10.0.4/analyzers/dotnet/cs/Microsoft.EntityFrameworkCore.Analyzers.dll
  microsoft.extensions.logging.abstractions/10.0.4/analyzers/dotnet/roslyn4.4/cs/Microsoft.Extensions.Logging.Generators.dll
  microsoft.extensions.options/10.0.4/analyzers/dotnet/roslyn4.4/cs/Microsoft.Extensions.Options.SourceGeneration.dll
- sonaranalyzer.csharp/10.24.0.138807/analyzers/SonarAnalyzer.CSharp.dll
+ sonaranalyzer.csharp/10.25.0.139117/analyzers/SonarAnalyzer.CSharp.dll
 
 [analyzerConfigFiles]
-../../
- ../../../../Program Files/dotnet/sdk/10.0.102/Sdks/Microsoft.NET.Sdk/analyzers/build/config/analysislevel_9_all_warnaserror.globalconfig
- .editorconfig
+../../.editorconfig
+<DOTNET>/sdk/10.0.102/Sdks/Microsoft.NET.Sdk/analyzers/build/config/analysislevel_9_all_warnaserror.globalconfig
 obj/Debug/net10.0/Flights.Infrastructure.GeneratedMSBuildEditorConfig.editorconfig

@@ -30,7 +30,7 @@ public class AircraftTests : BaseFunctionalTest
     public async Task Create_Should_ReturnBadRequest_WhenRequestIsInvalid()
     {
         // Arrange
-        var request = new CreateAircraftDto("C-FJRN", "B78X", 135500, "Parked", 0, "CYVR", null, 201848, 192777, 101522);
+        var request = new CreateAircraftDto("C-FJRO", "B78X", 135500, "Parked", 0, "CYVR", null, 201848, 192777, 101522);
         var error = "Maximum takeoff weight must be greater than zero.";
 
         // Act
@@ -44,7 +44,7 @@ public class AircraftTests : BaseFunctionalTest
     public async Task Create_Should_ReturnBadRequest_WhenStatusIsInvalid()
     {
         // Arrange
-        var request = new CreateAircraftDto("C-FJRN", "B78X", 135500, "Delayed", 254011, null, null, 201848, 192777, 101522);
+        var request = new CreateAircraftDto("C-FJRP", "B78X", 135500, "Delayed", 254011, null, null, 201848, 192777, 101522);
         var error = "Delayed is not a valid status";
 
         // Act
@@ -58,7 +58,7 @@ public class AircraftTests : BaseFunctionalTest
     public async Task Create_Should_ReturnBadRequest_WhenStatusIsParkedAndParkedAtIsNotProvided()
     {
         // Arrange
-        var request = new CreateAircraftDto("C-FJRN", "B78X", 135500, "Parked", 254011, null, null, 201848, 192777, 101522);
+        var request = new CreateAircraftDto("C-FJRQ", "B78X", 135500, "Parked", 254011, null, null, 201848, 192777, 101522);
         var error = "Error creating aircraft: Status is Parked, so ParkedAt must be provided.";
 
         // Act
@@ -72,7 +72,7 @@ public class AircraftTests : BaseFunctionalTest
     public async Task Create_Should_ReturnBadRequest_WhenStatusIsParkedAndEnRouteToIsProvided()
     {
         // Arrange
-        var request = new CreateAircraftDto("C-FJRN", "B78X", 135500, "Parked", 254011, "CYVR", "CYYZ", 201848, 192777, 101522);
+        var request = new CreateAircraftDto("C-FJRR", "B78X", 135500, "Parked", 254011, "CYVR", "CYYZ", 201848, 192777, 101522);
         var error = "Error creating aircraft: Status is Parked, so EnRouteTo must be empty.";
 
         // Act
@@ -86,7 +86,7 @@ public class AircraftTests : BaseFunctionalTest
     public async Task Create_Should_ReturnBadRequest_WhenStatusIsEnRouteAndEnRouteToIsNotProvided()
     {
         // Arrange
-        var request = new CreateAircraftDto("C-FJRN", "B78X", 135500, "EnRoute", 254011, null, null, 201848, 192777, 101522);
+        var request = new CreateAircraftDto("C-FJRS", "B78X", 135500, "EnRoute", 254011, null, null, 201848, 192777, 101522);
         var error = "Error creating aircraft: Status is EnRoute, so EnRouteTo must be provided.";
 
         // Act
@@ -100,7 +100,7 @@ public class AircraftTests : BaseFunctionalTest
     public async Task Create_Should_ReturnBadRequest_WhenStatusIsEnRouteAndParkedAtIsProvided()
     {
         // Arrange
-        var request = new CreateAircraftDto("C-FJRN", "B78X", 135500, "EnRoute", 254011, "CYVR", "CYYZ", 201848, 192777, 101522);
+        var request = new CreateAircraftDto("C-FJRT", "B78X", 135500, "EnRoute", 254011, "CYVR", "CYYZ", 201848, 192777, 101522);
         var error = "Error creating aircraft: Status is EnRoute, so ParkedAt must be empty.";
 
         // Act
