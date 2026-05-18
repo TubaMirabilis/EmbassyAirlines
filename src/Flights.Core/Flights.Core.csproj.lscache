@@ -388,7 +388,7 @@ ZoneLocalMappingResolverExtensions.cs
  erroror/2.0.1/lib/net6.0/ErrorOr.dll
  fluentvalidation/12.1.1/lib/net8.0/FluentValidation.dll
  microsoft.extensions.dependencymodel/10.0.0/lib/net10.0/Microsoft.Extensions.DependencyModel.dll
- nodatime/3.3.1/lib/net8.0/NodaTime.dll
+ nodatime/3.3.2/lib/net8.0/NodaTime.dll
  serilog.aspnetcore/10.0.0/lib/net10.0/Serilog.AspNetCore.dll
  serilog.extensions.hosting/10.0.0/lib/net10.0/Serilog.Extensions.Hosting.dll
  serilog.extensions.logging/10.0.0/lib/net10.0/Serilog.Extensions.Logging.dll
@@ -423,7 +423,7 @@ ZoneLocalMappingResolverExtensions.cs
  Microsoft.CodeAnalysis.CodeStyle.Fixes.dll
  Microsoft.CodeAnalysis.CSharp.CodeStyle.dll
  Microsoft.CodeAnalysis.CSharp.CodeStyle.Fixes.dll
-<NUGET>/sonaranalyzer.csharp/10.23.0.137933/analyzers/SonarAnalyzer.CSharp.dll
+<NUGET>/sonaranalyzer.csharp/10.24.0.138807/analyzers/SonarAnalyzer.CSharp.dll
 
 [analyzerConfigFiles]
 ../../

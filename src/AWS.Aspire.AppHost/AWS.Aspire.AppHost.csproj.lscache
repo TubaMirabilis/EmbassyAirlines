@@ -347,11 +347,11 @@ obj/Debug/net10.0/
  amazon.cdk.cloudassembly.schema/48.20.0/lib/net6.0/Amazon.CDK.CloudAssembly.Schema.dll
  amazon.cdk.lib/2.236.0/lib/net6.0/Amazon.CDK.Lib.dll
  amazon.jsii.runtime/1.125.0/lib/net6.0/Amazon.JSII.Runtime.dll
- aspire.hosting.apphost/13.2.2/lib/net10.0/Aspire.Hosting.AppHost.dll
+ aspire.hosting.apphost/13.2.3/lib/net10.0/Aspire.Hosting.AppHost.dll
  aspire.hosting.aws/13.0.0/lib/net8.0/Aspire.Hosting.AWS.dll
  aspire.hosting.redis/13.1.0/lib/net8.0/Aspire.Hosting.Redis.dll
  aspire.hosting.valkey/13.1.0/lib/net8.0/Aspire.Hosting.Valkey.dll
- aspire.hosting/13.2.2/lib/net8.0/Aspire.Hosting.dll
+ aspire.hosting/13.2.3/lib/net8.0/Aspire.Hosting.dll
  aspnetcore.healthchecks.redis/9.0.0/lib/net8.0/HealthChecks.Redis.dll
  aspnetcore.healthchecks.uris/9.0.0/lib/net8.0/HealthChecks.Uris.dll
  awssdk.cloudformation/4.0.8.8/lib/net8.0/AWSSDK.CloudFormation.dll
@@ -448,7 +448,7 @@ obj/Debug/net10.0/
  Microsoft.CodeAnalysis.CSharp.CodeStyle.dll
  Microsoft.CodeAnalysis.CSharp.CodeStyle.Fixes.dll
 <NUGET>/
- aspire.hosting.apphost/13.2.2/analyzers/dotnet/cs/Aspire.Hosting.Analyzers.dll
+ aspire.hosting.apphost/13.2.3/analyzers/dotnet/cs/Aspire.Hosting.Analyzers.dll
  awssdk.cloudformation/4.0.8.8/analyzers/dotnet/cs/
   AWSSDK.CloudFormation.CodeAnalysis.dll
   SharedAnalysisCode.dll
@@ -470,7 +470,7 @@ obj/Debug/net10.0/
  microsoft.extensions.logging.abstractions/10.0.5/analyzers/dotnet/roslyn4.4/cs/Microsoft.Extensions.Logging.Generators.dll
  microsoft.extensions.options/10.0.5/analyzers/dotnet/roslyn4.4/cs/Microsoft.Extensions.Options.SourceGeneration.dll
  modelcontextprotocol.core/1.0.0/analyzers/dotnet/cs/ModelContextProtocol.Analyzers.dll
- sonaranalyzer.csharp/10.23.0.137933/analyzers/SonarAnalyzer.CSharp.dll
+ sonaranalyzer.csharp/10.24.0.138807/analyzers/SonarAnalyzer.CSharp.dll
 
 [analyzerConfigFiles]
 ../../

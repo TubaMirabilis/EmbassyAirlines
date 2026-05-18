@@ -398,17 +398,17 @@ SeatExtensions.cs
  amazon.lambda.sqsevents/2.2.0/lib/net8.0/Amazon.Lambda.SQSEvents.dll
  aws.messaging.telemetry.opentelemetry/1.0.0/lib/net8.0/AWS.Messaging.Telemetry.OpenTelemetry.dll
  aws.messaging/1.3.0/lib/net8.0/AWS.Messaging.dll
- awssdk.core/4.0.3.29/lib/net8.0/AWSSDK.Core.dll
+ awssdk.core/4.0.3.32/lib/net8.0/AWSSDK.Core.dll
  awssdk.eventbridge/4.0.5.16/lib/net8.0/AWSSDK.EventBridge.dll
- awssdk.extensions.netcore.setup/4.0.3.33/lib/net8.0/AWSSDK.Extensions.NETCore.Setup.dll
- awssdk.rds/4.0.20/lib/net8.0/AWSSDK.RDS.dll
- awssdk.s3/4.0.21.2/lib/net8.0/AWSSDK.S3.dll
+ awssdk.extensions.netcore.setup/4.0.3.34/lib/net8.0/AWSSDK.Extensions.NETCore.Setup.dll
+ awssdk.rds/4.0.20.1/lib/net8.0/AWSSDK.RDS.dll
+ awssdk.s3/4.0.22/lib/net8.0/AWSSDK.S3.dll
  awssdk.simplenotificationservice/4.0.2.17/lib/net8.0/AWSSDK.SimpleNotificationService.dll
  awssdk.sqs/4.0.2.15/lib/net8.0/AWSSDK.SQS.dll
  efcore.namingconventions/10.0.1/lib/net10.0/EFCore.NamingConventions.dll
  erroror/2.0.1/lib/net6.0/ErrorOr.dll
  fluentvalidation/12.1.1/lib/net8.0/FluentValidation.dll
- microsoft.aspnetcore.openapi/10.0.6/lib/net10.0/Microsoft.AspNetCore.OpenApi.dll
+ microsoft.aspnetcore.openapi/10.0.7/lib/net10.0/Microsoft.AspNetCore.OpenApi.dll
  microsoft.entityframeworkcore.abstractions/10.0.4/lib/net10.0/Microsoft.EntityFrameworkCore.Abstractions.dll
  microsoft.entityframeworkcore.relational/10.0.4/lib/net10.0/Microsoft.EntityFrameworkCore.Relational.dll
  microsoft.entityframeworkcore/10.0.4/lib/net10.0/Microsoft.EntityFrameworkCore.dll
@@ -427,17 +427,17 @@ SeatExtensions.cs
  microsoft.openapi/2.0.0/lib/net8.0/Microsoft.OpenApi.dll
  npgsql.entityframeworkcore.postgresql/10.0.1/lib/net10.0/Npgsql.EntityFrameworkCore.PostgreSQL.dll
  npgsql/10.0.2/lib/net10.0/Npgsql.dll
- opentelemetry.api.providerbuilderextensions/1.15.2/lib/net10.0/OpenTelemetry.Api.ProviderBuilderExtensions.dll
- opentelemetry.api/1.15.2/lib/net10.0/OpenTelemetry.Api.dll
- opentelemetry.exporter.opentelemetryprotocol/1.15.2/lib/net10.0/OpenTelemetry.Exporter.OpenTelemetryProtocol.dll
- opentelemetry.extensions.aws/1.15.0/lib/net10.0/OpenTelemetry.Extensions.AWS.dll
- opentelemetry.extensions.hosting/1.15.2/lib/net10.0/OpenTelemetry.Extensions.Hosting.dll
- opentelemetry.instrumentation.aspnetcore/1.15.1/lib/net10.0/OpenTelemetry.Instrumentation.AspNetCore.dll
- opentelemetry.instrumentation.aws/1.15.0/lib/net10.0/OpenTelemetry.Instrumentation.AWS.dll
- opentelemetry.instrumentation.awslambda/1.15.0/lib/net10.0/OpenTelemetry.Instrumentation.AWSLambda.dll
- opentelemetry.instrumentation.http/1.15.0/lib/net10.0/OpenTelemetry.Instrumentation.Http.dll
- opentelemetry.instrumentation.runtime/1.15.0/lib/net10.0/OpenTelemetry.Instrumentation.Runtime.dll
- opentelemetry/1.15.2/lib/net10.0/OpenTelemetry.dll
+ opentelemetry.api.providerbuilderextensions/1.15.3/lib/net10.0/OpenTelemetry.Api.ProviderBuilderExtensions.dll
+ opentelemetry.api/1.15.3/lib/net10.0/OpenTelemetry.Api.dll
+ opentelemetry.exporter.opentelemetryprotocol/1.15.3/lib/net10.0/OpenTelemetry.Exporter.OpenTelemetryProtocol.dll
+ opentelemetry.extensions.aws/1.15.1/lib/net10.0/OpenTelemetry.Extensions.AWS.dll
+ opentelemetry.extensions.hosting/1.15.3/lib/net10.0/OpenTelemetry.Extensions.Hosting.dll
+ opentelemetry.instrumentation.aspnetcore/1.15.2/lib/net10.0/OpenTelemetry.Instrumentation.AspNetCore.dll
+ opentelemetry.instrumentation.aws/1.15.1/lib/net10.0/OpenTelemetry.Instrumentation.AWS.dll
+ opentelemetry.instrumentation.awslambda/1.15.1/lib/net10.0/OpenTelemetry.Instrumentation.AWSLambda.dll
+ opentelemetry.instrumentation.http/1.15.1/lib/net10.0/OpenTelemetry.Instrumentation.Http.dll
+ opentelemetry.instrumentation.runtime/1.15.1/lib/net10.0/OpenTelemetry.Instrumentation.Runtime.dll
+ opentelemetry/1.15.3/lib/net10.0/OpenTelemetry.dll
  polly.core/8.4.2/lib/net8.0/Polly.Core.dll
  polly.extensions/8.4.2/lib/net8.0/Polly.Extensions.dll
  polly.ratelimiting/8.4.2/lib/net8.0/Polly.RateLimiting.dll
@@ -485,10 +485,10 @@ SeatExtensions.cs
 <NUGET>/awssdk.eventbridge/4.0.5.16/analyzers/dotnet/cs/
  AWSSDK.EventBridge.CodeAnalysis.dll
  SharedAnalysisCode.dll
-<NUGET>/awssdk.rds/4.0.20/analyzers/dotnet/cs/
+<NUGET>/awssdk.rds/4.0.20.1/analyzers/dotnet/cs/
  AWSSDK.RDS.CodeAnalysis.dll
  SharedAnalysisCode.dll
-<NUGET>/awssdk.s3/4.0.21.2/analyzers/dotnet/cs/
+<NUGET>/awssdk.s3/4.0.22/analyzers/dotnet/cs/
  AWSSDK.S3.CodeAnalysis.dll
  SharedAnalysisCode.dll
 <NUGET>/awssdk.simplenotificationservice/4.0.2.17/analyzers/dotnet/cs/
@@ -498,7 +498,7 @@ SeatExtensions.cs
  AWSSDK.SQS.CodeAnalysis.dll
  SharedAnalysisCode.dll
 <NUGET>/
- microsoft.aspnetcore.openapi/10.0.6/analyzers/dotnet/cs/Microsoft.AspNetCore.OpenApi.SourceGenerators.dll
+ microsoft.aspnetcore.openapi/10.0.7/analyzers/dotnet/cs/Microsoft.AspNetCore.OpenApi.SourceGenerators.dll
  microsoft.codeanalysis.analyzers/3.11.0/analyzers/dotnet/cs/
   Microsoft.CodeAnalysis.Analyzers.dll
   Microsoft.CodeAnalysis.CSharp.Analyzers.dll
@@ -506,7 +506,7 @@ SeatExtensions.cs
  microsoft.extensions.telemetry.abstractions/10.5.0/analyzers/dotnet/cs/
   Microsoft.Gen.Logging.dll
   Microsoft.Gen.Metrics.dll
- sonaranalyzer.csharp/10.23.0.137933/analyzers/SonarAnalyzer.CSharp.dll
+ sonaranalyzer.csharp/10.24.0.138807/analyzers/SonarAnalyzer.CSharp.dll
 
 [analyzerConfigFiles]
 ../../

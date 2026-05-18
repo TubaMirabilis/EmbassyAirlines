@@ -376,8 +376,8 @@ ServiceCollectionExtensions.cs
  Flights.Core/obj/Debug/net10.0/ref/Flights.Core.dll
  Shared/obj/Debug/net10.0/ref/Shared.dll
 <NUGET>/
- awssdk.core/4.0.3.29/lib/net8.0/AWSSDK.Core.dll
- awssdk.rds/4.0.20/lib/net8.0/AWSSDK.RDS.dll
+ awssdk.core/4.0.3.32/lib/net8.0/AWSSDK.Core.dll
+ awssdk.rds/4.0.20.1/lib/net8.0/AWSSDK.RDS.dll
  efcore.namingconventions/10.0.1/lib/net10.0/EFCore.NamingConventions.dll
  erroror/2.0.1/lib/net6.0/ErrorOr.dll
  fluentvalidation/12.1.1/lib/net8.0/FluentValidation.dll
@@ -394,7 +394,7 @@ ServiceCollectionExtensions.cs
  microsoft.extensions.logging/10.0.4/lib/net10.0/Microsoft.Extensions.Logging.dll
  microsoft.extensions.options/10.0.4/lib/net10.0/Microsoft.Extensions.Options.dll
  microsoft.extensions.primitives/10.0.4/lib/net10.0/Microsoft.Extensions.Primitives.dll
- nodatime/3.3.1/lib/net8.0/NodaTime.dll
+ nodatime/3.3.2/lib/net8.0/NodaTime.dll
  npgsql.entityframeworkcore.postgresql.nodatime/10.0.1/lib/net10.0/Npgsql.EntityFrameworkCore.PostgreSQL.NodaTime.dll
  npgsql.entityframeworkcore.postgresql/10.0.1/lib/net10.0/Npgsql.EntityFrameworkCore.PostgreSQL.dll
  npgsql.nodatime/10.0.2/lib/net8.0/Npgsql.NodaTime.dll
@@ -431,14 +431,14 @@ ServiceCollectionExtensions.cs
  Microsoft.CodeAnalysis.CodeStyle.Fixes.dll
  Microsoft.CodeAnalysis.CSharp.CodeStyle.dll
  Microsoft.CodeAnalysis.CSharp.CodeStyle.Fixes.dll
-<NUGET>/awssdk.rds/4.0.20/analyzers/dotnet/cs/
+<NUGET>/awssdk.rds/4.0.20.1/analyzers/dotnet/cs/
  AWSSDK.RDS.CodeAnalysis.dll
  SharedAnalysisCode.dll
 <NUGET>/
  microsoft.entityframeworkcore.analyzers/10.0.4/analyzers/dotnet/cs/Microsoft.EntityFrameworkCore.Analyzers.dll
  microsoft.extensions.logging.abstractions/10.0.4/analyzers/dotnet/roslyn4.4/cs/Microsoft.Extensions.Logging.Generators.dll
  microsoft.extensions.options/10.0.4/analyzers/dotnet/roslyn4.4/cs/Microsoft.Extensions.Options.SourceGeneration.dll
- sonaranalyzer.csharp/10.23.0.137933/analyzers/SonarAnalyzer.CSharp.dll
+ sonaranalyzer.csharp/10.24.0.138807/analyzers/SonarAnalyzer.CSharp.dll
 
 [analyzerConfigFiles]
 ../../

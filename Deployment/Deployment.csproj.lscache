@@ -286,7 +286,7 @@ SharedInfra.cs
  amazon.jsii.analyzers/1.128.0/analyzers/dotnet/cs/Amazon.JSII.Analyzers.dll
  microsoft.extensions.logging.abstractions/9.0.1/analyzers/dotnet/roslyn4.4/cs/Microsoft.Extensions.Logging.Generators.dll
  microsoft.extensions.options/9.0.1/analyzers/dotnet/roslyn4.4/cs/Microsoft.Extensions.Options.SourceGeneration.dll
- sonaranalyzer.csharp/10.23.0.137933/analyzers/SonarAnalyzer.CSharp.dll
+ sonaranalyzer.csharp/10.24.0.138807/analyzers/SonarAnalyzer.CSharp.dll
 
 [analyzerConfigFiles]
 ../

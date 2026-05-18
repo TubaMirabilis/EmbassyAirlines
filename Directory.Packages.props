@@ -4,17 +4,17 @@
     <CentralPackageTransitivePinningEnabled>false</CentralPackageTransitivePinningEnabled>
   </PropertyGroup>
   <ItemGroup Condition="'$(MSBuildProjectExtension)' != '.dcproj'">
-    <PackageVersion Include="Amazon.CDK.Lib" Version="2.250.0" />
-    <PackageVersion Include="Amazon.JSII.Analyzers" Version="1.128.0" />
-    <PackageVersion Include="Aspire.Hosting.AppHost" Version="13.2.3" />
-    <PackageVersion Include="Aspire.Hosting.AWS" Version="13.0.0" />
+    <PackageVersion Include="Amazon.CDK.Lib" Version="2.254.0" />
+    <PackageVersion Include="Amazon.JSII.Analyzers" Version="1.130.0" />
+    <PackageVersion Include="Aspire.Hosting.AppHost" Version="13.3.3" />
+    <PackageVersion Include="Aspire.Hosting.AWS" Version="13.2.0" />
     <PackageVersion Include="AWS.Messaging" Version="1.3.0" />
     <PackageVersion Include="AWS.Messaging.Telemetry.OpenTelemetry" Version="1.0.0" />
     <PackageVersion Include="AWSSDK.CloudWatchLogs" Version="4.0.9.3" />
-    <PackageVersion Include="AWSSDK.RDS" Version="4.0.20.1" />
+    <PackageVersion Include="AWSSDK.RDS" Version="4.0.20.6" />
     <PackageVersion Include="Constructs" Version="10.6.0" />
-    <PackageVersion Include="Microsoft.Extensions.Http.Resilience" Version="10.5.0" />
-    <PackageVersion Include="Microsoft.Extensions.ServiceDiscovery" Version="10.5.0" />
+    <PackageVersion Include="Microsoft.Extensions.Http.Resilience" Version="10.6.0" />
+    <PackageVersion Include="Microsoft.Extensions.ServiceDiscovery" Version="10.6.0" />
     <PackageVersion Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.15.3" />
     <PackageVersion Include="OpenTelemetry.Extensions.Hosting" Version="1.15.3" />
     <PackageVersion Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.15.2" />
@@ -22,26 +22,26 @@
     <PackageVersion Include="OpenTelemetry.Instrumentation.AWSLambda" Version="1.15.1" />
     <PackageVersion Include="OpenTelemetry.Instrumentation.Http" Version="1.15.1" />
     <PackageVersion Include="OpenTelemetry.Instrumentation.Runtime" Version="1.15.1" />
-    <PackageVersion Include="SonarAnalyzer.CSharp" Version="10.24.0.138807" />
+    <PackageVersion Include="SonarAnalyzer.CSharp" Version="10.25.0.139117" />
   </ItemGroup>
   <ItemGroup>
-    <PackageVersion Include="Amazon.Lambda.AspNetCoreServer.Hosting" Version="1.10.0" />
-    <PackageVersion Include="Amazon.Lambda.Core" Version="2.8.1" />
-    <PackageVersion Include="Amazon.Lambda.Serialization.SystemTextJson" Version="2.4.5" />
-    <PackageVersion Include="Amazon.Lambda.SQSEvents" Version="2.2.1" />
-    <PackageVersion Include="AWSSDK.DynamoDBv2" Version="4.0.17.10" />
-    <PackageVersion Include="AWSSDK.Extensions.NETCore.Setup" Version="4.0.3.34" />
-    <PackageVersion Include="AWSSDK.S3" Version="4.0.22" />
+    <PackageVersion Include="Amazon.Lambda.AspNetCoreServer.Hosting" Version="2.0.0" />
+    <PackageVersion Include="Amazon.Lambda.Core" Version="3.0.0" />
+    <PackageVersion Include="Amazon.Lambda.Serialization.SystemTextJson" Version="3.0.0" />
+    <PackageVersion Include="Amazon.Lambda.SQSEvents" Version="3.0.0" />
+    <PackageVersion Include="AWSSDK.DynamoDBv2" Version="4.0.18.4" />
+    <PackageVersion Include="AWSSDK.Extensions.NETCore.Setup" Version="4.0.3.40" />
+    <PackageVersion Include="AWSSDK.S3" Version="4.0.23.3" />
     <PackageVersion Include="CliWrap" Version="3.10.0" />
-    <PackageVersion Include="coverlet.collector" Version="10.0.0" />
+    <PackageVersion Include="coverlet.collector" Version="10.0.1" />
     <PackageVersion Include="EFCore.NamingConventions" Version="10.0.1" />
-    <PackageVersion Include="ErrorOr" Version="2.0.1" />
+    <PackageVersion Include="ErrorOr" Version="2.1.1" />
     <PackageVersion Include="FluentAssertions" Version="[7.0.0]" />
     <PackageVersion Include="FluentValidation" Version="12.1.1" />
-    <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="10.0.7" />
-    <PackageVersion Include="Microsoft.AspNetCore.OpenApi" Version="10.0.7" />
+    <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="10.0.8" />
+    <PackageVersion Include="Microsoft.AspNetCore.OpenApi" Version="10.0.8" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.4" />
-    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.5.0" />
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.5.1" />
     <PackageVersion Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.1" />
     <PackageVersion Include="Npgsql.EntityFrameworkCore.PostgreSQL.NodaTime" Version="10.0.1" />
     <PackageVersion Include="NodaTime" Version="3.3.2" />

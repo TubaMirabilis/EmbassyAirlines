@@ -375,8 +375,8 @@ ServiceCollectionExtensions.cs
  Aircraft.Core/obj/Debug/net10.0/ref/Aircraft.Core.dll
  Shared/obj/Debug/net10.0/ref/Shared.dll
 <NUGET>/
- awssdk.core/4.0.3.29/lib/net8.0/AWSSDK.Core.dll
- awssdk.rds/4.0.20/lib/net8.0/AWSSDK.RDS.dll
+ awssdk.core/4.0.3.32/lib/net8.0/AWSSDK.Core.dll
+ awssdk.rds/4.0.20.1/lib/net8.0/AWSSDK.RDS.dll
  efcore.namingconventions/10.0.1/lib/net10.0/EFCore.NamingConventions.dll
  erroror/2.0.1/lib/net6.0/ErrorOr.dll
  fluentvalidation/12.1.1/lib/net8.0/FluentValidation.dll
@@ -427,14 +427,14 @@ ServiceCollectionExtensions.cs
  Microsoft.CodeAnalysis.CodeStyle.Fixes.dll
  Microsoft.CodeAnalysis.CSharp.CodeStyle.dll
  Microsoft.CodeAnalysis.CSharp.CodeStyle.Fixes.dll
-<NUGET>/awssdk.rds/4.0.20/analyzers/dotnet/cs/
+<NUGET>/awssdk.rds/4.0.20.1/analyzers/dotnet/cs/
  AWSSDK.RDS.CodeAnalysis.dll
  SharedAnalysisCode.dll
 <NUGET>/
  microsoft.entityframeworkcore.analyzers/10.0.4/analyzers/dotnet/cs/Microsoft.EntityFrameworkCore.Analyzers.dll
  microsoft.extensions.logging.abstractions/10.0.4/analyzers/dotnet/roslyn4.4/cs/Microsoft.Extensions.Logging.Generators.dll
  microsoft.extensions.options/10.0.4/analyzers/dotnet/roslyn4.4/cs/Microsoft.Extensions.Options.SourceGeneration.dll
- sonaranalyzer.csharp/10.23.0.137933/analyzers/SonarAnalyzer.CSharp.dll
+ sonaranalyzer.csharp/10.24.0.138807/analyzers/SonarAnalyzer.CSharp.dll
 
 [analyzerConfigFiles]
 ../../
