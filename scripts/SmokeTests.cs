@@ -90,7 +90,15 @@ if (aircraft is null)
     throw new JsonException("Deserialization returned null");
 }
 Console.WriteLine($"Created aircraft with ID: {aircraft.Id}");
-await Task.Delay(10000);
+await Eventually(async () =>
+{
+    var summary = await client.GetFromJsonAsync<FlightsSummaryDto>(
+        "flights/summary",
+        SmokeTestJsonContext.Default.FlightsSummaryDto);
+    return summary is not null
+        && summary.AirportCount == 2
+        && summary.AircraftCount == 1;
+}, timeout: TimeSpan.FromSeconds(60));
 Console.WriteLine($"Attempting to schedule flight from {airport1.IcaoCode} to {airport2.IcaoCode}");
 var departureInstant = NextMinuteBoundaryAfter(Duration.FromMinutes(30));
 var flightDuration = Duration.FromHours(10) + Duration.FromMinutes(30);
@@ -135,6 +143,42 @@ Instant AdvanceToNextMinuteBoundary(Instant instant)
     var roundedTicks = (ticks / ticksPerMinute + 1) * ticksPerMinute;
     return Instant.FromUnixTimeTicks(roundedTicks);
 }
+static async Task Eventually(
+    Func<Task<bool>> condition,
+    TimeSpan timeout,
+    TimeSpan? retryInterval = null)
+{
+    var interval = retryInterval ?? TimeSpan.FromSeconds(5);
+    var deadline = DateTimeOffset.UtcNow + timeout;
+    Exception? lastException = null;
+    while (DateTimeOffset.UtcNow < deadline)
+    {
+        try
+        {
+            if (await condition())
+            {
+                return;
+            }
+        }
+        catch (HttpRequestException ex)
+        {
+            lastException = ex;
+        }
+        catch (TaskCanceledException ex)
+        {
+            lastException = ex;
+        }
+        var remaining = deadline - DateTimeOffset.UtcNow;
+        if (remaining <= TimeSpan.Zero)
+        {
+            break;
+        }
+        await Task.Delay(remaining < interval ? remaining : interval);
+    }
+    throw new TimeoutException(
+        $"Condition was not met within {timeout}.",
+        lastException);
+}
 
 namespace SmokeTests
 {
@@ -145,6 +189,7 @@ namespace SmokeTests
     [JsonSerializable(typeof(CreateAircraftDto))]
     [JsonSerializable(typeof(FlightDto))]
     [JsonSerializable(typeof(ScheduleFlightDto))]
+    [JsonSerializable(typeof(FlightsSummaryDto))]
     internal sealed partial class SmokeTestJsonContext : JsonSerializerContext
     {
     }
