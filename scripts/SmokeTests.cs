@@ -92,21 +92,22 @@ if (aircraft is null)
 Console.WriteLine($"Created aircraft with ID: {aircraft.Id}");
 await Task.Delay(10000);
 Console.WriteLine($"Attempting to schedule flight from {airport1.IcaoCode} to {airport2.IcaoCode}");
-var tz1 = DateTimeZoneProviders.Tzdb["Asia/Seoul"];
-var tz2 = DateTimeZoneProviders.Tzdb["Europe/Amsterdam"];
-var soon = SystemClock.Instance.GetCurrentInstant().Plus(Duration.FromMinutes(30));
-soon = Instant.FromUnixTimeTicks((soon.ToUnixTimeTicks() / NodaConstants.TicksPerMinute + 1) * NodaConstants.TicksPerMinute);
-var departureFromIncheon = soon.InZone(tz1).ToDateTimeUnspecified();
-var arrivalAtSchiphol = soon.InZone(tz2).ToDateTimeUnspecified().AddHours(10).AddMinutes(30);
+var departureInstant = NextMinuteBoundaryAfter(Duration.FromMinutes(30));
+var flightDuration = Duration.FromHours(10) + Duration.FromMinutes(30);
+var arrivalInstant = departureInstant + flightDuration;
+var incheonTimeZone = DateTimeZoneProviders.Tzdb["Asia/Seoul"];
+var schipholTimeZone = DateTimeZoneProviders.Tzdb["Europe/Amsterdam"];
+var departureZoned = departureInstant.InZone(incheonTimeZone);
+var arrivalZoned = arrivalInstant.InZone(schipholTimeZone);
 var req4 = new ScheduleFlightDto
 {
     AircraftId = aircraft.Id,
     FlightNumberIata = "EB1",
     FlightNumberIcao = "EBY1",
     DepartureAirportId = airport1.Id,
-    DepartureLocalTime = departureFromIncheon,
+    DepartureLocalTime = departureZoned.ToDateTimeUnspecified(),
     ArrivalAirportId = airport2.Id,
-    ArrivalLocalTime = arrivalAtSchiphol,
+    ArrivalLocalTime = arrivalZoned.ToDateTimeUnspecified(),
     EconomyPrice = 400,
     BusinessPrice = 4000,
     SchedulingAmbiguityPolicy = "ThrowWhenAmbiguous",
@@ -121,6 +122,19 @@ if (flight is null)
     throw new JsonException("Deserialization returned null");
 }
 Console.WriteLine($"Scheduled flight with ID: {flight.Id}");
+Instant NextMinuteBoundaryAfter(Duration duration)
+{
+    var clock = SystemClock.Instance;
+    var target = clock.GetCurrentInstant() + duration;
+    return AdvanceToNextMinuteBoundary(target);
+}
+Instant AdvanceToNextMinuteBoundary(Instant instant)
+{
+    var ticks = instant.ToUnixTimeTicks();
+    var ticksPerMinute = NodaConstants.TicksPerMinute;
+    var roundedTicks = (ticks / ticksPerMinute + 1) * ticksPerMinute;
+    return Instant.FromUnixTimeTicks(roundedTicks);
+}
 
 namespace SmokeTests
 {
