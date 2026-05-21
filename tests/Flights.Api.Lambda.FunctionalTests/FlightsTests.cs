@@ -34,11 +34,12 @@ public class FlightsTests : BaseFunctionalTest
     [Fact]
     public async Task Schedule_Should_ReturnBadRequest_WhenDepartureTimeIsInThePast()
     {
-        var recently = _clock.GetCurrentInstant().Minus(Duration.FromMinutes(30));
-        var soon = _clock.GetCurrentInstant().Plus(Duration.FromMinutes(30));
+        var now = _clock.GetCurrentInstant();
+        var departure = now.Minus(Duration.FromMinutes(30));
+        var arrival = now.Plus(Duration.FromMinutes(30));
         var request = CreateValidScheduleRequest(
-            departureLocalTime: recently.InZone(_incheonTimeZone).ToDateTimeUnspecified(),
-            arrivalLocalTime: soon.InZone(_schipholTimeZone).ToDateTimeUnspecified().AddHours(10).AddMinutes(30));
+            departureLocalTime: departure.InZone(_incheonTimeZone).ToDateTimeUnspecified(),
+            arrivalLocalTime: arrival.InZone(_schipholTimeZone).ToDateTimeUnspecified());
         var response = await HttpClient.PostAsJsonAsync("flights", request, TestContext.Current.CancellationToken);
         await GetProblemDetailsFromResponseAndAssert(
             response,
@@ -234,10 +235,12 @@ public class FlightsTests : BaseFunctionalTest
             x.BusinessPrice == adjustPricingRequest.BusinessPrice);
 
         // Reschedule
-        var tomorrow = _clock.GetCurrentInstant().Plus(Duration.FromDays(1));
+        var newDepartureInstant = TimeHelpers.MinutesFromNowRoundedUp(_clock, 24 * 60);
+        var newArrivalInstant = newDepartureInstant + _flightDuration;
+
         var rescheduleRequest = new RescheduleFlightDto(
-            tomorrow.InZone(_incheonTimeZone).ToDateTimeUnspecified(),
-            tomorrow.InZone(_schipholTimeZone).ToDateTimeUnspecified().AddHours(10).AddMinutes(30),
+            newDepartureInstant.InZone(_incheonTimeZone).ToDateTimeUnspecified(),
+            newArrivalInstant.InZone(_schipholTimeZone).ToDateTimeUnspecified(),
             "ThrowWhenAmbiguous");
         var rescheduleResponse = await HttpClient.PatchAsJsonAsync(
             $"flights/{flight.Id}/schedule",
@@ -246,8 +249,8 @@ public class FlightsTests : BaseFunctionalTest
         rescheduleResponse.EnsureSuccessStatusCode();
         flight = await DeserializeAsync<FlightDto>(rescheduleResponse);
         flight.Should().Match<FlightDto>(x =>
-            x.DepartureTime == tomorrow.InZone(_incheonTimeZone).ToDateTimeOffset() &&
-            x.ArrivalTime == tomorrow.InZone(_schipholTimeZone).ToDateTimeOffset().AddHours(10).AddMinutes(30) &&
+            x.DepartureTime == newDepartureInstant.InZone(_incheonTimeZone).ToDateTimeOffset() &&
+            x.ArrivalTime == newArrivalInstant.InZone(_schipholTimeZone).ToDateTimeOffset() &&
             x.Status == "Scheduled" &&
             x.EconomyPrice == 500 &&
             x.BusinessPrice == 5000 &&
