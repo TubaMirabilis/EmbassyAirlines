@@ -186,5 +186,5 @@ public class AirportsTests : BaseFunctionalTest
 
         // Assert
         await GetProblemDetailsFromResponseAndAssert(response, error);
-    }    
+    }
 }
