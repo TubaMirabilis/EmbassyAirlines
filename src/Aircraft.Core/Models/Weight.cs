@@ -6,7 +6,7 @@ public sealed record Weight
 {
     public Weight(int kilograms)
     {
-        Ensure.GreaterThanZero(kilograms);
+        Ensure.ZeroOrGreater(kilograms);
         Kilograms = kilograms;
     }
     private Weight()

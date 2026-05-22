@@ -4,28 +4,36 @@ public sealed record AircraftLocationData
 {
     public AircraftLocationData(Status status, string? parkedAt, string? enRouteTo)
     {
+        Validate(status, parkedAt, enRouteTo);
+        Status = status;
+        ParkedAt = Normalize(parkedAt);
+        EnRouteTo = Normalize(enRouteTo);
+    }
+    private static void Validate(Status status, string? parkedAt, string? enRouteTo)
+    {
         var hasParkedAt = !string.IsNullOrWhiteSpace(parkedAt);
         var hasEnRouteTo = !string.IsNullOrWhiteSpace(enRouteTo);
-        if (status == Status.Parked && !hasParkedAt)
+        var error = status switch
         {
-            throw new ArgumentException("Status is Parked, so ParkedAt must be provided.");
-        }
-        if (status == Status.Parked && hasEnRouteTo)
+            Status.Parked when !hasParkedAt =>
+                "Status is Parked, so ParkedAt must be provided.",
+            Status.Parked when hasEnRouteTo =>
+                "Status is Parked, so EnRouteTo must be empty.",
+            Status.EnRoute when !hasEnRouteTo =>
+                "Status is EnRoute, so EnRouteTo must be provided.",
+            Status.EnRoute when hasParkedAt =>
+                "Status is EnRoute, so ParkedAt must be empty.",
+            _ => null
+        };
+        if (error is not null)
         {
-            throw new ArgumentException("Status is Parked, so EnRouteTo must be empty.");
+            throw new ArgumentException(error);
         }
-        if (status == Status.EnRoute && !hasEnRouteTo)
-        {
-            throw new ArgumentException("Status is EnRoute, so EnRouteTo must be provided.");
-        }
-        if (status == Status.EnRoute && hasParkedAt)
-        {
-            throw new ArgumentException("Status is EnRoute, so ParkedAt must be empty.");
-        }
-        Status = status;
-        ParkedAt = parkedAt?.Trim().ToUpperInvariant();
-        EnRouteTo = enRouteTo?.Trim().ToUpperInvariant();
     }
+    private static string? Normalize(string? value) =>
+        string.IsNullOrWhiteSpace(value)
+            ? null
+            : value.Trim().ToUpperInvariant();
     private AircraftLocationData()
     {
     }
