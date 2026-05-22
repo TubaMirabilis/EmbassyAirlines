@@ -152,28 +152,6 @@ public class AirportsTests : BaseFunctionalTest
     }
 
     [Fact]
-    public async Task Create_Should_ReturnCreated_WhenRequestIsValid()
-    {
-        // Arrange
-        var request = new CreateOrUpdateAirportDto("CYVR", "YVR", "Vancouver International Airport", "America/Vancouver");
-
-        // Act
-        var response = await HttpClient.PostAsJsonAsync("airports", request, TestContext.Current.CancellationToken);
-        var content = await response.Content.ReadAsStreamAsync(TestContext.Current.CancellationToken);
-        var airport = await JsonSerializer.DeserializeAsync<AirportDto>(content, JsonSerializerOptions.Web, TestContext.Current.CancellationToken);
-        if (airport is null)
-        {
-            throw new JsonException("Expected airport object not returned");
-        }
-
-        // Assert
-        airport.Should().Match<AirportDto>(x =>
-            x.Name == request.Name &&
-            x.IataCode == request.IataCode &&
-            x.TimeZoneId == request.TimeZoneId);
-    }
-
-    [Fact]
     public async Task GetById_Should_ReturnNotFound_WhenAirportDoesNotExist()
     {
         // Arrange
@@ -186,5 +164,32 @@ public class AirportsTests : BaseFunctionalTest
 
         // Assert
         await GetProblemDetailsFromResponseAndAssert(response, error);
+    }
+
+    [Fact]
+    public async Task Airport_Lifecycle_Should_Succeed()
+    {
+        // Create
+        var request = new CreateOrUpdateAirportDto("CYVR", "YVR", "Vancouver International Airport", "America/Vancouver");
+        var response = await HttpClient.PostAsJsonAsync("airports", request, TestContext.Current.CancellationToken);
+        var content = await response.Content.ReadAsStreamAsync(TestContext.Current.CancellationToken);
+        var airport = await JsonSerializer.DeserializeAsync<AirportDto>(content, JsonSerializerOptions.Web, TestContext.Current.CancellationToken);
+        if (airport is null)
+        {
+            throw new JsonException("Expected airport object not returned");
+        }
+        airport.Should().Match<AirportDto>(x =>
+            x.Name == request.Name &&
+            x.IataCode == request.IataCode &&
+            x.TimeZoneId == request.TimeZoneId);
+
+        // Update
+        var updateRequest = new CreateOrUpdateAirportDto("CYVR", "YVR", "Vancouver Intercontinental Airport", "America/Vancouver");
+        var expected = new AirportDto(airport.Id, updateRequest.Name, updateRequest.IcaoCode, updateRequest.IataCode, updateRequest.TimeZoneId);
+        var updateUri = new Uri($"airports/{airport.Id}", UriKind.Relative);
+        var updateResponse = await HttpClient.PutAsJsonAsync(updateUri, updateRequest, TestContext.Current.CancellationToken);
+        var updateContent = await updateResponse.Content.ReadAsStreamAsync(TestContext.Current.CancellationToken);
+        var updatedAirport = await JsonSerializer.DeserializeAsync<AirportDto>(updateContent, JsonSerializerOptions.Web, TestContext.Current.CancellationToken);
+        updatedAirport.Should().BeEquivalentTo(expected);
     }
 }

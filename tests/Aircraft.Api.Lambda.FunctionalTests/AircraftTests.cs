@@ -126,8 +126,9 @@ public class AircraftTests : BaseFunctionalTest
     }
 
     [Fact]
-    public async Task Create_Should_ReturnCreated_WhenRequestIsValid()
+    public async Task Aircraft_Lifecycle_Should_Succeed()
     {
+        // Create
         var aircraft = await CreateAircraftAsync();
         aircraft.Should().Match<AircraftDto>(x =>
             x.TailNumber == _request.TailNumber &&
@@ -138,6 +139,15 @@ public class AircraftTests : BaseFunctionalTest
             x.MaximumTakeoffWeight == _request.MaximumTakeoffWeight &&
             x.MaximumZeroFuelWeight == _request.MaximumZeroFuelWeight &&
             x.Seats == 337);
+
+        // List
+        var expected = new AircraftListDto([aircraft], 1, 50, 1, false);
+        var listUri = new Uri("aircraft", UriKind.Relative);
+        var listResponse = await HttpClient.GetAsync(listUri, TestContext.Current.CancellationToken);
+        listResponse.EnsureSuccessStatusCode();
+        var listContent = await listResponse.Content.ReadAsStreamAsync(TestContext.Current.CancellationToken);
+        var aircraftList = await JsonSerializer.DeserializeAsync<AircraftListDto>(listContent, JsonSerializerOptions.Web, TestContext.Current.CancellationToken);
+        aircraftList.Should().BeEquivalentTo(expected);
     }
 
     private async Task<AircraftDto> CreateAircraftAsync()

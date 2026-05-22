@@ -1,31 +1,51 @@
 using System.Collections;
 using System.Globalization;
-using Shared;
 
 namespace Aircraft.Core.Models;
 
-public readonly struct RowRange : IEnumerable<int>, IEquatable<RowRange>
+public readonly record struct RowRange : IEnumerable<int>
 {
     public int Start { get; }
     public int End { get; }
+
     public RowRange(int start, int end)
     {
-        Ensure.GreaterThanZero(start);
-        Ensure.GreaterThanZero(end);
-        Ensure.LessThanOrEqualTo(start, end);
+        ArgumentOutOfRangeException.ThrowIfLessThan(start, 1);
+        ArgumentOutOfRangeException.ThrowIfLessThan(end, 1);
+
+        if (start > end)
+        {
+            throw new ArgumentException("Start row must be less than or equal to end row.");
+        }
+
         Start = start;
         End = end;
     }
+
     public static RowRange Parse(string s)
     {
-        if (s.Contains('-', StringComparison.OrdinalIgnoreCase))
+        ArgumentException.ThrowIfNullOrWhiteSpace(s);
+
+        var parts = s.Split('-', StringSplitOptions.TrimEntries);
+
+        return parts.Length switch
         {
-            var parts = s.Split('-', 2, StringSplitOptions.TrimEntries);
-            return new RowRange(int.Parse(parts[0], CultureInfo.InvariantCulture), int.Parse(parts[1], CultureInfo.InvariantCulture));
+            1 => Single(parts[0]),
+            2 => Range(parts[0], parts[1]),
+            _ => throw new FormatException("Row range must be a single row or a start-end range.")
+        };
+
+        static RowRange Single(string value)
+        {
+            var row = int.Parse(value, CultureInfo.InvariantCulture);
+            return new RowRange(row, row);
         }
-        var single = int.Parse(s.Trim(), CultureInfo.InvariantCulture);
-        return new RowRange(single, single);
+
+        static RowRange Range(string start, string end) => new RowRange(
+                int.Parse(start, CultureInfo.InvariantCulture),
+                int.Parse(end, CultureInfo.InvariantCulture));
     }
+
     public IEnumerator<int> GetEnumerator()
     {
         for (var i = Start; i <= End; i++)
@@ -33,17 +53,6 @@ public readonly struct RowRange : IEnumerable<int>, IEquatable<RowRange>
             yield return i;
         }
     }
+
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
-    public override bool Equals(object? obj)
-    {
-        if (obj is not RowRange other)
-        {
-            return false;
-        }
-        return Start == other.Start && End == other.End;
-    }
-    public bool Equals(RowRange other) => Start == other.Start && End == other.End;
-    public static bool operator ==(RowRange left, RowRange right) => left.Equals(right);
-    public static bool operator !=(RowRange left, RowRange right) => !(left == right);
-    public override int GetHashCode() => HashCode.Combine(Start, End);
 }
