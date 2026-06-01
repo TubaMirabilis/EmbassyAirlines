@@ -28,6 +28,7 @@ services.AddSingleton<IValidator<ScheduleFlightDto>, ScheduleFlightDtoValidator>
 services.AddOpenApi();
 services.AddAWSMessageBus(config);
 services.AddSingleton<IClock>(SystemClock.Instance);
+services.AddScoped<FlightScheduler>();
 builder.Services
     .AddOpenTelemetry()
     .ConfigureResource(resource => resource.AddService(DiagnosticsConfig.ActivitySource.Name))

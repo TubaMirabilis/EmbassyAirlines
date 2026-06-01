@@ -2,6 +2,7 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using Flights.Core.Models;
 using FluentAssertions;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using NodaTime;
 using Shared.Contracts;
@@ -162,7 +163,11 @@ public class FlightsTests : BaseFunctionalTest
 
         // Schedule
         var scheduleResponse = await HttpClient.PostAsJsonAsync("flights", scheduleRequest, TestContext.Current.CancellationToken);
-        scheduleResponse.EnsureSuccessStatusCode();
+        if (!scheduleResponse.IsSuccessStatusCode)
+        {
+            var problemDetails = await DeserializeAsync<ProblemDetails>(scheduleResponse);
+            throw new HttpRequestException($"Scheduling flight failed with status code {scheduleResponse.StatusCode}: {problemDetails.Detail}");
+        }
         var flight = await DeserializeAsync<FlightDto>(scheduleResponse);
         flight.Should().Match<FlightDto>(x =>
             x.FlightNumberIata == scheduleRequest.FlightNumberIata &&

@@ -4,10 +4,8 @@ using AWS.Messaging;
 using ErrorOr;
 using Flights.Api.Lambda.Extensions;
 using Flights.Core.Models;
-using Flights.Infrastructure.Database;
 using FluentValidation;
 using Microsoft.AspNetCore.Http.HttpResults;
-using Microsoft.EntityFrameworkCore;
 using NodaTime;
 using Shared;
 using Shared.Contracts;
@@ -26,7 +24,7 @@ internal sealed class ScheduleFlightEndpoint : IEndpoint
               .ProducesProblem(StatusCodes.Status400BadRequest)
               .ProducesProblem(StatusCodes.Status404NotFound)
               .ProducesProblem(StatusCodes.Status500InternalServerError);
-    private static async Task<Results<Created<FlightDto>, ProblemHttpResult>> InvokeAsync(ApplicationDbContext ctx,
+    private static async Task<Results<Created<FlightDto>, ProblemHttpResult>> InvokeAsync(FlightScheduler flightScheduler,
                                                                                           IClock clock,
                                                                                           ILogger<ScheduleFlightEndpoint> logger,
                                                                                           IMessagePublisher publisher,
@@ -41,33 +39,14 @@ internal sealed class ScheduleFlightEndpoint : IEndpoint
             var error = Error.Validation("Flight.ValidationFailed", formattedErrors);
             return TypedResults.Problem(ErrorHandlingHelper.GetProblemDetails(error));
         }
-        var departureAirport = await ctx.Airports
-                                        .Where(a => a.Id == dto.DepartureAirportId)
-                                        .SingleOrDefaultAsync(ct);
-        if (departureAirport is null)
+        var dependenciesResult = await flightScheduler.LoadDependenciesAsync(dto.AircraftId, dto.ArrivalAirportId, dto.DepartureAirportId, ct);
+        if (dependenciesResult.IsError)
         {
-            logger.LogWarning("Departure airport with ID {Id} not found", dto.DepartureAirportId);
-            var error = Error.NotFound("Flight.DepartureAirportNotFound", $"Departure airport with ID {dto.DepartureAirportId} not found");
+            var error = dependenciesResult.FirstError;
+            logger.LogWarning("Failed to load dependencies for flight scheduling: {Message}", error.Description);
             return TypedResults.Problem(ErrorHandlingHelper.GetProblemDetails(error));
         }
-        var arrivalAirport = await ctx.Airports
-                                      .Where(a => a.Id == dto.ArrivalAirportId)
-                                      .SingleOrDefaultAsync(ct);
-        if (arrivalAirport is null)
-        {
-            logger.LogWarning("Arrival airport with ID {Id} not found", dto.ArrivalAirportId);
-            var error = Error.NotFound("Flight.ArrivalAirportNotFound", $"Arrival airport with ID {dto.ArrivalAirportId} not found");
-            return TypedResults.Problem(ErrorHandlingHelper.GetProblemDetails(error));
-        }
-        var aircraft = await ctx.Aircraft
-                                .Where(a => a.Id == dto.AircraftId)
-                                .SingleOrDefaultAsync(ct);
-        if (aircraft is null)
-        {
-            logger.LogWarning("Aircraft with ID {Id} not found", dto.AircraftId);
-            var error = Error.NotFound("Flight.AircraftNotFound", $"Aircraft with ID {dto.AircraftId} not found");
-            return TypedResults.Problem(ErrorHandlingHelper.GetProblemDetails(error));
-        }
+        var deps = dependenciesResult.Value;
         try
         {
             var economyPrice = new Money(dto.EconomyPrice);
@@ -76,16 +55,16 @@ internal sealed class ScheduleFlightEndpoint : IEndpoint
             var schedulingAmbiguityPolicy = Enum.Parse<SchedulingAmbiguityPolicy>(dto.SchedulingAmbiguityPolicy, ignoreCase: true);
             var schedule = new FlightSchedule(new FlightScheduleCreationArgs
             {
-                ArrivalAirport = arrivalAirport,
+                ArrivalAirport = deps.ArrivalAirport,
                 ArrivalLocalTime = LocalDateTime.FromDateTime(dto.ArrivalLocalTime),
-                DepartureAirport = departureAirport,
+                DepartureAirport = deps.DepartureAirport,
                 DepartureLocalTime = LocalDateTime.FromDateTime(dto.DepartureLocalTime),
                 Now = clock.GetCurrentInstant(),
                 SchedulingAmbiguityPolicy = schedulingAmbiguityPolicy
             });
             var flight = Flight.Create(new FlightCreationArgs
             {
-                Aircraft = aircraft,
+                Aircraft = deps.Aircraft,
                 BusinessPrice = businessPrice,
                 CreatedAt = clock.GetCurrentInstant(),
                 EconomyPrice = economyPrice,
@@ -94,8 +73,7 @@ internal sealed class ScheduleFlightEndpoint : IEndpoint
                 Schedule = schedule,
                 OperationType = operationType
             });
-            ctx.Flights.Add(flight);
-            await ctx.SaveChangesAsync(ct);
+            await flightScheduler.ScheduleFlightAsync(flight, ct);
             if (logger.IsEnabled(LogLevel.Information))
             {
                 var details = new StringBuilder();
