@@ -16,7 +16,7 @@ internal sealed class RdsResources : Construct
         {
             Engine = DatabaseInstanceEngine.Postgres(new PostgresInstanceEngineProps
             {
-                Version = PostgresEngineVersion.VER_18_1
+                Version = PostgresEngineVersion.VER_18_3
             }),
             Vpc = props.Vpc,
             VpcSubnets = new SubnetSelection
