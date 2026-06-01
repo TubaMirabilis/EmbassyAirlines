@@ -41,18 +41,6 @@ internal sealed class ScheduleFlightEndpoint : IEndpoint
             var error = Error.Validation("Flight.ValidationFailed", formattedErrors);
             return TypedResults.Problem(ErrorHandlingHelper.GetProblemDetails(error));
         }
-        if (!Enum.TryParse<OperationType>(dto.OperationType, out var operationType))
-        {
-            logger.LogWarning("Invalid operation type: {Type}", dto.OperationType);
-            var error = Error.Validation("Flight.InvalidOperationType", $"Invalid operation type: {dto.OperationType}");
-            return TypedResults.Problem(ErrorHandlingHelper.GetProblemDetails(error));
-        }
-        if (!Enum.TryParse<SchedulingAmbiguityPolicy>(dto.SchedulingAmbiguityPolicy, out var schedulingAmbiguityPolicy))
-        {
-            logger.LogWarning("Invalid scheduling ambiguity policy: {Policy}", dto.SchedulingAmbiguityPolicy);
-            var error = Error.Validation("Flight.InvalidSchedulingAmbiguityPolicy", $"Invalid scheduling ambiguity policy: {dto.SchedulingAmbiguityPolicy}");
-            return TypedResults.Problem(ErrorHandlingHelper.GetProblemDetails(error));
-        }
         var departureAirport = await ctx.Airports
                                         .Where(a => a.Id == dto.DepartureAirportId)
                                         .SingleOrDefaultAsync(ct);
@@ -84,6 +72,8 @@ internal sealed class ScheduleFlightEndpoint : IEndpoint
         {
             var economyPrice = new Money(dto.EconomyPrice);
             var businessPrice = new Money(dto.BusinessPrice);
+            var operationType = Enum.Parse<OperationType>(dto.OperationType, ignoreCase: true);
+            var schedulingAmbiguityPolicy = Enum.Parse<SchedulingAmbiguityPolicy>(dto.SchedulingAmbiguityPolicy, ignoreCase: true);
             var schedule = new FlightSchedule(new FlightScheduleCreationArgs
             {
                 ArrivalAirport = arrivalAirport,

@@ -1,3 +1,4 @@
+using Flights.Core.Models;
 using FluentValidation;
 using Shared.Contracts;
 
@@ -7,6 +8,16 @@ internal sealed class ScheduleFlightDtoValidator : AbstractValidator<ScheduleFli
 {
     public ScheduleFlightDtoValidator()
     {
+        RuleFor(x => x.OperationType)
+    .NotEmpty()
+        .WithMessage("Operation type is required.")
+    .Must(x => Enum.TryParse<OperationType>(x, ignoreCase: true, out _))
+        .WithMessage(x => $"Invalid operation type: {x.OperationType}");
+        RuleFor(x => x.SchedulingAmbiguityPolicy)
+            .NotEmpty()
+                .WithMessage("Scheduling ambiguity policy is required.")
+            .Must(x => Enum.TryParse<SchedulingAmbiguityPolicy>(x, ignoreCase: true, out _))
+                .WithMessage(x => $"Invalid scheduling ambiguity policy: {x.SchedulingAmbiguityPolicy}");
         RuleFor(x => x.AircraftId)
             .NotEmpty()
                 .WithMessage("Aircraft id is required.");
@@ -34,9 +45,9 @@ internal sealed class ScheduleFlightDtoValidator : AbstractValidator<ScheduleFli
                 .WithMessage("Arrival time is required.");
         RuleFor(x => x.EconomyPrice)
             .GreaterThanOrEqualTo(0)
-                .WithMessage("Economy price must be greater than 0.");
+                .WithMessage("Economy price must be greater than or equal to 0.");
         RuleFor(x => x.BusinessPrice)
             .GreaterThanOrEqualTo(0)
-                .WithMessage("Business price must be greater than 0.");
+                .WithMessage("Business price must be greater than or equal to 0.");
     }
 }
