@@ -15,14 +15,10 @@ public sealed record AircraftLocationData
         var hasEnRouteTo = !string.IsNullOrWhiteSpace(enRouteTo);
         var error = status switch
         {
-            Status.Parked when !hasParkedAt =>
-                "Status is Parked, so ParkedAt must be provided.",
-            Status.Parked when hasEnRouteTo =>
-                "Status is Parked, so EnRouteTo must be empty.",
-            Status.EnRoute when !hasEnRouteTo =>
-                "Status is EnRoute, so EnRouteTo must be provided.",
-            Status.EnRoute when hasParkedAt =>
-                "Status is EnRoute, so ParkedAt must be empty.",
+            Status.Parked when !hasParkedAt => "Status is Parked, so ParkedAt must be provided.",
+            Status.Parked when hasEnRouteTo => "Status is Parked, so EnRouteTo must be empty.",
+            Status.EnRoute when !hasEnRouteTo => "Status is EnRoute, so EnRouteTo must be provided.",
+            Status.EnRoute when hasParkedAt => "Status is EnRoute, so ParkedAt must be empty.",
             _ => null
         };
         if (error is not null)
