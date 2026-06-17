@@ -13,12 +13,12 @@ internal sealed class FlightsService : Construct
     internal FlightsService(Construct scope, string id, FlightsServiceProps props) : base(scope, id)
     {
         var commonEnv = new Dictionary<string, string>
-            {
-                { "FLIGHTS_DbConnection__Database", props.DbName },
-                { "FLIGHTS_DbConnection__Host", props.DbProxy.Endpoint },
-                { "FLIGHTS_DbConnection__Port", props.DbPort.ToString(CultureInfo.InvariantCulture) },
-                { "FLIGHTS_DbConnection__Username", props.DbUsername }
-            };
+        {
+            { "FLIGHTS_DbConnection__Database", props.DbConnection.DbName },
+            { "FLIGHTS_DbConnection__Host", props.DbProxyAccess.DbProxy.Endpoint },
+            { "FLIGHTS_DbConnection__Port", props.DbConnection.DbPort.ToString(CultureInfo.InvariantCulture) },
+            { "FLIGHTS_DbConnection__Username", props.DbConnection.DbUsername }
+        };
         var imageCode = DockerImageCode.FromImageAsset(directory: ".", new AssetImageCodeProps
         {
             File = "docker/Flights.Api.Lambda.dockerfile"
@@ -59,8 +59,8 @@ internal sealed class FlightsService : Construct
             Integration = new HttpLambdaIntegration("FlightsApiIntegration", apiLambda),
             Methods = [Amazon.CDK.AWS.Apigatewayv2.HttpMethod.ANY]
         });
-        props.DbProxy.GrantConnect(apiLambda, props.DbUsername);
-        lambdaSg.Connections.AllowTo(props.DbProxySecurityGroup, Port.Tcp(props.DbPort), "Allow Lambda to access RDS Proxy");
+        props.DbProxyAccess.DbProxy.GrantConnect(apiLambda, props.DbConnection.DbUsername);
+        lambdaSg.Connections.AllowTo(props.DbProxyAccess.DbProxySecurityGroup, Port.Tcp(props.DbConnection.DbPort), "Allow Lambda to access RDS Proxy");
         props.FlightScheduledTopic.GrantPublish(apiLambda);
         props.AircraftAssignedToFlightTopic.GrantPublish(apiLambda);
         props.FlightPricingAdjustedTopic.GrantPublish(apiLambda);
@@ -72,10 +72,8 @@ internal sealed class FlightsService : Construct
         props.FlightArrivedTopic.GrantPublish(apiLambda);
         new EventHandlerLambda(this, "FlightsAircraftCreatedHandlerLambda", new EventHandlerLambdaProps
         {
-            DbPort = props.DbPort,
-            DbProxy = props.DbProxy,
-            DbProxySecurityGroup = props.DbProxySecurityGroup,
-            DbUsername = props.DbUsername,
+            DbConnection = props.DbConnection,
+            DbProxyAccess = props.DbProxyAccess,
             Environment = new Dictionary<string, string>(commonEnv),
             FunctionName = "FlightsAircraftCreatedHandlerLambda",
             Path = "docker/Flights.Api.Lambda.MessageHandlers.AircraftCreated.dockerfile",
@@ -85,10 +83,8 @@ internal sealed class FlightsService : Construct
         });
         new EventHandlerLambda(this, "FlightsAirportCreatedHandlerLambda", new EventHandlerLambdaProps
         {
-            DbPort = props.DbPort,
-            DbProxy = props.DbProxy,
-            DbProxySecurityGroup = props.DbProxySecurityGroup,
-            DbUsername = props.DbUsername,
+            DbConnection = props.DbConnection,
+            DbProxyAccess = props.DbProxyAccess,
             Environment = new Dictionary<string, string>(commonEnv),
             FunctionName = "FlightsAirportCreatedHandlerLambda",
             Path = "docker/Flights.Api.Lambda.MessageHandlers.AirportCreated.dockerfile",
@@ -98,10 +94,8 @@ internal sealed class FlightsService : Construct
         });
         new EventHandlerLambda(this, "FlightsAirportUpdatedHandlerLambda", new EventHandlerLambdaProps
         {
-            DbPort = props.DbPort,
-            DbProxy = props.DbProxy,
-            DbProxySecurityGroup = props.DbProxySecurityGroup,
-            DbUsername = props.DbUsername,
+            DbConnection = props.DbConnection,
+            DbProxyAccess = props.DbProxyAccess,
             Environment = new Dictionary<string, string>(commonEnv),
             FunctionName = "FlightsAirportUpdatedHandlerLambda",
             Path = "docker/Flights.Api.Lambda.MessageHandlers.AirportUpdated.dockerfile",

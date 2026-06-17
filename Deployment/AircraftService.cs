@@ -15,10 +15,10 @@ internal sealed class AircraftService : Construct
     {
         var commonEnv = new Dictionary<string, string>
         {
-            { "AIRCRAFT_DbConnection__Database", props.DbName },
-                { "AIRCRAFT_DbConnection__Host", props.DbProxy.Endpoint },
-                { "AIRCRAFT_DbConnection__Port", props.DbPort.ToString(CultureInfo.InvariantCulture) },
-                { "AIRCRAFT_DbConnection__Username", props.DbUsername }
+            { "AIRCRAFT_DbConnection__Database", props.DbConnection.DbName },
+            { "AIRCRAFT_DbConnection__Host", props.DbProxyAccess.DbProxy.Endpoint },
+            { "AIRCRAFT_DbConnection__Port", props.DbConnection.DbPort.ToString(CultureInfo.InvariantCulture) },
+            { "AIRCRAFT_DbConnection__Username", props.DbConnection.DbUsername }
         };
         var bucket = new Bucket(this, "AircraftBucket", new BucketProps
         {
@@ -60,16 +60,14 @@ internal sealed class AircraftService : Construct
             Integration = new HttpLambdaIntegration("AircraftApiIntegration", lambda),
             Methods = [Amazon.CDK.AWS.Apigatewayv2.HttpMethod.ANY]
         });
-        props.DbProxy.GrantConnect(lambda, props.DbUsername);
-        lambdaSg.Connections.AllowTo(props.DbProxySecurityGroup, Port.Tcp(props.DbPort), "Allow Lambda to access RDS Proxy");
+        props.DbProxyAccess.DbProxy.GrantConnect(lambda, props.DbConnection.DbUsername);
+        lambdaSg.Connections.AllowTo(props.DbProxyAccess.DbProxySecurityGroup, Port.Tcp(props.DbConnection.DbPort), "Allow Lambda to access RDS Proxy");
         props.AircraftCreatedTopic.GrantPublish(lambda);
         bucket.GrantRead(lambda);
         new EventHandlerLambda(this, "AircraftFlightArrivedHandlerLambda", new EventHandlerLambdaProps
         {
-            DbPort = props.DbPort,
-            DbProxy = props.DbProxy,
-            DbProxySecurityGroup = props.DbProxySecurityGroup,
-            DbUsername = props.DbUsername,
+            DbConnection = props.DbConnection,
+            DbProxyAccess = props.DbProxyAccess,
             Environment = new Dictionary<string, string>(commonEnv),
             FunctionName = "AircraftFlightArrivedHandlerLambda",
             Path = "docker/Aircraft.Api.Lambda.MessageHandlers.FlightArrived.dockerfile",
@@ -79,10 +77,8 @@ internal sealed class AircraftService : Construct
         });
         new EventHandlerLambda(this, "AircraftFlightMarkedAsDelayedEnRouteHandlerLambda", new EventHandlerLambdaProps
         {
-            DbPort = props.DbPort,
-            DbProxy = props.DbProxy,
-            DbProxySecurityGroup = props.DbProxySecurityGroup,
-            DbUsername = props.DbUsername,
+            DbConnection = props.DbConnection,
+            DbProxyAccess = props.DbProxyAccess,
             Environment = new Dictionary<string, string>(commonEnv),
             FunctionName = "AircraftFlightMarkedAsDelayedEnRouteHandlerLambda",
             Path = "docker/Aircraft.Api.Lambda.MessageHandlers.FlightMarkedAsDelayedEnRoute.dockerfile",
@@ -92,10 +88,8 @@ internal sealed class AircraftService : Construct
         });
         new EventHandlerLambda(this, "AircraftFlightMarkedAsEnRouteHandlerLambda", new EventHandlerLambdaProps
         {
-            DbPort = props.DbPort,
-            DbProxy = props.DbProxy,
-            DbProxySecurityGroup = props.DbProxySecurityGroup,
-            DbUsername = props.DbUsername,
+            DbConnection = props.DbConnection,
+            DbProxyAccess = props.DbProxyAccess,
             Environment = new Dictionary<string, string>(commonEnv),
             FunctionName = "AircraftFlightMarkedAsEnRouteHandlerLambda",
             Path = "docker/Aircraft.Api.Lambda.MessageHandlers.FlightMarkedAsEnRoute.dockerfile",

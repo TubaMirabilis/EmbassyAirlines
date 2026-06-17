@@ -1,15 +1,12 @@
 using Amazon.CDK.AWS.EC2;
-using Amazon.CDK.AWS.RDS;
 using Amazon.CDK.AWS.SNS;
 
 namespace Deployment;
 
 internal sealed record EventHandlerLambdaProps
 {
-    internal required int DbPort { get; init; }
-    internal required DatabaseProxy DbProxy { get; init; }
-    internal required SecurityGroup DbProxySecurityGroup { get; init; }
-    internal required string DbUsername { get; init; }
+    internal required DatabaseConnectionProps DbConnection { get; init; }
+    internal required DatabaseProxyAccessProps DbProxyAccess { get; init; }
     internal required Dictionary<string, string> Environment { get; init; }
     internal required string FunctionName { get; init; }
     internal required string Path { get; init; }

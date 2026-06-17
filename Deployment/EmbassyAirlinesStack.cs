@@ -10,13 +10,6 @@ internal sealed class EmbassyAirlinesStack : Stack
         var network = new Network(this, "Networking");
         var messaging = new MessagingResources(this, "Messaging");
         var shared = new SharedInfra(this, "Shared");
-        var rds = new RdsResources(this, "RDS", new RdsResourcesProps
-        {
-            DbName = "embassyairlines",
-            DbPort = 5432,
-            DbUsername = "embassyadmin",
-            Vpc = network.Vpc
-        });
         new AirportsService(this, "AirportsService", new AirportsServiceProps
         {
             AirportCreatedTopic = messaging.AirportCreatedTopic,
@@ -24,15 +17,28 @@ internal sealed class EmbassyAirlinesStack : Stack
             Api = shared.Api,
             Vpc = network.Vpc
         });
+        var dbConnection = new DatabaseConnectionProps
+        {
+            DbName = "embassyairlines",
+            DbPort = 5432,
+            DbUsername = "embassyadmin"
+        };
+        var rds = new RdsResources(this, "RDS", new RdsResourcesProps
+        {
+            DatabaseConnection = dbConnection,
+            Vpc = network.Vpc
+        });
+        var dbProxyAccess = new DatabaseProxyAccessProps
+        {
+            DbProxy = rds.DbProxy,
+            DbProxySecurityGroup = rds.DbProxySecurityGroup
+        };
         new AircraftService(this, "AircraftService", new AircraftServiceProps
         {
             AircraftCreatedTopic = messaging.AircraftCreatedTopic,
             Api = shared.Api,
-            DbName = rds.DbName,
-            DbPort = rds.DbPort,
-            DbProxy = rds.DbProxy,
-            DbProxySecurityGroup = rds.DbProxySecurityGroup,
-            DbUsername = "embassyadmin",
+            DbConnection = dbConnection,
+            DbProxyAccess = dbProxyAccess,
             FlightArrivedTopic = messaging.FlightArrivedTopic,
             FlightMarkedAsDelayedEnRouteTopic = messaging.FlightMarkedAsDelayedEnRouteTopic,
             FlightMarkedAsEnRouteTopic = messaging.FlightMarkedAsEnRouteTopic,
@@ -44,11 +50,8 @@ internal sealed class EmbassyAirlinesStack : Stack
             AirportCreatedTopic = messaging.AirportCreatedTopic,
             AirportUpdatedTopic = messaging.AirportUpdatedTopic,
             Api = shared.Api,
-            DbName = rds.DbName,
-            DbPort = rds.DbPort,
-            DbProxy = rds.DbProxy,
-            DbProxySecurityGroup = rds.DbProxySecurityGroup,
-            DbUsername = "embassyadmin",
+            DbConnection = dbConnection,
+            DbProxyAccess = dbProxyAccess,
             FlightScheduledTopic = messaging.FlightScheduledTopic,
             AircraftAssignedToFlightTopic = messaging.AircraftAssignedToFlightTopic,
             FlightPricingAdjustedTopic = messaging.FlightPricingAdjustedTopic,

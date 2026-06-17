@@ -18,7 +18,7 @@ internal sealed class EventHandlerLambda : Construct
             Description = props.SecurityGroupDescription,
             Vpc = props.Vpc
         });
-        handlerSg.Connections.AllowTo(props.DbProxySecurityGroup, Port.Tcp(props.DbPort), "Allow handler Lambda to access RDS Proxy");
+        handlerSg.Connections.AllowTo(props.DbProxyAccess.DbProxySecurityGroup, Port.Tcp(props.DbConnection.DbPort), "Allow handler Lambda to access RDS Proxy");
         var imageCode = DockerImageCode.FromImageAsset(directory: ".", new AssetImageCodeProps
         {
             File = props.Path
@@ -37,7 +37,7 @@ internal sealed class EventHandlerLambda : Construct
                 SubnetType = SubnetType.PRIVATE_ISOLATED
             }
         });
-        props.DbProxy.GrantConnect(handler, props.DbUsername);
+        props.DbProxyAccess.DbProxy.GrantConnect(handler, props.DbConnection.DbUsername);
         var dlq = new Queue(this, "Dlq");
         var queue = new Queue(this, "Queue", new QueueProps
         {

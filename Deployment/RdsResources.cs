@@ -10,9 +10,7 @@ internal sealed class RdsResources : Construct
 {
     internal RdsResources(Construct scope, string id, RdsResourcesProps props) : base(scope, id)
     {
-        DbName = props.DbName;
-        DbPort = props.DbPort;
-        DbInstance = new DatabaseInstance(this, "EmbassyAirlinesDb", new DatabaseInstanceProps
+        var dbInstance = new DatabaseInstance(this, "EmbassyAirlinesDb", new DatabaseInstanceProps
         {
             Engine = DatabaseInstanceEngine.Postgres(new PostgresInstanceEngineProps
             {
@@ -23,10 +21,10 @@ internal sealed class RdsResources : Construct
             {
                 SubnetType = SubnetType.PRIVATE_ISOLATED
             },
-            Credentials = Credentials.FromGeneratedSecret(props.DbUsername),
+            Credentials = Credentials.FromGeneratedSecret(props.DatabaseConnection.DbUsername),
             InstanceType = InstanceType.Of(InstanceClass.T4G, InstanceSize.MICRO),
-            DatabaseName = DbName,
-            Port = DbPort,
+            DatabaseName = props.DatabaseConnection.DbName,
+            Port = props.DatabaseConnection.DbPort,
             AllocatedStorage = 20,
             MultiAz = false,
             DeletionProtection = false,
@@ -38,20 +36,17 @@ internal sealed class RdsResources : Construct
             Description = "Security group for RDS Proxy for Embassy Airlines DB",
             AllowAllOutbound = true
         });
-        DbInstance.Connections.AllowDefaultPortFrom(DbProxySecurityGroup, "RDS Proxy to DB");
-        ArgumentNullException.ThrowIfNull(DbInstance.Secret);
+        dbInstance.Connections.AllowDefaultPortFrom(DbProxySecurityGroup, "RDS Proxy to DB");
+        ArgumentNullException.ThrowIfNull(dbInstance.Secret);
         DbProxy = new DatabaseProxy(this, "EmbassyAirlinesDbProxy", new DatabaseProxyProps
         {
             IamAuth = true,
-            ProxyTarget = ProxyTarget.FromInstance(DbInstance),
-            Secrets = [DbInstance.Secret],
+            ProxyTarget = ProxyTarget.FromInstance(dbInstance),
+            Secrets = [dbInstance.Secret],
             SecurityGroups = [DbProxySecurityGroup],
             Vpc = props.Vpc
         });
     }
-    internal DatabaseInstance DbInstance { get; }
-    internal string DbName { get; }
-    internal int DbPort { get; }
     internal DatabaseProxy DbProxy { get; }
     internal SecurityGroup DbProxySecurityGroup { get; }
 }
