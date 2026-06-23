@@ -9,6 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Amazon.CDK.Lib" />
     <PackageReference Include="Aspire.Hosting.AppHost" />
     <PackageReference Include="Aspire.Hosting.AWS" />
     <PackageReference Include="AWSSDK.DynamoDBv2" />
