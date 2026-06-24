@@ -35,9 +35,9 @@ internal sealed class Network : Construct
         {
             Service = GatewayVpcEndpointAwsService.DYNAMODB,
             Subnets =
-    [
-        new SubnetSelection { SubnetType = SubnetType.PRIVATE_ISOLATED }
-    ]
+            [
+                new SubnetSelection { SubnetType = SubnetType.PRIVATE_ISOLATED }
+            ]
         });
     }
     internal Vpc Vpc { get; }
