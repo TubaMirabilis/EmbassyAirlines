@@ -17,13 +17,7 @@ await AircraftSmokeTestActions.PrepareS3Async("Resources/Layouts/B78X.json", "se
 var req3 = new CreateAircraftDto("PH-JRN", "B78X", 135500, "Parked", 254011, "RKSI", null, 201848, 192777, 101522);
 var aircraft = await AircraftSmokeTestActions.AttemptPostAsync(client, req3);
 await FlightsSmokeTestActions.ReadyAsync(client);
-var departureInstant = NextMinuteBoundaryAfter(Duration.FromMinutes(30));
-var flightDuration = Duration.FromHours(10) + Duration.FromMinutes(30);
-var arrivalInstant = departureInstant + flightDuration;
-var incheonTimeZone = DateTimeZoneProviders.Tzdb["Asia/Seoul"];
-var schipholTimeZone = DateTimeZoneProviders.Tzdb["Europe/Amsterdam"];
-var departureZoned = departureInstant.InZone(incheonTimeZone);
-var arrivalZoned = arrivalInstant.InZone(schipholTimeZone);
+var (departureZoned, arrivalZoned) = FlightTimeCalculator.CalculateFlightTimes(Duration.FromMinutes(30), Duration.FromHours(10).Plus(Duration.FromMinutes(30)), airport1.TimeZoneId, airport2.TimeZoneId);
 var req4 = new ScheduleFlightDto
 {
     AircraftId = aircraft.Id,
@@ -39,16 +33,3 @@ var req4 = new ScheduleFlightDto
     OperationType = "RevenuePassenger"
 };
 await FlightsSmokeTestActions.AttemptPostAsync(client, req4);
-Instant NextMinuteBoundaryAfter(Duration duration)
-{
-    var clock = SystemClock.Instance;
-    var target = clock.GetCurrentInstant() + duration;
-    return AdvanceToNextMinuteBoundary(target);
-}
-Instant AdvanceToNextMinuteBoundary(Instant instant)
-{
-    var ticks = instant.ToUnixTimeTicks();
-    var ticksPerMinute = NodaConstants.TicksPerMinute;
-    var roundedTicks = (ticks / ticksPerMinute + 1) * ticksPerMinute;
-    return Instant.FromUnixTimeTicks(roundedTicks);
-}

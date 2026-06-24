@@ -28,45 +28,12 @@ internal static class FlightsSmokeTestActions
         {
             throw new InvalidOperationException($"Request to {uri} returned status code {response.StatusCode}. The Flights service may not be ready yet.");
         }
-        await Eventually(async () =>
+        await AsyncTestHelpers.Eventually(async () =>
         {
             var summary = await client.GetFromJsonAsync<FlightsSummaryDto>("flights/summary");
             return summary is not null
                 && summary.AirportCount == 2
                 && summary.AircraftCount == 1;
         }, timeout: TimeSpan.FromSeconds(60));
-    }
-    private static async Task Eventually(Func<Task<bool>> condition, TimeSpan timeout, TimeSpan? retryInterval = null)
-    {
-        var interval = retryInterval ?? TimeSpan.FromSeconds(5);
-        var deadline = DateTimeOffset.UtcNow + timeout;
-        Exception? lastException = null;
-        while (DateTimeOffset.UtcNow < deadline)
-        {
-            try
-            {
-                if (await condition())
-                {
-                    return;
-                }
-            }
-            catch (HttpRequestException ex)
-            {
-                lastException = ex;
-            }
-            catch (TaskCanceledException ex)
-            {
-                lastException = ex;
-            }
-            var remaining = deadline - DateTimeOffset.UtcNow;
-            if (remaining <= TimeSpan.Zero)
-            {
-                break;
-            }
-            await Task.Delay(remaining < interval ? remaining : interval);
-        }
-        throw new TimeoutException(
-            $"Condition was not met within {timeout}.",
-            lastException);
     }
 }
