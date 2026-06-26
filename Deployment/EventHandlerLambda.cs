@@ -18,7 +18,13 @@ internal sealed class EventHandlerLambda : Construct
             Description = props.SecurityGroupDescription,
             Vpc = props.Vpc
         });
-        handlerSg.Connections.AllowTo(props.DbProxyAccess.DbProxySecurityGroup, Port.Tcp(props.DbConnection.DbPort), "Allow handler Lambda to access RDS Proxy");
+        var handlerSgRule = new ConnectionRule
+        {
+            Description = "Allow handler Lambda to access RDS Proxy",
+            Other = props.DbProxyAccess.DbProxySecurityGroup,
+            PortRange = Port.Tcp(props.DbConnection.DbPort)
+        };
+        handlerSg.Connections.AllowTo(handlerSgRule);
         var imageCode = DockerImageCode.FromImageAsset(directory: ".", new AssetImageCodeProps
         {
             File = props.Path

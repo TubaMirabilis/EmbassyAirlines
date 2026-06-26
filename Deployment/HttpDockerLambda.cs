@@ -42,6 +42,12 @@ internal sealed class HttpDockerLambda : Construct
             Methods = [Amazon.CDK.AWS.Apigatewayv2.HttpMethod.ANY]
         });
         props.DbProxyAccess.DbProxy.GrantConnect(Function, props.DbConnection.DbUsername);
-        securityGroup.Connections.AllowTo(props.DbProxyAccess.DbProxySecurityGroup, Port.Tcp(props.DbConnection.DbPort), "Allow Lambda to access RDS Proxy");
+        var handlerSgRule = new ConnectionRule
+        {
+            Description = "Allow Lambda to access RDS Proxy",
+            Other = props.DbProxyAccess.DbProxySecurityGroup,
+            PortRange = Port.Tcp(props.DbConnection.DbPort)
+        };
+        securityGroup.Connections.AllowTo(handlerSgRule);
     }
 }
