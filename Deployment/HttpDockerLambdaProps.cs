@@ -9,7 +9,7 @@ internal sealed record HttpDockerLambdaProps
     internal required DatabaseConnectionProps DbConnection { get; init; }
     internal required DatabaseProxyAccessProps DbProxyAccess { get; init; }
     internal required string DockerfilePath { get; init; }
-    internal required IReadOnlyDictionary<string, string> Environment { get; init; }
+    internal required Dictionary<string, string> Environment { get; init; }
     internal required string FunctionName { get; init; }
     internal required string RoutePath { get; init; }
     internal required string SecurityGroupDescription { get; init; }
