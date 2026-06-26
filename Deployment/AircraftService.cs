@@ -1,10 +1,6 @@
 using System.Globalization;
 using Amazon.CDK;
-using Amazon.CDK.AWS.Apigatewayv2;
-using Amazon.CDK.AWS.EC2;
-using Amazon.CDK.AWS.Lambda;
 using Amazon.CDK.AWS.S3;
-using Amazon.CDK.AwsApigatewayv2Integrations;
 using Constructs;
 
 namespace Deployment;
@@ -27,41 +23,23 @@ internal sealed class AircraftService : Construct
             RemovalPolicy = RemovalPolicy.DESTROY,
             AutoDeleteObjects = true
         });
-        var imageCode = DockerImageCode.FromImageAsset(directory: ".", new AssetImageCodeProps
+        var api = new HttpDockerLambda(this, "AircraftApi", new HttpDockerLambdaProps
         {
-            File = "docker/Aircraft.Api.Lambda.dockerfile"
-        });
-        var lambdaSg = new SecurityGroup(this, "AircraftLambdaSG", new SecurityGroupProps
-        {
-            Vpc = props.Vpc,
-            AllowAllOutbound = true,
-            Description = "Security group for Aircraft API Lambda"
-        });
-        var lambda = new DockerImageFunction(this, "AircraftApiLambda", new DockerImageFunctionProps
-        {
-            FunctionName = "AircraftApiLambda",
-            Code = imageCode,
-            Timeout = Duration.Seconds(30),
+            Api = props.Api,
+            DbConnection = props.DbConnection,
+            DbProxyAccess = props.DbProxyAccess,
+            DockerfilePath = "docker/Aircraft.Api.Lambda.dockerfile",
             Environment = new Dictionary<string, string>(commonEnv)
             {
                 { "AIRCRAFT_S3__BucketName", bucket.BucketName },
                 { "AIRCRAFT_SNS__AircraftCreatedTopicArn", props.AircraftCreatedTopic.TopicArn }
             },
-            Vpc = props.Vpc,
-            VpcSubnets = new SubnetSelection
-            {
-                SubnetType = SubnetType.PRIVATE_ISOLATED
-            },
-            SecurityGroups = [lambdaSg]
+            FunctionName = "AircraftApiLambda",
+            RoutePath = "/aircraft",
+            SecurityGroupDescription = "Security group for Aircraft API Lambda",
+            Vpc = props.Vpc
         });
-        props.Api.AddRoutes(new AddRoutesOptions
-        {
-            Path = "/aircraft",
-            Integration = new HttpLambdaIntegration("AircraftApiIntegration", lambda),
-            Methods = [Amazon.CDK.AWS.Apigatewayv2.HttpMethod.ANY]
-        });
-        props.DbProxyAccess.DbProxy.GrantConnect(lambda, props.DbConnection.DbUsername);
-        lambdaSg.Connections.AllowTo(props.DbProxyAccess.DbProxySecurityGroup, Port.Tcp(props.DbConnection.DbPort), "Allow Lambda to access RDS Proxy");
+        var lambda = api.Function;
         props.AircraftCreatedTopic.GrantPublish(lambda);
         bucket.GrantRead(lambda);
         new EventHandlerLambda(this, "AircraftFlightArrivedHandlerLambda", new EventHandlerLambdaProps

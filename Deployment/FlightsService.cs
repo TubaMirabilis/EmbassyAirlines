@@ -1,9 +1,4 @@
 using System.Globalization;
-using Amazon.CDK;
-using Amazon.CDK.AWS.Apigatewayv2;
-using Amazon.CDK.AWS.EC2;
-using Amazon.CDK.AWS.Lambda;
-using Amazon.CDK.AwsApigatewayv2Integrations;
 using Constructs;
 
 namespace Deployment;
@@ -19,21 +14,12 @@ internal sealed class FlightsService : Construct
             { "FLIGHTS_DbConnection__Port", props.DbConnection.DbPort.ToString(CultureInfo.InvariantCulture) },
             { "FLIGHTS_DbConnection__Username", props.DbConnection.DbUsername }
         };
-        var imageCode = DockerImageCode.FromImageAsset(directory: ".", new AssetImageCodeProps
+        var api = new HttpDockerLambda(this, "FlightsApi", new HttpDockerLambdaProps
         {
-            File = "docker/Flights.Api.Lambda.dockerfile"
-        });
-        var lambdaSg = new SecurityGroup(this, "FlightsLambdaSG", new SecurityGroupProps
-        {
-            Vpc = props.Vpc,
-            AllowAllOutbound = true,
-            Description = "Security group for Flights API Lambda"
-        });
-        var apiLambda = new DockerImageFunction(this, "FlightsApiLambda", new DockerImageFunctionProps
-        {
-            FunctionName = "FlightsApiLambda",
-            Code = imageCode,
-            Timeout = Duration.Seconds(30),
+            Api = props.Api,
+            DbConnection = props.DbConnection,
+            DbProxyAccess = props.DbProxyAccess,
+            DockerfilePath = "docker/Flights.Api.Lambda.dockerfile",
             Environment = new Dictionary<string, string>(commonEnv)
             {
                 { "FLIGHTS_SNS__FlightScheduledTopicArn", props.FlightScheduledTopic.TopicArn },
@@ -46,21 +32,12 @@ internal sealed class FlightsService : Construct
                 { "FLIGHTS_SNS__FlightMarkedAsDelayedEnRouteTopicArn", props.FlightMarkedAsDelayedEnRouteTopic.TopicArn },
                 { "FLIGHTS_SNS__FlightArrivedTopicArn", props.FlightArrivedTopic.TopicArn }
             },
-            Vpc = props.Vpc,
-            VpcSubnets = new SubnetSelection
-            {
-                SubnetType = SubnetType.PRIVATE_ISOLATED
-            },
-            SecurityGroups = [lambdaSg]
+            FunctionName = "FlightsApiLambda",
+            RoutePath = "/flights",
+            SecurityGroupDescription = "Security group for Flights API Lambda",
+            Vpc = props.Vpc
         });
-        props.Api.AddRoutes(new AddRoutesOptions
-        {
-            Path = "/flights",
-            Integration = new HttpLambdaIntegration("FlightsApiIntegration", apiLambda),
-            Methods = [Amazon.CDK.AWS.Apigatewayv2.HttpMethod.ANY]
-        });
-        props.DbProxyAccess.DbProxy.GrantConnect(apiLambda, props.DbConnection.DbUsername);
-        lambdaSg.Connections.AllowTo(props.DbProxyAccess.DbProxySecurityGroup, Port.Tcp(props.DbConnection.DbPort), "Allow Lambda to access RDS Proxy");
+        var apiLambda = api.Function;
         props.FlightScheduledTopic.GrantPublish(apiLambda);
         props.AircraftAssignedToFlightTopic.GrantPublish(apiLambda);
         props.FlightPricingAdjustedTopic.GrantPublish(apiLambda);
