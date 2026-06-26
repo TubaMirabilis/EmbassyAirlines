@@ -4,12 +4,12 @@ namespace SmokeTests;
 
 internal static class FlightTimeCalculator
 {
-    public static (ZonedDateTime Departure, ZonedDateTime Arrival) CalculateFlightTimes(Duration leadTime, Duration flightDuration, string departureTimeZoneId, string arrivalTimeZoneId)
+    public static (ZonedDateTime Departure, ZonedDateTime Arrival) CalculateFlightTimes(FlightTimeCalculationRequest request)
     {
-        var departureInstant = FlightTimeCalculator.NextMinuteBoundaryAfter(leadTime);
-        var arrivalInstant = departureInstant + flightDuration;
-        var departureTimeZone = DateTimeZoneProviders.Tzdb[departureTimeZoneId];
-        var arrivalTimeZone = DateTimeZoneProviders.Tzdb[arrivalTimeZoneId];
+        var departureInstant = FlightTimeCalculator.NextMinuteBoundaryAfter(request.LeadTime);
+        var arrivalInstant = departureInstant + request.FlightDuration;
+        var departureTimeZone = DateTimeZoneProviders.Tzdb[request.DepartureTimeZoneId];
+        var arrivalTimeZone = DateTimeZoneProviders.Tzdb[request.ArrivalTimeZoneId];
         var departureZoned = departureInstant.InZone(departureTimeZone);
         var arrivalZoned = arrivalInstant.InZone(arrivalTimeZone);
         return (departureZoned, arrivalZoned);
@@ -24,10 +24,7 @@ internal static class FlightTimeCalculator
     {
         var ticks = instant.ToUnixTimeTicks();
         var ticksPerMinute = NodaConstants.TicksPerMinute;
-
-        var roundedTicks =
-            (ticks / ticksPerMinute + 1) * ticksPerMinute;
-
+        var roundedTicks = (ticks / ticksPerMinute + 1) * ticksPerMinute;
         return Instant.FromUnixTimeTicks(roundedTicks);
     }
 }

@@ -17,7 +17,10 @@ internal sealed class GetFlightEndpoint : IEndpoint
               .Produces<FlightDto>(StatusCodes.Status200OK)
               .ProducesProblem(StatusCodes.Status404NotFound)
               .ProducesProblem(StatusCodes.Status500InternalServerError);
-    private static async Task<Results<Ok<FlightDto>, ProblemHttpResult>> InvokeAsync(ApplicationDbContext ctx, ILogger<GetFlightEndpoint> logger, Guid id, CancellationToken ct)
+    private static async Task<Results<Ok<FlightDto>, ProblemHttpResult>> InvokeAsync(ApplicationDbContext ctx,
+                                                                                     ILogger<GetFlightEndpoint> logger,
+                                                                                     Guid id,
+                                                                                     CancellationToken ct)
     {
         var flight = await ctx.Flights
                               .AsNoTracking()

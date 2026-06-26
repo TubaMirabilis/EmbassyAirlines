@@ -17,7 +17,14 @@ await AircraftSmokeTestActions.PrepareS3Async("Resources/Layouts/B78X.json", "se
 var req3 = new CreateAircraftDto("PH-JRN", "B78X", 135500, "Parked", 254011, "RKSI", null, 201848, 192777, 101522);
 var aircraft = await AircraftSmokeTestActions.AttemptPostAsync(client, req3);
 await FlightsSmokeTestActions.ReadyAsync(client);
-var (departureZoned, arrivalZoned) = FlightTimeCalculator.CalculateFlightTimes(Duration.FromMinutes(30), Duration.FromHours(10).Plus(Duration.FromMinutes(30)), airport1.TimeZoneId, airport2.TimeZoneId);
+var flightTimes = new FlightTimeCalculationRequest
+{
+    LeadTime = Duration.FromMinutes(30),
+    FlightDuration = Duration.FromHours(10).Plus(Duration.FromMinutes(30)),
+    DepartureTimeZoneId = airport1.TimeZoneId,
+    ArrivalTimeZoneId = airport2.TimeZoneId
+};
+var (departureZoned, arrivalZoned) = FlightTimeCalculator.CalculateFlightTimes(flightTimes);
 var req4 = new ScheduleFlightDto
 {
     AircraftId = aircraft.Id,

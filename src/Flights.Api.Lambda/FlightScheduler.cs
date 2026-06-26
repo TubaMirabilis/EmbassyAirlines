@@ -14,8 +14,10 @@ internal sealed class FlightScheduler
         _ctx = ctx;
         _logger = logger;
     }
-
-    public async Task<ErrorOr<FlightSchedulerDependencies>> LoadDependenciesAsync(Guid aircraftId, Guid arrivalAirportId, Guid departureAirportId, CancellationToken ct)
+    public async Task<ErrorOr<FlightSchedulerDependencies>> LoadDependenciesAsync(Guid aircraftId,
+                                                                                  Guid arrivalAirportId,
+                                                                                  Guid departureAirportId,
+                                                                                  CancellationToken ct)
     {
         var errors = new List<Error>();
         var aircraft = await _ctx.Aircraft
