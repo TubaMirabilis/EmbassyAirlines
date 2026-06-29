@@ -7,7 +7,6 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 using NodaTime;
 using Shared;
-using Shared.Abstractions;
 using Shared.Contracts;
 using Shared.Endpoints;
 
@@ -53,15 +52,7 @@ internal sealed class AdjustFlightStatusEndpoint : IEndpoint
             {
                 logger.LogInformation("Adjusted status for flight {Id}: New Status - {NewStatus}", id, newStatus);
             }
-            IFlightStatusManagementEvent message = newStatus switch
-            {
-                FlightStatus.Cancelled => new FlightCancelledEvent(Guid.NewGuid(), flight.Id),
-                FlightStatus.Arrived => new FlightArrivedEvent(Guid.NewGuid(), flight.Aircraft.Id, flight.Id, flight.ArrivalAirport.IcaoCode),
-                FlightStatus.Delayed => new FlightDelayedEvent(Guid.NewGuid(), flight.Id),
-                FlightStatus.DelayedEnRoute => new FlightMarkedAsDelayedEnRouteEvent(Guid.NewGuid(), flight.Aircraft.Id, flight.Id, flight.ArrivalAirport.IcaoCode),
-                FlightStatus.EnRoute => new FlightMarkedAsEnRouteEvent(Guid.NewGuid(), flight.Aircraft.Id, flight.Id, flight.ArrivalAirport.IcaoCode),
-                _ => throw new InvalidOperationException("No event defined for the given flight status.")
-            };
+            var message = FlightStatusEventFactory.Create(flight, newStatus);
             await publisher.PublishAsync(message, ct);
             return TypedResults.Ok(flight.ToDto());
         }
