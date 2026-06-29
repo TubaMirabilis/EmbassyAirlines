@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
-using Shared;
 
-namespace Aircraft.Api.Lambda.FunctionalTests.Extensions;
+namespace Shared.Extensions;
 
 internal static class ProblemDetailsExtensions
 {

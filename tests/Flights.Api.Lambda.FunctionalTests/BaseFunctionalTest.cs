@@ -1,8 +1,5 @@
-using System.Net;
-using System.Text.Json;
-using Flights.Api.Lambda.FunctionalTests.Extensions;
 using FluentAssertions;
-using Microsoft.AspNetCore.Mvc;
+using Shared.Extensions;
 
 namespace Flights.Api.Lambda.FunctionalTests;
 
@@ -12,17 +9,8 @@ public abstract class BaseFunctionalTest : IClassFixture<FunctionalTestWebAppFac
     protected HttpClient HttpClient { get; }
     protected static async Task GetProblemDetailsFromResponseAndAssert(HttpResponseMessage response, string detail)
     {
-        var expectedProblemDetails = response.StatusCode switch
-        {
-            HttpStatusCode.BadRequest => new ProblemDetails().WithValidationError(detail),
-            HttpStatusCode.NotFound => new ProblemDetails().WithQueryError(detail),
-            _ => throw new InvalidOperationException()
-        };
-        var content = await response.Content
-                                    .ReadAsStreamAsync();
-        var actualProblemDetails = await JsonSerializer.DeserializeAsync<ProblemDetails>(content);
-        ArgumentNullException.ThrowIfNull(actualProblemDetails);
-        actualProblemDetails.Should()
-                            .BeEquivalentTo(expectedProblemDetails, options => options.Excluding(p => p.Extensions));
+        var expected = response.StatusCode.CreateExpectedProblemDetails(detail);
+        var actual = await response.ReadProblemDetailsAsync();
+        actual.Should().BeEquivalentTo(expected, options => options.Excluding(p => p.Extensions));
     }
 }
