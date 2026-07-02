@@ -11,6 +11,7 @@
     <PackageReference Include="AWS.Messaging" />
     <PackageReference Include="AWSSDK.DynamoDBv2" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
+    <PackageReference Include="Microsoft.OpenApi" />
   </ItemGroup>
 
   <ItemGroup>
