@@ -25,6 +25,7 @@
     <PackageVersion Include="OpenTelemetry.Instrumentation.AWSLambda" Version="1.16.0" />
     <PackageVersion Include="OpenTelemetry.Instrumentation.Http" Version="1.16.0" />
     <PackageVersion Include="OpenTelemetry.Instrumentation.Runtime" Version="1.16.0" />
+    <PackageVersion Include="Polly" Version="8.7.0" />
     <PackageVersion Include="SonarAnalyzer.CSharp" Version="10.28.0.143324" />
   </ItemGroup>
   <ItemGroup>

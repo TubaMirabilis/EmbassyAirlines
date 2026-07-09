@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
@@ -14,6 +15,7 @@ internal static class AircraftSmokeTestActions
     public static async Task<AircraftDto> AttemptPostAsync(HttpClient client, CreateAircraftDto req)
     {
         Console.WriteLine($"Attempting to create aircraft with tail number {req.TailNumber}");
+        var startTime = Stopwatch.GetTimestamp();
         var res = await client.PostAsJsonAsync("aircraft", req);
         res.EnsureSuccessStatusCode();
         var stream = await res.Content.ReadAsStreamAsync();
@@ -22,6 +24,8 @@ internal static class AircraftSmokeTestActions
         {
             throw new JsonException("Deserialization returned null");
         }
+        var diff = Stopwatch.GetElapsedTime(startTime);
+        Console.WriteLine($"Operation completed in {diff.TotalMilliseconds:F0} milliseconds");
         Console.WriteLine($"Created aircraft with ID: {aircraft.Id}");
         return aircraft;
     }
