@@ -45,6 +45,7 @@ internal sealed class AirportsService : Construct
                 { "AIRPORTS_SNS__AirportUpdatedTopicArn", props.AirportUpdatedTopic.TopicArn }
             }.WithOtel("AirportsApiLambda"),
             Tracing = Tracing.ACTIVE,
+            MemorySize = 512,
             Vpc = props.Vpc,
             VpcSubnets = new SubnetSelection
             {
