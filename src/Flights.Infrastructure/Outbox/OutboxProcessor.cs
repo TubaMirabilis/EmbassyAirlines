@@ -100,7 +100,10 @@ public sealed class OutboxProcessor : IOutboxProcessor
         }
         await _dbContext.SaveChangesAsync(cancellationToken);
         await transaction.CommitAsync(cancellationToken);
-        _logger.LogInformation("Published {PublishedCount} of {BatchCount} eligible outbox messages", publishedCount, messages.Count);
+        if (_logger.IsEnabled(LogLevel.Information))
+        {
+            _logger.LogInformation("Published {PublishedCount} of {BatchCount} eligible outbox messages", publishedCount, messages.Count);
+        }
         return publishedCount;
     }
     private void RegisterFailure(OutboxMessage message, string error, bool unrecoverable, DateTime now)
