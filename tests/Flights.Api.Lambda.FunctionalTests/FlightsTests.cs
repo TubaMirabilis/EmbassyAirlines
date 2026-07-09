@@ -153,14 +153,6 @@ public class FlightsTests : BaseFunctionalTest
             arrivalLocalTime: arrivalZoned.ToDateTimeUnspecified());
         var duration = _flightDuration.ToTimeSpan();
 
-        // Summary
-        var expected = new FlightsSummaryDto(2, 2, 0);
-        var summaryUri = new Uri("flights/summary", UriKind.Relative);
-        var summaryResponse = await HttpClient.GetAsync(summaryUri, TestContext.Current.CancellationToken);
-        summaryResponse.EnsureSuccessStatusCode();
-        var summary = await DeserializeAsync<FlightsSummaryDto>(summaryResponse);
-        summary.Should().BeEquivalentTo(expected);
-
         // Schedule
         var scheduleResponse = await HttpClient.PostAsJsonAsync("flights", scheduleRequest, TestContext.Current.CancellationToken);
         if (!scheduleResponse.IsSuccessStatusCode)

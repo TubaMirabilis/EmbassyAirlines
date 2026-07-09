@@ -1,4 +1,3 @@
-using AWS.Messaging;
 using Flights.Core.Models;
 using Flights.Infrastructure.Database;
 using Microsoft.AspNetCore.Hosting;
@@ -31,9 +30,7 @@ public class FunctionalTestWebAppFactory : WebApplicationFactory<Program>, IAsyn
         builder.UseSetting("SNS:FlightMarkedAsDelayedEnRouteTopicArn", "testFlightMarkedAsDelayedEnRouteTopicArn");
         builder.ConfigureTestServices(services =>
         {
-            services.RemoveAll<IMessagePublisher>();
             services.RemoveAll<DbContextOptions<ApplicationDbContext>>();
-            services.AddSingleton<IMessagePublisher, FakeMessagePublisher>();
             services.AddDbContext<ApplicationDbContext>(options => options.UseNpgsql(_dbContainer.GetConnectionString(), x =>
             {
                 x.MigrationsHistoryTable("__EFMigrationsHistory", "flights");

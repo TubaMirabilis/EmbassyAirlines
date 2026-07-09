@@ -19,7 +19,7 @@ namespace Aircraft.Infrastructure.Migrations
 #pragma warning disable 612, 618
             modelBuilder
                 .HasDefaultSchema("aircraft")
-                .HasAnnotation("ProductVersion", "10.0.0")
+                .HasAnnotation("ProductVersion", "10.0.4")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -160,6 +160,59 @@ namespace Aircraft.Infrastructure.Migrations
                         .HasDatabaseName("ix_seats_aircraft_id");
 
                     b.ToTable("seats", "aircraft");
+                });
+
+            modelBuilder.Entity("Aircraft.Infrastructure.Outbox.OutboxMessage", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("content");
+
+                    b.Property<DateTime>("CreatedOnUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_on_utc");
+
+                    b.Property<DateTime?>("DeadLetteredOnUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("dead_lettered_on_utc");
+
+                    b.Property<string>("Error")
+                        .HasColumnType("text")
+                        .HasColumnName("error");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .IsUnicode(false)
+                        .HasColumnType("character varying(256)")
+                        .HasColumnName("name");
+
+                    b.Property<DateTime?>("NextAttemptOnUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("next_attempt_on_utc");
+
+                    b.Property<DateTime?>("ProcessedOnUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("processed_on_utc");
+
+                    b.Property<int>("RetryCount")
+                        .HasColumnType("integer")
+                        .HasColumnName("retry_count");
+
+                    b.HasKey("Id")
+                        .HasName("pk_outbox_messages");
+
+                    b.HasIndex("CreatedOnUtc")
+                        .HasDatabaseName("ix_outbox_messages_unprocessed")
+                        .HasFilter("processed_on_utc IS NULL AND dead_lettered_on_utc IS NULL");
+
+                    b.ToTable("outbox_messages", "aircraft");
                 });
 
             modelBuilder.Entity("Aircraft.Core.Models.Seat", b =>

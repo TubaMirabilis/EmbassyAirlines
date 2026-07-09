@@ -3,7 +3,6 @@ using System.Text.Json;
 using Aircraft.Core.Models;
 using Aircraft.Infrastructure.Database;
 using Amazon.S3;
-using AWS.Messaging;
 using ErrorOr;
 using FluentValidation;
 using Microsoft.AspNetCore.Http.HttpResults;
@@ -30,7 +29,6 @@ internal sealed class CreateAircraftEndpoint : IEndpoint
                                                                                             IConfiguration config,
                                                                                             ApplicationDbContext ctx,
                                                                                             ILogger<CreateAircraftEndpoint> logger,
-                                                                                            IMessagePublisher publisher,
                                                                                             IValidator<CreateAircraftDto> validator,
                                                                                             TimeProvider timeProvider,
                                                                                             CreateAircraftDto dto,
@@ -89,7 +87,6 @@ internal sealed class CreateAircraftEndpoint : IEndpoint
             var aircraft = Core.Models.Aircraft.Create(args);
             ctx.Aircraft.Add(aircraft);
             await ctx.SaveChangesAsync(ct);
-            await publisher.PublishAsync(new AircraftCreatedEvent(Guid.NewGuid(), aircraft.Id, aircraft.TailNumber, aircraft.EquipmentCode), ct);
             return TypedResults.Created($"/aircraft/{aircraft.Id}", aircraft.ToDto());
         }
         catch (ArgumentException e)

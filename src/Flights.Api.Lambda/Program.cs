@@ -26,7 +26,6 @@ if (!builder.Environment.IsEnvironment("FunctionalTests"))
 }
 services.AddSingleton<IValidator<ScheduleFlightDto>, ScheduleFlightDtoValidator>();
 services.AddOpenApi();
-services.AddAWSMessageBus(config);
 services.AddSingleton<IClock>(SystemClock.Instance);
 services.AddScoped<FlightScheduler>();
 builder.Services

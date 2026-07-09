@@ -1,7 +1,6 @@
 namespace Shared.Abstractions;
 
-public interface IFlightStatusManagementEvent
+public interface IFlightStatusManagementEvent : IDomainEvent
 {
-    Guid Id { get; }
     Guid FlightId { get; }
 }

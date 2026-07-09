@@ -1,8 +1,9 @@
 using Shared;
+using Shared.Contracts;
 
 namespace Aircraft.Core.Models;
 
-public sealed class Aircraft
+public sealed class Aircraft : Entity
 {
     private readonly List<Seat> _seats = [];
     private Aircraft(AircraftCreationArgs args)
@@ -29,6 +30,7 @@ public sealed class Aircraft
             throw new ArgumentException("Duplicate seat definitions found in the seat layout.");
         }
         _seats.AddRange(seats);
+        AddDomainEvent(new AircraftCreatedEvent(Guid.NewGuid(), Id, TailNumber, EquipmentCode));
     }
 #pragma warning disable CS8618
     private Aircraft()

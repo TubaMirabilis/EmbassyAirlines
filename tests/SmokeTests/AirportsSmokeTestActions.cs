@@ -13,7 +13,7 @@ internal static class AirportsSmokeTestActions
         var res = await client.PostAsJsonAsync("airports", req);
         res.EnsureSuccessStatusCode();
         var stream = await res.Content.ReadAsStreamAsync();
-        var airport = await JsonSerializer.DeserializeAsync<AirportDto>(stream);
+        var airport = await JsonSerializer.DeserializeAsync<AirportDto>(stream, JsonSerializerOptions.Web);
         if (airport is null)
         {
             throw new JsonException("Deserialization returned null");

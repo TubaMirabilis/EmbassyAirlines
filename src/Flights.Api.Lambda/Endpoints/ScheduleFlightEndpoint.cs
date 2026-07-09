@@ -1,6 +1,5 @@
 using System.Globalization;
 using System.Text;
-using AWS.Messaging;
 using ErrorOr;
 using Flights.Api.Lambda.Extensions;
 using Flights.Core.Models;
@@ -27,7 +26,6 @@ internal sealed class ScheduleFlightEndpoint : IEndpoint
     private static async Task<Results<Created<FlightDto>, ProblemHttpResult>> InvokeAsync(FlightScheduler flightScheduler,
                                                                                           IClock clock,
                                                                                           ILogger<ScheduleFlightEndpoint> logger,
-                                                                                          IMessagePublisher publisher,
                                                                                           IValidator<ScheduleFlightDto> validator,
                                                                                           ScheduleFlightDto dto,
                                                                                           CancellationToken ct)
@@ -81,8 +79,6 @@ internal sealed class ScheduleFlightEndpoint : IEndpoint
                 details.AppendLine(CultureInfo.InvariantCulture, $"Arrival time: {dto.ArrivalLocalTime}.");
                 logger.LogInformation("Scheduled new flight {Id}. {Details}", flight.Id, details.ToString());
             }
-            var evnt = new FlightScheduledEvent(flight.Id, flight.OperationType.ToString(), flight.BusinessPrice.Amount, flight.EconomyPrice.Amount);
-            await publisher.PublishAsync(evnt, ct);
             return TypedResults.Created($"/flights/{flight.Id}", flight.ToDto());
         }
         catch (ArgumentOutOfRangeException ex)

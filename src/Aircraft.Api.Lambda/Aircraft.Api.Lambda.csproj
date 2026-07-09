@@ -8,7 +8,6 @@
 
   <ItemGroup>
     <PackageReference Include="Amazon.Lambda.AspNetCoreServer.Hosting" />
-    <PackageReference Include="AWS.Messaging" />
     <PackageReference Include="AWSSDK.Extensions.NETCore.Setup" />
     <PackageReference Include="AWSSDK.S3" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" />

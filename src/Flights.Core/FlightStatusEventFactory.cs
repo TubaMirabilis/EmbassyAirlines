@@ -2,7 +2,7 @@ using Flights.Core.Models;
 using Shared.Abstractions;
 using Shared.Contracts;
 
-namespace Flights.Api.Lambda;
+namespace Flights.Core;
 
 internal static class FlightStatusEventFactory
 {

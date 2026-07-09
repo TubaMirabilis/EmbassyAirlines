@@ -1,4 +1,3 @@
-using AWS.Messaging;
 using ErrorOr;
 using Flights.Api.Lambda.Extensions;
 using Flights.Core.Models;
@@ -25,7 +24,6 @@ internal sealed class AdjustFlightStatusEndpoint : IEndpoint
     private static async Task<Results<Ok<FlightDto>, ProblemHttpResult>> InvokeAsync(ApplicationDbContext ctx,
                                                                                      IClock clock,
                                                                                      ILogger<AdjustFlightStatusEndpoint> logger,
-                                                                                     IMessagePublisher publisher,
                                                                                      Guid id,
                                                                                      AdjustFlightStatusDto dto,
                                                                                      CancellationToken ct)
@@ -52,8 +50,6 @@ internal sealed class AdjustFlightStatusEndpoint : IEndpoint
             {
                 logger.LogInformation("Adjusted status for flight {Id}: New Status - {NewStatus}", id, newStatus);
             }
-            var message = FlightStatusEventFactory.Create(flight, newStatus);
-            await publisher.PublishAsync(message, ct);
             return TypedResults.Ok(flight.ToDto());
         }
         catch (ArgumentException ex)

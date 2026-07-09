@@ -1,10 +1,11 @@
 using NodaTime;
 using NodaTime.TimeZones;
 using Shared;
+using Shared.Contracts;
 
 namespace Flights.Core.Models;
 
-public sealed class Flight
+public sealed class Flight : Entity
 {
     private Flight(FlightCreationArgs args)
     {
@@ -25,6 +26,7 @@ public sealed class Flight
         BusinessPrice = args.BusinessPrice;
         SchedulingAmbiguityPolicy = args.Schedule.SchedulingAmbiguityPolicy;
         OperationType = args.OperationType;
+        AddDomainEvent(new FlightScheduledEvent(Guid.NewGuid(), Id, OperationType.ToString(), BusinessPrice.Amount, EconomyPrice.Amount));
     }
 #pragma warning disable CS8618
     private Flight()
@@ -69,6 +71,7 @@ public sealed class Flight
     {
         Aircraft = aircraft;
         UpdatedAt = instant;
+        AddDomainEvent(new AircraftAssignedToFlightEvent(Guid.NewGuid(), Id, aircraft.Id));
     }
     public void AdjustStatus(FlightStatus status, Instant instant)
     {
@@ -78,12 +81,14 @@ public sealed class Flight
         }
         Status = status;
         UpdatedAt = instant;
+        AddDomainEvent(FlightStatusEventFactory.Create(this, status));
     }
     public void AdjustPricing(Money economyPrice, Money businessPrice, Instant instant)
     {
         BusinessPrice = businessPrice;
         EconomyPrice = economyPrice;
         UpdatedAt = instant;
+        AddDomainEvent(new FlightPricingAdjustedEvent(Guid.NewGuid(), Id, economyPrice.Amount, businessPrice.Amount));
     }
     public void Reschedule(FlightSchedule schedule, Instant instant)
     {
@@ -91,5 +96,6 @@ public sealed class Flight
         DepartureLocalTime = schedule.DepartureTime;
         SchedulingAmbiguityPolicy = schedule.SchedulingAmbiguityPolicy;
         UpdatedAt = instant;
+        AddDomainEvent(new FlightRescheduledEvent(Guid.NewGuid(), Id, schedule.DepartureTime.ToDateTimeUnspecified(), schedule.ArrivalTime.ToDateTimeUnspecified()));
     }
 }

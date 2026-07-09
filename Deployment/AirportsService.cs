@@ -43,7 +43,8 @@ internal sealed class AirportsService : Construct
                 { "AIRPORTS_DynamoDb__TableName", airportsTable.TableName },
                 { "AIRPORTS_SNS__AirportCreatedTopicArn", props.AirportCreatedTopic.TopicArn },
                 { "AIRPORTS_SNS__AirportUpdatedTopicArn", props.AirportUpdatedTopic.TopicArn }
-            },
+            }.WithOtel("AirportsApiLambda"),
+            Tracing = Tracing.ACTIVE,
             Vpc = props.Vpc,
             VpcSubnets = new SubnetSelection
             {

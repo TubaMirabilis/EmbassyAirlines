@@ -1,4 +1,3 @@
-using AWS.Messaging;
 using ErrorOr;
 using Flights.Api.Lambda.Extensions;
 using Flights.Infrastructure.Database;
@@ -23,7 +22,6 @@ internal sealed class AssignAircraftToFlightEndpoint : IEndpoint
     private static async Task<Results<Ok<FlightDto>, ProblemHttpResult>> InvokeAsync(ApplicationDbContext ctx,
                                                                                      IClock clock,
                                                                                      ILogger<AssignAircraftToFlightEndpoint> logger,
-                                                                                     IMessagePublisher publisher,
                                                                                      Guid id,
                                                                                      AssignAircraftToFlightDto dto,
                                                                                      CancellationToken ct)
@@ -50,7 +48,6 @@ internal sealed class AssignAircraftToFlightEndpoint : IEndpoint
         {
             logger.LogInformation("Assigned aircraft {AircraftId} to flight {FlightId}", aircraft.Id, flight.Id);
         }
-        await publisher.PublishAsync(new AircraftAssignedToFlightEvent(flight.Id, aircraft.Id), ct);
         return TypedResults.Ok(flight.ToDto());
     }
 }

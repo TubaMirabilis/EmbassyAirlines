@@ -2,7 +2,6 @@ using Aircraft.Infrastructure.Database;
 using Amazon.Runtime;
 using Amazon.S3;
 using Amazon.S3.Model;
-using AWS.Messaging;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
@@ -29,14 +28,12 @@ public sealed class FunctionalTestWebAppFactory : WebApplicationFactory<Program>
         {
             var credentials = new BasicAWSCredentials("test-access-key", "test-secret-key");
             services.RemoveAll<IAmazonS3>();
-            services.RemoveAll<IMessagePublisher>();
             services.RemoveAll<DbContextOptions<ApplicationDbContext>>();
             var config = new AmazonS3Config
             {
                 ServiceURL = _localStackContainer.GetConnectionString()
             };
             services.AddSingleton<IAmazonS3>(_ => new AmazonS3Client(credentials, config));
-            services.AddSingleton<IMessagePublisher, FakeMessagePublisher>();
             services.AddDbContext<ApplicationDbContext>(options => options.UseNpgsql(_dbContainer.GetConnectionString(), x =>
             {
                 x.MigrationsHistoryTable("__EFMigrationsHistory", "aircraft");

@@ -50,5 +50,6 @@ internal sealed class FlightConfiguration : IEntityTypeConfiguration<Flight>
                .WithMany()
                .IsRequired()
                .OnDelete(DeleteBehavior.Restrict);
+        builder.Ignore(f => f.DomainEvents);
     }
 }

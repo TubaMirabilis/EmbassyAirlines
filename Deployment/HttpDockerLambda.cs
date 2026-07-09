@@ -27,7 +27,8 @@ internal sealed class HttpDockerLambda : Construct
             FunctionName = props.FunctionName,
             Code = imageCode,
             Timeout = Duration.Seconds(30),
-            Environment = props.Environment,
+            Environment = props.Environment.WithOtel(props.FunctionName),
+            Tracing = Tracing.ACTIVE,
             Vpc = props.Vpc,
             VpcSubnets = new SubnetSelection
             {

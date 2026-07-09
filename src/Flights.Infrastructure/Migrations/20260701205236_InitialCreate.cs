@@ -6,7 +6,7 @@ using NodaTime;
 namespace Flights.Infrastructure.Migrations;
 
 /// <inheritdoc />
-internal sealed partial class InitialCreate : Migration
+public partial class InitialCreate : Migration
 {
     /// <inheritdoc />
     protected override void Up(MigrationBuilder migrationBuilder)
@@ -40,6 +40,23 @@ internal sealed partial class InitialCreate : Migration
                 name = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false)
             },
             constraints: table => table.PrimaryKey("pk_airports", x => x.id));
+
+        migrationBuilder.CreateTable(
+            name: "outbox_messages",
+            schema: "flights",
+            columns: table => new
+            {
+                id = table.Column<Guid>(type: "uuid", nullable: false),
+                name = table.Column<string>(type: "character varying(256)", unicode: false, maxLength: 256, nullable: false),
+                content = table.Column<string>(type: "text", nullable: false),
+                created_on_utc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                processed_on_utc = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                error = table.Column<string>(type: "text", nullable: true),
+                retry_count = table.Column<int>(type: "integer", nullable: false),
+                next_attempt_on_utc = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                dead_lettered_on_utc = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
+            },
+            constraints: table => table.PrimaryKey("pk_outbox_messages", x => x.id));
 
         migrationBuilder.CreateTable(
             name: "flights",
@@ -105,6 +122,13 @@ internal sealed partial class InitialCreate : Migration
             schema: "flights",
             table: "flights",
             column: "departure_airport_id");
+
+        migrationBuilder.CreateIndex(
+            name: "ix_outbox_messages_unprocessed",
+            schema: "flights",
+            table: "outbox_messages",
+            column: "created_on_utc",
+            filter: "processed_on_utc IS NULL AND dead_lettered_on_utc IS NULL");
     }
 
     /// <inheritdoc />
@@ -112,6 +136,10 @@ internal sealed partial class InitialCreate : Migration
     {
         migrationBuilder.DropTable(
             name: "flights",
+            schema: "flights");
+
+        migrationBuilder.DropTable(
+            name: "outbox_messages",
             schema: "flights");
 
         migrationBuilder.DropTable(

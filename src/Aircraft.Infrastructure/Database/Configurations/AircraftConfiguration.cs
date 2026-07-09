@@ -31,5 +31,6 @@ internal sealed class AircraftConfiguration : IEntityTypeConfiguration<Core.Mode
         builder.ComplexProperty(a => a.MaximumLandingWeight, b => b.Property(e => e.Kilograms).IsRequired());
         builder.ComplexProperty(a => a.MaximumZeroFuelWeight, b => b.Property(e => e.Kilograms).IsRequired());
         builder.ComplexProperty(a => a.MaximumFuelWeight, b => b.Property(e => e.Kilograms).IsRequired());
+        builder.Ignore(a => a.DomainEvents);
     }
 }

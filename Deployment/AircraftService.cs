@@ -31,8 +31,7 @@ internal sealed class AircraftService : Construct
             DockerfilePath = "docker/Aircraft.Api.Lambda.dockerfile",
             Environment = new Dictionary<string, string>(commonEnv)
             {
-                { "AIRCRAFT_S3__BucketName", bucket.BucketName },
-                { "AIRCRAFT_SNS__AircraftCreatedTopicArn", props.AircraftCreatedTopic.TopicArn }
+                { "AIRCRAFT_S3__BucketName", bucket.BucketName }
             },
             FunctionName = "AircraftApiLambda",
             RoutePath = "/aircraft",
@@ -40,7 +39,6 @@ internal sealed class AircraftService : Construct
             Vpc = props.Vpc
         });
         var lambda = api.Function;
-        props.AircraftCreatedTopic.GrantPublish(lambda);
         bucket.GrantRead(lambda);
         new EventHandlerLambda(this, "AircraftFlightArrivedHandlerLambda", new EventHandlerLambdaProps
         {
@@ -73,6 +71,21 @@ internal sealed class AircraftService : Construct
             Path = "docker/Aircraft.Api.Lambda.MessageHandlers.FlightMarkedAsEnRoute.dockerfile",
             SecurityGroupDescription = "Security group for Aircraft FlightMarkedAsEnRoute handler Lambda",
             Topic = props.FlightMarkedAsEnRouteTopic,
+            Vpc = props.Vpc
+        });
+        new PublisherLambda(this, "AircraftPublisherLambda", new PublisherLambdaProps
+        {
+            DbConnection = props.DbConnection,
+            DbProxyAccess = props.DbProxyAccess,
+            DockerfilePath = "docker/Aircraft.Publisher.Lambda.dockerfile",
+            Environment = new Dictionary<string, string>(commonEnv)
+            {
+                { "AIRCRAFT_SNS__AircraftCreatedTopicArn", props.AircraftCreatedTopic.TopicArn }
+            },
+            FunctionName = "AircraftPublisherLambda",
+            PollInterval = Duration.Minutes(1),
+            SecurityGroupDescription = "Security group for Aircraft outbox publisher Lambda",
+            Topics = [props.AircraftCreatedTopic],
             Vpc = props.Vpc
         });
     }

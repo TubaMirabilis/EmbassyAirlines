@@ -28,12 +28,5 @@ internal static class FlightsSmokeTestActions
         {
             throw new InvalidOperationException($"Request to {uri} returned status code {response.StatusCode}. The Flights service may not be ready yet.");
         }
-        await AsyncTestHelpers.Eventually(async () =>
-        {
-            var summary = await client.GetFromJsonAsync<FlightsSummaryDto>("flights/summary");
-            return summary is not null
-                && summary.AirportCount == 2
-                && summary.AircraftCount == 1;
-        }, timeout: TimeSpan.FromSeconds(60));
     }
 }

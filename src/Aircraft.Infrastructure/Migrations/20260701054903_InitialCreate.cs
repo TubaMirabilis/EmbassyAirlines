@@ -35,6 +35,23 @@ internal sealed partial class InitialCreate : Migration
             constraints: table => table.PrimaryKey("pk_aircraft", x => x.id));
 
         migrationBuilder.CreateTable(
+            name: "outbox_messages",
+            schema: "aircraft",
+            columns: table => new
+            {
+                id = table.Column<Guid>(type: "uuid", nullable: false),
+                name = table.Column<string>(type: "character varying(256)", unicode: false, maxLength: 256, nullable: false),
+                content = table.Column<string>(type: "text", nullable: false),
+                created_on_utc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                processed_on_utc = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                error = table.Column<string>(type: "text", nullable: true),
+                retry_count = table.Column<int>(type: "integer", nullable: false),
+                next_attempt_on_utc = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                dead_lettered_on_utc = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
+            },
+            constraints: table => table.PrimaryKey("pk_outbox_messages", x => x.id));
+
+        migrationBuilder.CreateTable(
             name: "seats",
             schema: "aircraft",
             columns: table => new
@@ -59,6 +76,13 @@ internal sealed partial class InitialCreate : Migration
             });
 
         migrationBuilder.CreateIndex(
+            name: "ix_outbox_messages_unprocessed",
+            schema: "aircraft",
+            table: "outbox_messages",
+            column: "created_on_utc",
+            filter: "processed_on_utc IS NULL AND dead_lettered_on_utc IS NULL");
+
+        migrationBuilder.CreateIndex(
             name: "ix_seats_aircraft_id",
             schema: "aircraft",
             table: "seats",
@@ -68,6 +92,10 @@ internal sealed partial class InitialCreate : Migration
     /// <inheritdoc />
     protected override void Down(MigrationBuilder migrationBuilder)
     {
+        migrationBuilder.DropTable(
+            name: "outbox_messages",
+            schema: "aircraft");
+
         migrationBuilder.DropTable(
             name: "seats",
             schema: "aircraft");

@@ -17,7 +17,7 @@ internal static class AircraftSmokeTestActions
         var res = await client.PostAsJsonAsync("aircraft", req);
         res.EnsureSuccessStatusCode();
         var stream = await res.Content.ReadAsStreamAsync();
-        var aircraft = await JsonSerializer.DeserializeAsync<AircraftDto>(stream);
+        var aircraft = await JsonSerializer.DeserializeAsync<AircraftDto>(stream, JsonSerializerOptions.Web);
         if (aircraft is null)
         {
             throw new JsonException("Deserialization returned null");

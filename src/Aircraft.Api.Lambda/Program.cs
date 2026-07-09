@@ -27,12 +27,6 @@ if (!builder.Environment.IsEnvironment("FunctionalTests"))
 builder.Services.AddSingleton<IValidator<CreateAircraftDto>, CreateAircraftDtoValidator>();
 builder.Services.AddOpenApi();
 builder.Services.AddSingleton(TimeProvider.System);
-builder.Services.AddAWSMessageBus(bus =>
-{
-    var aircraftCreatedTopicArn = config["SNS:AircraftCreatedTopicArn"];
-    Ensure.NotNullOrEmpty(aircraftCreatedTopicArn);
-    bus.AddSNSPublisher<AircraftCreatedEvent>(aircraftCreatedTopicArn);
-});
 builder.Services
     .AddOpenTelemetry()
     .ConfigureResource(resource => resource.AddService(DiagnosticsConfig.ActivitySource.Name))

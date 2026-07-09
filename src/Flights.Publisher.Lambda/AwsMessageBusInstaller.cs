@@ -1,7 +1,9 @@
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Shared;
 using Shared.Contracts;
 
-namespace Flights.Api.Lambda;
+namespace Flights.Publisher.Lambda;
 
 internal static class AwsMessageBusInstaller
 {

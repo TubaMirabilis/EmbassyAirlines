@@ -1,5 +1,6 @@
 using System.Globalization;
 using Aircraft.Infrastructure.Database;
+using Aircraft.Infrastructure.Outbox;
 using Amazon.RDS.Util;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -36,12 +37,14 @@ public static class ServiceCollectionExtensions
             passwordProviderAsync: async (builder, ct) => await RDSAuthTokenGenerator.GenerateAuthTokenAsync(host, port, username));
         var dataSource = dataSourceBuilder.Build();
         services.AddSingleton(dataSource);
+        services.AddSingleton<InsertOutboxMessagesInterceptor>();
         services.AddDbContext<ApplicationDbContext>((sp, options) => options.UseNpgsql(dataSource, x =>
         {
             x.MigrationsHistoryTable("__EFMigrationsHistory", "aircraft");
             x.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
         })
-        .UseSnakeCaseNamingConvention());
+        .UseSnakeCaseNamingConvention()
+        .AddInterceptors(sp.GetRequiredService<InsertOutboxMessagesInterceptor>()));
         return services;
     }
 }

@@ -12,7 +12,6 @@
     <PackageReference Include="Aspire.Hosting.AppHost" />
     <PackageReference Include="Aspire.Hosting.AWS" />
     <PackageReference Include="AWSSDK.DynamoDBv2" />
-    <PackageReference Include="MessagePack" />
   </ItemGroup>
 
   <ItemGroup>

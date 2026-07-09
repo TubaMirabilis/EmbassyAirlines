@@ -32,11 +32,12 @@ internal sealed class EventHandlerLambda : Construct
         var handler = new DockerImageFunction(this, "Handler", new DockerImageFunctionProps
         {
             Code = imageCode,
-            Environment = props.Environment,
+            Environment = props.Environment.WithOtel(props.FunctionName),
             FunctionName = props.FunctionName,
             MemorySize = 512,
             SecurityGroups = [handlerSg],
             Timeout = Duration.Seconds(30),
+            Tracing = Tracing.ACTIVE,
             Vpc = props.Vpc,
             VpcSubnets = new SubnetSelection
             {

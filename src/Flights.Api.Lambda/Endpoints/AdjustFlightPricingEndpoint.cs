@@ -1,6 +1,5 @@
 using System.Globalization;
 using System.Text;
-using AWS.Messaging;
 using ErrorOr;
 using Flights.Api.Lambda.Extensions;
 using Flights.Core.Models;
@@ -27,7 +26,6 @@ internal sealed class AdjustFlightPricingEndpoint : IEndpoint
     private static async Task<Results<Ok<FlightDto>, ProblemHttpResult>> InvokeAsync(ApplicationDbContext ctx,
                                                                                      IClock clock,
                                                                                      ILogger<AdjustFlightPricingEndpoint> logger,
-                                                                                     IMessagePublisher publisher,
                                                                                      Guid id,
                                                                                      AdjustFlightPricingDto dto,
                                                                                      CancellationToken ct)
@@ -53,7 +51,6 @@ internal sealed class AdjustFlightPricingEndpoint : IEndpoint
                 details.AppendLine(CultureInfo.InvariantCulture, $"New business price: {businessPrice.Amount}.");
                 logger.LogInformation("Adjusted pricing for flight {Id}. {Details}", id, details.ToString());
             }
-            await publisher.PublishAsync(new FlightPricingAdjustedEvent(flight.Id, economyPrice.Amount, businessPrice.Amount), ct);
             return TypedResults.Ok(flight.ToDto());
         }
         catch (ArgumentOutOfRangeException ex)

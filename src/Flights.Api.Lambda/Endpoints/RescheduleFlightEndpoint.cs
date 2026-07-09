@@ -1,6 +1,5 @@
 using System.Globalization;
 using System.Text;
-using AWS.Messaging;
 using ErrorOr;
 using Flights.Api.Lambda.Extensions;
 using Flights.Core.Models;
@@ -27,7 +26,6 @@ internal sealed class RescheduleFlightEndpoint : IEndpoint
     private static async Task<Results<Ok<FlightDto>, ProblemHttpResult>> InvokeAsync(ApplicationDbContext ctx,
                                                    IClock clock,
                                                    ILogger<RescheduleFlightEndpoint> logger,
-                                                   IMessagePublisher publisher,
                                                    Guid id,
                                                    RescheduleFlightDto dto,
                                                    CancellationToken ct)
@@ -66,7 +64,6 @@ internal sealed class RescheduleFlightEndpoint : IEndpoint
                 details.AppendLine(CultureInfo.InvariantCulture, $"New arrival time: {dto.ArrivalLocalTime}.");
                 logger.LogInformation("Flight with ID {Id} rescheduled. {Details}", id, details.ToString());
             }
-            await publisher.PublishAsync(new FlightRescheduledEvent(id, dto.DepartureLocalTime, dto.ArrivalLocalTime), ct);
             return TypedResults.Ok(flight.ToDto());
         }
         catch (ArgumentOutOfRangeException ex)
