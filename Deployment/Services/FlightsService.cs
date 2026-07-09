@@ -1,8 +1,9 @@
 using System.Globalization;
 using Amazon.CDK;
 using Constructs;
+using Deployment.Lambdas;
 
-namespace Deployment;
+namespace Deployment.Services;
 
 internal sealed class FlightsService : Construct
 {

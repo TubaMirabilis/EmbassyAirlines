@@ -1,7 +1,7 @@
 using Amazon.CDK.AWS.EC2;
 using Constructs;
 
-namespace Deployment;
+namespace Deployment.Networking;
 
 internal sealed class Network : Construct
 {

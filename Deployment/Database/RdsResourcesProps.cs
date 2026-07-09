@@ -1,6 +1,6 @@
 using Amazon.CDK.AWS.EC2;
 
-namespace Deployment;
+namespace Deployment.Database;
 
 internal sealed record RdsResourcesProps
 {

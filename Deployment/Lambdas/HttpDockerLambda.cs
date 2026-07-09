@@ -4,8 +4,9 @@ using Amazon.CDK.AWS.EC2;
 using Amazon.CDK.AWS.Lambda;
 using Amazon.CDK.AwsApigatewayv2Integrations;
 using Constructs;
+using Deployment.Networking;
 
-namespace Deployment;
+namespace Deployment.Lambdas;
 
 internal sealed class HttpDockerLambda : Construct
 {
@@ -44,7 +45,7 @@ internal sealed class HttpDockerLambda : Construct
             Methods = [Amazon.CDK.AWS.Apigatewayv2.HttpMethod.ANY]
         });
         props.DbProxyAccess.DbProxy.GrantConnect(Function, props.DbConnection.DbUsername);
-        var handlerSgRule = new ConnectionRule
+        var handlerSgRule = new SecurityGroupConnection
         {
             Description = "Allow Lambda to access RDS Proxy",
             Other = props.DbProxyAccess.DbProxySecurityGroup,

@@ -1,5 +1,8 @@
 using Amazon.CDK;
 using Constructs;
+using Deployment.Database;
+using Deployment.Networking;
+using Deployment.Services;
 
 namespace Deployment;
 

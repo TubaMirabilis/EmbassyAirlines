@@ -4,8 +4,9 @@ using Amazon.CDK.AWS.Events;
 using Amazon.CDK.AWS.Events.Targets;
 using Amazon.CDK.AWS.Lambda;
 using Constructs;
+using Deployment.Networking;
 
-namespace Deployment;
+namespace Deployment.Lambdas;
 
 internal sealed class PublisherLambda : Construct
 {
@@ -18,7 +19,7 @@ internal sealed class PublisherLambda : Construct
             Description = props.SecurityGroupDescription,
             Vpc = props.Vpc
         });
-        publisherSg.Connections.AllowTo(new ConnectionRule
+        publisherSg.Connections.AllowTo(new SecurityGroupConnection
         {
             Description = "Allow publisher Lambda to access RDS Proxy",
             Other = props.DbProxyAccess.DbProxySecurityGroup,

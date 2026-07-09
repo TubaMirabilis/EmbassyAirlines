@@ -2,7 +2,7 @@ using Amazon.CDK.AWS.Apigatewayv2;
 using Amazon.CDK.AWS.EC2;
 using Amazon.CDK.AWS.SNS;
 
-namespace Deployment;
+namespace Deployment.Services;
 
 internal sealed record AirportsServiceProps
 {

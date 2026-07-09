@@ -5,8 +5,9 @@ using Amazon.CDK.AWS.Lambda.EventSources;
 using Amazon.CDK.AWS.SNS.Subscriptions;
 using Amazon.CDK.AWS.SQS;
 using Constructs;
+using Deployment.Networking;
 
-namespace Deployment;
+namespace Deployment.Lambdas;
 
 internal sealed class EventHandlerLambda : Construct
 {
@@ -18,7 +19,7 @@ internal sealed class EventHandlerLambda : Construct
             Description = props.SecurityGroupDescription,
             Vpc = props.Vpc
         });
-        var handlerSgRule = new ConnectionRule
+        var handlerSgRule = new SecurityGroupConnection
         {
             Description = "Allow handler Lambda to access RDS Proxy",
             Other = props.DbProxyAccess.DbProxySecurityGroup,

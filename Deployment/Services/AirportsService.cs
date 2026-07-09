@@ -6,7 +6,7 @@ using Amazon.CDK.AWS.Lambda;
 using Amazon.CDK.AwsApigatewayv2Integrations;
 using Constructs;
 
-namespace Deployment;
+namespace Deployment.Services;
 
 internal sealed class AirportsService : Construct
 {

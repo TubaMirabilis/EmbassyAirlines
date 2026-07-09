@@ -4,7 +4,7 @@ using Amazon.CDK.AWS.RDS;
 using Constructs;
 using InstanceType = Amazon.CDK.AWS.EC2.InstanceType;
 
-namespace Deployment;
+namespace Deployment.Database;
 
 internal sealed class RdsResources : Construct
 {

@@ -1,4 +1,4 @@
-namespace Deployment;
+namespace Deployment.Database;
 
 internal sealed record DatabaseConnectionProps
 {

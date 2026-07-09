@@ -1,7 +1,7 @@
 using Amazon.CDK.AWS.EC2;
 using Amazon.CDK.AWS.RDS;
 
-namespace Deployment;
+namespace Deployment.Database;
 
 internal sealed record DatabaseProxyAccessProps
 {
