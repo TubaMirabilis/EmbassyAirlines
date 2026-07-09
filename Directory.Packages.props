@@ -33,7 +33,7 @@
     <PackageVersion Include="Amazon.Lambda.Serialization.SystemTextJson" Version="3.0.0" />
     <PackageVersion Include="Amazon.Lambda.SQSEvents" Version="3.0.0" />
     <PackageVersion Include="AWSSDK.DynamoDBv2" Version="4.0.101" />
-    <PackageVersion Include="AWSSDK.Extensions.NETCore.Setup" Version="4.0.100.2" />
+    <PackageVersion Include="AWSSDK.Extensions.NETCore.Setup" Version="4.0.100.3" />
     <PackageVersion Include="AWSSDK.S3" Version="4.0.100.2" />
     <PackageVersion Include="CliWrap" Version="3.10.2" />
     <PackageVersion Include="coverlet.collector" Version="10.0.1" />

@@ -6,6 +6,7 @@
 
   <ItemGroup>
     <PackageReference Include="AWS.Messaging" />
+    <PackageReference Include="AWSSDK.Extensions.NETCore.Setup" />
     <PackageReference Include="AWSSDK.RDS" />
     <PackageReference Include="EFCore.NamingConventions" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL.NodaTime" />
