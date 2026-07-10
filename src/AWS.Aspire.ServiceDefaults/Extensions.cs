@@ -27,7 +27,19 @@ public static class Extensions
         });
         return builder;
     }
-    public static TBuilder ConfigureOpenTelemetry<TBuilder>(this TBuilder builder) where TBuilder : IHostApplicationBuilder
+    public static WebApplication MapDefaultEndpoints(this WebApplication app)
+    {
+        if (app.Environment.IsDevelopment())
+        {
+            app.MapHealthChecks(HealthEndpointPath);
+            app.MapHealthChecks(AlivenessEndpointPath, new HealthCheckOptions
+            {
+                Predicate = r => r.Tags.Contains("live")
+            });
+        }
+        return app;
+    }
+    private static void ConfigureOpenTelemetry<TBuilder>(this TBuilder builder) where TBuilder : IHostApplicationBuilder
     {
         builder.Logging.AddOpenTelemetry(logging =>
         {
@@ -58,7 +70,6 @@ public static class Extensions
                    tracing.AddAWSLambdaConfigurations();
                });
         builder.AddOpenTelemetryExporters();
-        return builder;
     }
     private static void AddOpenTelemetryExporters<TBuilder>(this TBuilder builder) where TBuilder : IHostApplicationBuilder
     {
@@ -68,22 +79,7 @@ public static class Extensions
             builder.Services.AddOpenTelemetry().UseOtlpExporter();
         }
     }
-    public static TBuilder AddDefaultHealthChecks<TBuilder>(this TBuilder builder) where TBuilder : IHostApplicationBuilder
-    {
-        builder.Services.AddHealthChecks()
-               .AddCheck("self", () => HealthCheckResult.Healthy(), ["live"]);
-        return builder;
-    }
-    public static WebApplication MapDefaultEndpoints(this WebApplication app)
-    {
-        if (app.Environment.IsDevelopment())
-        {
-            app.MapHealthChecks(HealthEndpointPath);
-            app.MapHealthChecks(AlivenessEndpointPath, new HealthCheckOptions
-            {
-                Predicate = r => r.Tags.Contains("live")
-            });
-        }
-        return app;
-    }
+    private static void AddDefaultHealthChecks<TBuilder>(this TBuilder builder) where TBuilder : IHostApplicationBuilder => builder.Services
+                                                                                                                                   .AddHealthChecks()
+                                                                                                                                   .AddCheck("self", () => HealthCheckResult.Healthy(), ["live"]);
 }
