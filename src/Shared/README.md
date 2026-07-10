@@ -12,19 +12,19 @@ The largest part of the project is the **Contracts** folder.
 
 Examples include:
 
-* `AircraftDto`
-* `AirportDto`
-* `FlightDto`
-* `SeatDto`
+- `AircraftDto`
+- `AirportDto`
+- `FlightDto`
+- `SeatDto`
 
 along with request DTOs such as:
 
-* `CreateAircraftDto`
-* `ScheduleFlightDto`
-* `AssignAircraftToFlightDto`
-* `RescheduleFlightDto`
+- `CreateAircraftDto`
+- `ScheduleFlightDto`
+- `AssignAircraftToFlightDto`
+- `RescheduleFlightDto`
 
-These are immutable record types used for communication between APIs or services rather than representing database entities. For example, `ScheduleFlightDto` contains all the information required to schedule a flight, including airports, aircraft, prices, flight numbers, and scheduling policy. 
+These are immutable record types used for communication between APIs or services rather than representing database entities. For example, `ScheduleFlightDto` contains all the information required to schedule a flight, including airports, aircraft, prices, flight numbers, and scheduling policy.
 
 ---
 
@@ -34,13 +34,13 @@ The Embassy Airlines system uses domain events, message Broker-dispatched integr
 
 Examples include:
 
-* AircraftCreatedEvent
-* AirportUpdatedEvent
-* FlightScheduledEvent
-* FlightArrivedEvent
-* FlightCancelledEvent
-* FlightDelayedEvent
-* FlightPricingAdjustedEvent
+- AircraftCreatedEvent
+- AirportUpdatedEvent
+- FlightScheduledEvent
+- FlightArrivedEvent
+- FlightCancelledEvent
+- FlightDelayedEvent
+- FlightPricingAdjustedEvent
 
 These records implement `IDomainEvent` (or the more specific `IFlightStatusManagementEvent`) and are intended for event-driven communication between services.
 
@@ -52,11 +52,11 @@ The project contains a reusable `Entity` base class.
 
 It stores domain events raised by an entity:
 
-* AddDomainEvent()
-* ClearDomainEvents()
-* DomainEvents collection
+- AddDomainEvent()
+- ClearDomainEvents()
+- DomainEvents collection
 
-This is a common Domain-Driven Design pattern where entities accumulate events during a transaction, which are published after persistence. 
+This is a common Domain-Driven Design pattern where entities accumulate events during a transaction, which are published after persistence.
 
 ---
 
@@ -66,12 +66,12 @@ To improve the reliability of event delivery, the Outbox pattern was implemented
 
 It stores:
 
-* message ID
-* serialized content
-* creation time
-* retry count
-* processed timestamp
-* dead-letter timestamp
+- message ID
+- serialized content
+- creation time
+- retry count
+- processed timestamp
+- dead-letter timestamp
 
 An accompanying `IOutboxProcessor` interface defines a template for services which carry out asynchronous processing of outbox messages.
 
@@ -81,13 +81,13 @@ An accompanying `IOutboxProcessor` interface defines a template for services whi
 
 The `Ensure` class centralizes guard clauses such as:
 
-* NotEmpty(Guid)
-* NotNullOrEmpty(string)
-* GreaterThanZero(int)
-* ZeroOrGreater(decimal)
-* LessThanOrEqualTo(...)
+- NotEmpty(Guid)
+- NotNullOrEmpty(string)
+- GreaterThanZero(int)
+- ZeroOrGreater(decimal)
+- LessThanOrEqualTo(...)
 
-It also uses `CallerArgumentExpression`, allowing exceptions to automatically include the caller's parameter name without manually specifying it. 
+It also uses `CallerArgumentExpression`, allowing exceptions to automatically include the caller's parameter name without manually specifying it.
 
 ---
 
@@ -97,11 +97,11 @@ The library standardizes API error responses.
 
 It includes:
 
-* `ErrorHandlingHelper`
-* `GlobalExceptionHandler`
-* `ProblemDetails` extension methods
+- `ErrorHandlingHelper`
+- `GlobalExceptionHandler`
+- `ProblemDetails` extension methods
 
-Validation, conflict, and not-found errors are mapped to RFC-compliant `ProblemDetails` responses with consistent titles and status codes, while unexpected exceptions are logged and returned as HTTP 500 responses.  
+Validation, conflict, and not-found errors are mapped to RFC-compliant `ProblemDetails` responses with consistent titles and status codes, while unexpected exceptions are logged and returned as HTTP 500 responses.
 
 ---
 
@@ -115,9 +115,9 @@ public interface IEndpoint
 
 Each feature implements this interface, and the extension methods automatically:
 
-* discover endpoint classes via reflection,
-* register them with dependency injection,
-* map them during application startup. 
+- discover endpoint classes via reflection,
+- register them with dependency injection,
+- map them during application startup.
 
 This pattern helps to control the clemliness of top-level code in Web API projects.
 
@@ -131,7 +131,7 @@ The Shared Library provides useful extension methods for integration tests, incl
 
 ## Validation extensions
 
-A small helper converts `FluentValidation` results into a formatted string of error messages, simplifying error reporting. 
+A small helper converts `FluentValidation` results into a formatted string of error messages, simplifying error reporting.
 
 ---
 
@@ -141,8 +141,8 @@ A small helper converts `FluentValidation` results into a formatted string of er
 
 It:
 
-* reads `X-Correlation-Id` if supplied,
-* otherwise falls back to ASP.NET's trace identifier,
-* enriches all logs for the request with that ID. 
+- reads `X-Correlation-Id` if supplied,
+- otherwise falls back to ASP.NET's trace identifier,
+- enriches all logs for the request with that ID.
 
 This makes tracing requests across multiple services much easier.
