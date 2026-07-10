@@ -59,13 +59,4 @@ internal static class AircraftSmokeTestActions
         }
         Console.WriteLine($"AWS S3 upload of file {path} to bucket aircraft-bucket-{accountId}-{region} completed successfully");
     }
-    public static async Task ReadyAsync(HttpClient client)
-    {
-        var uri = new Uri("aircraft", UriKind.Relative);
-        var response = await client.GetAsync(uri);
-        if (response.StatusCode is not HttpStatusCode.OK)
-        {
-            throw new InvalidOperationException($"Request to {uri} returned status code {response.StatusCode}. The Aircraft service may not be ready yet.");
-        }
-    }
 }

@@ -33,13 +33,4 @@ internal static class FlightsSmokeTestActions
         Console.WriteLine($"Operation completed in {diff.TotalMilliseconds:F0} milliseconds");
         Console.WriteLine($"Scheduled flight with ID: {flight.Id}");
     }
-    public static async Task ReadyAsync(HttpClient client)
-    {
-        var uri = new Uri("flights", UriKind.Relative);
-        var response = await client.GetAsync(uri);
-        if (response.StatusCode is not HttpStatusCode.OK)
-        {
-            throw new InvalidOperationException($"Request to {uri} returned status code {response.StatusCode}. The Flights service may not be ready yet.");
-        }
-    }
 }

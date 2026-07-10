@@ -7,16 +7,16 @@ using var client = new HttpClient
 {
     BaseAddress = new Uri(baseAddress)
 };
-await AirportsSmokeTestActions.ReadyAsync(client);
+await ServiceReadiness.EnsureReadyAsync(client, "airports");
 var req1 = new CreateOrUpdateAirportDto("RKSI", "ICN", "Incheon International Airport", "Asia/Seoul");
 var req2 = new CreateOrUpdateAirportDto("EHAM", "AMS", "Schiphol Airport", "Europe/Amsterdam");
 var airport1 = await AirportsSmokeTestActions.AttemptPostAsync(client, req1);
 var airport2 = await AirportsSmokeTestActions.AttemptPostAsync(client, req2);
-await AircraftSmokeTestActions.ReadyAsync(client);
+await ServiceReadiness.EnsureReadyAsync(client, "aircraft");
 await AircraftSmokeTestActions.PrepareS3Async("Resources/Layouts/B78X.json", "seat-layouts/B78X.json");
 var req3 = new CreateAircraftDto("PH-JRN", "B78X", 135500, "Parked", 254011, "RKSI", null, 201848, 192777, 101522);
 var aircraft = await AircraftSmokeTestActions.AttemptPostAsync(client, req3);
-await FlightsSmokeTestActions.ReadyAsync(client);
+await ServiceReadiness.EnsureReadyAsync(client, "flights");
 var flightTimes = new FlightTimeCalculationRequest
 {
     LeadTime = Duration.FromMinutes(30),

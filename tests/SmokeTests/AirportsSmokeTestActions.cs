@@ -25,13 +25,4 @@ internal static class AirportsSmokeTestActions
         Console.WriteLine($"Created airport with ID: {airport.Id}");
         return airport;
     }
-    public static async Task ReadyAsync(HttpClient client)
-    {
-        var uri = new Uri("airports", UriKind.Relative);
-        var response = await client.GetAsync(uri);
-        if (response.StatusCode is not HttpStatusCode.OK)
-        {
-            throw new InvalidOperationException($"Request to {uri} returned status code {response.StatusCode}. The Airports service may not be ready yet.");
-        }
-    }
 }
