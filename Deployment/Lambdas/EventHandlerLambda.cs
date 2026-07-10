@@ -33,7 +33,7 @@ internal sealed class EventHandlerLambda : Construct
         var handler = new DockerImageFunction(this, "Handler", new DockerImageFunctionProps
         {
             Code = imageCode,
-            Environment = props.Environment.WithOtel(props.FunctionName),
+            Environment = props.Environment,
             FunctionName = props.FunctionName,
             MemorySize = 512,
             SecurityGroups = [handlerSg],

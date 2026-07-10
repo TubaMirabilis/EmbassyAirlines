@@ -2,7 +2,6 @@ using Aircraft.Api.Lambda;
 using Aircraft.Infrastructure;
 using Amazon.S3;
 using FluentValidation;
-using OpenTelemetry.Resources;
 using Serilog;
 using Shared;
 using Shared.Contracts;
@@ -27,12 +26,7 @@ if (!builder.Environment.IsEnvironment("FunctionalTests"))
 builder.Services.AddSingleton<IValidator<CreateAircraftDto>, CreateAircraftDtoValidator>();
 builder.Services.AddOpenApi();
 builder.Services.AddSingleton(TimeProvider.System);
-builder.Services
-    .AddOpenTelemetry()
-    .ConfigureResource(resource => resource.AddService(DiagnosticsConfig.ActivitySource.Name))
-    .WithTracing(tracing => tracing.AddSource(DiagnosticsConfig.ActivitySource.Name));
 var app = builder.Build();
-app.MapDefaultEndpoints();
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();

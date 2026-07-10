@@ -32,7 +32,7 @@ internal sealed class PublisherLambda : Construct
         Function = new DockerImageFunction(this, "Publisher", new DockerImageFunctionProps
         {
             Code = imageCode,
-            Environment = props.Environment.WithOtel(props.FunctionName),
+            Environment = props.Environment,
             FunctionName = props.FunctionName,
             MemorySize = 512,
             SecurityGroups = [publisherSg],

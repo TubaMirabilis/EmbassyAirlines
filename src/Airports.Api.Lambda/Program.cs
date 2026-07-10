@@ -2,7 +2,6 @@ using Airports.Api.Lambda;
 using Amazon;
 using Amazon.DynamoDBv2;
 using FluentValidation;
-using OpenTelemetry.Resources;
 using Serilog;
 using Shared;
 using Shared.Contracts;
@@ -34,12 +33,7 @@ builder.Services.AddAWSMessageBus(bus =>
     bus.AddSNSPublisher<AirportCreatedEvent>(airportCreatedTopicArn);
     bus.AddSNSPublisher<AirportUpdatedEvent>(airportUpdatedTopicArn);
 });
-builder.Services
-    .AddOpenTelemetry()
-    .ConfigureResource(resource => resource.AddService(DiagnosticsConfig.ActivitySource.Name))
-    .WithTracing(tracing => tracing.AddSource(DiagnosticsConfig.ActivitySource.Name));
 var app = builder.Build();
-app.MapDefaultEndpoints();
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();

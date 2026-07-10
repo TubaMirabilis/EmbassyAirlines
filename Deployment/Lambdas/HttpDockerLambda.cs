@@ -28,7 +28,7 @@ internal sealed class HttpDockerLambda : Construct
             FunctionName = props.FunctionName,
             Code = imageCode,
             Timeout = Duration.Seconds(30),
-            Environment = props.Environment.WithOtel(props.FunctionName),
+            Environment = props.Environment,
             Tracing = Tracing.ACTIVE,
             MemorySize = 512,
             Vpc = props.Vpc,

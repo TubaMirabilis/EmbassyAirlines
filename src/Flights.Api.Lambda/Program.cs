@@ -2,7 +2,6 @@ using Flights.Api.Lambda;
 using Flights.Infrastructure;
 using FluentValidation;
 using NodaTime;
-using OpenTelemetry.Resources;
 using Serilog;
 using Shared;
 using Shared.Contracts;
@@ -28,12 +27,7 @@ services.AddSingleton<IValidator<ScheduleFlightDto>, ScheduleFlightDtoValidator>
 services.AddOpenApi();
 services.AddSingleton<IClock>(SystemClock.Instance);
 services.AddScoped<FlightScheduler>();
-builder.Services
-    .AddOpenTelemetry()
-    .ConfigureResource(resource => resource.AddService(DiagnosticsConfig.ActivitySource.Name))
-    .WithTracing(tracing => tracing.AddSource(DiagnosticsConfig.ActivitySource.Name));
 var app = builder.Build();
-app.MapDefaultEndpoints();
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
