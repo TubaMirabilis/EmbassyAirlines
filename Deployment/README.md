@@ -85,7 +85,7 @@ No PostgreSQL is involved.
 
 ### Aircraft Service
 
-This service is much richer.
+This service has a broader infrastructure footprint than the Airports service.
 
 Infrastructure includes:
 
@@ -169,13 +169,13 @@ Creates:
 
 ### Publisher Lambda
 
-These are scheduled Lambdas that run every minute to support a transactional outbox pattern.
+Publisher Lambdas run on a one-minute schedule and publish pending domain events from the transactional outbox, ensuring events are only emitted after the associated database transaction has completed successfully.
 
 ---
 
 ## Deployment style
 
-Every Lambda is deployed as a **Docker container image**, using Dockerfiles such as:
+Every Lambda is deployed as a Docker container image, using Dockerfiles such as:
 
 - `Aircraft.Api.Lambda.dockerfile`
 - `Flights.Api.Lambda.dockerfile`
