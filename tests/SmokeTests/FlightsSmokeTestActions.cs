@@ -24,7 +24,7 @@ internal static class FlightsSmokeTestActions
         var res = await RetryNotFoundPipeline.ExecuteAsync(async cancellationToken => await client.PostAsJsonAsync("flights", req, cancellationToken));
         res.EnsureSuccessStatusCode();
         var stream = await res.Content.ReadAsStreamAsync();
-        var flight = await JsonSerializer.DeserializeAsync<FlightDto>(stream);
+        var flight = await JsonSerializer.DeserializeAsync<FlightDto>(stream, JsonSerializerOptions.Web);
         if (flight is null)
         {
             throw new JsonException("Deserialization returned null");
