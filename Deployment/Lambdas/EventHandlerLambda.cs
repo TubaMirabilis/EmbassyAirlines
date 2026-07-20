@@ -35,7 +35,7 @@ internal sealed class EventHandlerLambda : Construct
             Code = imageCode,
             Environment = props.Environment,
             FunctionName = props.FunctionName,
-            MemorySize = 512,
+            MemorySize = 1024,
             SecurityGroups = [handlerSg],
             Timeout = Duration.Seconds(30),
             Tracing = Tracing.ACTIVE,

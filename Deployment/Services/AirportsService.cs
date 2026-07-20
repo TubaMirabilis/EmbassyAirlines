@@ -45,7 +45,7 @@ internal sealed class AirportsService : Construct
                 { "AIRPORTS_SNS__AirportUpdatedTopicArn", props.AirportUpdatedTopic.TopicArn }
             },
             Tracing = Tracing.ACTIVE,
-            MemorySize = 512,
+            MemorySize = 1024,
             Vpc = props.Vpc,
             VpcSubnets = new SubnetSelection
             {
