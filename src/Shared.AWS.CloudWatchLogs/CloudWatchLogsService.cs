@@ -1,4 +1,4 @@
-﻿using Amazon.CloudWatchLogs;
+using Amazon.CloudWatchLogs;
 using Amazon.CloudWatchLogs.Model;
 
 namespace Shared.AWS.CloudWatchLogs;
