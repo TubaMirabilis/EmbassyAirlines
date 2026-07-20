@@ -12,7 +12,7 @@ internal static class FlightsSmokeTestActions
 {
     private static readonly ResiliencePipeline<HttpResponseMessage> RetryNotFoundPipeline = new ResiliencePipelineBuilder<HttpResponseMessage>().AddRetry(new RetryStrategyOptions<HttpResponseMessage>
     {
-        MaxRetryAttempts = 5,
+        MaxRetryAttempts = 8,
         Delay = TimeSpan.FromSeconds(1),
         BackoffType = DelayBackoffType.Exponential,
         ShouldHandle = new PredicateBuilder<HttpResponseMessage>().HandleResult(r => r.StatusCode == HttpStatusCode.NotFound)

@@ -34,7 +34,7 @@ internal sealed class PublisherLambda : Construct
             Code = imageCode,
             Environment = props.Environment,
             FunctionName = props.FunctionName,
-            MemorySize = 1024,
+            MemorySize = 1536,
             SecurityGroups = [publisherSg],
             Timeout = Duration.Seconds(60),
             Tracing = Tracing.ACTIVE,

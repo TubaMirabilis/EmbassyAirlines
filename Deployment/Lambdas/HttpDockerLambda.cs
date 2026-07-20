@@ -30,7 +30,7 @@ internal sealed class HttpDockerLambda : Construct
             Timeout = Duration.Seconds(30),
             Environment = props.Environment,
             Tracing = Tracing.ACTIVE,
-            MemorySize = 1024,
+            MemorySize = 1536,
             Vpc = props.Vpc,
             VpcSubnets = new SubnetSelection
             {
