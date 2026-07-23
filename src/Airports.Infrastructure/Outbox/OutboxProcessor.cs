@@ -1,6 +1,6 @@
 using System.Text.Json;
-using AWS.Messaging;
 using Airports.Infrastructure.Database;
+using AWS.Messaging;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Shared;
