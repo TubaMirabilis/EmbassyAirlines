@@ -5,7 +5,7 @@ using Shared;
 
 namespace Aircraft.Infrastructure.Outbox;
 
-internal sealed class InsertOutboxMessagesInterceptor(TimeProvider timeProvider) : SaveChangesInterceptor
+internal sealed class InsertOutboxMessagesInterceptor : SaveChangesInterceptor
 {
     private static readonly JsonSerializerOptions s_serializerOptions = new(JsonSerializerDefaults.Web);
     public override InterceptionResult<int> SavingChanges(DbContextEventData eventData, InterceptionResult<int> result)
@@ -40,9 +40,9 @@ internal sealed class InsertOutboxMessagesInterceptor(TimeProvider timeProvider)
         }
         return base.SavedChangesAsync(eventData, result, cancellationToken);
     }
-    private void InsertOutboxMessages(DbContext context)
+    private static void InsertOutboxMessages(DbContext context)
     {
-        var now = timeProvider.GetUtcNow().UtcDateTime;
+        var now = DateTime.UtcNow;
         var trackedMessageIds = context.ChangeTracker
                                        .Entries<OutboxMessage>()
                                        .Select(entry => entry.Entity.Id)

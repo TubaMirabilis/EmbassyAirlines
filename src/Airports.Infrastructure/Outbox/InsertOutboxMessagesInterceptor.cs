@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Shared;
 
-namespace Flights.Infrastructure.Outbox;
+namespace Airports.Infrastructure.Outbox;
 
 internal sealed class InsertOutboxMessagesInterceptor : SaveChangesInterceptor
 {

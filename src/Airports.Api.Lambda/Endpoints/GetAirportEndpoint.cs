@@ -1,4 +1,7 @@
+using Airports.Infrastructure.Database;
+using ErrorOr;
 using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.EntityFrameworkCore;
 using Shared;
 using Shared.Contracts;
 using Shared.Endpoints;
@@ -13,19 +16,18 @@ internal sealed class GetAirportEndpoint : IEndpoint
               .Produces<AirportDto>(StatusCodes.Status200OK)
               .ProducesProblem(StatusCodes.Status404NotFound)
               .ProducesProblem(StatusCodes.Status500InternalServerError);
-    private static async Task<Results<Ok<AirportDto>, ProblemHttpResult>> InvokeAsync(IAirportRepository repository,
+    private static async Task<Results<Ok<AirportDto>, ProblemHttpResult>> InvokeAsync(ApplicationDbContext ctx,
                                                                                       ILogger<GetAirportEndpoint> logger,
                                                                                       Guid id,
                                                                                       CancellationToken ct)
     {
-        var getAirportResult = await repository.GetAirportByIdAsync(id, ct);
-        if (getAirportResult.IsError)
+        var airport = await ctx.Airports.AsNoTracking().FirstOrDefaultAsync(a => a.Id == id, ct);
+        if (airport is null)
         {
-            logger.LogWarning("Error retrieving airport with id {Id}: {Errors}", id, getAirportResult.FirstError.Description);
-            return TypedResults.Problem(ErrorHandlingHelper.GetProblemDetails(getAirportResult.FirstError));
+            logger.LogWarning("Airport with ID {Id} not found", id);
+            var error = Error.NotFound("Airport.NotFound", $"Airport with ID {id} not found");
+            return TypedResults.Problem(ErrorHandlingHelper.GetProblemDetails(error));
         }
-        var airport = getAirportResult.Value;
-        var response = new AirportDto(airport.Id, airport.Name, airport.IcaoCode, airport.IataCode, airport.TimeZoneId);
-        return TypedResults.Ok(response);
+        return TypedResults.Ok(new AirportDto(airport.Id, airport.Name, airport.IcaoCode, airport.IataCode, airport.TimeZoneId));
     }
 }

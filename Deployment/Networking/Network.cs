@@ -31,14 +31,6 @@ internal sealed class Network : Construct
         {
             Service = InterfaceVpcEndpointAwsService.SNS
         });
-        Vpc.AddGatewayEndpoint("DynamoDbEndpoint", new GatewayVpcEndpointOptions
-        {
-            Service = GatewayVpcEndpointAwsService.DYNAMODB,
-            Subnets =
-            [
-                new SubnetSelection { SubnetType = SubnetType.PRIVATE_ISOLATED }
-            ]
-        });
     }
     internal Vpc Vpc { get; }
 }

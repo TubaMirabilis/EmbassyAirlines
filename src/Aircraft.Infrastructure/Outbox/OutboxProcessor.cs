@@ -1,9 +1,7 @@
-using System.Globalization;
 using System.Text.Json;
 using Aircraft.Infrastructure.Database;
 using AWS.Messaging;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Shared;
 using Shared.Abstractions;
@@ -13,10 +11,6 @@ namespace Aircraft.Infrastructure.Outbox;
 
 public sealed class OutboxProcessor : IOutboxProcessor
 {
-    private const int DefaultBatchSize = 100;
-    private const int DefaultMaxRetryAttempts = 5;
-    private const int DefaultBaseRetryDelaySeconds = 30;
-    private const int DefaultMaxRetryDelaySeconds = 3600;
     private static readonly JsonSerializerOptions s_serializerOptions = new(JsonSerializerDefaults.Web);
     private static readonly Dictionary<string, Func<IMessagePublisher, string, CancellationToken, Task>> s_publishers =
         new(StringComparer.Ordinal)
@@ -25,30 +19,18 @@ public sealed class OutboxProcessor : IOutboxProcessor
         };
     private readonly ApplicationDbContext _dbContext;
     private readonly IMessagePublisher _publisher;
-    private readonly TimeProvider _timeProvider;
     private readonly ILogger<OutboxProcessor> _logger;
-    private readonly int _batchSize;
-    private readonly int _maxRetryAttempts;
-    private readonly TimeSpan _baseRetryDelay;
-    private readonly TimeSpan _maxRetryDelay;
     public OutboxProcessor(ApplicationDbContext dbContext,
                            IMessagePublisher publisher,
-                           TimeProvider timeProvider,
-                           IConfiguration configuration,
                            ILogger<OutboxProcessor> logger)
     {
         _dbContext = dbContext;
         _publisher = publisher;
-        _timeProvider = timeProvider;
         _logger = logger;
-        _batchSize = GetPositiveInt(configuration, "Outbox:BatchSize", DefaultBatchSize);
-        _maxRetryAttempts = GetPositiveInt(configuration, "Outbox:MaxRetryAttempts", DefaultMaxRetryAttempts);
-        _baseRetryDelay = TimeSpan.FromSeconds(GetPositiveInt(configuration, "Outbox:BaseRetryDelaySeconds", DefaultBaseRetryDelaySeconds));
-        _maxRetryDelay = TimeSpan.FromSeconds(GetPositiveInt(configuration, "Outbox:MaxRetryDelaySeconds", DefaultMaxRetryDelaySeconds));
     }
     public async Task<int> ProcessAsync(CancellationToken cancellationToken = default)
     {
-        var now = _timeProvider.GetUtcNow().UtcDateTime;
+        var now = DateTime.UtcNow;
         await using var transaction = await _dbContext.Database.BeginTransactionAsync(cancellationToken);
         var messages = await _dbContext.Set<OutboxMessage>()
                                        .FromSql(
@@ -58,7 +40,7 @@ public sealed class OutboxProcessor : IOutboxProcessor
                                               AND dead_lettered_on_utc IS NULL
                                               AND (next_attempt_on_utc IS NULL OR next_attempt_on_utc <= {now})
                                             ORDER BY created_on_utc
-                                            LIMIT {_batchSize}
+                                            LIMIT {OutboxConstants.BatchSize}
                                             FOR UPDATE SKIP LOCKED
                                             """)
                                        .ToListAsync(cancellationToken);
@@ -102,7 +84,7 @@ public sealed class OutboxProcessor : IOutboxProcessor
     {
         message.Error = error;
         message.RetryCount++;
-        if (unrecoverable || message.RetryCount >= _maxRetryAttempts)
+        if (unrecoverable || message.RetryCount >= OutboxConstants.MaxRetryAttempts)
         {
             message.DeadLetteredOnUtc = now;
             message.NextAttemptOnUtc = null;
@@ -112,17 +94,13 @@ public sealed class OutboxProcessor : IOutboxProcessor
         }
         message.NextAttemptOnUtc = now + ComputeBackoff(message.RetryCount);
         _logger.LogWarning("Scheduled retry {RetryCount}/{MaxRetryAttempts} for outbox message {MessageId} at {NextAttemptOnUtc:o}",
-            message.RetryCount, _maxRetryAttempts, message.Id, message.NextAttemptOnUtc);
+            message.RetryCount, OutboxConstants.MaxRetryAttempts, message.Id, message.NextAttemptOnUtc);
     }
-    private TimeSpan ComputeBackoff(int retryCount)
+    private static TimeSpan ComputeBackoff(int retryCount)
     {
-        var seconds = Math.Min(_baseRetryDelay.TotalSeconds * Math.Pow(2, retryCount - 1), _maxRetryDelay.TotalSeconds);
+        var seconds = Math.Min(OutboxConstants.BaseRetryDelay.TotalSeconds * Math.Pow(2, retryCount - 1), OutboxConstants.MaxRetryDelay.TotalSeconds);
         return TimeSpan.FromSeconds(seconds);
     }
-    private static int GetPositiveInt(IConfiguration configuration, string key, int defaultValue)
-        => int.TryParse(configuration[key], CultureInfo.InvariantCulture, out var value) && value > 0
-            ? value
-            : defaultValue;
     private static T Deserialize<T>(string content)
         => JsonSerializer.Deserialize<T>(content, s_serializerOptions)
            ?? throw new JsonException($"Outbox payload for {typeof(T).Name} deserialised to null.");

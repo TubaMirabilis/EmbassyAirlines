@@ -1,3 +1,5 @@
+using Shared.Abstractions;
+
 namespace Shared.Contracts;
 
-public sealed record AirportUpdatedEvent(Guid Id, Guid AirportId, string Name, string IcaoCode, string IataCode, string TimeZoneId);
+public sealed record AirportUpdatedEvent(Guid Id, Guid AirportId, string Name, string IcaoCode, string IataCode, string TimeZoneId) : IDomainEvent;

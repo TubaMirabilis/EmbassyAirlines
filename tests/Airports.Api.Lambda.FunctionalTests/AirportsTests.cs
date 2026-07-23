@@ -156,7 +156,7 @@ public class AirportsTests : BaseFunctionalTest
     {
         // Arrange
         var id = Guid.NewGuid();
-        var error = $"Airport with id {id} not found";
+        var error = $"Airport with ID {id} not found";
 
         // Act
         var uri = new Uri($"airports/{id}", UriKind.Relative);

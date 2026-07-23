@@ -19,12 +19,12 @@ services.AddEndpoints(assembly);
 services.AddAWSLambdaHosting(LambdaEventSource.HttpApi);
 services.AddExceptionHandler<GlobalExceptionHandler>();
 services.AddProblemDetails();
+services.AddOpenApi();
 if (!builder.Environment.IsEnvironment("FunctionalTests"))
 {
     services.AddDatabaseConnection(config);
 }
 services.AddSingleton<IValidator<ScheduleFlightDto>, ScheduleFlightDtoValidator>();
-services.AddOpenApi();
 services.AddSingleton<IClock>(SystemClock.Instance);
 services.AddScoped<FlightScheduler>();
 var app = builder.Build();

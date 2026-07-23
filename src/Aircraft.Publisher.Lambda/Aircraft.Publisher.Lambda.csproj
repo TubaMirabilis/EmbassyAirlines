@@ -1,7 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
-    <ProjectReference Include="..\Shared\Shared.csproj" />
     <ProjectReference Include="..\Aircraft.Infrastructure\Aircraft.Infrastructure.csproj" />
   </ItemGroup>
 

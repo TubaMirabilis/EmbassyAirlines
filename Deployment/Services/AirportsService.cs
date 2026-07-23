@@ -1,10 +1,7 @@
+using System.Globalization;
 using Amazon.CDK;
-using Amazon.CDK.AWS.Apigatewayv2;
-using Amazon.CDK.AWS.DynamoDB;
-using Amazon.CDK.AWS.EC2;
-using Amazon.CDK.AWS.Lambda;
-using Amazon.CDK.AwsApigatewayv2Integrations;
 using Constructs;
+using Deployment.Lambdas;
 
 namespace Deployment.Services;
 
@@ -12,55 +9,44 @@ internal sealed class AirportsService : Construct
 {
     internal AirportsService(Construct scope, string id, AirportsServiceProps props) : base(scope, id)
     {
-        var airportsTable = new Table(this, "AirportsTable", new TableProps
+        var commonEnv = new Dictionary<string, string>
         {
-            TableName = "airports",
-            PartitionKey = new Amazon.CDK.AWS.DynamoDB.Attribute
-            {
-                Name = "Id",
-                Type = AttributeType.STRING
-            },
-            BillingMode = BillingMode.PAY_PER_REQUEST,
-            RemovalPolicy = RemovalPolicy.DESTROY
-        });
-        var imageCode = DockerImageCode.FromImageAsset(directory: ".", new AssetImageCodeProps
+            { "AIRPORTS_DbConnection__Database", props.DbConnection.DbName },
+            { "AIRPORTS_DbConnection__Host", props.DbProxyAccess.DbProxy.Endpoint },
+            { "AIRPORTS_DbConnection__Port", props.DbConnection.DbPort.ToString(CultureInfo.InvariantCulture) },
+            { "AIRPORTS_DbConnection__Username", props.DbConnection.DbUsername }
+        };
+        new HttpDockerLambda(this, "AirportsApi", new HttpDockerLambdaProps
         {
-            File = "docker/Airports.Api.Lambda.dockerfile"
-        });
-        var lambdaSg = new SecurityGroup(this, "AirportsLambdaSG", new SecurityGroupProps
-        {
-            Vpc = props.Vpc,
-            AllowAllOutbound = true,
-            Description = "Security group for Airports API Lambda"
-        });
-        var lambda = new DockerImageFunction(this, "AirportsApiLambda", new DockerImageFunctionProps
-        {
+            Api = props.Api,
+            DbConnection = props.DbConnection,
+            DbProxyAccess = props.DbProxyAccess,
+            DockerfilePath = "docker/Airports.Api.Lambda.dockerfile",
+            Environment = commonEnv,
             FunctionName = "AirportsApiLambda",
-            Code = imageCode,
-            Timeout = Duration.Seconds(30),
-            Environment = new Dictionary<string, string>
+            RoutePath = "/airports",
+            SecurityGroupDescription = "Security group for Airports API Lambda",
+            Vpc = props.Vpc
+        });
+        new PublisherLambda(this, "AirportsPublisherLambda", new PublisherLambdaProps
+        {
+            DbConnection = props.DbConnection,
+            DbProxyAccess = props.DbProxyAccess,
+            DockerfilePath = "docker/Airports.Publisher.Lambda.dockerfile",
+            Environment = new Dictionary<string, string>(commonEnv)
             {
-                { "AIRPORTS_DynamoDb__TableName", airportsTable.TableName },
                 { "AIRPORTS_SNS__AirportCreatedTopicArn", props.AirportCreatedTopic.TopicArn },
                 { "AIRPORTS_SNS__AirportUpdatedTopicArn", props.AirportUpdatedTopic.TopicArn }
             },
-            Tracing = Tracing.ACTIVE,
-            MemorySize = 1536,
-            Vpc = props.Vpc,
-            VpcSubnets = new SubnetSelection
-            {
-                SubnetType = SubnetType.PRIVATE_ISOLATED
-            },
-            SecurityGroups = [lambdaSg]
-        });
-        airportsTable.GrantReadWriteData(lambda);
-        props.AirportCreatedTopic.GrantPublish(lambda);
-        props.AirportUpdatedTopic.GrantPublish(lambda);
-        props.Api.AddRoutes(new AddRoutesOptions
-        {
-            Path = "/airports",
-            Integration = new HttpLambdaIntegration("AirportsApiIntegration", lambda),
-            Methods = [Amazon.CDK.AWS.Apigatewayv2.HttpMethod.ANY]
+            FunctionName = "AirportsPublisherLambda",
+            PollInterval = Duration.Minutes(1),
+            SecurityGroupDescription = "Security group for Airports outbox publisher Lambda",
+            Topics =
+            [
+                props.AirportCreatedTopic,
+                props.AirportUpdatedTopic
+            ],
+            Vpc = props.Vpc
         });
     }
 }

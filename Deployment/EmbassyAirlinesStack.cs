@@ -13,13 +13,6 @@ internal sealed class EmbassyAirlinesStack : Stack
         var network = new Network(this, "Networking");
         var messaging = new MessagingResources(this, "Messaging");
         var shared = new SharedInfra(this, "Shared");
-        new AirportsService(this, "AirportsService", new AirportsServiceProps
-        {
-            AirportCreatedTopic = messaging.AirportCreatedTopic,
-            AirportUpdatedTopic = messaging.AirportUpdatedTopic,
-            Api = shared.Api,
-            Vpc = network.Vpc
-        });
         var dbConnection = new DatabaseConnectionProps
         {
             DbName = "embassyairlines",
@@ -36,6 +29,15 @@ internal sealed class EmbassyAirlinesStack : Stack
             DbProxy = rds.DbProxy,
             DbProxySecurityGroup = rds.DbProxySecurityGroup
         };
+        new AirportsService(this, "AirportsService", new AirportsServiceProps
+        {
+            AirportCreatedTopic = messaging.AirportCreatedTopic,
+            AirportUpdatedTopic = messaging.AirportUpdatedTopic,
+            Api = shared.Api,
+            DbConnection = dbConnection,
+            DbProxyAccess = dbProxyAccess,
+            Vpc = network.Vpc
+        });
         new AircraftService(this, "AircraftService", new AircraftServiceProps
         {
             AircraftCreatedTopic = messaging.AircraftCreatedTopic,

@@ -1,7 +1,8 @@
-using AWS.Messaging;
+using Airports.Infrastructure.Database;
 using ErrorOr;
 using FluentValidation;
 using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.EntityFrameworkCore;
 using Shared;
 using Shared.Contracts;
 using Shared.Endpoints;
@@ -19,21 +20,14 @@ internal sealed class UpdateAirportEndpoint : IEndpoint
               .ProducesProblem(StatusCodes.Status400BadRequest)
               .ProducesProblem(StatusCodes.Status404NotFound)
               .ProducesProblem(StatusCodes.Status500InternalServerError);
-    private static async Task<Results<Ok<AirportDto>, ProblemHttpResult>> InvokeAsync(ILogger<UpdateAirportEndpoint> logger,
-                                                                                      IMessagePublisher publisher,
-                                                                                      IAirportRepository repository,
+    private static async Task<Results<Ok<AirportDto>, ProblemHttpResult>> InvokeAsync(ApplicationDbContext ctx,
+                                                                                      ILogger<UpdateAirportEndpoint> logger,
                                                                                       IValidator<CreateOrUpdateAirportDto> validator,
                                                                                       TimeProvider timeProvider,
                                                                                       Guid id,
                                                                                       CreateOrUpdateAirportDto dto,
                                                                                       CancellationToken ct)
     {
-        var getAirportResult = await repository.GetAirportByIdAsync(id, ct);
-        if (getAirportResult.IsError)
-        {
-            logger.LogWarning("Error retrieving airport with id {Id}: {Errors}", id, getAirportResult.FirstError.Description);
-            return TypedResults.Problem(ErrorHandlingHelper.GetProblemDetails(getAirportResult.FirstError));
-        }
         var validationResult = await validator.ValidateAsync(dto, ct);
         if (!validationResult.IsValid(out var formattedErrors))
         {
@@ -41,17 +35,15 @@ internal sealed class UpdateAirportEndpoint : IEndpoint
             var error = Error.Validation("Airport.Validation", formattedErrors);
             return TypedResults.Problem(ErrorHandlingHelper.GetProblemDetails(error));
         }
-        var airport = getAirportResult.Value;
-        airport.Update(dto.IcaoCode, dto.IataCode, dto.Name, dto.TimeZoneId, timeProvider.GetUtcNow());
-        var updated = await repository.UpdateAirportAsync(airport, ct);
-        if (!updated)
+        var airport = await ctx.Airports.FirstOrDefaultAsync(a => a.Id == id, ct);
+        if (airport is null)
         {
-            logger.LogError("Failed to update airport with id {Id}", id);
-            var error = Error.Failure("Airport.Update", $"Failed to update airport with id {id}");
+            logger.LogWarning("Airport with ID {Id} not found", id);
+            var error = Error.NotFound("Airport.NotFound", $"Airport with ID {id} not found");
             return TypedResults.Problem(ErrorHandlingHelper.GetProblemDetails(error));
         }
-        var evnt = new AirportUpdatedEvent(Guid.NewGuid(), airport.Id, airport.Name, airport.IcaoCode, airport.IataCode, airport.TimeZoneId);
-        await publisher.PublishAsync(evnt, ct);
+        airport.Update(dto.IcaoCode, dto.IataCode, dto.Name, dto.TimeZoneId, timeProvider.GetUtcNow());
+        await ctx.SaveChangesAsync(ct);
         var response = new AirportDto(airport.Id, airport.Name, airport.IcaoCode, airport.IataCode, airport.TimeZoneId);
         return TypedResults.Ok(response);
     }

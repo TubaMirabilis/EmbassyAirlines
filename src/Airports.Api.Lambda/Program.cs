@@ -1,6 +1,5 @@
 using Airports.Api.Lambda;
-using Amazon;
-using Amazon.DynamoDBv2;
+using Airports.Infrastructure;
 using FluentValidation;
 using Serilog;
 using Shared;
@@ -13,31 +12,25 @@ var config = builder.Configuration;
 config.AddEnvironmentVariables(prefix: "AIRPORTS_");
 builder.Host.UseSerilog((context, loggerConfig) => loggerConfig.ReadFrom.Configuration(context.Configuration));
 builder.AddServiceDefaults();
-var region = Environment.GetEnvironmentVariable("AWS_REGION") ?? "eu-west-2";
 var assembly = typeof(Program).Assembly;
-builder.Services.AddEndpoints(assembly);
-builder.Services.AddAWSLambdaHosting(LambdaEventSource.HttpApi);
-builder.Services.AddSingleton<IAmazonDynamoDB>(_ => new AmazonDynamoDBClient(RegionEndpoint.GetBySystemName(region)));
-builder.Services.AddSingleton<IValidator<CreateOrUpdateAirportDto>, CreateOrUpdateAirportDtoValidator>();
-builder.Services.AddSingleton<IAirportRepository, AirportRepository>();
-builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
-builder.Services.AddProblemDetails();
-builder.Services.AddOpenApi();
-builder.Services.AddSingleton(TimeProvider.System);
-builder.Services.AddAWSMessageBus(bus =>
+var services = builder.Services;
+services.AddEndpoints(assembly);
+services.AddAWSLambdaHosting(LambdaEventSource.HttpApi);
+services.AddExceptionHandler<GlobalExceptionHandler>();
+services.AddProblemDetails();
+services.AddOpenApi();
+if (!builder.Environment.IsEnvironment("FunctionalTests"))
 {
-    var airportCreatedTopicArn = config["SNS:AirportCreatedTopicArn"];
-    var airportUpdatedTopicArn = config["SNS:AirportUpdatedTopicArn"];
-    Ensure.NotNullOrEmpty(airportCreatedTopicArn);
-    Ensure.NotNullOrEmpty(airportUpdatedTopicArn);
-    bus.AddSNSPublisher<AirportCreatedEvent>(airportCreatedTopicArn);
-    bus.AddSNSPublisher<AirportUpdatedEvent>(airportUpdatedTopicArn);
-});
+    services.AddDatabaseConnection(config);
+}
+services.AddSingleton<IValidator<CreateOrUpdateAirportDto>, CreateOrUpdateAirportDtoValidator>();
+services.AddSingleton(TimeProvider.System);
 var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
 }
+await app.ApplyMigrationsAsync();
 app.MapEndpoints();
 app.UseMiddleware<RequestContextLoggingMiddleware>();
 app.UseSerilogRequestLogging();

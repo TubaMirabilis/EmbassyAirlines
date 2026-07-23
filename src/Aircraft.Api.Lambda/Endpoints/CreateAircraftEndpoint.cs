@@ -47,7 +47,7 @@ internal sealed class CreateAircraftEndpoint : IEndpoint
             var error = Error.Validation("Aircraft.InvalidStatus", $"{dto.Status} is not a valid status");
             return TypedResults.Problem(ErrorHandlingHelper.GetProblemDetails(error));
         }
-        if (await ctx.Aircraft.AnyAsync(a => a.TailNumber == dto.TailNumber, ct))
+        if (await ctx.Aircraft.AsNoTracking().AnyAsync(a => a.TailNumber == dto.TailNumber, ct))
         {
             logger.LogWarning("Aircraft with tail number {TailNumber} already exists", dto.TailNumber);
             var error = Error.Conflict("Aircraft.TailNumberDuplicate", $"Aircraft with tail number {dto.TailNumber} already exists");

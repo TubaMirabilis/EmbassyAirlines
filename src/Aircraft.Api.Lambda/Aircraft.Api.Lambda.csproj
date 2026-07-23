@@ -1,7 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
   <ItemGroup>
-    <ProjectReference Include="..\Shared\Shared.csproj" />
     <ProjectReference Include="..\Aircraft.Infrastructure\Aircraft.Infrastructure.csproj" />
     <ProjectReference Include="..\AWS.Aspire.ServiceDefaults\AWS.Aspire.ServiceDefaults.csproj" />
   </ItemGroup>

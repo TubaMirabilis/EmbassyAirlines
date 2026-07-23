@@ -1,9 +1,9 @@
-using System.Text.Json.Serialization;
 using Shared;
+using Shared.Contracts;
 
-namespace Airports.Api.Lambda;
+namespace Airports.Core.Models;
 
-internal sealed class Airport
+public sealed class Airport : Entity
 {
     private Airport(string icaoCode, string iataCode, string name, string timeZoneId, DateTimeOffset createdAt)
     {
@@ -18,26 +18,19 @@ internal sealed class Airport
         IcaoCode = icaoCode;
         IataCode = iataCode;
         TimeZoneId = timeZoneId;
+        AddDomainEvent(new AirportCreatedEvent(Guid.NewGuid(), Id, Name, IcaoCode, IataCode, TimeZoneId));
     }
 #pragma warning disable CS8618
-    [JsonConstructor]
     private Airport()
     {
     }
 #pragma warning restore CS8618
-    [JsonInclude]
     public Guid Id { get; init; }
-    [JsonInclude]
     public DateTimeOffset CreatedAt { get; init; }
-    [JsonInclude]
     public DateTimeOffset UpdatedAt { get; private set; }
-    [JsonInclude]
     public string Name { get; private set; }
-    [JsonInclude]
     public string IcaoCode { get; private set; }
-    [JsonInclude]
     public string IataCode { get; private set; }
-    [JsonInclude]
     public string TimeZoneId { get; private set; }
     public static Airport Create(string icaoCode, string iataCode, string name, string timeZoneId, DateTimeOffset createdAt)
         => new(icaoCode, iataCode, name, timeZoneId, createdAt);
@@ -48,5 +41,6 @@ internal sealed class Airport
         Name = name;
         TimeZoneId = timeZoneId;
         UpdatedAt = updatedAt;
+        AddDomainEvent(new AirportUpdatedEvent(Guid.NewGuid(), Id, Name, IcaoCode, IataCode, TimeZoneId));
     }
 }
