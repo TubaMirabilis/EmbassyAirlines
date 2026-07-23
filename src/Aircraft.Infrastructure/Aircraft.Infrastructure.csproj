@@ -15,6 +15,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Aircraft.Core\Aircraft.Core.csproj" />
+    <ProjectReference Include="..\Shared.EntityFrameworkCore\Shared.EntityFrameworkCore.csproj" />
   </ItemGroup>
 
 </Project>

@@ -4,6 +4,7 @@ COPY ./src/Aircraft.Publisher.Lambda/ /src/Aircraft.Publisher.Lambda/
 COPY ./src/Aircraft.Core/ /src/Aircraft.Core/
 COPY ./src/Aircraft.Infrastructure/ /src/Aircraft.Infrastructure/
 COPY ./src/Shared/ /src/Shared/
+COPY ./src/Shared.EntityFrameworkCore/ /src/Shared.EntityFrameworkCore/
 COPY ./Directory.Packages.props /Directory.Packages.props
 WORKDIR /src/Aircraft.Publisher.Lambda
 RUN dotnet restore

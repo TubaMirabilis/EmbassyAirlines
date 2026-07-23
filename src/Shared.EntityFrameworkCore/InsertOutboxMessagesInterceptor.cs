@@ -3,9 +3,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Shared;
 
-namespace Flights.Infrastructure.Outbox;
+namespace Shared.EntityFrameworkCore;
 
-internal sealed class InsertOutboxMessagesInterceptor : SaveChangesInterceptor
+public sealed class InsertOutboxMessagesInterceptor : SaveChangesInterceptor
 {
     private static readonly JsonSerializerOptions s_serializerOptions = new(JsonSerializerDefaults.Web);
     public override InterceptionResult<int> SavingChanges(DbContextEventData eventData, InterceptionResult<int> result)

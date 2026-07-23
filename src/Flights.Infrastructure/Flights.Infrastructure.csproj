@@ -2,6 +2,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Flights.Core\Flights.Core.csproj" />
+    <ProjectReference Include="..\Shared.EntityFrameworkCore\Shared.EntityFrameworkCore.csproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -7,6 +7,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Npgsql;
 using Shared;
+using Shared.EntityFrameworkCore;
 
 namespace Flights.Infrastructure;
 
