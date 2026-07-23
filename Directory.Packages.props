@@ -4,7 +4,7 @@
     <CentralPackageTransitivePinningEnabled>false</CentralPackageTransitivePinningEnabled>
   </PropertyGroup>
   <ItemGroup Condition="'$(MSBuildProjectExtension)' != '.dcproj'">
-    <PackageVersion Include="Amazon.CDK.Lib" Version="2.261.0" />
+    <PackageVersion Include="Amazon.CDK.Lib" Version="2.262.0" />
     <PackageVersion Include="Amazon.JSII.Analyzers" Version="1.139.0" />
     <PackageVersion Include="Amazon.Lambda.RuntimeSupport" Version="2.1.2" />
     <PackageVersion Include="Aspire.Hosting.AppHost" Version="13.4.6" />
@@ -13,7 +13,7 @@
     <PackageVersion Include="AWS.Messaging.Telemetry.OpenTelemetry" Version="1.0.0" />
     <PackageVersion Include="AWSSDK.CloudWatchLogs" Version="4.0.101.3" />
     <PackageVersion Include="AWSSDK.RDS" Version="4.0.103" />
-    <PackageVersion Include="Constructs" Version="10.7.0" />
+    <PackageVersion Include="Constructs" Version="10.7.1" />
     <PackageVersion Include="Microsoft.Extensions.Hosting" Version="10.0.10" />
     <PackageVersion Include="Microsoft.Extensions.Http.Resilience" Version="10.8.0" />
     <PackageVersion Include="Microsoft.Extensions.ServiceDiscovery" Version="10.8.0" />
