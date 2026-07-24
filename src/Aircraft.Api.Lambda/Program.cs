@@ -16,18 +16,19 @@ config.AddEnvironmentVariables(prefix: "AIRCRAFT_");
 builder.Host.UseSerilog((context, loggerConfig) => loggerConfig.ReadFrom.Configuration(context.Configuration));
 builder.AddServiceDefaults();
 var assembly = typeof(Program).Assembly;
-builder.Services.AddEndpoints(assembly);
-builder.Services.AddAWSLambdaHosting(LambdaEventSource.HttpApi);
-builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
-builder.Services.AddAWSService<IAmazonS3>();
-builder.Services.AddProblemDetails();
+var services = builder.Services;
+services.AddEndpoints(assembly);
+services.AddAWSLambdaHosting(LambdaEventSource.HttpApi);
+services.AddExceptionHandler<GlobalExceptionHandler>();
+services.AddProblemDetails();
+services.AddOpenApi();
 if (!builder.Environment.IsEnvironment("FunctionalTests"))
 {
-    builder.Services.AddDatabaseConnection(config);
+    services.AddDatabaseConnection(config);
 }
-builder.Services.AddSingleton<IValidator<CreateAircraftDto>, CreateAircraftDtoValidator>();
-builder.Services.AddOpenApi();
-builder.Services.AddSingleton(TimeProvider.System);
+services.AddAWSService<IAmazonS3>();
+services.AddSingleton<IValidator<CreateAircraftDto>, CreateAircraftDtoValidator>();
+services.AddSingleton(TimeProvider.System);
 var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
