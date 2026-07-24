@@ -30,7 +30,7 @@ These are immutable record types used for communication between APIs or services
 
 ## Domain events
 
-The Embassy Airlines system uses domain events, message Broker-dispatched integration events and relies on eventually consistent communication. Consequently, the Shared Library contains a substantial number of event contracts.
+The Embassy Airlines system uses domain events, message broker-dispatched integration events and relies on eventually consistent communication. Consequently, the Shared Library contains a substantial number of event contracts.
 
 Examples include:
 
@@ -42,7 +42,7 @@ Examples include:
 - FlightDelayedEvent
 - FlightPricingAdjustedEvent
 
-These records implement `IDomainEvent` (or the more specific `IFlightStatusManagementEvent`) and are intended for event-driven communication between services.
+These immutable record types implement `IDomainEvent` (or the more specific `IFlightStatusManagementEvent`) and represent domain events that are persisted to the Transactional Outbox before being asynchronously published between services.
 
 ---
 
@@ -62,18 +62,32 @@ This is a common Domain-Driven Design pattern where entities accumulate events d
 
 ## Outbox support
 
-To improve the reliability of event delivery, the Outbox pattern was implemented in selected services to ensure that domain state changes and integration events are persisted atomically before asynchronous publication. The OutboxMessage record supports a common format for outbox messages.
+The Shared library provides common infrastructure for implementing the **Transactional Outbox** pattern, allowing services to reliably publish integration events after database transactions have been committed.
 
-It stores:
+The shared components include:
 
-- message ID
-- serialized content
-- creation time
-- retry count
-- processed timestamp
-- dead-letter timestamp
+- `OutboxMessage`, which represents a persisted outbox entry containing:
 
-An accompanying `IOutboxProcessor` interface defines a template for services which carry out asynchronous processing of outbox messages.
+    - message identifier,
+    - serialized event payload,
+    - event type,
+    - creation timestamp,
+    - retry metadata,
+    - processing timestamp,
+    - dead-letter timestamp,
+    - last processing error.
+
+- `OutboxProcessorBase`, an abstract base class that provides common processing behaviour, including:
+
+    - JSON deserialization helpers,
+    - exponential retry backoff,
+    - retry scheduling,
+    - dead-letter handling after repeated or unrecoverable failures,
+    - consistent structured logging.
+
+- `OutboxConstants`, which centralises shared processing configuration such as batch size, retry limits and retry delays.
+
+Concrete services implement their own processors by inheriting from `OutboxProcessorBase`, allowing each service to determine how messages are dispatched while reusing a common retry and failure-handling strategy.
 
 ---
 
@@ -119,7 +133,7 @@ Each feature implements this interface, and the extension methods automatically:
 - register them with dependency injection,
 - map them during application startup.
 
-This pattern helps to control the clemliness of top-level code in Web API projects.
+This pattern helps to control the cleanliness of top-level code in Web API projects.
 
 ---
 
