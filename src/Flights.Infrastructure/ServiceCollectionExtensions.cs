@@ -1,7 +1,6 @@
 using System.Globalization;
 using Amazon.RDS.Util;
 using Flights.Infrastructure.Database;
-using Flights.Infrastructure.Outbox;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;

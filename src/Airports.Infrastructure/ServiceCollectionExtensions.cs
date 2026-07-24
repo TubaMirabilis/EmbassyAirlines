@@ -1,6 +1,5 @@
 using System.Globalization;
 using Airports.Infrastructure.Database;
-using Airports.Infrastructure.Outbox;
 using Amazon.RDS.Util;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
