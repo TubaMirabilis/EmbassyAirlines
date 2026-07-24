@@ -1,10 +1,12 @@
 using Flights.Api.Lambda;
 using Flights.Infrastructure;
+using Flights.Infrastructure.Database;
 using FluentValidation;
 using NodaTime;
 using Serilog;
 using Shared;
 using Shared.Contracts;
+using Shared.EntityFrameworkCore;
 using Shared.Extensions;
 using Shared.Middleware;
 
@@ -32,7 +34,7 @@ if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
 }
-await app.ApplyMigrationsAsync();
+await app.ApplyMigrationsAsync<ApplicationDbContext>();
 app.MapEndpoints();
 app.UseMiddleware<RequestContextLoggingMiddleware>();
 app.UseSerilogRequestLogging();

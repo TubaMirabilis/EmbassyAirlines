@@ -1,9 +1,11 @@
 using Airports.Api.Lambda;
 using Airports.Infrastructure;
+using Airports.Infrastructure.Database;
 using FluentValidation;
 using Serilog;
 using Shared;
 using Shared.Contracts;
+using Shared.EntityFrameworkCore;
 using Shared.Extensions;
 using Shared.Middleware;
 
@@ -30,7 +32,7 @@ if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
 }
-await app.ApplyMigrationsAsync();
+await app.ApplyMigrationsAsync<ApplicationDbContext>();
 app.MapEndpoints();
 app.UseMiddleware<RequestContextLoggingMiddleware>();
 app.UseSerilogRequestLogging();
