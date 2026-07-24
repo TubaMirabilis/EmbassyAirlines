@@ -1,5 +1,6 @@
 using Airports.Core.Models;
 using Microsoft.EntityFrameworkCore;
+using Shared.EntityFrameworkCore;
 
 namespace Airports.Infrastructure.Database;
 
@@ -15,5 +16,6 @@ public sealed class ApplicationDbContext : DbContext
         var assembly = typeof(ApplicationDbContext).Assembly;
         modelBuilder.HasDefaultSchema("airports");
         modelBuilder.ApplyConfigurationsFromAssembly(assembly);
+        modelBuilder.ApplyConfiguration(new OutboxMessageConfiguration());
     }
 }

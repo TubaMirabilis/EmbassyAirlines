@@ -1,5 +1,6 @@
 using Aircraft.Core.Models;
 using Microsoft.EntityFrameworkCore;
+using Shared.EntityFrameworkCore;
 
 namespace Aircraft.Infrastructure.Database;
 
@@ -16,5 +17,6 @@ public sealed class ApplicationDbContext : DbContext
         var assembly = typeof(ApplicationDbContext).Assembly;
         modelBuilder.HasDefaultSchema("aircraft");
         modelBuilder.ApplyConfigurationsFromAssembly(assembly);
+        modelBuilder.ApplyConfiguration(new OutboxMessageConfiguration());
     }
 }
