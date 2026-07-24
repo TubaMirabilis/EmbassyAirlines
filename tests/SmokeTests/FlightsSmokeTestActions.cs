@@ -12,9 +12,9 @@ internal static class FlightsSmokeTestActions
 {
     private static readonly ResiliencePipeline<HttpResponseMessage> RetryNotFoundPipeline = new ResiliencePipelineBuilder<HttpResponseMessage>().AddRetry(new RetryStrategyOptions<HttpResponseMessage>
     {
-        MaxRetryAttempts = 8,
+        MaxRetryAttempts = 180,
         Delay = TimeSpan.FromSeconds(1),
-        BackoffType = DelayBackoffType.Exponential,
+        BackoffType = DelayBackoffType.Constant,
         ShouldHandle = new PredicateBuilder<HttpResponseMessage>().HandleResult(r => r.StatusCode == HttpStatusCode.NotFound)
     }).Build();
     public static async Task AttemptPostAsync(HttpClient client, ScheduleFlightDto req)
