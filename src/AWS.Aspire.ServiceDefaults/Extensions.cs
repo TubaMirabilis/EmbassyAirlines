@@ -1,3 +1,4 @@
+using System.Reflection;
 using AWS.Messaging.Telemetry.OpenTelemetry;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -5,6 +6,8 @@ using OpenTelemetry.Instrumentation.AWSLambda;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
+using Shared;
+using Shared.Extensions;
 
 namespace Microsoft.Extensions.Hosting;
 
@@ -19,6 +22,17 @@ public static class Extensions
             http.AddStandardResilienceHandler();
             http.AddServiceDiscovery();
         });
+        return builder;
+    }
+    public static TBuilder AddHttpApiLambdaDefaults<TBuilder>(this TBuilder builder, Assembly assembly) where TBuilder : IHostApplicationBuilder
+    {
+        builder.AddServiceDefaults();
+        var services = builder.Services;
+        services.AddEndpoints(assembly);
+        services.AddAWSLambdaHosting(LambdaEventSource.HttpApi);
+        services.AddExceptionHandler<GlobalExceptionHandler>();
+        services.AddProblemDetails();
+        services.AddOpenApi();
         return builder;
     }
     private static void ConfigureOpenTelemetry<TBuilder>(this TBuilder builder) where TBuilder : IHostApplicationBuilder

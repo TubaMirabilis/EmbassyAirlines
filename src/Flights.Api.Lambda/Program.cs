@@ -4,7 +4,6 @@ using Flights.Infrastructure.Database;
 using FluentValidation;
 using NodaTime;
 using Serilog;
-using Shared;
 using Shared.Contracts;
 using Shared.EntityFrameworkCore;
 using Shared.Extensions;
@@ -14,14 +13,9 @@ var builder = WebApplication.CreateBuilder(args);
 var config = builder.Configuration;
 config.AddEnvironmentVariables(prefix: "FLIGHTS_");
 builder.Host.UseSerilog((context, loggerConfig) => loggerConfig.ReadFrom.Configuration(context.Configuration));
-builder.AddServiceDefaults();
 var assembly = typeof(Program).Assembly;
+builder.AddHttpApiLambdaDefaults(assembly);
 var services = builder.Services;
-services.AddEndpoints(assembly);
-services.AddAWSLambdaHosting(LambdaEventSource.HttpApi);
-services.AddExceptionHandler<GlobalExceptionHandler>();
-services.AddProblemDetails();
-services.AddOpenApi();
 if (!builder.Environment.IsEnvironment("FunctionalTests"))
 {
     services.AddDatabaseConnection(config);
