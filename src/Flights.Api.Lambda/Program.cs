@@ -16,7 +16,7 @@ builder.Host.UseSerilog((context, loggerConfig) => loggerConfig.ReadFrom.Configu
 var assembly = typeof(Program).Assembly;
 builder.AddHttpApiLambdaDefaults(assembly);
 var services = builder.Services;
-if (!builder.Environment.IsEnvironment("FunctionalTests"))
+if (!builder.Environment.IsDevelopment())
 {
     services.AddDatabaseConnection(config);
 }

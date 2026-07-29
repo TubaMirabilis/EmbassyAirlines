@@ -14,23 +14,17 @@ namespace Airports.Api.Lambda.FunctionalTests;
 public class FunctionalTestWebAppFactory : WebApplicationFactory<Program>, IAsyncLifetime
 {
     private readonly PostgreSqlContainer _dbContainer = new PostgreSqlBuilder("postgres:18").Build();
-    protected override void ConfigureWebHost(IWebHostBuilder builder)
+    protected override void ConfigureWebHost(IWebHostBuilder builder) => builder.ConfigureTestServices(services =>
     {
-        builder.UseEnvironment("FunctionalTests");
-        builder.UseSetting("SNS:AirportCreatedTopicArn", "testAirportCreatedTopicArn");
-        builder.UseSetting("SNS:AirportUpdatedTopicArn", "testAirportUpdatedTopicArn");
-        builder.ConfigureTestServices(services =>
+        services.RemoveAll<DbContextOptions<ApplicationDbContext>>();
+        services.AddDbContext<ApplicationDbContext>(options => options.UseNpgsql(_dbContainer.GetConnectionString(), x =>
         {
-            services.RemoveAll<DbContextOptions<ApplicationDbContext>>();
-            services.AddDbContext<ApplicationDbContext>(options => options.UseNpgsql(_dbContainer.GetConnectionString(), x =>
-            {
-                x.MigrationsHistoryTable("__EFMigrationsHistory", "airports");
-                x.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
-            })
-            .UseSnakeCaseNamingConvention()
-            .LogTo(Console.WriteLine, LogLevel.Warning));
-        });
-    }
+            x.MigrationsHistoryTable("__EFMigrationsHistory", "airports");
+            x.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
+        })
+        .UseSnakeCaseNamingConvention()
+        .LogTo(Console.WriteLine, LogLevel.Warning));
+    });
     public async ValueTask InitializeAsync() => await _dbContainer.StartAsync();
     public new async Task DisposeAsync()
     {

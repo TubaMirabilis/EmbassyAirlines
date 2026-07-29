@@ -16,31 +16,18 @@ namespace Flights.Api.Lambda.FunctionalTests;
 public class FunctionalTestWebAppFactory : WebApplicationFactory<Program>, IAsyncLifetime
 {
     private readonly PostgreSqlContainer _dbContainer = new PostgreSqlBuilder("postgres:18").Build();
-    protected override void ConfigureWebHost(IWebHostBuilder builder)
+    protected override void ConfigureWebHost(IWebHostBuilder builder) => builder.ConfigureTestServices(services =>
     {
-        builder.UseEnvironment("FunctionalTests");
-        builder.UseSetting("SNS:AircraftAssignedToFlightTopicArn", "testAircraftAssignedToFlightTopicArn");
-        builder.UseSetting("SNS:FlightPricingAdjustedTopicArn", "testFlightPricingAdjustedTopicArn");
-        builder.UseSetting("SNS:FlightRescheduledTopicArn", "testFlightRescheduledTopicArn");
-        builder.UseSetting("SNS:FlightScheduledTopicArn", "testFlightScheduledTopicArn");
-        builder.UseSetting("SNS:FlightCancelledTopicArn", "testFlightCancelledTopicArn");
-        builder.UseSetting("SNS:FlightArrivedTopicArn", "testFlightArrivedTopicArn");
-        builder.UseSetting("SNS:FlightDelayedTopicArn", "testFlightDelayedTopicArn");
-        builder.UseSetting("SNS:FlightMarkedAsEnRouteTopicArn", "testFlightMarkedAsEnRouteTopicArn");
-        builder.UseSetting("SNS:FlightMarkedAsDelayedEnRouteTopicArn", "testFlightMarkedAsDelayedEnRouteTopicArn");
-        builder.ConfigureTestServices(services =>
+        services.RemoveAll<DbContextOptions<ApplicationDbContext>>();
+        services.AddDbContext<ApplicationDbContext>(options => options.UseNpgsql(_dbContainer.GetConnectionString(), x =>
         {
-            services.RemoveAll<DbContextOptions<ApplicationDbContext>>();
-            services.AddDbContext<ApplicationDbContext>(options => options.UseNpgsql(_dbContainer.GetConnectionString(), x =>
-            {
-                x.MigrationsHistoryTable("__EFMigrationsHistory", "flights");
-                x.UseNodaTime();
-                x.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
-            })
-            .UseSnakeCaseNamingConvention()
-            .LogTo(Console.WriteLine, LogLevel.Warning));
-        });
-    }
+            x.MigrationsHistoryTable("__EFMigrationsHistory", "flights");
+            x.UseNodaTime();
+            x.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
+        })
+        .UseSnakeCaseNamingConvention()
+        .LogTo(Console.WriteLine, LogLevel.Warning));
+    });
     public async ValueTask InitializeAsync()
     {
         await _dbContainer.StartAsync();

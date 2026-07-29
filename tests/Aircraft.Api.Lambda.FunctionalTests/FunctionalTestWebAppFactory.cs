@@ -21,8 +21,6 @@ public sealed class FunctionalTestWebAppFactory : WebApplicationFactory<Program>
     private readonly PostgreSqlContainer _dbContainer = new PostgreSqlBuilder("postgres:18").Build();
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
-        builder.UseEnvironment("FunctionalTests");
-        builder.UseSetting("SNS:AircraftCreatedTopicArn", "testAircraftCreatedTopicArn");
         builder.UseSetting("S3:BucketName", "embassy-airlines");
         builder.ConfigureTestServices(services =>
         {
