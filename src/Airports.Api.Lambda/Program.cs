@@ -5,8 +5,6 @@ using FluentValidation;
 using Serilog;
 using Shared.Contracts;
 using Shared.EntityFrameworkCore;
-using Shared.Extensions;
-using Shared.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 var config = builder.Configuration;
@@ -21,16 +19,8 @@ if (!builder.Environment.IsDevelopment())
 }
 services.AddSingleton<IValidator<CreateOrUpdateAirportDto>, CreateOrUpdateAirportDtoValidator>();
 services.AddSingleton(TimeProvider.System);
-var app = builder.Build();
-if (!builder.Environment.IsDevelopment())
-{
-    app.MapOpenApi();
-}
+var app = builder.Build().UseDefaultPipeline().MapDefaultEndpoints();
 await app.ApplyMigrationsAsync<ApplicationDbContext>();
-app.MapEndpoints();
-app.UseMiddleware<RequestContextLoggingMiddleware>();
-app.UseSerilogRequestLogging();
-app.UseExceptionHandler();
 await app.RunAsync();
 
 #pragma warning disable CA1515

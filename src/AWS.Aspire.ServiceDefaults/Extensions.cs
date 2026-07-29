@@ -1,13 +1,16 @@
 using System.Reflection;
 using AWS.Messaging.Telemetry.OpenTelemetry;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using OpenTelemetry.Instrumentation.AWSLambda;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
+using Serilog;
 using Shared;
 using Shared.Extensions;
+using Shared.Middleware;
 
 namespace Microsoft.Extensions.Hosting;
 
@@ -34,6 +37,22 @@ public static class Extensions
         services.AddProblemDetails();
         services.AddOpenApi();
         return builder;
+    }
+    public static WebApplication UseDefaultPipeline(this WebApplication app)
+    {
+        app.UseExceptionHandler();
+        app.UseMiddleware<RequestContextLoggingMiddleware>();
+        app.UseSerilogRequestLogging();
+        return app;
+    }
+    public static WebApplication MapDefaultEndpoints(this WebApplication app)
+    {
+        if (app.Environment.IsDevelopment())
+        {
+            app.MapOpenApi();
+        }
+        app.MapEndpoints();
+        return app;
     }
     private static void ConfigureOpenTelemetry<TBuilder>(this TBuilder builder) where TBuilder : IHostApplicationBuilder
     {
