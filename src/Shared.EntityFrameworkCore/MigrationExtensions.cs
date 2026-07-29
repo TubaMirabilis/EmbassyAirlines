@@ -16,6 +16,9 @@ public static class MigrationExtensions
         var startTime = Stopwatch.GetTimestamp();
         await dbContext.Database.MigrateAsync();
         var diff = Stopwatch.GetElapsedTime(startTime);
-        logger.LogInformation("Applied database migrations for {DbContext} in {ElapsedMilliseconds} ms.", typeof(TDbContext).Name, diff.TotalMilliseconds);
+        if (logger.IsEnabled(LogLevel.Information))
+        {
+            logger.LogInformation("Applied database migrations for {DbContext} in {ElapsedMilliseconds} ms.", typeof(TDbContext).Name, diff.TotalMilliseconds);
+        }
     }
 }
