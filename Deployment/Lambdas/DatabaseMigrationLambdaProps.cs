@@ -10,7 +10,6 @@ internal sealed record DatabaseMigrationLambdaProps
     internal required string DockerfilePath { get; init; }
     internal required Dictionary<string, string> Environment { get; init; }
     internal required string FunctionName { get; init; }
-    internal required string MigrationVersion { get; init; }
     internal required string SecurityGroupDescription { get; init; }
     internal required Vpc Vpc { get; init; }
 }

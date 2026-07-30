@@ -1,5 +1,6 @@
 using Amazon.CDK;
 using Amazon.CDK.AWS.EC2;
+using Amazon.CDK.AWS.Ecr.Assets;
 using Amazon.CDK.AWS.Lambda;
 using Amazon.CDK.CustomResources;
 using Constructs;
@@ -24,14 +25,18 @@ internal sealed class DatabaseMigrationLambda : Construct
             Other = props.DbProxyAccess.DbProxySecurityGroup,
             PortRange = Port.Tcp(props.DbConnection.DbPort)
         });
-        var code = DockerImageCode.FromImageAsset(".", new AssetImageCodeProps
+        var imageAsset = new DockerImageAsset(this, "Image", new DockerImageAssetProps
         {
+            Directory = ".",
             File = props.DockerfilePath
         });
         var function = new DockerImageFunction(this, "Function", new DockerImageFunctionProps
         {
             FunctionName = props.FunctionName,
-            Code = code,
+            Code = DockerImageCode.FromEcr(imageAsset.Repository, new EcrImageCodeProps
+            {
+                TagOrDigest = imageAsset.ImageTag
+            }),
             Environment = props.Environment,
             Timeout = Duration.Minutes(10),
             MemorySize = 1536,
@@ -53,7 +58,7 @@ internal sealed class DatabaseMigrationLambda : Construct
             ServiceToken = provider.ServiceToken,
             Properties = new Dictionary<string, object>
             {
-                ["MigrationVersion"] = props.MigrationVersion
+                ["MigrationImageHash"] = imageAsset.AssetHash
             }
         });
         Migration.Node.AddDependency(function);

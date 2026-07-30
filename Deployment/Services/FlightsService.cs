@@ -23,7 +23,6 @@ internal sealed class FlightsService : Construct
             DockerfilePath = "docker/Flights.Migrations.Lambda.dockerfile",
             Environment = new Dictionary<string, string>(commonEnv),
             FunctionName = "FlightsMigrationsLambda",
-            MigrationVersion = "2026-07-29-001",
             SecurityGroupDescription = "Security group for Flights migrations Lambda",
             Vpc = props.Vpc
         });
