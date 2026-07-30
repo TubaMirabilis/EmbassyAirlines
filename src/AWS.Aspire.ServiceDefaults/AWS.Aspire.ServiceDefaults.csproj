@@ -8,6 +8,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Amazon.Lambda.Core" VersionOverride="3.3.0" />
+    <PackageReference Include="Amazon.Lambda.RuntimeSupport" VersionOverride="2.1.3" />
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
     <PackageReference Include="Amazon.Lambda.AspNetCoreServer.Hosting" />
     <PackageReference Include="AWS.Messaging.Telemetry.OpenTelemetry" />
