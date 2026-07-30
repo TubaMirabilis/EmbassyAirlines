@@ -1,11 +1,9 @@
 using Flights.Api.Lambda;
 using Flights.Infrastructure;
-using Flights.Infrastructure.Database;
 using FluentValidation;
 using NodaTime;
 using Serilog;
 using Shared.Contracts;
-using Shared.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 var config = builder.Configuration;
@@ -22,7 +20,6 @@ services.AddSingleton<IValidator<ScheduleFlightDto>, ScheduleFlightDtoValidator>
 services.AddSingleton<IClock>(SystemClock.Instance);
 services.AddScoped<FlightScheduler>();
 var app = builder.Build().UseDefaultPipeline().MapDefaultEndpoints();
-await app.ApplyMigrationsAsync<ApplicationDbContext>();
 await app.RunAsync();
 
 #pragma warning disable CA1515

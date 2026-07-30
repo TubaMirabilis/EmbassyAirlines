@@ -24,6 +24,17 @@ internal sealed class AircraftService : Construct
             RemovalPolicy = RemovalPolicy.DESTROY,
             AutoDeleteObjects = true
         });
+        var migrations = new DatabaseMigrationLambda(this, "AircraftMigrations", new DatabaseMigrationLambdaProps
+        {
+            DbConnection = props.DbConnection,
+            DbProxyAccess = props.DbProxyAccess,
+            DockerfilePath = "docker/Aircraft.Migrations.Lambda.dockerfile",
+            Environment = new Dictionary<string, string>(commonEnv),
+            FunctionName = "AircraftMigrationsLambda",
+            MigrationVersion = "2026-07-29-001",
+            SecurityGroupDescription = "Security group for Aircraft migrations Lambda",
+            Vpc = props.Vpc
+        });
         var api = new HttpDockerLambda(this, "AircraftApi", new HttpDockerLambdaProps
         {
             Api = props.Api,
@@ -39,9 +50,9 @@ internal sealed class AircraftService : Construct
             SecurityGroupDescription = "Security group for Aircraft API Lambda",
             Vpc = props.Vpc
         });
-        var lambda = api.Function;
-        bucket.GrantRead(lambda);
-        new EventHandlerLambda(this, "AircraftFlightArrivedHandlerLambda", new EventHandlerLambdaProps
+        api.Function.Node.AddDependency(migrations.Migration);
+        bucket.GrantRead(api.Function);
+        var handler1 = new EventHandlerLambda(this, "AircraftFlightArrivedHandlerLambda", new EventHandlerLambdaProps
         {
             DbConnection = props.DbConnection,
             DbProxyAccess = props.DbProxyAccess,
@@ -52,7 +63,8 @@ internal sealed class AircraftService : Construct
             Topic = props.FlightArrivedTopic,
             Vpc = props.Vpc
         });
-        new EventHandlerLambda(this, "AircraftFlightMarkedAsDelayedEnRouteHandlerLambda", new EventHandlerLambdaProps
+        handler1.Function.Node.AddDependency(migrations.Migration);
+        var handler2 = new EventHandlerLambda(this, "AircraftFlightMarkedAsDelayedEnRouteHandlerLambda", new EventHandlerLambdaProps
         {
             DbConnection = props.DbConnection,
             DbProxyAccess = props.DbProxyAccess,
@@ -63,7 +75,8 @@ internal sealed class AircraftService : Construct
             Topic = props.FlightMarkedAsDelayedEnRouteTopic,
             Vpc = props.Vpc
         });
-        new EventHandlerLambda(this, "AircraftFlightMarkedAsEnRouteHandlerLambda", new EventHandlerLambdaProps
+        handler2.Function.Node.AddDependency(migrations.Migration);
+        var handler3 = new EventHandlerLambda(this, "AircraftFlightMarkedAsEnRouteHandlerLambda", new EventHandlerLambdaProps
         {
             DbConnection = props.DbConnection,
             DbProxyAccess = props.DbProxyAccess,
@@ -74,7 +87,8 @@ internal sealed class AircraftService : Construct
             Topic = props.FlightMarkedAsEnRouteTopic,
             Vpc = props.Vpc
         });
-        new PublisherLambda(this, "AircraftPublisherLambda", new PublisherLambdaProps
+        handler3.Function.Node.AddDependency(migrations.Migration);
+        var publisher = new PublisherLambda(this, "AircraftPublisherLambda", new PublisherLambdaProps
         {
             DbConnection = props.DbConnection,
             DbProxyAccess = props.DbProxyAccess,
@@ -89,5 +103,6 @@ internal sealed class AircraftService : Construct
             Topics = [props.AircraftCreatedTopic],
             Vpc = props.Vpc
         });
+        publisher.Function.Node.AddDependency(migrations.Migration);
     }
 }

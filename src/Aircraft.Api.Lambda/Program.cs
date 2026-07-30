@@ -1,11 +1,9 @@
 using Aircraft.Api.Lambda;
 using Aircraft.Infrastructure;
-using Aircraft.Infrastructure.Database;
 using Amazon.S3;
 using FluentValidation;
 using Serilog;
 using Shared.Contracts;
-using Shared.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 var config = builder.Configuration;
@@ -22,7 +20,6 @@ services.AddAWSService<IAmazonS3>();
 services.AddSingleton<IValidator<CreateAircraftDto>, CreateAircraftDtoValidator>();
 services.AddSingleton(TimeProvider.System);
 var app = builder.Build().UseDefaultPipeline().MapDefaultEndpoints();
-await app.ApplyMigrationsAsync<ApplicationDbContext>();
 await app.RunAsync();
 
 #pragma warning disable CA1515

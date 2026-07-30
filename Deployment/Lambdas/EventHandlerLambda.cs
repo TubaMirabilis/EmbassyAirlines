@@ -11,6 +11,7 @@ namespace Deployment.Lambdas;
 
 internal sealed class EventHandlerLambda : Construct
 {
+    internal DockerImageFunction Function { get; }
     internal EventHandlerLambda(Construct scope, string id, EventHandlerLambdaProps props) : base(scope, id)
     {
         var handlerSg = new SecurityGroup(this, "HandlerSg", new SecurityGroupProps
@@ -30,7 +31,7 @@ internal sealed class EventHandlerLambda : Construct
         {
             File = props.Path
         });
-        var handler = new DockerImageFunction(this, "Handler", new DockerImageFunctionProps
+        Function = new DockerImageFunction(this, "Handler", new DockerImageFunctionProps
         {
             Code = imageCode,
             Environment = props.Environment,
@@ -45,7 +46,7 @@ internal sealed class EventHandlerLambda : Construct
                 SubnetType = SubnetType.PRIVATE_ISOLATED
             }
         });
-        props.DbProxyAccess.DbProxy.GrantConnect(handler, props.DbConnection.DbUsername);
+        props.DbProxyAccess.DbProxy.GrantConnect(Function, props.DbConnection.DbUsername);
         var dlq = new Queue(this, "Dlq");
         var queue = new Queue(this, "Queue", new QueueProps
         {
@@ -57,11 +58,11 @@ internal sealed class EventHandlerLambda : Construct
             VisibilityTimeout = Duration.Seconds(90)
         });
         props.Topic.AddSubscription(new SqsSubscription(queue));
-        handler.AddEventSource(new SqsEventSource(queue, new SqsEventSourceProps
+        Function.AddEventSource(new SqsEventSource(queue, new SqsEventSourceProps
         {
             BatchSize = 10,
             ReportBatchItemFailures = true
         }));
-        queue.GrantConsumeMessages(handler);
+        queue.GrantConsumeMessages(Function);
     }
 }

@@ -6,10 +6,12 @@
     <Project Path="src/Aircraft.Api.Lambda/Aircraft.Api.Lambda.csproj" />
     <Project Path="src/Aircraft.Core/Aircraft.Core.csproj" />
     <Project Path="src/Aircraft.Infrastructure/Aircraft.Infrastructure.csproj" />
+    <Project Path="src/Aircraft.Migrations.Lambda/Aircraft.Migrations.Lambda.csproj" />
     <Project Path="src/Aircraft.Publisher.Lambda/Aircraft.Publisher.Lambda.csproj" />
     <Project Path="src/Airports.Api.Lambda/Airports.Api.Lambda.csproj" />
     <Project Path="src/Airports.Core/Airports.Core.csproj" />
     <Project Path="src/Airports.Infrastructure/Airports.Infrastructure.csproj" />
+    <Project Path="src/Airports.Migrations.Lambda/Airports.Migrations.Lambda.csproj" />
     <Project Path="src/Airports.Publisher.Lambda/Airports.Publisher.Lambda.csproj" />
     <Project Path="src/AWS.Aspire.ServiceDefaults/AWS.Aspire.ServiceDefaults.csproj" />
     <Project Path="src/Flights.Api.Lambda.MessageHandlers.AircraftCreated/Flights.Api.Lambda.MessageHandlers.AircraftCreated.csproj" />
@@ -18,6 +20,7 @@
     <Project Path="src/Flights.Api.Lambda/Flights.Api.Lambda.csproj" />
     <Project Path="src/Flights.Core/Flights.Core.csproj" />
     <Project Path="src/Flights.Infrastructure/Flights.Infrastructure.csproj" />
+    <Project Path="src/Flights.Migrations.Lambda/Flights.Migrations.Lambda.csproj" />
     <Project Path="src/Flights.Publisher.Lambda/Flights.Publisher.Lambda.csproj" />
     <Project Path="src/Shared.AWS.CloudWatchLogs/Shared.AWS.CloudWatchLogs.csproj" />
     <Project Path="src/Shared.EntityFrameworkCore/Shared.EntityFrameworkCore.csproj" />

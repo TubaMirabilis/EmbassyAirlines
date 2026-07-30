@@ -1,10 +1,8 @@
 using Airports.Api.Lambda;
 using Airports.Infrastructure;
-using Airports.Infrastructure.Database;
 using FluentValidation;
 using Serilog;
 using Shared.Contracts;
-using Shared.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 var config = builder.Configuration;
@@ -20,7 +18,6 @@ if (!builder.Environment.IsDevelopment())
 services.AddSingleton<IValidator<CreateOrUpdateAirportDto>, CreateOrUpdateAirportDtoValidator>();
 services.AddSingleton(TimeProvider.System);
 var app = builder.Build().UseDefaultPipeline().MapDefaultEndpoints();
-await app.ApplyMigrationsAsync<ApplicationDbContext>();
 await app.RunAsync();
 
 #pragma warning disable CA1515

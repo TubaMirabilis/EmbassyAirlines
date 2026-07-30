@@ -16,7 +16,18 @@ internal sealed class FlightsService : Construct
             { "FLIGHTS_DbConnection__Port", props.DbConnection.DbPort.ToString(CultureInfo.InvariantCulture) },
             { "FLIGHTS_DbConnection__Username", props.DbConnection.DbUsername }
         };
-        new HttpDockerLambda(this, "FlightsApi", new HttpDockerLambdaProps
+        var migrations = new DatabaseMigrationLambda(this, "FlightsMigrations", new DatabaseMigrationLambdaProps
+        {
+            DbConnection = props.DbConnection,
+            DbProxyAccess = props.DbProxyAccess,
+            DockerfilePath = "docker/Flights.Migrations.Lambda.dockerfile",
+            Environment = new Dictionary<string, string>(commonEnv),
+            FunctionName = "FlightsMigrationsLambda",
+            MigrationVersion = "2026-07-29-001",
+            SecurityGroupDescription = "Security group for Flights migrations Lambda",
+            Vpc = props.Vpc
+        });
+        var api = new HttpDockerLambda(this, "FlightsApi", new HttpDockerLambdaProps
         {
             Api = props.Api,
             DbConnection = props.DbConnection,
@@ -28,7 +39,8 @@ internal sealed class FlightsService : Construct
             SecurityGroupDescription = "Security group for Flights API Lambda",
             Vpc = props.Vpc
         });
-        new EventHandlerLambda(this, "FlightsAircraftCreatedHandlerLambda", new EventHandlerLambdaProps
+        api.Function.Node.AddDependency(migrations.Migration);
+        var handler1 = new EventHandlerLambda(this, "FlightsAircraftCreatedHandlerLambda", new EventHandlerLambdaProps
         {
             DbConnection = props.DbConnection,
             DbProxyAccess = props.DbProxyAccess,
@@ -39,7 +51,8 @@ internal sealed class FlightsService : Construct
             Topic = props.AircraftCreatedTopic,
             Vpc = props.Vpc
         });
-        new EventHandlerLambda(this, "FlightsAirportCreatedHandlerLambda", new EventHandlerLambdaProps
+        handler1.Function.Node.AddDependency(migrations.Migration);
+        var handler2 = new EventHandlerLambda(this, "FlightsAirportCreatedHandlerLambda", new EventHandlerLambdaProps
         {
             DbConnection = props.DbConnection,
             DbProxyAccess = props.DbProxyAccess,
@@ -50,7 +63,8 @@ internal sealed class FlightsService : Construct
             Topic = props.AirportCreatedTopic,
             Vpc = props.Vpc
         });
-        new EventHandlerLambda(this, "FlightsAirportUpdatedHandlerLambda", new EventHandlerLambdaProps
+        handler2.Function.Node.AddDependency(migrations.Migration);
+        var handler3 = new EventHandlerLambda(this, "FlightsAirportUpdatedHandlerLambda", new EventHandlerLambdaProps
         {
             DbConnection = props.DbConnection,
             DbProxyAccess = props.DbProxyAccess,
@@ -61,7 +75,8 @@ internal sealed class FlightsService : Construct
             Topic = props.AirportUpdatedTopic,
             Vpc = props.Vpc
         });
-        new PublisherLambda(this, "FlightsPublisherLambda", new PublisherLambdaProps
+        handler3.Function.Node.AddDependency(migrations.Migration);
+        var publisher = new PublisherLambda(this, "FlightsPublisherLambda", new PublisherLambdaProps
         {
             DbConnection = props.DbConnection,
             DbProxyAccess = props.DbProxyAccess,
@@ -95,5 +110,6 @@ internal sealed class FlightsService : Construct
             ],
             Vpc = props.Vpc
         });
+        publisher.Function.Node.AddDependency(migrations.Migration);
     }
 }

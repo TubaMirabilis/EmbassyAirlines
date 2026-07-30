@@ -16,7 +16,18 @@ internal sealed class AirportsService : Construct
             { "AIRPORTS_DbConnection__Port", props.DbConnection.DbPort.ToString(CultureInfo.InvariantCulture) },
             { "AIRPORTS_DbConnection__Username", props.DbConnection.DbUsername }
         };
-        new HttpDockerLambda(this, "AirportsApi", new HttpDockerLambdaProps
+        var migrations = new DatabaseMigrationLambda(this, "AirportsMigrations", new DatabaseMigrationLambdaProps
+        {
+            DbConnection = props.DbConnection,
+            DbProxyAccess = props.DbProxyAccess,
+            DockerfilePath = "docker/Airports.Migrations.Lambda.dockerfile",
+            Environment = new Dictionary<string, string>(commonEnv),
+            FunctionName = "AirportsMigrationsLambda",
+            MigrationVersion = "2026-07-29-001",
+            SecurityGroupDescription = "Security group for Airports migrations Lambda",
+            Vpc = props.Vpc
+        });
+        var api = new HttpDockerLambda(this, "AirportsApi", new HttpDockerLambdaProps
         {
             Api = props.Api,
             DbConnection = props.DbConnection,
@@ -28,7 +39,8 @@ internal sealed class AirportsService : Construct
             SecurityGroupDescription = "Security group for Airports API Lambda",
             Vpc = props.Vpc
         });
-        new PublisherLambda(this, "AirportsPublisherLambda", new PublisherLambdaProps
+        api.Function.Node.AddDependency(migrations.Migration);
+        var publisher = new PublisherLambda(this, "AirportsPublisherLambda", new PublisherLambdaProps
         {
             DbConnection = props.DbConnection,
             DbProxyAccess = props.DbProxyAccess,
@@ -48,5 +60,6 @@ internal sealed class AirportsService : Construct
             ],
             Vpc = props.Vpc
         });
+        publisher.Function.Node.AddDependency(migrations.Migration);
     }
 }
