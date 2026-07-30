@@ -3,6 +3,7 @@ using System.Text.Json;
 using Aircraft.Infrastructure;
 using Aircraft.Infrastructure.Database;
 using Amazon.Lambda.Core;
+using Amazon.Lambda.Serialization.SystemTextJson;
 using Amazon.Lambda.SQSEvents;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -11,7 +12,7 @@ using OpenTelemetry.Instrumentation.AWSLambda;
 using OpenTelemetry.Trace;
 using Shared.Contracts;
 
-[assembly: LambdaSerializer(typeof(Amazon.Lambda.Serialization.SystemTextJson.DefaultLambdaJsonSerializer))]
+[assembly: LambdaSerializer(typeof(DefaultLambdaJsonSerializer))]
 
 namespace Aircraft.Api.Lambda.MessageHandlers.FlightArrived;
 

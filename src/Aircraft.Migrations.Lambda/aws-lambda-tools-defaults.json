@@ -9,7 +9,7 @@
     "region": "eu-west-2",
     "configuration": "Release",
     "package-type": "image",
-    "function-memory-size": 512,
+    "function-memory-size": 1536,
     "function-timeout": 30,
     "image-command": "Aircraft.Migrations.Lambda::Aircraft.Migrations.Lambda.Function::FunctionHandler",
     "docker-host-build-output-dir": "./bin/Release/lambda-publish"

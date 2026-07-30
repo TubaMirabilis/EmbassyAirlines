@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using System.Text.Json;
 using Amazon.Lambda.Core;
+using Amazon.Lambda.Serialization.SystemTextJson;
 using Amazon.Lambda.SQSEvents;
 using Flights.Core.Models;
 using Flights.Infrastructure;
@@ -14,7 +15,7 @@ using OpenTelemetry.Instrumentation.AWSLambda;
 using OpenTelemetry.Trace;
 using Shared.Contracts;
 
-[assembly: LambdaSerializer(typeof(Amazon.Lambda.Serialization.SystemTextJson.DefaultLambdaJsonSerializer))]
+[assembly: LambdaSerializer(typeof(DefaultLambdaJsonSerializer))]
 
 namespace Flights.Api.Lambda.MessageHandlers.AircraftCreated;
 
