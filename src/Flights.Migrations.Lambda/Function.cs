@@ -1,7 +1,7 @@
-using Flights.Infrastructure;
-using Flights.Infrastructure.Database;
 using Amazon.Lambda.Core;
 using Amazon.Lambda.Serialization.SystemTextJson;
+using Flights.Infrastructure;
+using Flights.Infrastructure.Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
