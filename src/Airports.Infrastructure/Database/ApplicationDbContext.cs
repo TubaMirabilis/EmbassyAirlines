@@ -1,6 +1,6 @@
 using Airports.Core.Models;
 using Microsoft.EntityFrameworkCore;
-using Shared.EntityFrameworkCore;
+using Shared.Npgsql;
 
 namespace Airports.Infrastructure.Database;
 

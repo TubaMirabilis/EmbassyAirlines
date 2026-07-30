@@ -1,6 +1,6 @@
 using Flights.Core.Models;
 using Microsoft.EntityFrameworkCore;
-using Shared.EntityFrameworkCore;
+using Shared.Npgsql;
 
 namespace Flights.Infrastructure.Database;
 

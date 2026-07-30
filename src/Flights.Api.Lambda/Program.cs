@@ -1,11 +1,10 @@
 using Flights.Api.Lambda;
-using Flights.Infrastructure;
 using Flights.Infrastructure.Database;
 using FluentValidation;
 using NodaTime;
 using Serilog;
 using Shared.Contracts;
-using Shared.EntityFrameworkCore;
+using Shared.Npgsql;
 
 var builder = WebApplication.CreateBuilder(args);
 var config = builder.Configuration;
@@ -16,7 +15,7 @@ builder.AddHttpApiLambdaDefaults(assembly);
 var services = builder.Services;
 if (!builder.Environment.IsDevelopment())
 {
-    services.AddDatabaseConnection(config);
+    services.AddDatabaseConnection<ApplicationDbContext>(config, true, "flights");
 }
 services.AddSingleton<IValidator<ScheduleFlightDto>, ScheduleFlightDtoValidator>();
 services.AddSingleton<IClock>(SystemClock.Instance);

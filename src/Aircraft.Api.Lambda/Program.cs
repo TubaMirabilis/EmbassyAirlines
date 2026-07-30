@@ -1,11 +1,10 @@
 using Aircraft.Api.Lambda;
-using Aircraft.Infrastructure;
 using Aircraft.Infrastructure.Database;
 using Amazon.S3;
 using FluentValidation;
 using Serilog;
 using Shared.Contracts;
-using Shared.EntityFrameworkCore;
+using Shared.Npgsql;
 
 var builder = WebApplication.CreateBuilder(args);
 var config = builder.Configuration;
@@ -16,7 +15,7 @@ builder.AddHttpApiLambdaDefaults(assembly);
 var services = builder.Services;
 if (!builder.Environment.IsDevelopment())
 {
-    services.AddDatabaseConnection(config);
+    services.AddDatabaseConnection<ApplicationDbContext>(config, false, "aircraft");
 }
 services.AddAWSService<IAmazonS3>();
 services.AddSingleton<IValidator<CreateAircraftDto>, CreateAircraftDtoValidator>();

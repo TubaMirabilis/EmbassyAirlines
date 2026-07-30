@@ -1,4 +1,3 @@
-using Aircraft.Infrastructure;
 using Aircraft.Infrastructure.Database;
 using Amazon.Lambda.Core;
 using Amazon.Lambda.Serialization.SystemTextJson;
@@ -7,6 +6,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Shared.Contracts;
+using Shared.Npgsql;
 
 [assembly: LambdaSerializer(typeof(DefaultLambdaJsonSerializer))]
 
@@ -22,7 +22,7 @@ public sealed class Function
         }
         var builder = Host.CreateApplicationBuilder();
         builder.Configuration.AddEnvironmentVariables("AIRCRAFT_");
-        builder.Services.AddDatabaseConnection(builder.Configuration);
+        builder.Services.AddDatabaseConnection<ApplicationDbContext>(builder.Configuration, false, "aircraft");
         using var host = builder.Build();
         await using var scope = host.Services.CreateAsyncScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();

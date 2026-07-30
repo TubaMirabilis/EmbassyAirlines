@@ -2,14 +2,11 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Airports.Core\Airports.Core.csproj" />
-    <ProjectReference Include="..\Shared.EntityFrameworkCore\Shared.EntityFrameworkCore.csproj" />
+    <ProjectReference Include="..\Shared.Npgsql\Shared.Npgsql.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="AWS.Messaging" />
-    <PackageReference Include="AWSSDK.RDS" />
-    <PackageReference Include="EFCore.NamingConventions" />
-    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL.NodaTime" />
   </ItemGroup>
 
   <PropertyGroup>

@@ -1,18 +1,15 @@
 using System.Globalization;
 using Amazon.RDS.Util;
-using Flights.Infrastructure.Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Npgsql;
-using Shared;
-using Shared.EntityFrameworkCore;
 
-namespace Flights.Infrastructure;
+namespace Shared.Npgsql;
 
 public static class ServiceCollectionExtensions
 {
-    public static IServiceCollection AddDatabaseConnection(this IServiceCollection services, IConfiguration config)
+    public static IServiceCollection AddDatabaseConnection<TDbContext>(this IServiceCollection services, IConfiguration config, bool useNodaTime, string schema) where TDbContext : DbContext
     {
         var host = config["DbConnection:Host"];
         var dbName = config["DbConnection:Database"];
@@ -32,17 +29,23 @@ public static class ServiceCollectionExtensions
             Username = username
         }.ConnectionString;
         var dataSourceBuilder = new NpgsqlDataSourceBuilder(connectionString);
-        dataSourceBuilder.UseNodaTime();
         dataSourceBuilder.UsePasswordProvider(
             passwordProvider: _ => throw new NotSupportedException("Use OpenAsync"),
             passwordProviderAsync: async (builder, ct) => await RDSAuthTokenGenerator.GenerateAuthTokenAsync(host, port, username));
+        if (useNodaTime)
+        {
+            dataSourceBuilder.UseNodaTime();
+        }
         var dataSource = dataSourceBuilder.Build();
         services.AddSingleton(dataSource);
         services.AddSingleton<InsertOutboxMessagesInterceptor>();
-        services.AddDbContext<ApplicationDbContext>((sp, options) => options.UseNpgsql(dataSource, x =>
+        services.AddDbContext<TDbContext>((sp, options) => options.UseNpgsql(dataSource, x =>
         {
-            x.MigrationsHistoryTable("__EFMigrationsHistory", "flights");
-            x.UseNodaTime();
+            x.MigrationsHistoryTable("__EFMigrationsHistory", schema);
+            if (useNodaTime)
+            {
+                x.UseNodaTime();
+            }
             x.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
         })
         .UseSnakeCaseNamingConvention()

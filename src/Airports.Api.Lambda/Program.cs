@@ -1,10 +1,9 @@
 using Airports.Api.Lambda;
-using Airports.Infrastructure;
 using Airports.Infrastructure.Database;
 using FluentValidation;
 using Serilog;
 using Shared.Contracts;
-using Shared.EntityFrameworkCore;
+using Shared.Npgsql;
 
 var builder = WebApplication.CreateBuilder(args);
 var config = builder.Configuration;
@@ -15,7 +14,7 @@ builder.AddHttpApiLambdaDefaults(assembly);
 var services = builder.Services;
 if (!builder.Environment.IsDevelopment())
 {
-    services.AddDatabaseConnection(config);
+    services.AddDatabaseConnection<ApplicationDbContext>(config, false, "airports");
 }
 services.AddSingleton<IValidator<CreateOrUpdateAirportDto>, CreateOrUpdateAirportDtoValidator>();
 services.AddSingleton(TimeProvider.System);

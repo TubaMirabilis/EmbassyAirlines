@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
-namespace Shared.EntityFrameworkCore;
+namespace Shared.Npgsql;
 
 public static class MigrationExtensions
 {

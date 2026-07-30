@@ -1,4 +1,4 @@
-using Aircraft.Infrastructure;
+using Aircraft.Infrastructure.Database;
 using Aircraft.Infrastructure.Outbox;
 using Amazon.Lambda.Core;
 using Amazon.Lambda.RuntimeSupport;
@@ -8,12 +8,13 @@ using Microsoft.Extensions.Hosting;
 using Shared;
 using Shared.Abstractions;
 using Shared.Contracts;
+using Shared.Npgsql;
 
 var builder = Host.CreateApplicationBuilder(args);
 var config = builder.Configuration;
 config.AddEnvironmentVariables(prefix: "AIRCRAFT_");
 builder.Services.AddSingleton(TimeProvider.System);
-builder.Services.AddDatabaseConnection(config);
+builder.Services.AddDatabaseConnection<ApplicationDbContext>(config, false, "aircraft");
 builder.Services.AddScoped<IOutboxProcessor, OutboxProcessor>();
 builder.Services.AddAWSMessageBus(bus =>
 {

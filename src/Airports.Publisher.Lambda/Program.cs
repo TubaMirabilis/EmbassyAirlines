@@ -1,4 +1,4 @@
-using Airports.Infrastructure;
+using Airports.Infrastructure.Database;
 using Airports.Infrastructure.Outbox;
 using Amazon.Lambda.Core;
 using Amazon.Lambda.RuntimeSupport;
@@ -8,12 +8,13 @@ using Microsoft.Extensions.Hosting;
 using Shared;
 using Shared.Abstractions;
 using Shared.Contracts;
+using Shared.Npgsql;
 
 var builder = Host.CreateApplicationBuilder(args);
 var config = builder.Configuration;
 config.AddEnvironmentVariables(prefix: "AIRPORTS_");
 builder.Services.AddSingleton(TimeProvider.System);
-builder.Services.AddDatabaseConnection(config);
+builder.Services.AddDatabaseConnection<ApplicationDbContext>(config, false, "airports");
 builder.Services.AddScoped<IOutboxProcessor, OutboxProcessor>();
 builder.Services.AddAWSMessageBus(bus =>
 {

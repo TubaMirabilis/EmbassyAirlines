@@ -1,6 +1,5 @@
 using System.Diagnostics;
 using System.Text.Json;
-using Aircraft.Infrastructure;
 using Aircraft.Infrastructure.Database;
 using Amazon.Lambda.Core;
 using Amazon.Lambda.Serialization.SystemTextJson;
@@ -11,6 +10,7 @@ using Microsoft.Extensions.Hosting;
 using OpenTelemetry.Instrumentation.AWSLambda;
 using OpenTelemetry.Trace;
 using Shared.Contracts;
+using Shared.Npgsql;
 
 [assembly: LambdaSerializer(typeof(DefaultLambdaJsonSerializer))]
 
@@ -27,7 +27,7 @@ public class Function
         config.AddEnvironmentVariables(prefix: "AIRCRAFT_");
         builder.AddServiceDefaults();
         builder.Services.AddLogging();
-        builder.Services.AddDatabaseConnection(config);
+        builder.Services.AddDatabaseConnection<ApplicationDbContext>(config, false, "aircraft");
         builder.Services.AddSingleton(TimeProvider.System);
         _host = builder.Build();
         _traceProvider = _host.Services.GetRequiredService<TracerProvider>();

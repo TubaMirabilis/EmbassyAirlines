@@ -4,7 +4,7 @@ COPY ./src/Aircraft.Migrations.Lambda/ /src/Aircraft.Migrations.Lambda/
 COPY ./src/Aircraft.Core/ /src/Aircraft.Core/
 COPY ./src/Aircraft.Infrastructure/ /src/Aircraft.Infrastructure/
 COPY ./src/Shared/ /src/Shared/
-COPY ./src/Shared.EntityFrameworkCore/ /src/Shared.EntityFrameworkCore/
+COPY ./src/Shared.Npgsql/ /src/Shared.Npgsql/
 COPY ./Directory.Packages.props /Directory.Packages.props
 WORKDIR /src/Aircraft.Migrations.Lambda
 RUN dotnet restore -r linux-x64

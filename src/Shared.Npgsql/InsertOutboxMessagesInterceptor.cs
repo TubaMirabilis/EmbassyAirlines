@@ -2,7 +2,7 @@ using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 
-namespace Shared.EntityFrameworkCore;
+namespace Shared.Npgsql;
 
 public sealed class InsertOutboxMessagesInterceptor : SaveChangesInterceptor
 {
