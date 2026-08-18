@@ -8,6 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Amazon.Lambda.Serialization.SystemTextJson" />
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
     <PackageReference Include="Amazon.Lambda.AspNetCoreServer.Hosting" />
     <PackageReference Include="AWS.Messaging.Telemetry.OpenTelemetry" />
