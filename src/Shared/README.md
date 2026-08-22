@@ -77,18 +77,19 @@ The shared components include:
     - dead-letter timestamp,
     - last processing error.
 
-- `OutboxProcessorBase`, an abstract base class that provides common processing behaviour, including:
+- `OutboxProcessorBase`, an abstract base class that provides publisher-agnostic processing behaviour, including:
 
-    - the per-message processing lifecycle (resolve publisher, publish, mark as processed, register failures),
     - JSON deserialization helpers,
     - exponential retry backoff,
     - retry scheduling,
     - dead-letter handling after repeated or unrecoverable failures,
     - consistent structured logging.
 
+- `OutboxProcessorBase<TPublisher>`, which extends it with the per-message processing lifecycle (resolve publisher, publish, mark as processed, register failures) and holds the publisher instance that publish delegates are invoked with. The type parameter keeps the shared abstraction decoupled from any particular publisher type.
+
 - `OutboxConstants`, which centralises shared processing configuration such as batch size, retry limits and retry delays.
 
-Concrete services implement their own processors by inheriting from `OutboxProcessorBase` and overriding `ResolvePublisher`, which maps a message type name to the delegate that publishes it (returning `null` when no publisher is registered, which dead-letters the message). Each service therefore determines how its messages are dispatched while reusing a common processing lifecycle and retry and failure-handling strategy.
+Concrete services implement their own processors by inheriting from `OutboxProcessorBase<TPublisher>` and overriding `ResolvePublisher`, which maps a message type name to a `Func<TPublisher, string, CancellationToken, Task>` that publishes it (returning `null` when no publisher is registered, which dead-letters the message). Because the resolved delegate takes the publisher as a parameter rather than capturing it, services can return cached static delegates and avoid allocating a closure per message. Each service therefore determines how its messages are dispatched while reusing a common processing lifecycle and retry and failure-handling strategy.
 
 ---
 

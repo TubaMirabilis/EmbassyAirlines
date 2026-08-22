@@ -9,7 +9,7 @@ using Shared.Contracts;
 
 namespace Airports.Infrastructure.Outbox;
 
-public sealed class OutboxProcessor : OutboxProcessorBase, IOutboxProcessor
+public sealed class OutboxProcessor : OutboxProcessorBase<IMessagePublisher>, IOutboxProcessor
 {
     private static readonly Dictionary<string, Func<IMessagePublisher, string, CancellationToken, Task>> s_publishers =
         new(StringComparer.Ordinal)
@@ -18,14 +18,9 @@ public sealed class OutboxProcessor : OutboxProcessorBase, IOutboxProcessor
             [nameof(AirportUpdatedEvent)] = (publisher, content, ct) => publisher.PublishAsync(Deserialize<AirportUpdatedEvent>(content), ct)
         };
     private readonly ApplicationDbContext _dbContext;
-    private readonly IMessagePublisher _publisher;
     public OutboxProcessor(ApplicationDbContext dbContext,
                            IMessagePublisher publisher,
-                           ILogger<OutboxProcessor> logger) : base(logger)
-    {
-        _dbContext = dbContext;
-        _publisher = publisher;
-    }
+                           ILogger<OutboxProcessor> logger) : base(publisher, logger) => _dbContext = dbContext;
     public async Task<int> ProcessAsync(CancellationToken cancellationToken = default)
     {
         var now = DateTime.UtcNow;
@@ -58,8 +53,6 @@ public sealed class OutboxProcessor : OutboxProcessorBase, IOutboxProcessor
         LIMIT {OutboxConstants.BatchSize}
         FOR UPDATE SKIP LOCKED
     """).ToListAsync(cancellationToken);
-    protected override Func<string, CancellationToken, Task>? ResolvePublisher(string messageName)
-        => s_publishers.TryGetValue(messageName, out var publish)
-            ? (content, cancellationToken) => publish(_publisher, content, cancellationToken)
-            : null;
+    protected override Func<IMessagePublisher, string, CancellationToken, Task>? ResolvePublisher(string messageName)
+        => s_publishers.GetValueOrDefault(messageName);
 }
