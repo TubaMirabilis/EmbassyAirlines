@@ -79,6 +79,7 @@ The shared components include:
 
 - `OutboxProcessorBase`, an abstract base class that provides common processing behaviour, including:
 
+    - the per-message processing lifecycle (resolve publisher, publish, mark as processed, register failures),
     - JSON deserialization helpers,
     - exponential retry backoff,
     - retry scheduling,
@@ -87,7 +88,7 @@ The shared components include:
 
 - `OutboxConstants`, which centralises shared processing configuration such as batch size, retry limits and retry delays.
 
-Concrete services implement their own processors by inheriting from `OutboxProcessorBase`, allowing each service to determine how messages are dispatched while reusing a common retry and failure-handling strategy.
+Concrete services implement their own processors by inheriting from `OutboxProcessorBase` and overriding `ResolvePublisher`, which maps a message type name to the delegate that publishes it (returning `null` when no publisher is registered, which dead-letters the message). Each service therefore determines how its messages are dispatched while reusing a common processing lifecycle and retry and failure-handling strategy.
 
 ---
 

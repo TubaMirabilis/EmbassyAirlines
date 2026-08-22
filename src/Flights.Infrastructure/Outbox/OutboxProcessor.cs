@@ -65,23 +65,8 @@ public sealed class OutboxProcessor : OutboxProcessorBase, IOutboxProcessor
         LIMIT {OutboxConstants.BatchSize}
         FOR UPDATE SKIP LOCKED
     """).ToListAsync(cancellationToken);
-    private async Task<bool> ProcessMessageAsync(OutboxMessage message, DateTime now, CancellationToken cancellationToken)
-    {
-        if (!s_publishers.TryGetValue(message.Name, out var publish))
-        {
-            RegisterUnknownMessageFailure(message, now);
-            return false;
-        }
-        try
-        {
-            await publish(_publisher, message.Content, cancellationToken);
-            MarkAsProcessed(message, now);
-            return true;
-        }
-        catch (Exception e) when (e is not OperationCanceledException)
-        {
-            RegisterPublishFailure(message, e, now);
-            return false;
-        }
-    }
+    protected override Func<string, CancellationToken, Task>? ResolvePublisher(string messageName)
+        => s_publishers.TryGetValue(messageName, out var publish)
+            ? (content, cancellationToken) => publish(_publisher, content, cancellationToken)
+            : null;
 }

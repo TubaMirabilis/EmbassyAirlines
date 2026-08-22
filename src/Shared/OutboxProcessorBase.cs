@@ -8,6 +8,27 @@ public abstract class OutboxProcessorBase
     private static readonly JsonSerializerOptions s_serializerOptions = new(JsonSerializerDefaults.Web);
     protected OutboxProcessorBase(ILogger logger) => Logger = logger;
     protected ILogger Logger { get; }
+    protected abstract Func<string, CancellationToken, Task>? ResolvePublisher(string messageName);
+    protected async Task<bool> ProcessMessageAsync(OutboxMessage message, DateTime now, CancellationToken cancellationToken)
+    {
+        var publish = ResolvePublisher(message.Name);
+        if (publish is null)
+        {
+            RegisterUnknownMessageFailure(message, now);
+            return false;
+        }
+        try
+        {
+            await publish(message.Content, cancellationToken);
+            MarkAsProcessed(message, now);
+            return true;
+        }
+        catch (Exception e) when (e is not OperationCanceledException)
+        {
+            RegisterPublishFailure(message, e, now);
+            return false;
+        }
+    }
     protected void RegisterFailure(OutboxMessage message, string error, bool unrecoverable, DateTime now)
     {
         message.Error = error;
