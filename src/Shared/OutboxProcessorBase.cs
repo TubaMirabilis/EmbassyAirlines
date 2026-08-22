@@ -24,6 +24,31 @@ public abstract class OutboxProcessorBase
         Logger.LogWarning("Scheduled retry {RetryCount}/{MaxRetryAttempts} for outbox message {MessageId} at {NextAttemptOnUtc:o}",
             message.RetryCount, OutboxConstants.MaxRetryAttempts, message.Id, message.NextAttemptOnUtc);
     }
+    protected void RegisterUnknownMessageFailure(OutboxMessage message, DateTime now)
+    {
+        Logger.LogError("No publisher is registered for outbox message {MessageId} of type {MessageType}", message.Id, message.Name);
+        RegisterFailure(message, $"No publisher is registered for message type {message.Name}", unrecoverable: true, now);
+    }
+    protected void RegisterPublishFailure(OutboxMessage message, Exception exception, DateTime now)
+    {
+        var unrecoverable = exception is JsonException or NotSupportedException;
+        Logger.LogError(exception, "Failed to publish outbox message {MessageId} of type {MessageType} on attempt {Attempt}", message.Id, message.Name, message.RetryCount + 1);
+        RegisterFailure(message, exception.Message, unrecoverable, now);
+    }
+    protected static void MarkAsProcessed(OutboxMessage message, DateTime now)
+    {
+        message.ProcessedOnUtc = now;
+        message.Error = null;
+        message.NextAttemptOnUtc = null;
+    }
+    protected void LogBatchResult(int publishedCount, int batchCount)
+    {
+        if (!Logger.IsEnabled(LogLevel.Information))
+        {
+            return;
+        }
+        Logger.LogInformation("Published {PublishedCount} of {BatchCount} eligible outbox messages", publishedCount, batchCount);
+    }
     protected static T Deserialize<T>(string content)
         => JsonSerializer.Deserialize<T>(content, s_serializerOptions)
            ?? throw new JsonException($"Outbox payload for {typeof(T).Name} deserialised to null.");
