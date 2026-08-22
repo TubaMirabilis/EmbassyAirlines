@@ -4,7 +4,7 @@ The Deployment project is a C# AWS CDK project that provisions the infrastructur
 
 ## High-level architecture
 
-The deployment provisions a complete serverless backend for the Embassy Airlines staging environment. Incoming requests are routed through a custom Route 53 domain to a shared API Gateway HTTP API, where each business domain exposes its own set of Lambda-backed endpoints. All services share common infrastructure such as the networking layer, PostgreSQL database, and messaging components while remaining logically separated through independent CDK constructs.
+The deployment provisions a complete serverless backend for the Embassy Airlines staging environment. Incoming requests resolve through Route 53 to a custom API Gateway domain, where a shared HTTP API routes requests to the Lambda-backed service endpoints. All services share common infrastructure such as the networking layer, PostgreSQL database, and messaging components while remaining logically separated through independent CDK constructs.
 
 Application data is stored in PostgreSQL and accessed exclusively through an RDS Proxy, allowing Lambda functions to scale without overwhelming the database with large numbers of concurrent connections. Changes that produce domain events are first recorded in a transactional outbox table. Scheduled publisher Lambdas then publish those events to SNS topics, ensuring events are only emitted after the associated database transaction succeeds. Consumer services receive events through dedicated SQS queues, allowing each service to process messages independently with retries, dead-letter queues, and batch processing.
 
@@ -85,6 +85,7 @@ The infrastructure clearly separates business domains.
 
 Deploys:
 
+- Airports database migration Lambda
 - Airports API Lambda
 - Airports Publisher Lambda
 
@@ -103,6 +104,7 @@ Consumes:
 
 Deploys:
 
+- Aircraft database migration Lambda
 - Aircraft API
 - Publisher
 - FlightArrived handler
@@ -122,6 +124,7 @@ Publishes:
 
 Deploys:
 
+- Flights database migration Lambda
 - Flights API
 - Publisher
 - AircraftCreated handler
@@ -171,7 +174,7 @@ Advantages:
 
 - native dependencies
 - consistent builds
-- no Lambda size limitations
+- larger deployment package limits than ZIP-based Lambdas
 - easier local testing
 
 ---
@@ -182,8 +185,12 @@ The system has been designed to follow several good security practices:
 
 - Lambdas run inside private isolated subnets.
 - Separate security groups are created for different Lambda roles.
-- Only the RDS Proxy is reachable by the Lambdas.
+- Lambda security groups are configured to permit database connections through the RDS Proxy on the PostgreSQL port.
 - IAM authentication is used for database connections.
 - Database credentials come from generated Secrets Manager secrets.
 - S3 bucket blocks all public access.
 - API uses TLS with ACM certificates.
+
+## Resource lifecycle
+
+The current deployment is configured for easy teardown rather than data retention. The PostgreSQL instance uses `RemovalPolicy.DESTROY` with deletion protection disabled, and the Aircraft S3 bucket is configured to delete its contents when the stack is removed. These settings should be reviewed before using the stack for production workloads.
