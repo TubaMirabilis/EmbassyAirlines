@@ -38,7 +38,9 @@ public abstract class NpgsqlOutboxProcessorBase<TPublisher> : OutboxProcessorBas
         Logger.LogInformation("Claimed {ClaimedCount} outbox message(s) as {ClaimId} until {ClaimedUntilUtc:o}", messages.Count, claimId, messages[0].ClaimedUntilUtc);
         return new ClaimedBatch(claimId, claimIssuedAt, messages);
     }
-    private async Task<BatchResult> ProcessBatchAsync(ClaimedBatch batch, CancellationToken cancellationToken)
+    private async Task<BatchResult> ProcessBatchAsync(
+    ClaimedBatch batch,
+    CancellationToken cancellationToken)
     {
         var publishedCount = 0;
         var attemptedCount = 0;
@@ -51,19 +53,20 @@ public abstract class NpgsqlOutboxProcessorBase<TPublisher> : OutboxProcessorBas
                 break;
             }
             attemptedCount++;
-            if (await ProcessMessageAsync(message, DateTime.UtcNow, cancellationToken))
-            {
-                publishedCount++;
-            }
+            publishedCount += await ProcessMessageAsync(
+                message,
+                DateTime.UtcNow,
+                cancellationToken) ? 1 : 0;
             var outcome = await RecordOutcomeAsync(message, batch.ClaimId);
-            if (outcome is OutcomeResult.Recorded)
+            if (outcome is not OutcomeResult.Recorded)
             {
-                continue;
+                LogAbandonedMessages(
+                    batch.Messages.Count - attemptedCount,
+                    GetOutcomeFailureReason(outcome));
+                break;
             }
-            LogAbandonedMessages(batch.Messages.Count - attemptedCount, GetOutcomeFailureReason(outcome));
-            break;
         }
-        return new BatchResult(publishedCount, attemptedCount);
+        return new(publishedCount, attemptedCount);
     }
     private async Task<OutcomeResult> RecordOutcomeAsync(OutboxMessage message, Guid claimId)
     {
