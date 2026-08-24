@@ -12,33 +12,42 @@ public abstract class NpgsqlOutboxProcessorBase<TPublisher> : OutboxProcessorBas
     protected DbContext DbContext { get; }
     public async Task<int> ProcessAsync(CancellationToken cancellationToken = default)
     {
+        var batch = await ClaimBatchAsync(cancellationToken);
+        if (batch is null)
+        {
+            return 0;
+        }
+        var result = await ProcessBatchAsync(batch, cancellationToken);
+        LogBatchResult(result.PublishedCount, result.AttemptedCount);
+        return result.PublishedCount;
+    }
+    // Selects the messages that are due, stamps them with this invocation's claim identifier and a lease that
+    // expires OutboxConstants.ClaimDuration after the database's own clock, and returns the stamped rows. Doing all
+    // of that in one statement keeps the lease PostgreSQL's to grant: no application timestamp reaches the row.
+    protected abstract Task<List<OutboxMessage>> ClaimEligibleMessagesAsync(Guid claimId, CancellationToken cancellationToken);
+    private async Task<ClaimedBatch?> ClaimBatchAsync(CancellationToken cancellationToken)
+    {
         var claimId = Guid.CreateVersion7();
-        // Timed from before the claim statement is issued. PostgreSQL stamps the expiry partway through that call,
-        // so this measurement can only ever overstate how much of the lease has been spent, never understate it.
         var claimIssuedAt = Stopwatch.GetTimestamp();
         var messages = await ClaimEligibleMessagesAsync(claimId, cancellationToken);
         if (messages.Count == 0)
         {
-            return 0;
+            return null;
         }
-        // UPDATE ... RETURNING does not promise the order of the rows it hands back, so creation order is restored here.
         messages.Sort(static (left, right) => (left.CreatedOnUtc, left.Id).CompareTo((right.CreatedOnUtc, right.Id)));
         Logger.LogInformation("Claimed {ClaimedCount} outbox message(s) as {ClaimId} until {ClaimedUntilUtc:o}", messages.Count, claimId, messages[0].ClaimedUntilUtc);
+        return new ClaimedBatch(claimId, claimIssuedAt, messages);
+    }
+    private async Task<BatchResult> ProcessBatchAsync(ClaimedBatch batch, CancellationToken cancellationToken)
+    {
         var publishedCount = 0;
         var attemptedCount = 0;
-        foreach (var message in messages)
+        foreach (var message in batch.Messages)
         {
-            if (cancellationToken.IsCancellationRequested)
+            var stopReason = GetStopReason(batch.ClaimIssuedAt, cancellationToken);
+            if (stopReason is not null)
             {
-                LogAbandonedMessages(messages.Count - attemptedCount, "cancellation was requested");
-                break;
-            }
-            // A local estimate of how much of the lease is left, measured as elapsed time rather than by comparing
-            // clocks. It only avoids starting publishes whose outcome almost certainly could not be recorded;
-            // whether this invocation still owns a message is decided by the database in RecordOutcomeAsync.
-            if (Stopwatch.GetElapsedTime(claimIssuedAt) >= OutboxConstants.ClaimDuration - OutboxConstants.ClaimSafetyMargin)
-            {
-                LogAbandonedMessages(messages.Count - attemptedCount, "the claim was too close to expiring to publish safely");
+                LogAbandonedMessages(batch.Messages.Count - attemptedCount, stopReason);
                 break;
             }
             attemptedCount++;
@@ -46,22 +55,16 @@ public abstract class NpgsqlOutboxProcessorBase<TPublisher> : OutboxProcessorBas
             {
                 publishedCount++;
             }
-            var outcome = await RecordOutcomeAsync(message, claimId);
-            if (outcome is not OutcomeResult.Recorded)
+            var outcome = await RecordOutcomeAsync(message, batch.ClaimId);
+            if (outcome is OutcomeResult.Recorded)
             {
-                LogAbandonedMessages(messages.Count - attemptedCount, outcome is OutcomeResult.ClaimLost
-                    ? "the claim was lost"
-                    : "the outcome of the preceding message could not be persisted");
-                break;
+                continue;
             }
+            LogAbandonedMessages(batch.Messages.Count - attemptedCount, GetOutcomeFailureReason(outcome));
+            break;
         }
-        LogBatchResult(publishedCount, attemptedCount);
-        return publishedCount;
+        return new BatchResult(publishedCount, attemptedCount);
     }
-    // Selects the messages that are due, stamps them with this invocation's claim identifier and a lease that
-    // expires OutboxConstants.ClaimDuration after the database's own clock, and returns the stamped rows. Doing all
-    // of that in one statement keeps the lease PostgreSQL's to grant: no application timestamp reaches the row.
-    protected abstract Task<List<OutboxMessage>> ClaimEligibleMessagesAsync(Guid claimId, CancellationToken cancellationToken);
     private async Task<OutcomeResult> RecordOutcomeAsync(OutboxMessage message, Guid claimId)
     {
         // The outcome may only be written while this worker still holds the claim, so the lease is re-checked inside
@@ -98,6 +101,25 @@ public abstract class NpgsqlOutboxProcessorBase<TPublisher> : OutboxProcessorBas
             return OutcomeResult.PersistenceFailed;
         }
     }
+    private static string? GetStopReason(long claimIssuedAt, CancellationToken cancellationToken)
+    {
+        if (cancellationToken.IsCancellationRequested)
+        {
+            return "cancellation was requested";
+        }
+        var elapsed = Stopwatch.GetElapsedTime(claimIssuedAt);
+        if (elapsed >= OutboxConstants.ClaimDuration - OutboxConstants.ClaimSafetyMargin)
+        {
+            return "the claim was too close to expiring to publish safely";
+        }
+        return null;
+    }
+    private static string GetOutcomeFailureReason(OutcomeResult outcome) => outcome switch
+    {
+        OutcomeResult.ClaimLost => "the claim was lost",
+        OutcomeResult.PersistenceFailed => "the outcome of the preceding message could not be persisted",
+        _ => throw new ArgumentOutOfRangeException(nameof(outcome), outcome, null)
+    };
     private void LogAbandonedMessages(int abandonedCount, string reason)
     {
         if (abandonedCount == 0)
@@ -106,6 +128,8 @@ public abstract class NpgsqlOutboxProcessorBase<TPublisher> : OutboxProcessorBas
         }
         Logger.LogWarning("Stopped before {AbandonedCount} claimed outbox message(s) were attempted because {Reason}; they will be reprocessed once their claim expires", abandonedCount, reason);
     }
+    private sealed record ClaimedBatch(Guid ClaimId, long ClaimIssuedAt, IReadOnlyList<OutboxMessage> Messages);
+    private readonly record struct BatchResult(int PublishedCount, int AttemptedCount);
     private enum OutcomeResult
     {
         Recorded,
