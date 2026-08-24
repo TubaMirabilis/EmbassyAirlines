@@ -35,7 +35,10 @@ public abstract class NpgsqlOutboxProcessorBase<TPublisher> : OutboxProcessorBas
             return null;
         }
         messages.Sort(static (left, right) => (left.CreatedOnUtc, left.Id).CompareTo((right.CreatedOnUtc, right.Id)));
-        Logger.LogInformation("Claimed {ClaimedCount} outbox message(s) as {ClaimId} until {ClaimedUntilUtc:o}", messages.Count, claimId, messages[0].ClaimedUntilUtc);
+        if (Logger.IsEnabled(LogLevel.Information))
+        {
+            Logger.LogInformation("Claimed {ClaimedCount} outbox message(s) as {ClaimId} until {ClaimedUntilUtc:o}", messages.Count, claimId, messages[0].ClaimedUntilUtc);
+        }
         return new ClaimedBatch(claimId, claimIssuedAt, messages);
     }
     private async Task<BatchResult> ProcessBatchAsync(
