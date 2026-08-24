@@ -12,7 +12,6 @@ using Shared.Npgsql;
 var builder = Host.CreateApplicationBuilder(args);
 var config = builder.Configuration;
 config.AddEnvironmentVariables(prefix: "FLIGHTS_");
-builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddDatabaseConnection<ApplicationDbContext>(config, true, "flights");
 builder.Services.AddScoped<IOutboxProcessor, OutboxProcessor>();
 builder.Services.AddAWSMessageBus(config);
