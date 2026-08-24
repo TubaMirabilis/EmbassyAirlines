@@ -18,6 +18,6 @@ public sealed class ApplicationDbContext : DbContext
         var assembly = typeof(ApplicationDbContext).Assembly;
         modelBuilder.HasDefaultSchema("flights");
         modelBuilder.ApplyConfigurationsFromAssembly(assembly);
-        modelBuilder.ApplyConfiguration(new OutboxMessageConfiguration());
+        modelBuilder.ApplyOutboxConfiguration();
     }
 }

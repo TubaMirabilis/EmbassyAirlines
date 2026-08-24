@@ -75,6 +75,8 @@ The shared components include:
     - retry metadata,
     - processing timestamp,
     - dead-letter timestamp,
+    - claim expiry timestamp,
+    - claim identifier,
     - last processing error.
 
 - `OutboxProcessorBase`, an abstract base class that provides publisher-agnostic processing behaviour, including:
@@ -87,9 +89,22 @@ The shared components include:
 
 - `OutboxProcessorBase<TPublisher>`, which extends it with the per-message processing lifecycle (resolve publisher, publish, mark as processed, register failures) and holds the publisher instance that publish delegates are invoked with. The type parameter keeps the shared abstraction decoupled from any particular publisher type.
 
-- `OutboxConstants`, which centralises shared processing configuration such as batch size, retry limits and retry delays.
+- `OutboxConstants`, which centralises shared processing configuration such as batch size, retry limits, retry delays, how long a claim on a message stays valid and how much of that claim is reserved as a safety margin.
 
-Concrete services implement their own processors by inheriting from `OutboxProcessorBase<TPublisher>` and overriding `ResolvePublisher`, which maps a message type name to a `Func<TPublisher, string, CancellationToken, Task>` that publishes it (returning `null` when no publisher is registered, which dead-letters the message). Because the resolved delegate takes the publisher as a parameter rather than capturing it, services can return cached static delegates and avoid allocating a closure per message. Each service therefore determines how its messages are dispatched while reusing a common processing lifecycle and retry and failure-handling strategy.
+Relational services do not inherit from `OutboxProcessorBase<TPublisher>` directly. `Shared.Npgsql.NpgsqlOutboxProcessorBase<TPublisher>` sits between them and implements `IOutboxProcessor`, owning the drain loop: it claims a batch of due messages with a single statement — a `SELECT ... FOR UPDATE SKIP LOCKED` CTE feeding an `UPDATE ... RETURNING` that stamps a freshly generated claim identifier and a claim expiry, so a second invocation cannot take the same rows — and only then publishes each message and persists that message's outcome on its own. Publishing therefore never happens with a row lock or an open transaction held, and one message's failure cannot roll back the outcomes already recorded for the rest of the batch.
+
+The claim identifier gives the lease explicit ownership rather than leaving ownership implied by wall-clock timing, and PostgreSQL rather than the worker decides when that ownership begins and ends:
+
+- Both ends of the lease are timed by the database. The expiry is stamped as `now() + OutboxConstants.ClaimDuration` inside the claiming statement, and the check that it has not passed is `claimed_until_utc > now()`, written in LINQ as `DatabaseClock.UtcNow()` — a mapping onto the built-in `now()` that `ApplyOutboxConfiguration` registers alongside the entity configuration. `claimed_until_utc` is shared state that concurrent invocations coordinate through, so a worker whose clock had drifted would otherwise grant itself a lease of the wrong length from PostgreSQL's point of view, or misjudge whether it still held one.
+- The `UPDATE` that records a message's outcome is issued as a single statement conditioned on both the claim identifier and an unexpired `claimed_until_utc`. It therefore matches only while this invocation still holds a live lease. Checking the claim identifier alone would not be enough: a publish that overran the lease could still record its outcome for as long as no other invocation had happened to reclaim the row yet, which left the write's correctness dependent on timing. If the statement matches nothing — the lease expired, or another invocation reclaimed the row — the stale invocation is told it has lost the claim and discards its outcome instead of writing state it no longer owns.
+- Claiming is one statement, so no other invocation can slip between the `SELECT` that picks the rows and the `UPDATE` that stamps them; `claim_id` is additionally mapped as a concurrency token, which guards any tracked update of an outbox row.
+- Before each publish the loop checks how much of the lease it has spent — as elapsed time measured locally, not as a comparison between two clocks — and stops the batch once it is within `OutboxConstants.ClaimSafetyMargin` of `ClaimDuration`, so a worker does not keep publishing on a lease it is about to lose. That is an optimisation rather than part of the correctness boundary: it reduces how often a publish overruns its lease, but cannot guarantee it, which is why the outcome write re-checks the lease against the database clock.
+
+Together these mean correctness no longer depends on the Publisher Lambda's configured timeout staying shorter than `OutboxConstants.ClaimDuration`, nor on the clocks of the machines running it; that sizing now only affects how much of a batch a single invocation gets through. Messages whose claim expires or is surrendered before an outcome is recorded — because the invocation was killed, cancelled, ran out of lease, or lost ownership — become eligible again on a later run. A message can still be published and then have its outcome discarded, so delivery remains at-least-once and consumers must be idempotent; what the lease rules out is an invocation writing a message's state after it has stopped owning it.
+
+A failure to persist an outcome ends the batch as well, not just the message it happened to. Duplicates around the publish/record boundary are unavoidable, but once the database has shown that outcomes cannot be written there is nothing to gain from publishing the rest of the claim: every one of those messages would be published now and published again after the lease expired. Abandoning them leaves them unattempted instead, and a later invocation retries them cleanly.
+
+Concrete services implement their own processors by inheriting from that base and overriding `ClaimEligibleMessagesAsync` (the schema-specific claiming statement) and `ResolvePublisher`, which maps a message type name to a `Func<TPublisher, string, CancellationToken, Task>` that publishes it (returning `null` when no publisher is registered, which dead-letters the message). Because the resolved delegate takes the publisher as a parameter rather than capturing it, services can return cached static delegates and avoid allocating a closure per message. Each service therefore determines how its messages are dispatched while reusing a common processing lifecycle and retry and failure-handling strategy.
 
 ---
 

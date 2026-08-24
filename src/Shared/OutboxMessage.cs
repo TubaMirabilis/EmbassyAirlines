@@ -7,4 +7,6 @@ public sealed record OutboxMessage(Guid Id, string Name, string Content, DateTim
     public int RetryCount { get; set; }
     public DateTime? NextAttemptOnUtc { get; set; }
     public DateTime? DeadLetteredOnUtc { get; set; }
+    public DateTime? ClaimedUntilUtc { get; set; }
+    public Guid? ClaimId { get; set; }
 }

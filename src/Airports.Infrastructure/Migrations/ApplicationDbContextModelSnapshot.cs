@@ -75,6 +75,15 @@ namespace Airports.Infrastructure.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
+                    b.Property<Guid?>("ClaimId")
+                        .IsConcurrencyToken()
+                        .HasColumnType("uuid")
+                        .HasColumnName("claim_id");
+
+                    b.Property<DateTime?>("ClaimedUntilUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("claimed_until_utc");
+
                     b.Property<string>("Content")
                         .IsRequired()
                         .HasColumnType("text")

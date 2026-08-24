@@ -16,6 +16,8 @@ public sealed class OutboxMessageConfiguration : IEntityTypeConfiguration<Outbox
         builder.Property(o => o.RetryCount).IsRequired();
         builder.Property(o => o.NextAttemptOnUtc).HasColumnType("timestamp with time zone").IsRequired(false);
         builder.Property(o => o.DeadLetteredOnUtc).HasColumnType("timestamp with time zone").IsRequired(false);
+        builder.Property(o => o.ClaimedUntilUtc).HasColumnType("timestamp with time zone").IsRequired(false);
+        builder.Property(o => o.ClaimId).IsRequired(false).IsConcurrencyToken();
         builder.HasIndex(o => o.CreatedOnUtc).HasDatabaseName("ix_outbox_messages_unprocessed").HasFilter("processed_on_utc IS NULL AND dead_lettered_on_utc IS NULL");
     }
 }

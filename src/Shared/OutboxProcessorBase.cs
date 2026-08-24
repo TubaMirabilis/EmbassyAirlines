@@ -41,13 +41,13 @@ public abstract class OutboxProcessorBase
         message.Error = null;
         message.NextAttemptOnUtc = null;
     }
-    protected void LogBatchResult(int publishedCount, int batchCount)
+    protected void LogBatchResult(int publishedCount, int attemptedCount)
     {
         if (!Logger.IsEnabled(LogLevel.Information))
         {
             return;
         }
-        Logger.LogInformation("Published {PublishedCount} of {BatchCount} eligible outbox messages", publishedCount, batchCount);
+        Logger.LogInformation("Published {PublishedCount} of {AttemptedCount} attempted outbox message(s)", publishedCount, attemptedCount);
     }
     protected static T Deserialize<T>(string content)
         => JsonSerializer.Deserialize<T>(content, s_serializerOptions)

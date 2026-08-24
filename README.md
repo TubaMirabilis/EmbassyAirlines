@@ -159,9 +159,11 @@ Aircraft and Flights never publish inline. Instead:
 
 1. Domain models raise events into `Entity.DomainEvents` during a transaction.
 2. `InsertOutboxMessagesInterceptor` — an EF `SaveChangesInterceptor` registered in `AddDatabaseConnection` — serialises those events into `outbox_messages` **in the same transaction as the state change**, then clears them after save.
-3. The **Publisher Lambda** runs every minute, selects due rows with `FOR UPDATE SKIP LOCKED`, and publishes to SNS via the `AWS.Messaging` bus.
+3. The **Publisher Lambda** runs every minute. It claims due rows with a single statement — a `SELECT … FOR UPDATE SKIP LOCKED` CTE feeding an `UPDATE … RETURNING` that stamps a claim id and a claim expiry — and only then publishes them to SNS via the `AWS.Messaging` bus, recording each message's outcome on its own.
 
-`OutboxProcessor` handles retries with exponential backoff and dead-letters messages that exhaust `Outbox:MaxRetryAttempts`. `SKIP LOCKED` means concurrent publisher invocations can drain the same table without contending or double-publishing.
+`OutboxProcessor` handles retries with exponential backoff and dead-letters messages that exhaust `Outbox:MaxRetryAttempts`. `SKIP LOCKED` keeps two concurrent claims off the same rows; the `claimed_until_utc` stamp keeps concurrent invocations off each other's rows once the claiming statement has committed. Both the stamp and every check of it are computed by PostgreSQL's own `now()`, never by the Lambda: the lease is shared state, so the clock that grants and expires it has to be the one clock all the invocations agree on rather than the wall clock of whichever machine happened to claim the row. Claims expire after `OutboxConstants.ClaimDuration` (two minutes, comfortably clear of the publisher's 60-second Lambda timeout), so a message whose invocation dies mid-flight becomes eligible again rather than sticking forever.
+
+Publishing to SNS and marking a row processed can never be atomic, so delivery is at-least-once and consumers must be idempotent. Publishing **outside** the claim transaction bounds the blast radius: a failure costs at most the message in flight rather than every message already published in the same batch, and no row lock or open transaction is held across an SNS call. For the same reason the drain stops the moment an outcome cannot be recorded, whether the lease was lost or the database refused the write outright, instead of publishing the rest of the claim into the same fate.
 
 **Adding a new published event requires three steps.** Miss any one and the message dead-letters:
 

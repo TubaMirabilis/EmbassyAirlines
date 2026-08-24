@@ -73,7 +73,7 @@ Events are **not** published inline. Instead:
 
 1. Domain models raise events into `Entity.DomainEvents` during a transaction.
 2. `InsertOutboxMessagesInterceptor` (an EF `SaveChangesInterceptor` registered in `AddDatabaseConnection`) serializes those events into `outbox_messages` in the **same transaction** as the state change, then clears them after save.
-3. The **Publisher Lambda** runs every minute, selects due rows with `FOR UPDATE SKIP LOCKED`, and publishes to SNS via the `AWS.Messaging` bus, with exponential-backoff retries and dead-lettering (`OutboxProcessor`).
+3. The **Publisher Lambda** runs every minute. It claims due rows with a single statement (a `SELECT ... FOR UPDATE SKIP LOCKED` CTE feeding an `UPDATE ... RETURNING` that stamps `claim_id` + `claimed_until_utc`), then publishes to SNS via the `AWS.Messaging` bus, recording each message's outcome individually with exponential-backoff retries and dead-lettering (`OutboxProcessor`). Lease timing belongs to PostgreSQL: the expiry is stamped as `now() + OutboxConstants.ClaimDuration` and every check of it compares against `now()` (written in LINQ as `DatabaseClock.UtcNow()`), so clock skew between invocations cannot lengthen, shorten, or misjudge a lease. Claims expire after `ClaimDuration` so messages are not stranded when an invocation dies mid-batch. Each outcome is written by a single `UPDATE` conditioned on both the claim id and an unexpired `claimed_until_utc`, so an invocation that overran its lease cannot write state it no longer owns; if that `UPDATE` matches no rows, or fails outright, the worker abandons the rest of the claim rather than publishing messages whose outcomes it may equally be unable to record. The loop also stops publishing once the time elapsed since it claimed is within `OutboxConstants.ClaimSafetyMargin` of `ClaimDuration` — a local optimisation only, since ownership is decided in the database.
 
 When adding a new published event: raise it from the domain model, and register a publisher for it in that service's `OutboxProcessor.s_publishers` dictionary **and** its Publisher Lambda's `AddAWSMessageBus` configuration. Missing registration dead-letters the message.
 
@@ -81,10 +81,10 @@ When adding a new published event: raise it from the domain model, and register 
 
 `AddDatabaseConnection` builds an Npgsql data source that authenticates to **RDS Proxy** using IAM tokens (`RDSAuthTokenGenerator`) — there is no static password; `SslMode.Require` is enforced. Each service uses a dedicated schema (e.g. `aircraft`) with snake_case naming (`UseSnakeCaseNamingConvention`). Migrations are applied automatically at API startup via `ApplyMigrationsAsync` (`Database.MigrateAsync()`).
 
-To add a migration, use the `DesignTimeDbContextFactory` in each `X.Infrastructure` project (it supplies a throwaway local connection string, so no live DB or startup project is needed):
+To add a migration, use the `DesignTimeDbContextFactory` in each `X.Infrastructure` project (it supplies a throwaway local connection string, so no live DB is needed). `Microsoft.EntityFrameworkCore.Design` is referenced by the `X.Api.Lambda` projects rather than the `X.Infrastructure` projects, so pass one as the startup project:
 
 ```bash
-dotnet ef migrations add <Name> --project src/Aircraft.Infrastructure
+dotnet ef migrations add <Name> --project src/Aircraft.Infrastructure --startup-project src/Aircraft.Api.Lambda
 ```
 
 ### Configuration

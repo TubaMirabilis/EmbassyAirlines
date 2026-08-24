@@ -19,7 +19,7 @@ namespace Aircraft.Infrastructure.Migrations
 #pragma warning disable 612, 618
             modelBuilder
                 .HasDefaultSchema("aircraft")
-                .HasAnnotation("ProductVersion", "10.0.4")
+                .HasAnnotation("ProductVersion", "10.0.9")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -162,12 +162,21 @@ namespace Aircraft.Infrastructure.Migrations
                     b.ToTable("seats", "aircraft");
                 });
 
-            modelBuilder.Entity("Aircraft.Infrastructure.Outbox.OutboxMessage", b =>
+            modelBuilder.Entity("Shared.OutboxMessage", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
+
+                    b.Property<Guid?>("ClaimId")
+                        .IsConcurrencyToken()
+                        .HasColumnType("uuid")
+                        .HasColumnName("claim_id");
+
+                    b.Property<DateTime?>("ClaimedUntilUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("claimed_until_utc");
 
                     b.Property<string>("Content")
                         .IsRequired()

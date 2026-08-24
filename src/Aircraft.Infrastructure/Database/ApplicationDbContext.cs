@@ -17,6 +17,6 @@ public sealed class ApplicationDbContext : DbContext
         var assembly = typeof(ApplicationDbContext).Assembly;
         modelBuilder.HasDefaultSchema("aircraft");
         modelBuilder.ApplyConfigurationsFromAssembly(assembly);
-        modelBuilder.ApplyConfiguration(new OutboxMessageConfiguration());
+        modelBuilder.ApplyOutboxConfiguration();
     }
 }

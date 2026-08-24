@@ -1,15 +1,14 @@
-using System.Text.Json;
 using AWS.Messaging;
 using Flights.Infrastructure.Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Shared;
-using Shared.Abstractions;
 using Shared.Contracts;
+using Shared.Npgsql;
 
 namespace Flights.Infrastructure.Outbox;
 
-public sealed class OutboxProcessor : OutboxProcessorBase<IMessagePublisher>, IOutboxProcessor
+public sealed class OutboxProcessor : NpgsqlOutboxProcessorBase<IMessagePublisher>
 {
     private static readonly Dictionary<string, Func<IMessagePublisher, string, CancellationToken, Task>> s_publishers =
         new(StringComparer.Ordinal)
@@ -24,41 +23,28 @@ public sealed class OutboxProcessor : OutboxProcessorBase<IMessagePublisher>, IO
             [nameof(AircraftAssignedToFlightEvent)] = (publisher, content, ct) => publisher.PublishAsync(Deserialize<AircraftAssignedToFlightEvent>(content), ct),
             [nameof(FlightScheduledEvent)] = (publisher, content, ct) => publisher.PublishAsync(Deserialize<FlightScheduledEvent>(content), ct)
         };
-    private readonly ApplicationDbContext _dbContext;
     public OutboxProcessor(ApplicationDbContext dbContext,
                            IMessagePublisher publisher,
-                           ILogger<OutboxProcessor> logger) : base(publisher, logger) => _dbContext = dbContext;
-    public async Task<int> ProcessAsync(CancellationToken cancellationToken = default)
+                           ILogger<OutboxProcessor> logger) : base(dbContext, publisher, logger)
     {
-        var now = DateTime.UtcNow;
-        await using var transaction = await _dbContext.Database.BeginTransactionAsync(cancellationToken);
-        var messages = await GetEligibleMessagesAsync(now, cancellationToken);
-        if (messages.Count == 0)
-        {
-            return 0;
-        }
-        var publishedCount = 0;
-        foreach (var message in messages)
-        {
-            if (await ProcessMessageAsync(message, now, cancellationToken))
-            {
-                publishedCount++;
-            }
-        }
-        await _dbContext.SaveChangesAsync(cancellationToken);
-        await transaction.CommitAsync(cancellationToken);
-        LogBatchResult(publishedCount, messages.Count);
-        return publishedCount;
     }
-    private Task<List<OutboxMessage>> GetEligibleMessagesAsync(DateTime now, CancellationToken cancellationToken) => _dbContext.Set<OutboxMessage>().FromSql(
+    protected override Task<List<OutboxMessage>> ClaimEligibleMessagesAsync(Guid claimId, CancellationToken cancellationToken) => DbContext.Set<OutboxMessage>().FromSql(
     $"""
-        SELECT * FROM flights.outbox_messages
-        WHERE processed_on_utc IS NULL
-        AND dead_lettered_on_utc IS NULL
-        AND (next_attempt_on_utc IS NULL OR next_attempt_on_utc <= {now})
-        ORDER BY created_on_utc
-        LIMIT {OutboxConstants.BatchSize}
-        FOR UPDATE SKIP LOCKED
+        WITH due AS (
+            SELECT id FROM flights.outbox_messages
+            WHERE processed_on_utc IS NULL
+            AND dead_lettered_on_utc IS NULL
+            AND (claimed_until_utc IS NULL OR claimed_until_utc <= now())
+            AND (next_attempt_on_utc IS NULL OR next_attempt_on_utc <= now())
+            ORDER BY created_on_utc
+            LIMIT {OutboxConstants.BatchSize}
+            FOR UPDATE SKIP LOCKED
+        )
+        UPDATE flights.outbox_messages AS m
+        SET claim_id = {claimId}, claimed_until_utc = now() + {OutboxConstants.ClaimDuration}
+        FROM due
+        WHERE m.id = due.id
+        RETURNING m.*
     """).ToListAsync(cancellationToken);
     protected override Func<IMessagePublisher, string, CancellationToken, Task>? ResolvePublisher(string messageName)
         => s_publishers.GetValueOrDefault(messageName);

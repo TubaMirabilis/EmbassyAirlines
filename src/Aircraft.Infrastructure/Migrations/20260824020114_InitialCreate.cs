@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Aircraft.Infrastructure.Migrations;
 
 /// <inheritdoc />
-internal sealed partial class InitialCreate : Migration
+public partial class InitialCreate : Migration
 {
     /// <inheritdoc />
     protected override void Up(MigrationBuilder migrationBuilder)
@@ -47,7 +47,9 @@ internal sealed partial class InitialCreate : Migration
                 error = table.Column<string>(type: "text", nullable: true),
                 retry_count = table.Column<int>(type: "integer", nullable: false),
                 next_attempt_on_utc = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                dead_lettered_on_utc = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
+                dead_lettered_on_utc = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                claimed_until_utc = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                claim_id = table.Column<Guid>(type: "uuid", nullable: true)
             },
             constraints: table => table.PrimaryKey("pk_outbox_messages", x => x.id));
 
