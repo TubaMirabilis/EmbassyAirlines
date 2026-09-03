@@ -4,7 +4,7 @@
     <CentralPackageTransitivePinningEnabled>false</CentralPackageTransitivePinningEnabled>
   </PropertyGroup>
   <ItemGroup Condition="'$(MSBuildProjectExtension)' != '.dcproj'">
-    <PackageVersion Include="Amazon.CDK.Lib" Version="2.267.0" />
+    <PackageVersion Include="Amazon.CDK.Lib" Version="2.268.0" />
     <PackageVersion Include="Amazon.JSII.Analyzers" Version="1.140.0" />
     <PackageVersion Include="Amazon.Lambda.RuntimeSupport" Version="2.2.0" />
     <PackageVersion Include="AWS.Messaging" Version="1.6.0" />
