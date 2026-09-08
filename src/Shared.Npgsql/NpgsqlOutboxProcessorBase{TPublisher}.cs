@@ -134,6 +134,14 @@ public abstract class NpgsqlOutboxProcessorBase<TPublisher> : OutboxProcessorBas
         }
         Logger.LogWarning("Stopped before {AbandonedCount} claimed outbox message(s) were attempted because {Reason}; they will be reprocessed once their claim expires", abandonedCount, reason);
     }
+    private void LogBatchResult(int publishedCount, int attemptedCount)
+    {
+        if (!Logger.IsEnabled(LogLevel.Information))
+        {
+            return;
+        }
+        Logger.LogInformation("Published {PublishedCount} of {AttemptedCount} attempted outbox message(s)", publishedCount, attemptedCount);
+    }
     private sealed record ClaimedBatch(Guid ClaimId, long ClaimIssuedAt, IReadOnlyList<OutboxMessage> Messages);
     private readonly record struct BatchResult(int PublishedCount, int AttemptedCount);
     private enum OutcomeResult
