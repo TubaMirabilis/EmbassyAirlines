@@ -21,9 +21,6 @@ public abstract class NpgsqlOutboxProcessorBase<TPublisher> : OutboxProcessorBas
         LogBatchResult(result.PublishedCount, result.AttemptedCount);
         return result.PublishedCount;
     }
-    // Selects the messages that are due, stamps them with this invocation's claim identifier and a lease that
-    // expires OutboxConstants.ClaimDuration after the database's own clock, and returns the stamped rows. Doing all
-    // of that in one statement keeps the lease PostgreSQL's to grant: no application timestamp reaches the row.
     protected abstract Task<List<OutboxMessage>> ClaimEligibleMessagesAsync(Guid claimId, CancellationToken cancellationToken);
     private async Task<ClaimedBatch?> ClaimBatchAsync(CancellationToken cancellationToken)
     {
@@ -73,11 +70,6 @@ public abstract class NpgsqlOutboxProcessorBase<TPublisher> : OutboxProcessorBas
     }
     private async Task<OutcomeResult> RecordOutcomeAsync(OutboxMessage message, Guid claimId)
     {
-        // The outcome may only be written while this worker still holds the claim, so the lease is re-checked inside
-        // the UPDATE itself, against the database clock that granted it. Matching on ClaimId alone would let a worker
-        // whose lease expired while it was publishing write its outcome, provided no other worker had reclaimed the
-        // row yet; comparing the expiry to this process's clock would make ownership depend on how far that clock had
-        // drifted from PostgreSQL's.
         DbContext.Entry(message).State = EntityState.Detached;
         try
         {
@@ -100,9 +92,6 @@ public abstract class NpgsqlOutboxProcessorBase<TPublisher> : OutboxProcessorBas
         }
         catch (DbException e)
         {
-            // Publishing carries on being at-least-once around this boundary whatever happens, but there is no reason
-            // to widen that window once the database has shown it cannot record outcomes. Every message published from
-            // here on would risk the same fate, so the rest of the claim is left for a later invocation to retry.
             Logger.LogError(e, "Failed to record the outcome of outbox message {MessageId} of type {MessageType}; it will be reprocessed once its claim expires", message.Id, message.Name);
             return OutcomeResult.PersistenceFailed;
         }
