@@ -6,7 +6,7 @@
   <ItemGroup Condition="'$(MSBuildProjectExtension)' != '.dcproj'">
     <PackageVersion Include="Amazon.CDK.Lib" Version="2.269.0" />
     <PackageVersion Include="Amazon.JSII.Analyzers" Version="1.140.0" />
-    <PackageVersion Include="Amazon.Lambda.RuntimeSupport" Version="2.2.1" />
+    <PackageVersion Include="Amazon.Lambda.RuntimeSupport" Version="2.2.2" />
     <PackageVersion Include="AWS.Messaging" Version="1.6.0" />
     <PackageVersion Include="AWS.Messaging.Telemetry.OpenTelemetry" Version="1.0.1" />
     <PackageVersion Include="AWSSDK.CloudWatchLogs" Version="4.0.104.3" />
