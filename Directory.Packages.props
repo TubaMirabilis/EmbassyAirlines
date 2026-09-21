@@ -4,9 +4,9 @@
     <CentralPackageTransitivePinningEnabled>false</CentralPackageTransitivePinningEnabled>
   </PropertyGroup>
   <ItemGroup Condition="'$(MSBuildProjectExtension)' != '.dcproj'">
-    <PackageVersion Include="Amazon.CDK.Lib" Version="2.269.0" />
+    <PackageVersion Include="Amazon.CDK.Lib" Version="2.270.0" />
     <PackageVersion Include="Amazon.JSII.Analyzers" Version="1.140.0" />
-    <PackageVersion Include="Amazon.Lambda.RuntimeSupport" Version="2.2.1" />
+    <PackageVersion Include="Amazon.Lambda.RuntimeSupport" Version="2.2.2" />
     <PackageVersion Include="AWS.Messaging" Version="1.6.0" />
     <PackageVersion Include="AWS.Messaging.Telemetry.OpenTelemetry" Version="1.0.1" />
     <PackageVersion Include="AWSSDK.CloudWatchLogs" Version="4.0.104.3" />
@@ -15,13 +15,13 @@
     <PackageVersion Include="Microsoft.Extensions.Hosting" Version="10.0.12" />
     <PackageVersion Include="Microsoft.Extensions.Http.Resilience" Version="10.10.0" />
     <PackageVersion Include="Microsoft.Extensions.ServiceDiscovery" Version="10.10.0" />
-    <PackageVersion Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.18.0" />
-    <PackageVersion Include="OpenTelemetry.Extensions.Hosting" Version="1.18.0" />
-    <PackageVersion Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.18.0" />
-    <PackageVersion Include="OpenTelemetry.Instrumentation.AWS" Version="1.18.0" />
-    <PackageVersion Include="OpenTelemetry.Instrumentation.AWSLambda" Version="1.18.0" />
-    <PackageVersion Include="OpenTelemetry.Instrumentation.Http" Version="1.18.0" />
-    <PackageVersion Include="OpenTelemetry.Instrumentation.Runtime" Version="1.18.0" />
+    <PackageVersion Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.19.1" />
+    <PackageVersion Include="OpenTelemetry.Extensions.Hosting" Version="1.19.1" />
+    <PackageVersion Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.19.0" />
+    <PackageVersion Include="OpenTelemetry.Instrumentation.AWS" Version="1.19.1" />
+    <PackageVersion Include="OpenTelemetry.Instrumentation.AWSLambda" Version="1.19.1" />
+    <PackageVersion Include="OpenTelemetry.Instrumentation.Http" Version="1.19.0" />
+    <PackageVersion Include="OpenTelemetry.Instrumentation.Runtime" Version="1.19.0" />
     <PackageVersion Include="Polly" Version="8.8.0" />
     <PackageVersion Include="SonarAnalyzer.CSharp" Version="10.34.0.3385" />
     <PackageVersion Include="SSH.NET" Version="2026.0.0" />
