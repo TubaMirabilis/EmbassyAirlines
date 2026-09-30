@@ -84,27 +84,62 @@ public sealed class OutboxPersistenceTests
 
         // Assert
         Assert.Equal(1, count);
-
         var published =
             Assert.Single(publisher.Published);
-
         var aircraftCreated =
             Assert.IsType<AircraftCreatedEvent>(published);
-
         Assert.Equal(@event.Id, aircraftCreated.Id);
-
         await using var verificationDb = _postgres.CreateDbContext();
-
         var message = await verificationDb.Set<OutboxMessage>()
             .SingleAsync(x => x.Id == @event.Id, TestContext.Current.CancellationToken);
-
         Assert.NotNull(message.ProcessedOnUtc);
         Assert.Null(message.Error);
         Assert.Null(message.NextAttemptOnUtc);
-
-        // Most importantly, the claim has been released.
         Assert.Null(message.ClaimId);
         Assert.Null(message.ClaimedUntilUtc);
+    }
+
+    [Fact]
+    public async Task Concurrent_processors_should_not_publish_same_message()
+    {
+        await ResetDatabase();
+        var eventId = Guid.CreateVersion7();
+        await InsertOutboxMessage(eventId);
+        var publisher = new BlockingPublisher();
+        await using var db1 = _postgres.CreateDbContext();
+        await using var db2 = _postgres.CreateDbContext();
+        var processor1 = new OutboxProcessor(
+            db1,
+            publisher,
+            NullLogger<OutboxProcessor>.Instance);
+        var processor2 = new OutboxProcessor(
+            db2,
+            publisher,
+            NullLogger<OutboxProcessor>.Instance);
+        var first = processor1.ProcessAsync(TestContext.Current.CancellationToken);
+        await publisher.WaitUntilPublishingAsync();
+        var secondResult = await processor2.ProcessAsync(TestContext.Current.CancellationToken);
+        Assert.Equal(0, secondResult);
+        publisher.Release();
+        var firstResult = await first;
+        Assert.Equal(1, firstResult);
+        Assert.Equal(1, publisher.PublishCount);
+        await using var verificationDb = _postgres.CreateDbContext();
+        var message = await verificationDb.Set<OutboxMessage>()
+            .SingleAsync(x => x.Id == eventId, TestContext.Current.CancellationToken);
+        Assert.NotNull(message.ProcessedOnUtc);
+        Assert.Null(message.ClaimId);
+        Assert.Null(message.ClaimedUntilUtc);
+    }
+
+    private async Task InsertOutboxMessage(Guid eventId)
+    {
+        var @event = new AircraftCreatedEvent(eventId, Guid.CreateVersion7(), "C-FJRN", "B78X");
+        var message = new OutboxMessage(eventId, nameof(AircraftCreatedEvent), JsonSerializer.Serialize(@event, _options), DateTime.UtcNow);
+
+        await using var db = _postgres.CreateDbContext();
+        db.Set<OutboxMessage>().Add(message);
+        await db.SaveChangesAsync();
     }
 
     private async Task ResetDatabase()
