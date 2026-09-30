@@ -36,23 +36,4 @@ public static class Ensure
             throw new ArgumentOutOfRangeException(paramName, "Value must be greater than or equal to zero.");
         }
     }
-    public static void GreaterThanZero(
-        int value,
-        [CallerArgumentExpression(nameof(value))] string? paramName = null)
-    {
-        if (value <= 0)
-        {
-            throw new ArgumentOutOfRangeException(paramName, "Value must be greater than zero.");
-        }
-    }
-    public static void LessThanOrEqualTo(
-        int value,
-        int maxValue,
-        [CallerArgumentExpression(nameof(value))] string? paramName = null)
-    {
-        if (value > maxValue)
-        {
-            throw new ArgumentOutOfRangeException(paramName, $"Value must be less than or equal to {maxValue}.");
-        }
-    }
 }
