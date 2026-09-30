@@ -28,6 +28,7 @@
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/Aircraft.Api.Lambda.FunctionalTests/Aircraft.Api.Lambda.FunctionalTests.csproj" />
+    <Project Path="tests/Aircraft.Publisher.Lambda.IntegrationTests/Aircraft.Publisher.Lambda.IntegrationTests.csproj" />
     <Project Path="tests/Airports.Api.Lambda.FunctionalTests/Airports.Api.Lambda.FunctionalTests.csproj" />
     <Project Path="tests/Flights.Api.Lambda.FunctionalTests/Flights.Api.Lambda.FunctionalTests.csproj" />
     <Project Path="tests/SmokeTests/SmokeTests.csproj" />

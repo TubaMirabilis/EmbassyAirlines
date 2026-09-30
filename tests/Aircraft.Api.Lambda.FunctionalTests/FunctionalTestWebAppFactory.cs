@@ -47,7 +47,6 @@ public sealed class FunctionalTestWebAppFactory : WebApplicationFactory<Program>
         await _localStackContainer.StartAsync();
         var client = Services.GetRequiredService<IAmazonS3>();
         await client.PutBucketAsync("embassy-airlines");
-
         var putRequest = new PutObjectRequest
         {
             BucketName = "embassy-airlines",

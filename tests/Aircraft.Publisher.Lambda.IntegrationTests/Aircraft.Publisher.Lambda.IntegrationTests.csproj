@@ -4,7 +4,6 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <OutputType>Exe</OutputType>
-    <RootNamespace>Flights.Api.Lambda.FunctionalTests</RootNamespace>
     <TargetFramework>net10.0</TargetFramework>
     <TestingPlatformDotnetTestSupport>true</TestingPlatformDotnetTestSupport>
   </PropertyGroup>
@@ -14,15 +13,13 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="coverlet.MTP" />
-    <PackageReference Include="FluentAssertions" />
-    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
     <PackageReference Include="Testcontainers.PostgreSql" />
     <PackageReference Include="xunit.v3.mtp-v2" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Flights.Api.Lambda\Flights.Api.Lambda.csproj" />
+    <ProjectReference Include="..\..\src\Aircraft.Publisher.Lambda\Aircraft.Publisher.Lambda.csproj" />
   </ItemGroup>
+
 </Project>
