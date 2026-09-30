@@ -20,7 +20,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Aircraft.Publisher.Lambda\Aircraft.Publisher.Lambda.csproj" />
+    <ProjectReference Include="..\..\src\Aircraft.Infrastructure\Aircraft.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

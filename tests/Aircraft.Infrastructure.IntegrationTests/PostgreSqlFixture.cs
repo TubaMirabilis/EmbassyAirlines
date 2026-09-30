@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Shared.Npgsql;
 using Testcontainers.PostgreSql;
 
-namespace Aircraft.Publisher.Lambda.IntegrationTests;
+namespace Aircraft.Infrastructure.IntegrationTests;
 
 public sealed class PostgreSqlFixture : IAsyncLifetime
 {

@@ -1,10 +1,12 @@
 using System.Text.Json;
 using Aircraft.Core.Models;
+using Aircraft.Infrastructure.Outbox;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging.Abstractions;
 using Shared;
 using Shared.Contracts;
 
-namespace Aircraft.Publisher.Lambda.IntegrationTests;
+namespace Aircraft.Infrastructure.IntegrationTests;
 
 [Collection("Postgres")]
 public sealed class OutboxPersistenceTests
@@ -44,8 +46,8 @@ public sealed class OutboxPersistenceTests
         // Act
         await db.SaveChangesAsync(TestContext.Current.CancellationToken);
 
-        // Assert using a fresh context so the ChangeTracker
-        // cannot accidentally make the assertion pass.
+        // Assert
+        Assert.Empty(aircraft.DomainEvents);
         await using var verificationDb = _postgres.CreateDbContext();
         var message = await verificationDb.Set<OutboxMessage>().SingleAsync(x => x.Id == domainEvent.Id, TestContext.Current.CancellationToken);
         Assert.Equal(nameof(AircraftCreatedEvent), message.Name);
@@ -56,6 +58,55 @@ public sealed class OutboxPersistenceTests
         Assert.NotNull(publishedEvent);
         Assert.Equal(domainEvent.Id, publishedEvent.Id);
     }
+
+    [Fact]
+    public async Task ProcessAsync_should_publish_and_mark_message_processed()
+    {
+        await ResetDatabase();
+        var @event = new AircraftCreatedEvent(Guid.CreateVersion7(), Guid.CreateVersion7(), "C-FJRN", "B78X");
+        await using (var arrangeDb = _postgres.CreateDbContext())
+        {
+            arrangeDb.Add(new OutboxMessage(@event.Id, nameof(AircraftCreatedEvent), JsonSerializer.Serialize(@event, _options), DateTime.UtcNow));
+            await arrangeDb.SaveChangesAsync(TestContext.Current.CancellationToken);
+        }
+
+        var publisher = new RecordingMessagePublisher();
+
+        await using var processorDb = _postgres.CreateDbContext();
+
+        var processor = new OutboxProcessor(
+            processorDb,
+            publisher,
+            NullLogger<OutboxProcessor>.Instance);
+
+        // Act
+        var count = await processor.ProcessAsync(TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.Equal(1, count);
+
+        var published =
+            Assert.Single(publisher.Published);
+
+        var aircraftCreated =
+            Assert.IsType<AircraftCreatedEvent>(published);
+
+        Assert.Equal(@event.Id, aircraftCreated.Id);
+
+        await using var verificationDb = _postgres.CreateDbContext();
+
+        var message = await verificationDb.Set<OutboxMessage>()
+            .SingleAsync(x => x.Id == @event.Id, TestContext.Current.CancellationToken);
+
+        Assert.NotNull(message.ProcessedOnUtc);
+        Assert.Null(message.Error);
+        Assert.Null(message.NextAttemptOnUtc);
+
+        // Most importantly, the claim has been released.
+        Assert.Null(message.ClaimId);
+        Assert.Null(message.ClaimedUntilUtc);
+    }
+
     private async Task ResetDatabase()
     {
         await using var db = _postgres.CreateDbContext();
