@@ -15,7 +15,8 @@ public sealed class BlockingPublisher : IMessagePublisher
 
     public int PublishCount => Volatile.Read(ref _publishCount);
 
-    public Task WaitUntilPublishingAsync() => _entered.Task;
+    public Task WaitUntilPublishingAsync(TimeSpan timeout, CancellationToken cancellationToken) =>
+        _entered.Task.WaitAsync(timeout, cancellationToken);
 
     public void Release() => _release.TrySetResult();
 

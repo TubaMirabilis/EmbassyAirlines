@@ -117,10 +117,20 @@ public sealed class OutboxPersistenceTests
             publisher,
             NullLogger<OutboxProcessor>.Instance);
         var first = processor1.ProcessAsync(TestContext.Current.CancellationToken);
-        await publisher.WaitUntilPublishingAsync();
-        var secondResult = await processor2.ProcessAsync(TestContext.Current.CancellationToken);
-        Assert.Equal(0, secondResult);
-        publisher.Release();
+        try
+        {
+            await publisher.WaitUntilPublishingAsync(TimeSpan.FromSeconds(30), TestContext.Current.CancellationToken);
+            var secondResult = await processor2.ProcessAsync(TestContext.Current.CancellationToken);
+            Assert.Equal(0, secondResult);
+        }
+        finally
+        {
+            // Unblock the first processor and let it finish before db1 is disposed, without
+            // letting its own failure mask whatever exception is already propagating.
+            publisher.Release();
+            await ((Task)first).ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing | ConfigureAwaitOptions.ContinueOnCapturedContext);
+        }
+
         var firstResult = await first;
         Assert.Equal(1, firstResult);
         Assert.Equal(1, publisher.PublishCount);
