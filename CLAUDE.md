@@ -63,7 +63,7 @@ Cross-cutting contracts and infrastructure used by every service — read `src/S
 
 - **`Shared.Contracts`** — immutable record DTOs (`AircraftDto`, `ScheduleFlightDto`, …) and integration events (`AircraftCreatedEvent`, `FlightArrivedEvent`, …) implementing `IDomainEvent` / `IFlightStatusManagementEvent`. These records are the wire contract between services — changing one affects producer and consumer.
 - **`IEndpoint`** — each Minimal API endpoint is a class implementing `MapEndpoint`; `AddEndpoints(assembly)` + `MapEndpoints()` discover and register them via reflection, so new endpoints need no manual registration.
-- **`Ensure`** — guard-clause helpers (`NotNullOrEmpty`, `GreaterThanZero`, …) using `CallerArgumentExpression`. Prefer these over hand-written argument checks.
+- **`Ensure`** — guard-clause helpers (`NotNullOrEmpty`, `ZeroOrGreater`, …) using `CallerArgumentExpression`. Prefer these over hand-written argument checks.
 - **Error handling** — endpoints return `ErrorOr`-based results mapped through `ErrorHandlingHelper.GetProblemDetails` and `GlobalExceptionHandler` into RFC-compliant `ProblemDetails`. Follow the existing endpoint pattern rather than throwing.
 - **`RequestContextLoggingMiddleware`** — enriches Serilog logs with a correlation id (`X-Correlation-Id` header, else trace id).
 

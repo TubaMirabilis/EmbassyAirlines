@@ -99,7 +99,7 @@ Splitting message handlers one-per-event means each consumer scales, fails, retr
 
 - **`Shared.Contracts`** — immutable record DTOs (`AircraftDto`, `ScheduleFlightDto`, …) and integration events (`AircraftCreatedEvent`, `FlightArrivedEvent`, …) implementing `IDomainEvent` / `IFlightStatusManagementEvent`. **These records are the wire contract between services** — changing one affects both producer and consumer, and they deploy independently.
 - **`IEndpoint`** — every Minimal API endpoint is a class implementing `MapEndpoint`. `AddEndpoints(assembly)` + `MapEndpoints()` discover and register them by reflection, so a new endpoint needs no manual registration.
-- **`Ensure`** — guard-clause helpers (`NotNullOrEmpty`, `GreaterThanZero`, …) using `CallerArgumentExpression`, so the failing parameter name comes for free. Prefer these over hand-written argument checks.
+- **`Ensure`** — guard-clause helpers (`NotNullOrEmpty`, `ZeroOrGreater`, …) using `CallerArgumentExpression`, so the failing parameter name comes for free. Prefer these over hand-written argument checks.
 - **Error handling** — endpoints return `ErrorOr`-based results mapped through `ErrorHandlingHelper.GetProblemDetails`; `GlobalExceptionHandler` catches the rest. Everything surfaces as RFC-compliant `ProblemDetails`. Follow the existing endpoint pattern rather than throwing.
 - **`RequestContextLoggingMiddleware`** — enriches Serilog logs with a correlation id from the `X-Correlation-Id` header, falling back to the trace id.
 

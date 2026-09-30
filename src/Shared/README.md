@@ -114,9 +114,7 @@ The `Ensure` class centralizes guard clauses such as:
 
 - NotEmpty(Guid)
 - NotNullOrEmpty(string)
-- GreaterThanZero(int)
 - ZeroOrGreater(decimal)
-- LessThanOrEqualTo(...)
 
 It also uses `CallerArgumentExpression`, allowing exceptions to automatically include the caller's parameter name without manually specifying it.
 
