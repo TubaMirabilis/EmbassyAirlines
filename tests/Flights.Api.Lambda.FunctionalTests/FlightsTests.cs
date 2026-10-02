@@ -1,7 +1,7 @@
 using System.Net.Http.Json;
 using System.Text.Json;
+using AwesomeAssertions;
 using Flights.Core.Models;
-using FluentAssertions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using NodaTime;

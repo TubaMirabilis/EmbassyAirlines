@@ -1,4 +1,4 @@
-using FluentAssertions;
+using AwesomeAssertions;
 using Shared.Extensions;
 
 namespace Aircraft.Api.Lambda.FunctionalTests;
