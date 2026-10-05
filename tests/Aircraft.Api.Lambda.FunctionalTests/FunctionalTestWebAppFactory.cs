@@ -5,10 +5,9 @@ using Amazon.S3.Model;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.Logging;
+using Shared.Npgsql;
 using Testcontainers.LocalStack;
 using Testcontainers.PostgreSql;
 
@@ -26,19 +25,12 @@ public sealed class FunctionalTestWebAppFactory : WebApplicationFactory<Program>
         {
             var credentials = new BasicAWSCredentials("test-access-key", "test-secret-key");
             services.RemoveAll<IAmazonS3>();
-            services.RemoveAll<DbContextOptions<ApplicationDbContext>>();
             var config = new AmazonS3Config
             {
                 ServiceURL = _localStackContainer.GetConnectionString()
             };
             services.AddSingleton<IAmazonS3>(_ => new AmazonS3Client(credentials, config));
-            services.AddDbContext<ApplicationDbContext>(options => options.UseNpgsql(_dbContainer.GetConnectionString(), x =>
-            {
-                x.MigrationsHistoryTable("__EFMigrationsHistory", "aircraft");
-                x.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
-            })
-            .UseSnakeCaseNamingConvention()
-            .LogTo(Console.WriteLine, LogLevel.Warning));
+            services.AddDatabaseConnection<ApplicationDbContext>(_dbContainer.GetConnectionString(), useNodaTime: false, schema: "aircraft");
         });
     }
     public async ValueTask InitializeAsync()

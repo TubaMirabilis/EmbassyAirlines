@@ -18,27 +18,56 @@ public static class ServiceCollectionExtensions
         dataSourceBuilder.UsePasswordProvider(
             passwordProvider: _ => throw new NotSupportedException("Use OpenAsync"),
             passwordProviderAsync: async (builder, ct) => await RDSAuthTokenGenerator.GenerateAuthTokenAsync(dbConfig.Host, dbConfig.Port, dbConfig.Username));
-        if (useNodaTime)
-        {
-            dataSourceBuilder.UseNodaTime();
-        }
-        var dataSource = dataSourceBuilder.Build();
-        services.AddSingleton(dataSource);
-        services.AddSingleton<InsertOutboxMessagesInterceptor>();
-        services.AddDbContext<TDbContext>((sp, options) => options.UseNpgsql(dataSource, x =>
-        {
-            x.MigrationsHistoryTable("__EFMigrationsHistory", schema);
-            if (useNodaTime)
-            {
-                x.UseNodaTime();
-            }
-            x.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
-        })
-        .UseSnakeCaseNamingConvention()
-        .AddInterceptors(sp.GetRequiredService<InsertOutboxMessagesInterceptor>()));
+        AddDatabaseConnection<TDbContext>(services, dataSourceBuilder.Build(), useNodaTime, schema);
         return services;
     }
-    internal static string BuildConnectionString(DatabaseConnectionOptions config) => new NpgsqlConnectionStringBuilder
+    public static IServiceCollection AddDatabaseConnection<TDbContext>(
+    this IServiceCollection services,
+    string connectionString,
+    bool useNodaTime,
+    string schema)
+    where TDbContext : DbContext
+    {
+        var builder = new NpgsqlDataSourceBuilder(connectionString);
+        if (useNodaTime)
+        {
+            builder.UseNodaTime();
+        }
+        return AddDatabaseConnection<TDbContext>(
+            services,
+            builder.Build(),
+            useNodaTime,
+            schema);
+    }
+    private static IServiceCollection AddDatabaseConnection<TDbContext>(
+    IServiceCollection services,
+    NpgsqlDataSource dataSource,
+    bool useNodaTime,
+    string schema)
+    where TDbContext : DbContext
+    {
+        services.AddSingleton(dataSource);
+        services.AddSingleton<InsertOutboxMessagesInterceptor>();
+        services.AddDbContext<TDbContext>((sp, options) =>
+            options
+                .UseNpgsql(dataSource, npgsql =>
+                {
+                    npgsql.MigrationsHistoryTable(
+                        "__EFMigrationsHistory",
+                        schema);
+                    if (useNodaTime)
+                    {
+                        npgsql.UseNodaTime();
+                    }
+                    npgsql.UseQuerySplittingBehavior(
+                        QuerySplittingBehavior.SplitQuery);
+                })
+                .UseSnakeCaseNamingConvention()
+                .AddInterceptors(
+                    sp.GetRequiredService<InsertOutboxMessagesInterceptor>()));
+        return services;
+    }
+    private static string BuildConnectionString(DatabaseConnectionOptions config) => new NpgsqlConnectionStringBuilder
     {
         Database = config.Database,
         Host = config.Host,
