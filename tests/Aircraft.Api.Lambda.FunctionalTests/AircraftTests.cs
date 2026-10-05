@@ -161,6 +161,14 @@ public class AircraftTests : BaseFunctionalTest
         var listContent = await listResponse.Content.ReadAsStreamAsync(TestContext.Current.CancellationToken);
         var aircraftList = await JsonSerializer.DeserializeAsync<AircraftListDto>(listContent, JsonSerializerOptions.Web, TestContext.Current.CancellationToken);
         aircraftList.Should().BeEquivalentTo(expected);
+
+        // List filtered by parkedAt
+        var listFilterUri = new Uri($"aircraft?parkedAt={_request.ParkedAt}", UriKind.Relative);
+        var listFilterResponse = await HttpClient.GetAsync(listFilterUri, TestContext.Current.CancellationToken);
+        listFilterResponse.EnsureSuccessStatusCode();
+        var listFilterContent = await listFilterResponse.Content.ReadAsStreamAsync(TestContext.Current.CancellationToken);
+        var aircraftListFilter = await JsonSerializer.DeserializeAsync<AircraftListDto>(listFilterContent, JsonSerializerOptions.Web, TestContext.Current.CancellationToken);
+        aircraftListFilter.Should().BeEquivalentTo(expected);
     }
 
     private async Task<AircraftDto> CreateAircraftAsync()
