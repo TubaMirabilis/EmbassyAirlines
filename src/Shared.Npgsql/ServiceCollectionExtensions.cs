@@ -1,4 +1,3 @@
-using System.Globalization;
 using Amazon.RDS.Util;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -11,27 +10,14 @@ public static class ServiceCollectionExtensions
 {
     public static IServiceCollection AddDatabaseConnection<TDbContext>(this IServiceCollection services, IConfiguration config, bool useNodaTime, string schema) where TDbContext : DbContext
     {
-        var host = config["DbConnection:Host"];
-        var dbName = config["DbConnection:Database"];
-        var username = config["DbConnection:Username"];
-        var portStr = config["DbConnection:Port"];
-        Ensure.NotNullOrEmpty(host);
-        Ensure.NotNullOrEmpty(dbName);
-        Ensure.NotNullOrEmpty(username);
-        Ensure.NotNullOrEmpty(portStr);
-        var port = int.Parse(portStr, CultureInfo.InvariantCulture);
-        var connectionString = new NpgsqlConnectionStringBuilder
-        {
-            Database = dbName,
-            Host = host,
-            Port = port,
-            SslMode = SslMode.Require,
-            Username = username
-        }.ConnectionString;
+        var dbConfig = config.GetSection("DbConnection").Get<DatabaseConnectionOptions>();
+        Ensure.NotNull(dbConfig);
+        dbConfig.Validate();
+        var connectionString = BuildConnectionString(dbConfig);
         var dataSourceBuilder = new NpgsqlDataSourceBuilder(connectionString);
         dataSourceBuilder.UsePasswordProvider(
             passwordProvider: _ => throw new NotSupportedException("Use OpenAsync"),
-            passwordProviderAsync: async (builder, ct) => await RDSAuthTokenGenerator.GenerateAuthTokenAsync(host, port, username));
+            passwordProviderAsync: async (builder, ct) => await RDSAuthTokenGenerator.GenerateAuthTokenAsync(dbConfig.Host, dbConfig.Port, dbConfig.Username));
         if (useNodaTime)
         {
             dataSourceBuilder.UseNodaTime();
@@ -52,4 +38,12 @@ public static class ServiceCollectionExtensions
         .AddInterceptors(sp.GetRequiredService<InsertOutboxMessagesInterceptor>()));
         return services;
     }
+    internal static string BuildConnectionString(DatabaseConnectionOptions config) => new NpgsqlConnectionStringBuilder
+    {
+        Database = config.Database,
+        Host = config.Host,
+        Port = config.Port,
+        SslMode = SslMode.Require,
+        Username = config.Username
+    }.ConnectionString;
 }

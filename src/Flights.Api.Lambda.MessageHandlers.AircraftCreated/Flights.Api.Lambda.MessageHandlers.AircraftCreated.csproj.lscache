@@ -85,10 +85,10 @@ Microsoft.NETCore.App.Ref
  amazon.lambda.sqsevents/3.0.1/lib/net10.0/Amazon.Lambda.SQSEvents.dll
  aws.messaging.telemetry.opentelemetry/1.0.1/lib/net8.0/AWS.Messaging.Telemetry.OpenTelemetry.dll
  aws.messaging/1.6.0/lib/net8.0/AWS.Messaging.dll
- awssdk.core/4.0.102.6/lib/net8.0/AWSSDK.Core.dll
+ awssdk.core/4.0.102.8/lib/net8.0/AWSSDK.Core.dll
  awssdk.eventbridge/4.0.5.16/lib/net8.0/AWSSDK.EventBridge.dll
  awssdk.extensions.netcore.setup/4.0.3.23/lib/net8.0/AWSSDK.Extensions.NETCore.Setup.dll
- awssdk.rds/4.0.106/lib/net8.0/AWSSDK.RDS.dll
+ awssdk.rds/4.0.106.1/lib/net8.0/AWSSDK.RDS.dll
  awssdk.simplenotificationservice/4.0.2.17/lib/net8.0/AWSSDK.SimpleNotificationService.dll
  awssdk.sqs/4.0.2.15/lib/net8.0/AWSSDK.SQS.dll
  efcore.namingconventions/10.0.1/lib/net10.0/EFCore.NamingConventions.dll
@@ -111,7 +111,7 @@ Microsoft.NETCore.App.Ref
  microsoft.extensions.telemetry.abstractions/10.10.0/lib/net10.0/Microsoft.Extensions.Telemetry.Abstractions.dll
  microsoft.extensions.telemetry/10.10.0/lib/net10.0/Microsoft.Extensions.Telemetry.dll
  microsoft.openapi/2.12.0/lib/net8.0/Microsoft.OpenApi.dll
- nodatime/3.3.4/lib/net8.0/NodaTime.dll
+ nodatime/3.3.5/lib/net8.0/NodaTime.dll
  npgsql.entityframeworkcore.postgresql.nodatime/10.0.3/lib/net10.0/Npgsql.EntityFrameworkCore.PostgreSQL.NodaTime.dll
  npgsql.entityframeworkcore.postgresql/10.0.3/lib/net10.0/Npgsql.EntityFrameworkCore.PostgreSQL.dll
  npgsql.nodatime/10.0.3/lib/net8.0/Npgsql.NodaTime.dll
@@ -155,7 +155,7 @@ Microsoft.NETCore.App.Ref
  awssdk.eventbridge/4.0.5.16/analyzers/dotnet/cs/
   AWSSDK.EventBridge.CodeAnalysis.dll
   SharedAnalysisCode.dll
- awssdk.rds/4.0.106/analyzers/dotnet/cs/
+ awssdk.rds/4.0.106.1/analyzers/dotnet/cs/
   AWSSDK.RDS.CodeAnalysis.dll
   SharedAnalysisCode.dll
  awssdk.simplenotificationservice/4.0.2.17/analyzers/dotnet/cs/

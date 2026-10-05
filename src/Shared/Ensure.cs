@@ -36,4 +36,22 @@ public static class Ensure
             throw new ArgumentOutOfRangeException(paramName, "Value must be greater than or equal to zero.");
         }
     }
+    public static void NotNull<T>(
+        [NotNull] T? value,
+        [CallerArgumentExpression(nameof(value))] string? paramName = null)
+    {
+        if (value is null)
+        {
+            throw new ArgumentNullException(paramName);
+        }
+    }
+    public static void GreaterThanZero(
+        int value,
+        [CallerArgumentExpression(nameof(value))] string? paramName = null)
+    {
+        if (value <= 0)
+        {
+            throw new ArgumentOutOfRangeException(paramName, "Value must be greater than zero.");
+        }
+    }
 }

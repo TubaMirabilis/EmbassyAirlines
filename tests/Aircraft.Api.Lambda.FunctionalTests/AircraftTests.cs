@@ -126,6 +126,19 @@ public class AircraftTests : BaseFunctionalTest
     }
 
     [Fact]
+    public async Task List_Should_ReturnBadRequest_WhenFilteringByParkedAtAndEnRouteTo()
+    {
+        // Act
+        var uri = new Uri("aircraft?parkedAt=CYVR&enRouteTo=CYYZ", UriKind.Relative);
+        var response = await HttpClient.GetAsync(uri, TestContext.Current.CancellationToken);
+
+        // Assert
+        await GetProblemDetailsFromResponseAndAssert(
+            response,
+            "Cannot filter by both parkedAt and enRouteTo simultaneously.");
+    }
+
+    [Fact]
     public async Task Aircraft_Lifecycle_Should_Succeed()
     {
         // Create

@@ -98,8 +98,8 @@ Microsoft.NETCore.App.Ref
  amazon.cdk.asset.awscliv1/2.2.292/lib/net6.0/Amazon.CDK.Asset.AwsCliV1.dll
  amazon.cdk.asset.nodeproxyagentv6/2.1.2/lib/net6.0/Amazon.CDK.Asset.NodeProxyAgentV6.dll
  amazon.cdk.cloudassembly.schema/54.24.0/lib/net6.0/Amazon.CDK.CloudAssembly.Schema.dll
- amazon.cdk.lib/2.271.0/lib/net6.0/Amazon.CDK.Lib.dll
- amazon.jsii.analyzers/1.140.0/lib/netstandard2.0/Amazon.JSII.Analyzers.dll
+ amazon.cdk.lib/2.272.0/lib/net6.0/Amazon.CDK.Lib.dll
+ amazon.jsii.analyzers/1.141.0/lib/netstandard2.0/Amazon.JSII.Analyzers.dll
  amazon.jsii.runtime/1.140.0/lib/net6.0/Amazon.JSII.Runtime.dll
  constructs/10.8.1/lib/net6.0/Constructs.dll
  microsoft.extensions.configuration.abstractions/9.0.1/lib/net9.0/Microsoft.Extensions.Configuration.Abstractions.dll
@@ -127,7 +127,7 @@ Microsoft.NETCore.App.Ref
   Microsoft.CodeAnalysis.CSharp.CodeStyle.dll
   Microsoft.CodeAnalysis.CSharp.CodeStyle.Fixes.dll
 <NUGET>/
- amazon.jsii.analyzers/1.140.0/analyzers/dotnet/cs/Amazon.JSII.Analyzers.dll
+ amazon.jsii.analyzers/1.141.0/analyzers/dotnet/cs/Amazon.JSII.Analyzers.dll
  microsoft.extensions.logging.abstractions/9.0.1/analyzers/dotnet/roslyn4.4/cs/Microsoft.Extensions.Logging.Generators.dll
  microsoft.extensions.options/9.0.1/analyzers/dotnet/roslyn4.4/cs/Microsoft.Extensions.Options.SourceGeneration.dll
  sonaranalyzer.csharp/10.35.0.4138/analyzers/SonarAnalyzer.CSharp.dll

@@ -86,7 +86,7 @@ Microsoft.NETCore.App.Ref
  erroror/2.1.1/lib/net10.0/ErrorOr.dll
  fluentvalidation/12.1.1/lib/net8.0/FluentValidation.dll
  microsoft.extensions.dependencymodel/10.0.0/lib/net10.0/Microsoft.Extensions.DependencyModel.dll
- nodatime/3.3.4/lib/net8.0/NodaTime.dll
+ nodatime/3.3.5/lib/net8.0/NodaTime.dll
  serilog.aspnetcore/10.0.0/lib/net10.0/Serilog.AspNetCore.dll
  serilog.extensions.hosting/10.0.0/lib/net10.0/Serilog.Extensions.Hosting.dll
  serilog.extensions.logging/10.0.0/lib/net10.0/Serilog.Extensions.Logging.dll
