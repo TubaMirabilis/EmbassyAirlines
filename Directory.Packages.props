@@ -6,7 +6,7 @@
   <ItemGroup Condition="'$(MSBuildProjectExtension)' != '.dcproj'">
     <PackageVersion Include="Amazon.CDK.Lib" Version="2.272.0" />
     <PackageVersion Include="Amazon.JSII.Analyzers" Version="1.141.0" />
-    <PackageVersion Include="Amazon.Lambda.RuntimeSupport" Version="2.2.3" />
+    <PackageVersion Include="Amazon.Lambda.RuntimeSupport" Version="2.3.0" />
     <PackageVersion Include="AWS.Messaging" Version="1.6.0" />
     <PackageVersion Include="AWS.Messaging.Telemetry.OpenTelemetry" Version="1.0.1" />
     <PackageVersion Include="AWSSDK.CloudWatchLogs" Version="4.0.105" />
@@ -28,7 +28,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageVersion Include="Amazon.Lambda.AspNetCoreServer.Hosting" Version="2.2.1" />
-    <PackageVersion Include="Amazon.Lambda.Core" Version="3.3.0" />
+    <PackageVersion Include="Amazon.Lambda.Core" Version="3.4.0" />
     <PackageVersion Include="Amazon.Lambda.Serialization.SystemTextJson" Version="3.0.1" />
     <PackageVersion Include="Amazon.Lambda.SQSEvents" Version="3.0.1" />
     <PackageVersion Include="AWSSDK.Extensions.NETCore.Setup" Version="4.0.102.1" />
@@ -47,8 +47,8 @@
     <PackageVersion Include="Npgsql.EntityFrameworkCore.PostgreSQL.NodaTime" Version="10.0.3" />
     <PackageVersion Include="NodaTime" Version="3.3.5" />
     <PackageVersion Include="Serilog.AspNetCore" Version="10.0.0" />
-    <PackageVersion Include="Testcontainers.LocalStack" Version="4.15.0" />
-    <PackageVersion Include="Testcontainers.PostgreSql" Version="4.15.0" />
+    <PackageVersion Include="Testcontainers.LocalStack" Version="4.16.0" />
+    <PackageVersion Include="Testcontainers.PostgreSql" Version="4.16.0" />
     <PackageVersion Include="xunit.v3.mtp-v2" Version="4.0.1" />
     <PackageVersion Include="xunit.runner.visualstudio" Version="4.0.0" />
   </ItemGroup>
