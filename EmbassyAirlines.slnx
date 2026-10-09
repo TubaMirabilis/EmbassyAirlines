@@ -31,6 +31,7 @@
     <Project Path="tests/Aircraft.Infrastructure.IntegrationTests/Aircraft.Infrastructure.IntegrationTests.csproj" />
     <Project Path="tests/Airports.Api.Lambda.FunctionalTests/Airports.Api.Lambda.FunctionalTests.csproj" />
     <Project Path="tests/Flights.Api.Lambda.FunctionalTests/Flights.Api.Lambda.FunctionalTests.csproj" />
+    <Project Path="tests/Flights.Infrastructure.IntegrationTests/Flights.Infrastructure.IntegrationTests.csproj" />
     <Project Path="tests/SmokeTests/SmokeTests.csproj" />
   </Folder>
   <Project Path="Deployment/Deployment.csproj" />

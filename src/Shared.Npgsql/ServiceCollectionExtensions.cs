@@ -15,6 +15,10 @@ public static class ServiceCollectionExtensions
         dbConfig.Validate();
         var connectionString = BuildConnectionString(dbConfig);
         var dataSourceBuilder = new NpgsqlDataSourceBuilder(connectionString);
+        if (useNodaTime)
+        {
+            dataSourceBuilder.UseNodaTime();
+        }
         dataSourceBuilder.UsePasswordProvider(
             passwordProvider: _ => throw new NotSupportedException("Use OpenAsync"),
             passwordProviderAsync: async (builder, ct) => await RDSAuthTokenGenerator.GenerateAuthTokenAsync(dbConfig.Host, dbConfig.Port, dbConfig.Username));

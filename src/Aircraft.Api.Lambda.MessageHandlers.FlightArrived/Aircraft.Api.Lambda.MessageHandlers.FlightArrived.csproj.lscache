@@ -77,7 +77,7 @@ Microsoft.NETCore.App.Ref
  amazon.lambda.applicationloadbalancerevents/3.0.0/lib/net10.0/Amazon.Lambda.ApplicationLoadBalancerEvents.dll
  amazon.lambda.aspnetcoreserver.hosting/2.2.1/lib/net10.0/Amazon.Lambda.AspNetCoreServer.Hosting.dll
  amazon.lambda.aspnetcoreserver/10.2.1/lib/net10.0/Amazon.Lambda.AspNetCoreServer.dll
- amazon.lambda.core/3.3.0/lib/net10.0/Amazon.Lambda.Core.dll
+ amazon.lambda.core/3.4.0/lib/net10.0/Amazon.Lambda.Core.dll
  amazon.lambda.logging.aspnetcore/5.0.0/lib/net10.0/Amazon.Lambda.Logging.AspNetCore.dll
  amazon.lambda.runtimesupport/2.2.0/lib/net10.0/Amazon.Lambda.RuntimeSupport.dll
  amazon.lambda.serialization.systemtextjson/3.0.1/lib/net10.0/Amazon.Lambda.Serialization.SystemTextJson.dll
@@ -85,10 +85,10 @@ Microsoft.NETCore.App.Ref
  amazon.lambda.sqsevents/3.0.1/lib/net10.0/Amazon.Lambda.SQSEvents.dll
  aws.messaging.telemetry.opentelemetry/1.0.1/lib/net8.0/AWS.Messaging.Telemetry.OpenTelemetry.dll
  aws.messaging/1.6.0/lib/net8.0/AWS.Messaging.dll
- awssdk.core/4.0.102.8/lib/net8.0/AWSSDK.Core.dll
+ awssdk.core/4.0.102.9/lib/net8.0/AWSSDK.Core.dll
  awssdk.eventbridge/4.0.5.16/lib/net8.0/AWSSDK.EventBridge.dll
  awssdk.extensions.netcore.setup/4.0.3.23/lib/net8.0/AWSSDK.Extensions.NETCore.Setup.dll
- awssdk.rds/4.0.106.1/lib/net8.0/AWSSDK.RDS.dll
+ awssdk.rds/4.0.106.2/lib/net8.0/AWSSDK.RDS.dll
  awssdk.simplenotificationservice/4.0.2.17/lib/net8.0/AWSSDK.SimpleNotificationService.dll
  awssdk.sqs/4.0.2.15/lib/net8.0/AWSSDK.SQS.dll
  efcore.namingconventions/10.0.1/lib/net10.0/EFCore.NamingConventions.dll
@@ -155,7 +155,7 @@ Microsoft.NETCore.App.Ref
  awssdk.eventbridge/4.0.5.16/analyzers/dotnet/cs/
   AWSSDK.EventBridge.CodeAnalysis.dll
   SharedAnalysisCode.dll
- awssdk.rds/4.0.106.1/analyzers/dotnet/cs/
+ awssdk.rds/4.0.106.2/analyzers/dotnet/cs/
   AWSSDK.RDS.CodeAnalysis.dll
   SharedAnalysisCode.dll
  awssdk.simplenotificationservice/4.0.2.17/analyzers/dotnet/cs/
