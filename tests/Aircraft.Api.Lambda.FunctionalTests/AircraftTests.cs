@@ -7,7 +7,6 @@ namespace Aircraft.Api.Lambda.FunctionalTests;
 
 public class AircraftTests : BaseFunctionalTest
 {
-    private readonly CreateAircraftDto _request = new CreateAircraftDto("C-FJRN", "B78X", 135500, "Parked", 254011, "CYVR", null, 201848, 192777, 101522);
     public AircraftTests(FunctionalTestWebAppFactory factory) : base(factory)
     {
     }
@@ -150,15 +149,16 @@ public class AircraftTests : BaseFunctionalTest
         emptyAircraftList.Should().BeEquivalentTo(new AircraftListDto([], 1, 50, 0, false));
 
         // Create
-        var aircraft = await CreateAircraftAsync();
+        var request = new CreateAircraftDto("C-FJRN", "B78X", 135500, "Parked", 254011, "CYVR", null, 201848, 192777, 101522);
+        var aircraft = await CreateAircraftAsync(request);
         aircraft.Should().Match<AircraftDto>(x =>
-            x.TailNumber == _request.TailNumber &&
-            x.EquipmentCode == _request.EquipmentCode &&
-            x.DryOperatingWeight == _request.DryOperatingWeight &&
-            x.MaximumFuelWeight == _request.MaximumFuelWeight &&
-            x.MaximumLandingWeight == _request.MaximumLandingWeight &&
-            x.MaximumTakeoffWeight == _request.MaximumTakeoffWeight &&
-            x.MaximumZeroFuelWeight == _request.MaximumZeroFuelWeight &&
+            x.TailNumber == request.TailNumber &&
+            x.EquipmentCode == request.EquipmentCode &&
+            x.DryOperatingWeight == request.DryOperatingWeight &&
+            x.MaximumFuelWeight == request.MaximumFuelWeight &&
+            x.MaximumLandingWeight == request.MaximumLandingWeight &&
+            x.MaximumTakeoffWeight == request.MaximumTakeoffWeight &&
+            x.MaximumZeroFuelWeight == request.MaximumZeroFuelWeight &&
             x.Seats == 337);
 
         // List
@@ -171,7 +171,7 @@ public class AircraftTests : BaseFunctionalTest
         aircraftList.Should().BeEquivalentTo(expected);
 
         // List filtered by parkedAt
-        var listFilterUri = new Uri($"aircraft?parkedAt={_request.ParkedAt}", UriKind.Relative);
+        var listFilterUri = new Uri($"aircraft?parkedAt={request.ParkedAt}", UriKind.Relative);
         var listFilterResponse = await HttpClient.GetAsync(listFilterUri, TestContext.Current.CancellationToken);
         listFilterResponse.EnsureSuccessStatusCode();
         var listFilterContent = await listFilterResponse.Content.ReadAsStreamAsync(TestContext.Current.CancellationToken);
@@ -185,11 +185,22 @@ public class AircraftTests : BaseFunctionalTest
         var listExceedPageContent = await listExceedPageResponse.Content.ReadAsStreamAsync(TestContext.Current.CancellationToken);
         var aircraftListExceedPage = await JsonSerializer.DeserializeAsync<AircraftListDto>(listExceedPageContent, JsonSerializerOptions.Web, TestContext.Current.CancellationToken);
         aircraftListExceedPage.Should().BeEquivalentTo(expected);
+
+        // List filtered by enRouteTo
+        var req2 = request with { Status = "EnRoute", ParkedAt = null, EnRouteTo = "CYYZ", TailNumber = "C-FJRO" };
+        var aircraft2 = await CreateAircraftAsync(req2);
+        var expected2 = new AircraftListDto([aircraft2], 1, 50, 1, false);
+        var listFilterUri2 = new Uri($"aircraft?enRouteTo={req2.EnRouteTo}", UriKind.Relative);
+        var listFilterResponse2 = await HttpClient.GetAsync(listFilterUri2, TestContext.Current.CancellationToken);
+        listFilterResponse2.EnsureSuccessStatusCode();
+        var listFilterContent2 = await listFilterResponse2.Content.ReadAsStreamAsync(TestContext.Current.CancellationToken);
+        var aircraftListFilter2 = await JsonSerializer.DeserializeAsync<AircraftListDto>(listFilterContent2, JsonSerializerOptions.Web, TestContext.Current.CancellationToken);
+        aircraftListFilter2.Should().BeEquivalentTo(expected2);
     }
 
-    private async Task<AircraftDto> CreateAircraftAsync()
+    private async Task<AircraftDto> CreateAircraftAsync(CreateAircraftDto request)
     {
-        var response = await HttpClient.PostAsJsonAsync("aircraft", _request, TestContext.Current.CancellationToken);
+        var response = await HttpClient.PostAsJsonAsync("aircraft", request, TestContext.Current.CancellationToken);
         var content = await response.Content.ReadAsStreamAsync(TestContext.Current.CancellationToken);
         var aircraft = await JsonSerializer.DeserializeAsync<AircraftDto>(content, JsonSerializerOptions.Web, TestContext.Current.CancellationToken);
         if (aircraft is null)
