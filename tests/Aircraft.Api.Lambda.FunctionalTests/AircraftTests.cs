@@ -141,6 +141,14 @@ public class AircraftTests : BaseFunctionalTest
     [Fact]
     public async Task Aircraft_Lifecycle_Should_Succeed()
     {
+        // List should return empty list when no aircraft match
+        var emptyListUri = new Uri("aircraft", UriKind.Relative);
+        var emptyListResponse = await HttpClient.GetAsync(emptyListUri, TestContext.Current.CancellationToken);
+        emptyListResponse.EnsureSuccessStatusCode();
+        var emptyListContent = await emptyListResponse.Content.ReadAsStreamAsync(TestContext.Current.CancellationToken);
+        var emptyAircraftList = await JsonSerializer.DeserializeAsync<AircraftListDto>(emptyListContent, JsonSerializerOptions.Web, TestContext.Current.CancellationToken);
+        emptyAircraftList.Should().BeEquivalentTo(new AircraftListDto([], 1, 50, 0, false));
+
         // Create
         var aircraft = await CreateAircraftAsync();
         aircraft.Should().Match<AircraftDto>(x =>
@@ -169,6 +177,14 @@ public class AircraftTests : BaseFunctionalTest
         var listFilterContent = await listFilterResponse.Content.ReadAsStreamAsync(TestContext.Current.CancellationToken);
         var aircraftListFilter = await JsonSerializer.DeserializeAsync<AircraftListDto>(listFilterContent, JsonSerializerOptions.Web, TestContext.Current.CancellationToken);
         aircraftListFilter.Should().BeEquivalentTo(expected);
+
+        // List should return last page when requested page exceeds available pages
+        var listExceedPageUri = new Uri("aircraft?page=2", UriKind.Relative);
+        var listExceedPageResponse = await HttpClient.GetAsync(listExceedPageUri, TestContext.Current.CancellationToken);
+        listExceedPageResponse.EnsureSuccessStatusCode();
+        var listExceedPageContent = await listExceedPageResponse.Content.ReadAsStreamAsync(TestContext.Current.CancellationToken);
+        var aircraftListExceedPage = await JsonSerializer.DeserializeAsync<AircraftListDto>(listExceedPageContent, JsonSerializerOptions.Web, TestContext.Current.CancellationToken);
+        aircraftListExceedPage.Should().BeEquivalentTo(expected);
     }
 
     private async Task<AircraftDto> CreateAircraftAsync()
