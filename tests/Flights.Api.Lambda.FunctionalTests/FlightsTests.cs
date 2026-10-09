@@ -142,6 +142,24 @@ public class FlightsTests : BaseFunctionalTest
     }
 
     [Fact]
+    public async Task RescheduleFlight_Should_ReturnBadRequest_WhenSchedulingAmbiguityPolicyIsInvalid()
+    {
+        var id = Guid.NewGuid();
+        var dto = new RescheduleFlightDto(DateTime.UtcNow.AddHours(1), DateTime.UtcNow.AddHours(2), "InvalidPolicy");
+        var response = await HttpClient.PatchAsJsonAsync($"flights/{id}/schedule", dto, TestContext.Current.CancellationToken);
+        await GetProblemDetailsFromResponseAndAssert(response, "Invalid scheduling ambiguity policy");
+    }
+
+    [Fact]
+    public async Task RescheduleFlight_Should_ReturnNotFound_WhenFlightDoesNotExist()
+    {
+        var id = Guid.NewGuid();
+        var dto = new RescheduleFlightDto(DateTime.UtcNow.AddHours(1), DateTime.UtcNow.AddHours(2), "ThrowWhenAmbiguous");
+        var response = await HttpClient.PatchAsJsonAsync($"flights/{id}/schedule", dto, TestContext.Current.CancellationToken);
+        await GetProblemDetailsFromResponseAndAssert(response, $"Flight with ID {id} not found");
+    }
+
+    [Fact]
     public async Task Flight_Lifecycle_Should_Succeed()
     {
         var departureInstant = TimeHelpers.MinutesFromNowRoundedUp(_clock, 30);
