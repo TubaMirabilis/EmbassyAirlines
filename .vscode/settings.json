@@ -13,7 +13,10 @@
         "evnt",
         "JSII",
         "localstack",
+        "reportgenerator",
+        "reporttypes",
         "Schiphol",
+        "targetdir",
         "Testcontainers"
     ]
 }
