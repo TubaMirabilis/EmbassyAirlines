@@ -27,6 +27,7 @@ public sealed class Airport
     }
 #pragma warning restore CS8618
     public Guid Id { get; init; }
+    public long Version { get; set; }
     public Instant CreatedAt { get; init; }
     public Instant UpdatedAt { get; private set; }
     public string TimeZoneId { get; private set; }

@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore.Migrations;
+﻿using Microsoft.EntityFrameworkCore.Migrations;
 using NodaTime;
 
 #nullable disable
@@ -32,6 +32,7 @@ public partial class InitialCreate : Migration
             columns: table => new
             {
                 id = table.Column<Guid>(type: "uuid", nullable: false),
+                version = table.Column<long>(type: "bigint", nullable: false),
                 created_at = table.Column<Instant>(type: "timestamp with time zone", nullable: false),
                 updated_at = table.Column<Instant>(type: "timestamp with time zone", nullable: false),
                 time_zone_id = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
