@@ -64,7 +64,7 @@ public sealed class OutboxPersistenceTests
     public async Task ProcessAsync_should_publish_and_mark_message_processed()
     {
         await ResetDatabase();
-        var @event = new AircraftCreatedEvent(Guid.CreateVersion7(), Guid.CreateVersion7(), "C-FJRN", "B78X");
+        var @event = new AircraftCreatedEvent(Guid.CreateVersion7(), Guid.CreateVersion7(), "C-FJRN", "B78X", DateTimeOffset.UtcNow);
         await using (var arrangeDb = _postgres.CreateDbContext())
         {
             arrangeDb.Add(new OutboxMessage(@event.Id, nameof(AircraftCreatedEvent), JsonSerializer.Serialize(@event, _options), DateTime.UtcNow));
@@ -425,7 +425,7 @@ public sealed class OutboxPersistenceTests
         // Act
         var count = await ProcessOnceAsync(publisher);
 
-        // Assert: deserialisation fails before the publisher is reached, and is not retried.
+        // Assert
         Assert.Equal(0, count);
         Assert.Equal(0, publisher.AttemptCount);
         var message = await GetOutboxMessage(eventId);
@@ -536,7 +536,7 @@ public sealed class OutboxPersistenceTests
 
     private Task InsertOutboxMessage(Guid eventId, DateTime createdOnUtc)
     {
-        var @event = new AircraftCreatedEvent(eventId, Guid.CreateVersion7(), "C-FJRN", "B78X");
+        var @event = new AircraftCreatedEvent(eventId, Guid.CreateVersion7(), "C-FJRN", "B78X", DateTimeOffset.UtcNow);
         return InsertOutboxMessage(eventId, nameof(AircraftCreatedEvent), JsonSerializer.Serialize(@event, _options), createdOnUtc);
     }
 

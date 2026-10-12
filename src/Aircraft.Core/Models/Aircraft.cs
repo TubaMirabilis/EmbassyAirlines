@@ -30,7 +30,7 @@ public sealed class Aircraft : Entity
             throw new ArgumentException("Duplicate seat definitions found in the seat layout.");
         }
         _seats.AddRange(seats);
-        AddDomainEvent(new AircraftCreatedEvent(Guid.NewGuid(), Id, TailNumber, EquipmentCode));
+        AddDomainEvent(new AircraftCreatedEvent(Guid.NewGuid(), Id, TailNumber, EquipmentCode, CreatedAt));
     }
 #pragma warning disable CS8618
     private Aircraft()

@@ -71,8 +71,10 @@ obj/Debug/net10.0/
  Flights.Infrastructure.AssemblyInfo.cs
  Flights.Infrastructure.GlobalUsings.g.cs
 Outbox/OutboxProcessor.cs
+AircraftProjectionWriter.cs
 AirportProjectionWriter.cs
 AirportSnapshot.cs
+IAircraftProjectionWriter.cs
 IAirportProjectionWriter.cs
 
 [frameworkPacks]

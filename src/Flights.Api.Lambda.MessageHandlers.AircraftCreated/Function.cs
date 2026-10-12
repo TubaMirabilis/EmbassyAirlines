@@ -4,9 +4,8 @@ using Amazon.Lambda.Core;
 using Amazon.Lambda.Serialization.SystemTextJson;
 using Amazon.Lambda.SQSEvents;
 using AWS.Aspire.ServiceDefaults;
-using Flights.Core.Models;
+using Flights.Infrastructure;
 using Flights.Infrastructure.Database;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -32,7 +31,7 @@ public class Function
         builder.AddServiceDefaults();
         builder.Services.AddLogging();
         builder.Services.AddDatabaseConnection<ApplicationDbContext>(config, true, "flights");
-        builder.Services.AddSingleton<IClock>(SystemClock.Instance);
+        builder.Services.AddScoped<IAircraftProjectionWriter, AircraftProjectionWriter>();
         _host = builder.Build();
         _traceProvider = _host.Services.GetRequiredService<TracerProvider>();
     }
@@ -62,17 +61,13 @@ public class Function
             aircraftCreatedEvent.TailNumber,
             aircraftCreatedEvent.Id);
         using var scope = _host.Services.CreateScope();
-        var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-        if (await dbContext.Aircraft.AsNoTracking().AnyAsync(a => a.Id == aircraftCreatedEvent.AircraftId))
-        {
-            context.Logger.LogWarning($"Aircraft with ID: {aircraftCreatedEvent.AircraftId} already exists. Skipping creation.");
-            return;
-        }
-        var clock = _host.Services.GetRequiredService<IClock>();
-        var now = clock.GetCurrentInstant();
-        var aircraft = Aircraft.Create(aircraftCreatedEvent.AircraftId, aircraftCreatedEvent.TailNumber, aircraftCreatedEvent.EquipmentCode, now);
-        dbContext.Aircraft.Add(aircraft);
-        await dbContext.SaveChangesAsync();
+        var writer = scope.ServiceProvider.GetRequiredService<IAircraftProjectionWriter>();
+        await writer.InsertIfAbsentAsync(
+            aircraftCreatedEvent.AircraftId,
+            aircraftCreatedEvent.TailNumber,
+            aircraftCreatedEvent.EquipmentCode,
+            Instant.FromDateTimeOffset(aircraftCreatedEvent.CreatedAt),
+            CancellationToken.None);
         context.Logger.LogInformation($"Successfully processed AircraftCreatedEvent with ID: {aircraftCreatedEvent.Id}");
     }
 }
