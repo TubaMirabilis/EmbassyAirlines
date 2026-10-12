@@ -125,6 +125,7 @@ Four projects hold the cross-cutting code every service depends on.
 - **`AddServiceDefaults`** — OpenTelemetry tracing and metrics (ASP.NET Core, `HttpClient`, runtime, AWS SDK, AWS.Messaging, and Lambda instrumentation), service discovery, and standard `HttpClient` resilience.
 - **`AddHttpApiLambdaDefaults`** — `AddServiceDefaults` plus endpoint discovery, Lambda HTTP API hosting, `GlobalExceptionHandler`, `ProblemDetails`, and OpenAPI.
 - **`UseDefaultPipeline`** / **`MapDefaultEndpoints`** — exception handler, correlation-id middleware, and Serilog request logging; then the discovered endpoints, plus the OpenAPI document in `Development`.
+- **`SqsBatchProcessor`** — shared SQS batch-processing helper used by all six message-handler Lambdas. Processes messages sequentially, catches and logs individual failures, and returns an `SQSBatchResponse` containing the failed message IDs for partial batch retry handling.
 
 **`src/Shared.AWS.CloudWatchLogs`** — a small helper used by the log-fetching scripts in `scripts/`.
 
@@ -179,7 +180,7 @@ Times are modelled with **NodaTime**: `LocalDateTime` for the scheduled wall-clo
 
 Events published without a consumer today (`FlightScheduled`, `FlightCancelled`, `FlightDelayed`, `FlightRescheduled`, `FlightPricingAdjusted`, `AircraftAssignedToFlight`) still flow through SNS and exist as extension points for notification, pricing, or reporting consumers.
 
-**Message envelope.** Handlers receive an SQS message whose body is the SNS envelope; the domain payload sits at `Message` → `data`. Handlers parse that path explicitly. An empty envelope, a payload that deserialises to `null`, or a reference to an entity the consumer does not hold is logged and skipped rather than retried. Anything that throws fails the invocation, and SQS redelivers the message up to three times before moving it to the queue's dead-letter queue.
+**Message envelope.** Handlers receive an SQS message whose body is the SNS envelope; the domain payload sits at `Message` → `data`. Handlers parse that path explicitly. An empty envelope, a payload that deserialises to `null`, or a reference to an entity the consumer does not hold is logged and skipped rather than retried. Message handlers use the shared `SqsBatchProcessor` to process each SQS record independently. Exceptions are caught and logged per message, and failed message IDs are returned in an `SQSBatchResponse`. When partial batch failure reporting is enabled on the event source mapping, Lambda retries only the failed messages rather than the entire batch. Messages that repeatedly fail are moved to the queue's dead-letter queue when the configured maxReceiveCount threshold of three is reached. The SQS visibility timeout is 180 seconds.
 
 Because outbox delivery is at-least-once, consumers must tolerate duplicates. The `AirportCreated` and `AircraftCreated` handlers, for example, skip rows that already exist.
 
@@ -557,7 +558,7 @@ Choices made for a demonstration project that would differ in production:
 
 **Adding a published event.** Add the event record to `Shared.Contracts`, then follow every step in [The transactional outbox](#the-transactional-outbox): raise it from the domain model, register it in `OutboxProcessor.s_publishers` and the Publisher Lambda's `AddAWSMessageBus`, and provision and grant the SNS topic in CDK.
 
-**Adding a consumer.** Create a new `X.Api.Lambda.MessageHandlers.<EventName>` project with its own `Function` class and `HostApplicationBuilder`, add it to `EmbassyAirlines.slnx`, add a matching dockerfile in `docker/`, and wire an `EventHandlerLambda` construct in the service's CDK construct to create the queue, DLQ, and SNS subscription. Make the dependency on the service's migration explicit, as the existing handlers do. Remember that the payload sits at `Message` → `data` in the SNS-over-SQS envelope, and that delivery is at-least-once.
+**Adding a consumer.** Create a new `X.Api.Lambda.MessageHandlers.<EventName>` project with its own `Function` class and `HostApplicationBuilder`, add it to `EmbassyAirlines.slnx`, add a matching dockerfile in `docker/`, and wire an `EventHandlerLambda` construct in the service's CDK construct to create the queue, DLQ, and SNS subscription. Make the dependency on the service's migration explicit, as the existing handlers do. Remember that the payload sits at `Message` → `data` in the SNS-over-SQS envelope, and that delivery is at-least-once. Use `SqsBatchProcessor.ProcessAsync` inside `AWSLambdaWrapper.TraceAsync` and return `Task<SQSBatchResponse>` from the Lambda handler. Ensure the SQS event source mapping enables `ReportBatchItemFailures` so failed messages can be retried individually.
 
 **Changing a schema.** Change the model in `X.Core` / `X.Infrastructure`, add a migration with `dotnet ef` (see [Database and migrations](#database-and-migrations)), and deploy. The Migrations Lambda applies it before the dependent Lambdas are updated.
 
