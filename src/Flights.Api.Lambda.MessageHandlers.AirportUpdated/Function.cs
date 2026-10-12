@@ -3,6 +3,7 @@ using System.Text.Json;
 using Amazon.Lambda.Core;
 using Amazon.Lambda.Serialization.SystemTextJson;
 using Amazon.Lambda.SQSEvents;
+using AWS.Aspire.ServiceDefaults;
 using Flights.Infrastructure.Database;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -33,13 +34,7 @@ public class Function
         _host = builder.Build();
         _traceProvider = _host.Services.GetRequiredService<TracerProvider>();
     }
-    public async Task FunctionHandler(SQSEvent evnt, ILambdaContext context) => await AWSLambdaWrapper.TraceAsync(_traceProvider, async (e, ctx) =>
-    {
-        foreach (var message in e.Records)
-        {
-            await ProcessMessageAsync(message, ctx);
-        }
-    }, evnt, context);
+    public Task<SQSBatchResponse> FunctionHandler(SQSEvent evnt, ILambdaContext context) => AWSLambdaWrapper.TraceAsync(_traceProvider, (e, ctx) => SqsBatchProcessor.ProcessAsync(e, ctx, ProcessMessageAsync), evnt, context);
     private async Task ProcessMessageAsync(SQSEvent.SQSMessage message, ILambdaContext context)
     {
         using var activity = Activity.Current?.Source.StartActivity("AirportUpdatedEventHandler.ProcessMessage");

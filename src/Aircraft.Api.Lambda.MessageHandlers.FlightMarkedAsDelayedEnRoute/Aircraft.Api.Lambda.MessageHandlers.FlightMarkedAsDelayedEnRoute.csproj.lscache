@@ -93,7 +93,7 @@ Microsoft.NETCore.App.Ref
  awssdk.sqs/4.0.2.15/lib/net8.0/AWSSDK.SQS.dll
  efcore.namingconventions/10.0.1/lib/net10.0/EFCore.NamingConventions.dll
  erroror/2.1.1/lib/net10.0/ErrorOr.dll
- fluentvalidation/12.1.1/lib/net8.0/FluentValidation.dll
+ fluentvalidation/12.2.0/lib/net8.0/FluentValidation.dll
  microsoft.aspnetcore.openapi/10.0.12/lib/net10.0/Microsoft.AspNetCore.OpenApi.dll
  microsoft.entityframeworkcore.abstractions/10.0.4/lib/net10.0/Microsoft.EntityFrameworkCore.Abstractions.dll
  microsoft.entityframeworkcore.relational/10.0.4/lib/net10.0/Microsoft.EntityFrameworkCore.Relational.dll

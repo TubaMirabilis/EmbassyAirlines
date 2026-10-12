@@ -55,7 +55,7 @@ internal sealed class EventHandlerLambda : Construct
                 MaxReceiveCount = 3,
                 Queue = dlq
             },
-            VisibilityTimeout = Duration.Seconds(90)
+            VisibilityTimeout = Duration.Seconds(180)
         });
         props.Topic.AddSubscription(new SqsSubscription(queue));
         Function.AddEventSource(new SqsEventSource(queue, new SqsEventSourceProps

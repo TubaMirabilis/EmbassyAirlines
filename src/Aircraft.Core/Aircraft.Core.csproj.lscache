@@ -79,7 +79,7 @@ Microsoft.NETCore.App.Ref
 ../Shared/obj/Debug/net10.0/ref/Shared.dll
 <NUGET>/
  erroror/2.1.1/lib/net10.0/ErrorOr.dll
- fluentvalidation/12.1.1/lib/net8.0/FluentValidation.dll
+ fluentvalidation/12.2.0/lib/net8.0/FluentValidation.dll
  microsoft.extensions.dependencymodel/10.0.0/lib/net10.0/Microsoft.Extensions.DependencyModel.dll
  serilog.aspnetcore/10.0.0/lib/net10.0/Serilog.AspNetCore.dll
  serilog.extensions.hosting/10.0.0/lib/net10.0/Serilog.Extensions.Hosting.dll

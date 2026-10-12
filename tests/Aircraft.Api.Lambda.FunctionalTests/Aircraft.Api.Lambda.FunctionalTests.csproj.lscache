@@ -56,7 +56,7 @@ TemporaryDependencyNodeTargetIdentifier=net10.0
 /warnaserror+:NU1605,SYSLIB0011
 
 [sourceFiles]
-<NUGET>/xunit.v3.core.mtp-v2/4.0.1/_content/
+<NUGET>/xunit.v3.core.mtp-v2/4.0.2/_content/
  DefaultResultWriters.cs
  DefaultRunnerReporters.cs
 obj/Debug/net10.0/
@@ -123,7 +123,7 @@ Microsoft.NETCore.App.Ref
  docker.dotnet.enhanced/4.3.3/lib/net10.0/Docker.DotNet.dll
  efcore.namingconventions/10.0.1/lib/net10.0/EFCore.NamingConventions.dll
  erroror/2.1.1/lib/net10.0/ErrorOr.dll
- fluentvalidation/12.1.1/lib/net8.0/FluentValidation.dll
+ fluentvalidation/12.2.0/lib/net8.0/FluentValidation.dll
  humanizer.core/2.14.1/lib/net6.0/Humanizer.dll
  microsoft.applicationinsights/2.23.0/lib/netstandard2.0/Microsoft.ApplicationInsights.dll
  microsoft.aspnetcore.mvc.testing/10.0.12/lib/net10.0/Microsoft.AspNetCore.Mvc.Testing.dll
@@ -156,10 +156,10 @@ Microsoft.NETCore.App.Ref
  microsoft.extensions.telemetry.abstractions/10.10.0/lib/net10.0/Microsoft.Extensions.Telemetry.Abstractions.dll
  microsoft.extensions.telemetry/10.10.0/lib/net10.0/Microsoft.Extensions.Telemetry.dll
  microsoft.openapi/2.12.0/lib/net8.0/Microsoft.OpenApi.dll
- microsoft.testing.extensions.telemetry/2.4.0/lib/net9.0/Microsoft.Testing.Extensions.Telemetry.dll
- microsoft.testing.extensions.trxreport.abstractions/2.4.0/lib/net9.0/Microsoft.Testing.Extensions.TrxReport.Abstractions.dll
- microsoft.testing.platform.msbuild/2.4.0/lib/net9.0/Microsoft.Testing.Extensions.MSBuild.dll
- microsoft.testing.platform/2.4.1/lib/net9.0/Microsoft.Testing.Platform.dll
+ microsoft.testing.extensions.telemetry/2.5.1/lib/net9.0/Microsoft.Testing.Extensions.Telemetry.dll
+ microsoft.testing.extensions.trxreport.abstractions/2.5.1/lib/net9.0/Microsoft.Testing.Extensions.TrxReport.Abstractions.dll
+ microsoft.testing.platform.msbuild/2.5.1/lib/net9.0/Microsoft.Testing.Extensions.MSBuild.dll
+ microsoft.testing.platform/2.5.1/lib/net9.0/Microsoft.Testing.Platform.dll
  microsoft.testplatform.testhost/18.10.1/lib/net8.0/
   Microsoft.TestPlatform.CommunicationUtilities.dll
   Microsoft.TestPlatform.CoreUtilities.dll
@@ -212,12 +212,12 @@ Microsoft.NETCore.App.Ref
  testcontainers.localstack/4.16.0/lib/net10.0/Testcontainers.LocalStack.dll
  testcontainers.postgresql/4.16.0/lib/net10.0/Testcontainers.PostgreSql.dll
  testcontainers/4.16.0/lib/net10.0/Testcontainers.dll
- xunit.v3.assert/4.0.1/lib/net8.0/xunit.v3.assert.dll
- xunit.v3.common/4.0.1/lib/netstandard2.0/xunit.v3.common.dll
- xunit.v3.core.mtp-v2/4.0.1/lib/net8.0/xunit.v3.mtp-v2.dll
- xunit.v3.extensibility.core/4.0.1/lib/netstandard2.0/xunit.v3.core.dll
- xunit.v3.runner.common/4.0.1/lib/netstandard2.0/xunit.v3.runner.common.dll
- xunit.v3.runner.inproc.console/4.0.1/lib/net8.0/xunit.v3.runner.inproc.console.dll
+ xunit.v3.assert/4.0.2/lib/net8.0/xunit.v3.assert.dll
+ xunit.v3.common/4.0.2/lib/netstandard2.0/xunit.v3.common.dll
+ xunit.v3.core.mtp-v2/4.0.2/lib/net8.0/xunit.v3.mtp-v2.dll
+ xunit.v3.extensibility.core/4.0.2/lib/netstandard2.0/xunit.v3.core.dll
+ xunit.v3.runner.common/4.0.2/lib/netstandard2.0/xunit.v3.runner.common.dll
+ xunit.v3.runner.inproc.console/4.0.2/lib/net8.0/xunit.v3.runner.inproc.console.dll
 
 [analyzerReferences]
 <NETSDK>/Sdks/Microsoft.NET.Sdk/
@@ -254,7 +254,7 @@ Microsoft.NETCore.App.Ref
   Microsoft.Gen.Logging.dll
   Microsoft.Gen.Metrics.dll
  sonaranalyzer.csharp/10.35.0.4138/analyzers/SonarAnalyzer.CSharp.dll
- xunit.analyzers/2.1.0/analyzers/dotnet/cs/
+ xunit.analyzers/2.2.0/analyzers/dotnet/cs/
   xunit.analyzers.dll
   xunit.analyzers.fixes.dll
 
