@@ -12,13 +12,14 @@ public sealed class Airport : Entity
         Ensure.NotNullOrEmpty(name);
         Ensure.NotNullOrEmpty(timeZoneId);
         Id = Guid.NewGuid();
+        Version = 1;
         CreatedAt = createdAt;
         UpdatedAt = createdAt;
         Name = name;
         IcaoCode = icaoCode;
         IataCode = iataCode;
         TimeZoneId = timeZoneId;
-        AddDomainEvent(new AirportCreatedEvent(Guid.NewGuid(), Id, Name, IcaoCode, IataCode, TimeZoneId));
+        AddDomainEvent(new AirportCreatedEvent(Guid.NewGuid(), Id, Version, Name, IcaoCode, IataCode, TimeZoneId, CreatedAt, UpdatedAt));
     }
 #pragma warning disable CS8618
     private Airport()
@@ -26,6 +27,7 @@ public sealed class Airport : Entity
     }
 #pragma warning restore CS8618
     public Guid Id { get; init; }
+    public long Version { get; private set; }
     public DateTimeOffset CreatedAt { get; init; }
     public DateTimeOffset UpdatedAt { get; private set; }
     public string Name { get; private set; }
@@ -36,11 +38,12 @@ public sealed class Airport : Entity
         => new(icaoCode, iataCode, name, timeZoneId, createdAt);
     public void Update(string icaoCode, string iataCode, string name, string timeZoneId, DateTimeOffset updatedAt)
     {
+        Version++;
         IcaoCode = icaoCode;
         IataCode = iataCode;
         Name = name;
         TimeZoneId = timeZoneId;
         UpdatedAt = updatedAt;
-        AddDomainEvent(new AirportUpdatedEvent(Guid.NewGuid(), Id, Name, IcaoCode, IataCode, TimeZoneId));
+        AddDomainEvent(new AirportUpdatedEvent(Guid.NewGuid(), Id, Version, Name, IcaoCode, IataCode, TimeZoneId, CreatedAt, UpdatedAt));
     }
 }

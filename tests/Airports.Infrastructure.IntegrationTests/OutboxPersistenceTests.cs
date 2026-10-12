@@ -18,7 +18,8 @@ public sealed class OutboxPersistenceTests
     public async Task ProcessAsync_should_publish_and_mark_message_processed()
     {
         await ResetDatabase();
-        var @event = new AirportCreatedEvent(Guid.CreateVersion7(), Guid.CreateVersion7(), "Vancouver International Airport", "CYVR", "YVR", "America/Vancouver");
+        var now = DateTimeOffset.UtcNow;
+        var @event = new AirportCreatedEvent(Guid.NewGuid(), Guid.NewGuid(), 1, "Vancouver International Airport", "CYVR", "YVR", "America/Vancouver", now, now);
         await using (var arrangeDb = _postgres.CreateDbContext())
         {
             arrangeDb.Add(new OutboxMessage(@event.Id, nameof(AirportCreatedEvent), JsonSerializer.Serialize(@event, _options), DateTime.UtcNow));

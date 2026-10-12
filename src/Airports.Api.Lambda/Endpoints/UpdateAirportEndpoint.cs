@@ -19,6 +19,7 @@ internal sealed class UpdateAirportEndpoint : IEndpoint
               .Produces<AirportDto>(StatusCodes.Status200OK)
               .ProducesProblem(StatusCodes.Status400BadRequest)
               .ProducesProblem(StatusCodes.Status404NotFound)
+              .ProducesProblem(StatusCodes.Status409Conflict)
               .ProducesProblem(StatusCodes.Status500InternalServerError);
     private static async Task<Results<Ok<AirportDto>, ProblemHttpResult>> InvokeAsync(ApplicationDbContext ctx,
                                                                                       ILogger<UpdateAirportEndpoint> logger,
@@ -43,7 +44,16 @@ internal sealed class UpdateAirportEndpoint : IEndpoint
             return TypedResults.Problem(ErrorHandlingHelper.GetProblemDetails(error));
         }
         airport.Update(dto.IcaoCode, dto.IataCode, dto.Name, dto.TimeZoneId, timeProvider.GetUtcNow());
-        await ctx.SaveChangesAsync(ct);
+        try
+        {
+            await ctx.SaveChangesAsync(ct);
+        }
+        catch (DbUpdateConcurrencyException ex)
+        {
+            logger.LogWarning(ex, "Concurrency conflict while updating airport {AirportId}", id);
+            var error = Error.Conflict("Airport.ConcurrencyConflict", "The airport was modified by another request. Please retrieve its latest state and try again.");
+            return TypedResults.Problem(ErrorHandlingHelper.GetProblemDetails(error));
+        }
         var response = new AirportDto(airport.Id, airport.Name, airport.IcaoCode, airport.IataCode, airport.TimeZoneId);
         return TypedResults.Ok(response);
     }

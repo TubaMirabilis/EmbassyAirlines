@@ -17,6 +17,7 @@ internal sealed class AirportConfiguration : IEntityTypeConfiguration<Airport>
         builder.Property(a => a.IcaoCode)
             .IsRequired()
             .HasMaxLength(4);
+        builder.Property(x => x.Version).IsConcurrencyToken();
         builder.Property(a => a.IataCode)
             .IsRequired()
             .HasMaxLength(3);
