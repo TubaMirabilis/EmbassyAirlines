@@ -51,6 +51,18 @@ public sealed class AirportProjectionWriterTests
         Assert.Equal(version3, await GetProjectionAsync(version3.Id));
     }
 
+    [Fact]
+    public async Task ApplyAsync_should_ignore_duplicate_version()
+    {
+        var id = Guid.CreateVersion7();
+        var version1 = CreateHeathrowSnapshot(id, 1);
+
+        await ApplyAsync(version1);
+        await ApplyAsync(version1);
+
+        Assert.Equal(version1, await GetProjectionAsync(id));
+    }
+
     [Theory]
     [InlineData(0L)]
     [InlineData(-1L)]
