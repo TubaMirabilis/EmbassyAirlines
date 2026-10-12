@@ -64,6 +64,7 @@ obj/Debug/net10.0/
  .NETCoreApp,Version=v10.0.AssemblyAttributes.cs
  Aircraft.Api.Lambda.AssemblyInfo.cs
  Aircraft.Api.Lambda.GlobalUsings.g.cs
+ Aircraft.Api.Lambda.MvcApplicationPartsAssemblyInfo.cs
 AircraftExtensions.cs
 CreateAircraftDtoValidator.cs
 Program.cs

@@ -4,10 +4,8 @@ using Amazon.Lambda.Core;
 using Amazon.Lambda.Serialization.SystemTextJson;
 using Amazon.Lambda.SQSEvents;
 using AWS.Aspire.ServiceDefaults;
-using Flights.Core.Models;
 using Flights.Infrastructure;
 using Flights.Infrastructure.Database;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -45,14 +43,12 @@ public class Function
         var messageElement = JsonDocument.Parse(message.Body).RootElement.GetProperty("Message").GetString();
         if (string.IsNullOrWhiteSpace(messageElement))
         {
-            context.Logger.LogWarning("Message element is null or empty.");
-            return;
+            throw new JsonException("SNS message payload is null or empty.");
         }
         var airportCreatedEvent = JsonDocument.Parse(messageElement).RootElement.GetProperty("data").Deserialize<AirportCreatedEvent>();
         if (airportCreatedEvent is null)
         {
-            context.Logger.LogWarning("Failed to deserialize AirportCreatedEvent.");
-            return;
+            throw new JsonException("Failed to deserialize AirportCreatedEvent.");
         }
         activity?.SetTag("airport.id", airportCreatedEvent.AirportId);
         activity?.SetTag("airport.icao_code", airportCreatedEvent.IcaoCode);

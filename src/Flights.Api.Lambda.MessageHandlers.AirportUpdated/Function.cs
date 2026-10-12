@@ -32,7 +32,6 @@ public class Function
         builder.Services.AddLogging();
         builder.Services.AddDatabaseConnection<ApplicationDbContext>(config, true, "flights");
         builder.Services.AddScoped<IAirportProjectionWriter, AirportProjectionWriter>();
-        builder.Services.AddSingleton<IClock>(SystemClock.Instance);
         _host = builder.Build();
         _traceProvider = _host.Services.GetRequiredService<TracerProvider>();
     }
@@ -44,14 +43,12 @@ public class Function
         var messageElement = JsonDocument.Parse(message.Body).RootElement.GetProperty("Message").GetString();
         if (string.IsNullOrWhiteSpace(messageElement))
         {
-            context.Logger.LogWarning("Message element is null or empty.");
-            return;
+            throw new JsonException("SNS message payload is null or empty.");
         }
         var airportUpdatedEvent = JsonDocument.Parse(messageElement).RootElement.GetProperty("data").Deserialize<AirportUpdatedEvent>();
         if (airportUpdatedEvent is null)
         {
-            context.Logger.LogWarning("Failed to deserialize AirportUpdatedEvent.");
-            return;
+            throw new JsonException("Failed to deserialize AirportUpdatedEvent.");
         }
         activity?.SetTag("airport.id", airportUpdatedEvent.AirportId);
         activity?.SetTag("airport.icao_code", airportUpdatedEvent.IcaoCode);
@@ -72,6 +69,6 @@ public class Function
             Instant.FromDateTimeOffset(airportUpdatedEvent.CreatedAt),
             Instant.FromDateTimeOffset(airportUpdatedEvent.UpdatedAt));
         await writer.ApplyAsync(snapshot, CancellationToken.None);
-        context.Logger.LogInformation($"Airport with ID {airportUpdatedEvent.AirportId} updated successfully.");
+        context.Logger.LogInformation($"Successfully processed AirportUpdatedEvent with ID: {airportUpdatedEvent.Id}");
     }
 }
