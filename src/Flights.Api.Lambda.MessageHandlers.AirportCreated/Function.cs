@@ -5,6 +5,7 @@ using Amazon.Lambda.Serialization.SystemTextJson;
 using Amazon.Lambda.SQSEvents;
 using AWS.Aspire.ServiceDefaults;
 using Flights.Core.Models;
+using Flights.Infrastructure;
 using Flights.Infrastructure.Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -32,6 +33,7 @@ public class Function
         builder.AddServiceDefaults();
         builder.Services.AddLogging();
         builder.Services.AddDatabaseConnection<ApplicationDbContext>(config, true, "flights");
+        builder.Services.AddScoped<IAirportProjectionWriter, AirportProjectionWriter>();
         builder.Services.AddSingleton<IClock>(SystemClock.Instance);
         _host = builder.Build();
         _traceProvider = _host.Services.GetRequiredService<TracerProvider>();

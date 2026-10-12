@@ -71,6 +71,9 @@ obj/Debug/net10.0/
  Flights.Infrastructure.AssemblyInfo.cs
  Flights.Infrastructure.GlobalUsings.g.cs
 Outbox/OutboxProcessor.cs
+AirportProjectionWriter.cs
+AirportSnapshot.cs
+IAirportProjectionWriter.cs
 
 [frameworkPacks]
 Microsoft.AspNetCore.App.Ref
