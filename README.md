@@ -139,6 +139,8 @@ The simplest context: airport reference data. Backed by **PostgreSQL** (`airport
 
 The `Airport` aggregate raises `AirportCreated` on creation and `AirportUpdated` on every update; both leave through the outbox like every other event. Creating an airport whose IATA code already exists returns `409`.
 
+The `Airport` aggregate uses optimistic concurrency through an application-managed `Version` property, initialised to `1` and incremented on every update. EF Core maps it as a concurrency token, preventing concurrent requests from silently overwriting one another. A stale update returns HTTP `409 Conflict`, and its associated outbox event is not persisted. Both `AirportCreated` and `AirportUpdated` publish complete versioned snapshots, including the source creation and modification timestamps.
+
 - Publishes: `AirportCreated`, `AirportUpdated`
 - Consumes: nothing
 
@@ -180,9 +182,9 @@ Times are modelled with **NodaTime**: `LocalDateTime` for the scheduled wall-clo
 
 Events published without a consumer today (`FlightScheduled`, `FlightCancelled`, `FlightDelayed`, `FlightRescheduled`, `FlightPricingAdjusted`, `AircraftAssignedToFlight`) still flow through SNS and exist as extension points for notification, pricing, or reporting consumers.
 
-**Message envelope.** Handlers receive an SQS message whose body is the SNS envelope; the domain payload sits at `Message` → `data`. Handlers parse that path explicitly. An empty envelope, a payload that deserialises to `null`, or a reference to an entity the consumer does not hold is logged and skipped rather than retried. Message handlers use the shared `SqsBatchProcessor` to process each SQS record independently. Exceptions are caught and logged per message, and failed message IDs are returned in an `SQSBatchResponse`. When partial batch failure reporting is enabled on the event source mapping, Lambda retries only the failed messages rather than the entire batch. Messages that repeatedly fail are moved to the queue's dead-letter queue when the configured maxReceiveCount threshold of three is reached. The SQS visibility timeout is 180 seconds.
+**Message envelope.** Handlers receive an SQS message whose body is the SNS envelope; the domain payload sits at `Message` → `data`. Handlers parse that path explicitly. Malformed envelopes and payloads that cannot be deserialised cause the handler to fail rather than silently acknowledging the message. The shared `SqsBatchProcessor` processes each SQS record independently, catches and logs exceptions, and returns an `SQSBatchResponse` containing only failed message IDs. With partial batch failure reporting enabled, Lambda retries those messages individually. Messages that repeatedly fail are moved to the queue's dead-letter queue after the configured maximum of three receives. The SQS visibility timeout is 180 seconds.
 
-Because outbox delivery is at-least-once, consumers must tolerate duplicates. The `AirportCreated` and `AircraftCreated` handlers, for example, skip rows that already exist.
+**Idempotency and ordering.** SNS/SQS delivery is at-least-once, so consumers must tolerate duplicate and out-of-order messages. Flights uses atomic PostgreSQL upserts to maintain its local aircraft and airport projections. Aircraft creation uses `INSERT ... ON CONFLICT DO NOTHING`, making duplicate deliveries harmless. Airport creation and update events carry complete snapshots with monotonically increasing aggregate versions. The airport projection applies a snapshot only when its version is newer than the stored version, allowing updates to arrive before creation events without regressing the read model. Event timestamps originate from the publishing service rather than the time of consumption.
 
 ---
 
@@ -520,7 +522,7 @@ These are genuine HTTP tests against a real database — not mocked unit tests.
 
 ### Integration tests
 
-`tests/*.Infrastructure.IntegrationTests` exercise the transactional outbox against a real PostgreSQL container. The Aircraft suite is the thorough one: it covers the interceptor writing outbox rows in the same transaction, concurrent processors never publishing the same message, expired claims being reclaimed, a worker that lost its lease being unable to overwrite the new owner's outcome, exponential backoff, and dead-lettering of unknown types, invalid JSON, and unrecoverable failures. The Airports and Flights suites currently cover the publish-and-mark-processed path.
+`tests/*.Infrastructure.IntegrationTests` exercise the transactional outbox against a real PostgreSQL container. The Aircraft suite provides extensive outbox coverage: it covers the interceptor writing outbox rows in the same transaction, concurrent processors never publishing the same message, expired claims being reclaimed, a worker that lost its lease being unable to overwrite the new owner's outcome, exponential backoff, and dead-lettering of unknown types, invalid JSON, and unrecoverable failures. The Airports suite additionally verifies optimistic concurrency, including rejection of stale updates and rollback of their associated outbox events. The Flights suite tests version-aware airport projection updates against PostgreSQL, including duplicate delivery, stale events, and update events arriving before creation events.
 
 ### Unit tests
 
