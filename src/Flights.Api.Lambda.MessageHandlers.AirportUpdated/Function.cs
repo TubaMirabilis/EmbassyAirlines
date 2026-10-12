@@ -60,17 +60,18 @@ public class Function
         activity?.SetTag("airport.time_zone_id", airportUpdatedEvent.TimeZoneId);
         context.Logger.LogInformation($"Processing AirportUpdatedEvent with ID: {airportUpdatedEvent.Id}");
         using var scope = _host.Services.CreateScope();
-        var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-        var airport = await dbContext.Airports.FindAsync(airportUpdatedEvent.AirportId);
-        if (airport is null)
-        {
-            context.Logger.LogWarning($"Airport with ID {airportUpdatedEvent.AirportId} not found. Skipping update.");
-            return;
-        }
-        var clock = _host.Services.GetRequiredService<IClock>();
-        var now = clock.GetCurrentInstant();
-        airport.Update(airportUpdatedEvent.IcaoCode, airportUpdatedEvent.IataCode, airportUpdatedEvent.Name, airportUpdatedEvent.TimeZoneId, now);
-        await dbContext.SaveChangesAsync();
+        var writer = scope.ServiceProvider
+    .GetRequiredService<IAirportProjectionWriter>();
+        var snapshot = new AirportSnapshot(
+            airportUpdatedEvent.AirportId,
+            airportUpdatedEvent.Version,
+            airportUpdatedEvent.Name,
+            airportUpdatedEvent.IcaoCode,
+            airportUpdatedEvent.IataCode,
+            airportUpdatedEvent.TimeZoneId,
+            Instant.FromDateTimeOffset(airportUpdatedEvent.CreatedAt),
+            Instant.FromDateTimeOffset(airportUpdatedEvent.UpdatedAt));
+        await writer.ApplyAsync(snapshot, CancellationToken.None);
         context.Logger.LogInformation($"Airport with ID {airportUpdatedEvent.AirportId} updated successfully.");
     }
 }

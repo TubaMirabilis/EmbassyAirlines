@@ -34,7 +34,6 @@ public class Function
         builder.Services.AddLogging();
         builder.Services.AddDatabaseConnection<ApplicationDbContext>(config, true, "flights");
         builder.Services.AddScoped<IAirportProjectionWriter, AirportProjectionWriter>();
-        builder.Services.AddSingleton<IClock>(SystemClock.Instance);
         _host = builder.Build();
         _traceProvider = _host.Services.GetRequiredService<TracerProvider>();
     }
@@ -62,24 +61,18 @@ public class Function
         activity?.SetTag("airport.time_zone_id", airportCreatedEvent.TimeZoneId);
         context.Logger.LogInformation($"Processing AirportCreatedEvent with ID: {airportCreatedEvent.Id}");
         using var scope = _host.Services.CreateScope();
-        var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-        if (await dbContext.Airports.AsNoTracking().AnyAsync(a => a.Id == airportCreatedEvent.AirportId))
-        {
-            context.Logger.LogWarning($"Airport with ID: {airportCreatedEvent.AirportId} already exists. Skipping creation.");
-            return;
-        }
-        var clock = _host.Services.GetRequiredService<IClock>();
-        var airport = Airport.Create(new AirportCreationArgs
-        {
-            CreatedAt = clock.GetCurrentInstant(),
-            IataCode = airportCreatedEvent.IataCode,
-            IcaoCode = airportCreatedEvent.IcaoCode,
-            Id = airportCreatedEvent.AirportId,
-            Name = airportCreatedEvent.Name,
-            TimeZoneId = airportCreatedEvent.TimeZoneId
-        });
-        dbContext.Airports.Add(airport);
-        await dbContext.SaveChangesAsync();
+        var writer = scope.ServiceProvider
+    .GetRequiredService<IAirportProjectionWriter>();
+        var snapshot = new AirportSnapshot(
+            airportCreatedEvent.AirportId,
+            airportCreatedEvent.Version,
+            airportCreatedEvent.Name,
+            airportCreatedEvent.IcaoCode,
+            airportCreatedEvent.IataCode,
+            airportCreatedEvent.TimeZoneId,
+            Instant.FromDateTimeOffset(airportCreatedEvent.CreatedAt),
+            Instant.FromDateTimeOffset(airportCreatedEvent.UpdatedAt));
+        await writer.ApplyAsync(snapshot, CancellationToken.None);
         context.Logger.LogInformation($"Successfully processed AirportCreatedEvent with ID: {airportCreatedEvent.Id}");
     }
 }
