@@ -43,14 +43,12 @@ public class Function
         var messageElement = JsonDocument.Parse(message.Body).RootElement.GetProperty("Message").GetString();
         if (string.IsNullOrWhiteSpace(messageElement))
         {
-            context.Logger.LogWarning("Message element is null or empty.");
-            return;
+            throw new JsonException("SNS message payload is null or empty.");
         }
         var aircraftCreatedEvent = JsonDocument.Parse(messageElement).RootElement.GetProperty("data").Deserialize<AircraftCreatedEvent>();
         if (aircraftCreatedEvent is null)
         {
-            context.Logger.LogWarning("Failed to deserialize AircraftCreatedEvent.");
-            return;
+            throw new JsonException("Failed to deserialize AircraftCreatedEvent.");
         }
         activity?.SetTag("aircraft.id", aircraftCreatedEvent.AircraftId);
         activity?.SetTag("aircraft.tail_number", aircraftCreatedEvent.TailNumber);
