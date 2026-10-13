@@ -41,14 +41,12 @@ public class Function
         var messageElement = JsonDocument.Parse(message.Body).RootElement.GetProperty("Message").GetString();
         if (string.IsNullOrWhiteSpace(messageElement))
         {
-            context.Logger.LogWarning("Message element is null or empty.");
-            return;
+            throw new JsonException("SNS message payload is null or empty.");
         }
         var flightMarkedAsEnRouteEvent = JsonDocument.Parse(messageElement).RootElement.GetProperty("data").Deserialize<FlightMarkedAsEnRouteEvent>();
         if (flightMarkedAsEnRouteEvent is null)
         {
-            context.Logger.LogWarning("Failed to deserialize flightMarkedAsEnRouteEvent.");
-            return;
+            throw new JsonException("Failed to deserialize FlightMarkedAsEnRouteEvent.");
         }
         activity?.SetTag("flight.id", flightMarkedAsEnRouteEvent.FlightId);
         activity?.SetTag("flight.aircraft_id", flightMarkedAsEnRouteEvent.AircraftId);
@@ -59,8 +57,7 @@ public class Function
         var aircraft = await dbContext.Aircraft.FindAsync(flightMarkedAsEnRouteEvent.AircraftId);
         if (aircraft is null)
         {
-            context.Logger.LogWarning($"Aircraft with ID {flightMarkedAsEnRouteEvent.AircraftId} not found.");
-            return;
+                        throw new InvalidOperationException($"Aircraft with ID {flightMarkedAsEnRouteEvent.AircraftId} was not found.");
         }
         var timeProvider = _host.Services.GetRequiredService<TimeProvider>();
         aircraft.MarkAsEnRoute(flightMarkedAsEnRouteEvent.ArrivalAirportIcaoCode, timeProvider.GetUtcNow());

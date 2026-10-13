@@ -41,14 +41,12 @@ public class Function
         var messageElement = JsonDocument.Parse(message.Body).RootElement.GetProperty("Message").GetString();
         if (string.IsNullOrWhiteSpace(messageElement))
         {
-            context.Logger.LogWarning("Message element is null or empty.");
-            return;
+            throw new JsonException("SNS message payload is null or empty.");
         }
         var flightArrivedEvent = JsonDocument.Parse(messageElement).RootElement.GetProperty("data").Deserialize<FlightArrivedEvent>();
         if (flightArrivedEvent is null)
         {
-            context.Logger.LogWarning("Failed to deserialize flightArrivedEvent.");
-            return;
+            throw new JsonException("Failed to deserialize FlightArrivedEvent.");
         }
         activity?.SetTag("flight.id", flightArrivedEvent.FlightId);
         activity?.SetTag("flight.aircraft_id", flightArrivedEvent.AircraftId);
@@ -65,8 +63,7 @@ public class Function
         var aircraft = await dbContext.Aircraft.FindAsync(flightArrivedEvent.AircraftId);
         if (aircraft is null)
         {
-            context.Logger.LogWarning($"Aircraft with ID {flightArrivedEvent.AircraftId} not found.");
-            return;
+            throw new InvalidOperationException($"Aircraft with ID {flightArrivedEvent.AircraftId} was not found.");
         }
         var timeProvider = _host.Services.GetRequiredService<TimeProvider>();
         aircraft.MarkAsParked(flightArrivedEvent.ArrivalAirportIcaoCode, timeProvider.GetUtcNow());

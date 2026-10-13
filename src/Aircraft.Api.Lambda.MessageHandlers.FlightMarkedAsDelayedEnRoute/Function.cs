@@ -41,8 +41,7 @@ public class Function
         var messageElement = JsonDocument.Parse(message.Body).RootElement.GetProperty("Message").GetString();
         if (string.IsNullOrWhiteSpace(messageElement))
         {
-            context.Logger.LogWarning("Message element is null or empty.");
-            return;
+            throw new JsonException("SNS message payload is null or empty.");
         }
         var flightMarkedAsDelayedEnRouteEvent = JsonDocument.Parse(messageElement)
                                                             .RootElement
@@ -50,8 +49,7 @@ public class Function
                                                             .Deserialize<FlightMarkedAsDelayedEnRouteEvent>();
         if (flightMarkedAsDelayedEnRouteEvent is null)
         {
-            context.Logger.LogWarning("Failed to deserialize flightMarkedAsDelayedEnRouteEvent.");
-            return;
+            throw new JsonException("Failed to deserialize FlightMarkedAsDelayedEnRouteEvent.");
         }
         activity?.SetTag("flight.id", flightMarkedAsDelayedEnRouteEvent.FlightId);
         activity?.SetTag("flight.aircraft_id", flightMarkedAsDelayedEnRouteEvent.AircraftId);
@@ -62,8 +60,7 @@ public class Function
         var aircraft = await dbContext.Aircraft.FindAsync(flightMarkedAsDelayedEnRouteEvent.AircraftId);
         if (aircraft is null)
         {
-            context.Logger.LogWarning($"Aircraft with ID {flightMarkedAsDelayedEnRouteEvent.AircraftId} not found.");
-            return;
+            throw new InvalidOperationException($"Aircraft with ID {flightMarkedAsDelayedEnRouteEvent.AircraftId} was not found.");
         }
         var timeProvider = _host.Services.GetRequiredService<TimeProvider>();
         aircraft.MarkAsEnRoute(flightMarkedAsDelayedEnRouteEvent.ArrivalAirportIcaoCode, timeProvider.GetUtcNow());
