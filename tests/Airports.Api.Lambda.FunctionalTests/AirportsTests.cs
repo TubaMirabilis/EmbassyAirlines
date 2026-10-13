@@ -183,6 +183,19 @@ public class AirportsTests : BaseFunctionalTest
             x.IataCode == request.IataCode &&
             x.TimeZoneId == request.TimeZoneId);
 
+        // Update should return BadRequest when IcaoCode is empty
+        var updateRequestWithEmptyIcao = new CreateOrUpdateAirportDto("", "YVR", "Vancouver Intercontinental Airport", "America/Vancouver");
+        var updateUriWithEmptyIcao = new Uri($"airports/{airport.Id}", UriKind.Relative);
+        var updateResponseWithEmptyIcao = await HttpClient.PutAsJsonAsync(updateUriWithEmptyIcao, updateRequestWithEmptyIcao, TestContext.Current.CancellationToken);
+        await GetProblemDetailsFromResponseAndAssert(updateResponseWithEmptyIcao, "ICAO Code must consist of 4 uppercase letters only.");
+
+        // Update should return NotFound when airport does not exist
+        var nonExistentId = Guid.NewGuid();
+        var updateRequestForNonExistentAirport = new CreateOrUpdateAirportDto("CYVR", "YVR", "Vancouver Intercontinental Airport", "America/Vancouver");
+        var updateUriForNonExistentAirport = new Uri($"airports/{nonExistentId}", UriKind.Relative);
+        var updateResponseForNonExistentAirport = await HttpClient.PutAsJsonAsync(updateUriForNonExistentAirport, updateRequestForNonExistentAirport, TestContext.Current.CancellationToken);
+        await GetProblemDetailsFromResponseAndAssert(updateResponseForNonExistentAirport, $"Airport with ID {nonExistentId} not found");
+
         // Update
         var updateRequest = new CreateOrUpdateAirportDto("CYVR", "YVR", "Vancouver Intercontinental Airport", "America/Vancouver");
         var expected = new AirportDto(airport.Id, updateRequest.Name, updateRequest.IcaoCode, updateRequest.IataCode, updateRequest.TimeZoneId);

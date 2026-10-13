@@ -161,6 +161,10 @@ public class AircraftTests : BaseFunctionalTest
             x.MaximumZeroFuelWeight == request.MaximumZeroFuelWeight &&
             x.Seats == 337);
 
+        // Create should return conflict when creating aircraft with same tail number
+        var conflictResponse = await HttpClient.PostAsJsonAsync("aircraft", request, TestContext.Current.CancellationToken);
+        await GetProblemDetailsFromResponseAndAssert(conflictResponse, $"Aircraft with tail number {request.TailNumber} already exists");
+
         // List
         var expected = new AircraftListDto([aircraft], 1, 50, 1, false);
         var listUri = new Uri("aircraft", UriKind.Relative);
