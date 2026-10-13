@@ -69,7 +69,6 @@ obj/Debug/net10.0/
  .NETCoreApp,Version=v10.0.AssemblyAttributes.cs
  Flights.Api.Lambda.AssemblyInfo.cs
  Flights.Api.Lambda.GlobalUsings.g.cs
- Flights.Api.Lambda.MvcApplicationPartsAssemblyInfo.cs
 FlightScheduler.cs
 Program.cs
 ScheduleFlightDtoValidator.cs

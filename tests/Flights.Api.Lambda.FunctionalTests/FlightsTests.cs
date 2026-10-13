@@ -162,6 +162,13 @@ public class FlightsTests : BaseFunctionalTest
     [Fact]
     public async Task Flight_Lifecycle_Should_Succeed()
     {
+        // List should be empty initially
+        var initialListUri = new Uri("flights", UriKind.Relative);
+        var initialListResponse = await HttpClient.GetAsync(initialListUri, TestContext.Current.CancellationToken);
+        initialListResponse.EnsureSuccessStatusCode();
+        var initialFlights = await initialListResponse.Content.ReadFromJsonAsync<FlightListDto>(TestContext.Current.CancellationToken);
+        initialFlights.Should().BeEquivalentTo(new FlightListDto([], 1, 50, 0, false));
+
         var departureInstant = TimeHelpers.MinutesFromNowRoundedUp(_clock, 30);
         var arrivalInstant = departureInstant + _flightDuration;
         var departureZoned = departureInstant.InZone(_incheonTimeZone);
@@ -215,6 +222,13 @@ public class FlightsTests : BaseFunctionalTest
         filteredListResponse.EnsureSuccessStatusCode();
         var filteredFlights = await filteredListResponse.Content.ReadFromJsonAsync<FlightListDto>(TestContext.Current.CancellationToken);
         filteredFlights.Should().BeEquivalentTo(new FlightListDto([flight], 1, 50, 1, false));
+
+        // List should return last page when requested page exceeds available pages
+        var uriWithExcessPage = new Uri($"flights?from={_incheon.IataCode}&to={_schiphol.IataCode}&page=2&pageSize=50", UriKind.Relative);
+        var excessPageResponse = await HttpClient.GetAsync(uriWithExcessPage, TestContext.Current.CancellationToken);
+        excessPageResponse.EnsureSuccessStatusCode();
+        var excessPageFlights = await excessPageResponse.Content.ReadFromJsonAsync<FlightListDto>(TestContext.Current.CancellationToken);
+        excessPageFlights.Should().BeEquivalentTo(new FlightListDto([flight], 1, 50, 1, false));
 
         // Get by id
         var getByIdUri = new Uri($"flights/{flight.Id}", UriKind.Relative);
