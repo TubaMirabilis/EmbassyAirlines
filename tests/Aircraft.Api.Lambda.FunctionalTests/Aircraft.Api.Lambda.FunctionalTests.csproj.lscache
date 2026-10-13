@@ -95,11 +95,11 @@ Microsoft.NETCore.App.Ref
  awesomeassertions/9.6.0/lib/net8.0/AwesomeAssertions.dll
  aws.messaging.telemetry.opentelemetry/1.0.1/lib/net8.0/AWS.Messaging.Telemetry.OpenTelemetry.dll
  aws.messaging/1.6.0/lib/net8.0/AWS.Messaging.dll
- awssdk.core/4.0.102.9/lib/net8.0/AWSSDK.Core.dll
+ awssdk.core/4.0.102.10/lib/net8.0/AWSSDK.Core.dll
  awssdk.eventbridge/4.0.5.16/lib/net8.0/AWSSDK.EventBridge.dll
- awssdk.extensions.netcore.setup/4.0.102.2/lib/net8.0/AWSSDK.Extensions.NETCore.Setup.dll
- awssdk.rds/4.0.106.2/lib/net8.0/AWSSDK.RDS.dll
- awssdk.s3/4.0.104.2/lib/net8.0/AWSSDK.S3.dll
+ awssdk.extensions.netcore.setup/4.0.102.3/lib/net8.0/AWSSDK.Extensions.NETCore.Setup.dll
+ awssdk.rds/4.0.106.3/lib/net8.0/AWSSDK.RDS.dll
+ awssdk.s3/4.0.104.3/lib/net8.0/AWSSDK.S3.dll
  awssdk.simplenotificationservice/4.0.2.17/lib/net8.0/AWSSDK.SimpleNotificationService.dll
  awssdk.sqs/4.0.2.15/lib/net8.0/AWSSDK.SQS.dll
  bouncycastle.cryptography/2.7.0/lib/net6.0/BouncyCastle.Cryptography.dll
@@ -138,7 +138,7 @@ Microsoft.NETCore.App.Ref
  microsoft.codeanalysis.workspaces.msbuild/5.0.0/lib/net9.0/
   Microsoft.CodeAnalysis.ExternalAccess.RazorCompiler.dll
   Microsoft.CodeAnalysis.Workspaces.MSBuild.dll
- microsoft.codecoverage/18.10.1/lib/net8.0/Microsoft.VisualStudio.CodeCoverage.Shim.dll
+ microsoft.codecoverage/18.11.0/lib/net8.0/Microsoft.VisualStudio.CodeCoverage.Shim.dll
  microsoft.entityframeworkcore.abstractions/10.0.9/lib/net10.0/Microsoft.EntityFrameworkCore.Abstractions.dll
  microsoft.entityframeworkcore.design/10.0.9/lib/net10.0/Microsoft.EntityFrameworkCore.Design.dll
  microsoft.entityframeworkcore.relational/10.0.9/lib/net10.0/Microsoft.EntityFrameworkCore.Relational.dll
@@ -160,7 +160,7 @@ Microsoft.NETCore.App.Ref
  microsoft.testing.extensions.trxreport.abstractions/2.5.1/lib/net9.0/Microsoft.Testing.Extensions.TrxReport.Abstractions.dll
  microsoft.testing.platform.msbuild/2.5.1/lib/net9.0/Microsoft.Testing.Extensions.MSBuild.dll
  microsoft.testing.platform/2.5.1/lib/net9.0/Microsoft.Testing.Platform.dll
- microsoft.testplatform.testhost/18.10.1/lib/net8.0/
+ microsoft.testplatform.testhost/18.11.0/lib/net8.0/
   Microsoft.TestPlatform.CommunicationUtilities.dll
   Microsoft.TestPlatform.CoreUtilities.dll
   Microsoft.TestPlatform.CrossPlatEngine.dll
@@ -233,10 +233,10 @@ Microsoft.NETCore.App.Ref
  awssdk.eventbridge/4.0.5.16/analyzers/dotnet/cs/
   AWSSDK.EventBridge.CodeAnalysis.dll
   SharedAnalysisCode.dll
- awssdk.rds/4.0.106.2/analyzers/dotnet/cs/
+ awssdk.rds/4.0.106.3/analyzers/dotnet/cs/
   AWSSDK.RDS.CodeAnalysis.dll
   SharedAnalysisCode.dll
- awssdk.s3/4.0.104.2/analyzers/dotnet/cs/
+ awssdk.s3/4.0.104.3/analyzers/dotnet/cs/
   AWSSDK.S3.CodeAnalysis.dll
   SharedAnalysisCode.dll
  awssdk.simplenotificationservice/4.0.2.17/analyzers/dotnet/cs/
