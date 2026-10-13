@@ -36,17 +36,4 @@ public sealed class Airport
     public string IcaoCode { get; private set; }
     public string Name { get; private set; }
     public static Airport Create(AirportCreationArgs args) => new(args);
-    public void Update(string icaoCode, string iataCode, string name, string timeZoneId, Instant instant)
-    {
-        Ensure.NotNullOrEmpty(icaoCode);
-        Ensure.NotNullOrEmpty(iataCode);
-        Ensure.NotNullOrEmpty(name);
-        var timeZone = DateTimeZoneProviders.Tzdb.GetZoneOrNull(timeZoneId);
-        ArgumentNullException.ThrowIfNull(timeZone);
-        IcaoCode = icaoCode;
-        IataCode = iataCode;
-        Name = name;
-        TimeZoneId = timeZoneId;
-        UpdatedAt = instant;
-    }
 }
