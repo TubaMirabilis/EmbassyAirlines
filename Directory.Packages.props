@@ -12,7 +12,7 @@
     <PackageVersion Include="AWSSDK.CloudWatchLogs" Version="4.0.105.2" />
     <PackageVersion Include="AWSSDK.RDS" Version="4.0.106.3" />
     <PackageVersion Include="Constructs" Version="10.8.1" />
-    <PackageVersion Include="Microsoft.Extensions.Hosting" Version="10.0.12" />
+    <PackageVersion Include="Microsoft.Extensions.Hosting" Version="10.0.13" />
     <PackageVersion Include="Microsoft.Extensions.Http.Resilience" Version="10.10.0" />
     <PackageVersion Include="Microsoft.Extensions.ServiceDiscovery" Version="10.10.0" />
     <PackageVersion Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.19.1" />
