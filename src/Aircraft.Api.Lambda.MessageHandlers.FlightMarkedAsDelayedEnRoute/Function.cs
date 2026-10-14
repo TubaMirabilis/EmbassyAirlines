@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Text.Json;
+using Aircraft.Infrastructure;
 using Aircraft.Infrastructure.Database;
 using Amazon.Lambda.Core;
 using Amazon.Lambda.Serialization.SystemTextJson;
@@ -29,7 +30,7 @@ public class Function
         builder.AddServiceDefaults();
         builder.Services.AddLogging();
         builder.Services.AddDatabaseConnection<ApplicationDbContext>(config, false, "aircraft");
-        builder.Services.AddSingleton(TimeProvider.System);
+        builder.Services.AddScoped<AircraftFlightStatusProcessor>();
         _host = builder.Build();
         _traceProvider = _host.Services.GetRequiredService<TracerProvider>();
     }
@@ -56,15 +57,8 @@ public class Function
         activity?.SetTag("flight.arrival_airport_icao_code", flightMarkedAsDelayedEnRouteEvent.ArrivalAirportIcaoCode);
         context.Logger.LogInformation($"Processing flightMarkedAsDelayedEnRouteEvent with ID: {flightMarkedAsDelayedEnRouteEvent.Id}");
         using var scope = _host.Services.CreateScope();
-        var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-        var aircraft = await dbContext.Aircraft.FindAsync(flightMarkedAsDelayedEnRouteEvent.AircraftId);
-        if (aircraft is null)
-        {
-            throw new InvalidOperationException($"Aircraft with ID {flightMarkedAsDelayedEnRouteEvent.AircraftId} was not found.");
-        }
-        var timeProvider = _host.Services.GetRequiredService<TimeProvider>();
-        aircraft.MarkAsEnRoute(flightMarkedAsDelayedEnRouteEvent.ArrivalAirportIcaoCode, timeProvider.GetUtcNow());
-        await dbContext.SaveChangesAsync();
-        context.Logger.LogInformation($"Aircraft with ID {aircraft.Id} marked as EnRoute to {aircraft.EnRouteTo}.");
+        var processor = scope.ServiceProvider.GetRequiredService<AircraftFlightStatusProcessor>();
+        await processor.ProcessAsync(flightMarkedAsDelayedEnRouteEvent.AircraftId, Core.Models.Status.EnRoute, flightMarkedAsDelayedEnRouteEvent.ArrivalAirportIcaoCode, flightMarkedAsDelayedEnRouteEvent.OccurredAt);
+        context.Logger.LogInformation($"Aircraft with ID {flightMarkedAsDelayedEnRouteEvent.AircraftId} marked as EnRoute to {flightMarkedAsDelayedEnRouteEvent.ArrivalAirportIcaoCode}.");
     }
 }

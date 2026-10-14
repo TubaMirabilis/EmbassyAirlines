@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Text.Json;
+using Aircraft.Infrastructure;
 using Aircraft.Infrastructure.Database;
 using Amazon.Lambda.Core;
 using Amazon.Lambda.Serialization.SystemTextJson;
@@ -29,7 +30,7 @@ public class Function
         builder.AddServiceDefaults();
         builder.Services.AddLogging();
         builder.Services.AddDatabaseConnection<ApplicationDbContext>(config, false, "aircraft");
-        builder.Services.AddSingleton(TimeProvider.System);
+        builder.Services.AddScoped<AircraftFlightStatusProcessor>();
         _host = builder.Build();
         _traceProvider = _host.Services.GetRequiredService<TracerProvider>();
     }
@@ -59,15 +60,8 @@ public class Function
             flightArrivedEvent.ArrivalAirportIcaoCode,
             flightArrivedEvent.Id);
         using var scope = _host.Services.CreateScope();
-        var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-        var aircraft = await dbContext.Aircraft.FindAsync(flightArrivedEvent.AircraftId);
-        if (aircraft is null)
-        {
-            throw new InvalidOperationException($"Aircraft with ID {flightArrivedEvent.AircraftId} was not found.");
-        }
-        var timeProvider = _host.Services.GetRequiredService<TimeProvider>();
-        aircraft.MarkAsParked(flightArrivedEvent.ArrivalAirportIcaoCode, timeProvider.GetUtcNow());
-        await dbContext.SaveChangesAsync();
-        context.Logger.LogInformation($"Aircraft with ID {aircraft.Id} marked as parked at {flightArrivedEvent.ArrivalAirportIcaoCode}.");
+        var processor = scope.ServiceProvider.GetRequiredService<AircraftFlightStatusProcessor>();
+        await processor.ProcessAsync(flightArrivedEvent.AircraftId, Core.Models.Status.Parked, flightArrivedEvent.ArrivalAirportIcaoCode, flightArrivedEvent.OccurredAt);
+        context.Logger.LogInformation($"Aircraft with ID {flightArrivedEvent.AircraftId} marked as parked at {flightArrivedEvent.ArrivalAirportIcaoCode}.");
     }
 }

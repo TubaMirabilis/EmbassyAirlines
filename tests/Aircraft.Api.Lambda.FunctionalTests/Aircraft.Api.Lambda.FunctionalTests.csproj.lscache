@@ -126,9 +126,9 @@ Microsoft.NETCore.App.Ref
  fluentvalidation/12.2.0/lib/net8.0/FluentValidation.dll
  humanizer.core/2.14.1/lib/net6.0/Humanizer.dll
  microsoft.applicationinsights/2.23.0/lib/netstandard2.0/Microsoft.ApplicationInsights.dll
- microsoft.aspnetcore.mvc.testing/10.0.12/lib/net10.0/Microsoft.AspNetCore.Mvc.Testing.dll
- microsoft.aspnetcore.openapi/10.0.12/lib/net10.0/Microsoft.AspNetCore.OpenApi.dll
- microsoft.aspnetcore.testhost/10.0.12/lib/net10.0/Microsoft.AspNetCore.TestHost.dll
+ microsoft.aspnetcore.mvc.testing/10.0.13/lib/net10.0/Microsoft.AspNetCore.Mvc.Testing.dll
+ microsoft.aspnetcore.openapi/10.0.13/lib/net10.0/Microsoft.AspNetCore.OpenApi.dll
+ microsoft.aspnetcore.testhost/10.0.13/lib/net10.0/Microsoft.AspNetCore.TestHost.dll
  microsoft.bcl.asyncinterfaces/6.0.0/lib/netstandard2.1/Microsoft.Bcl.AsyncInterfaces.dll
  microsoft.build.framework/18.0.2/ref/net10.0/Microsoft.Build.Framework.dll
  microsoft.codeanalysis.common/5.0.0/lib/net9.0/Microsoft.CodeAnalysis.dll
@@ -143,19 +143,49 @@ Microsoft.NETCore.App.Ref
  microsoft.entityframeworkcore.design/10.0.9/lib/net10.0/Microsoft.EntityFrameworkCore.Design.dll
  microsoft.entityframeworkcore.relational/10.0.9/lib/net10.0/Microsoft.EntityFrameworkCore.Relational.dll
  microsoft.entityframeworkcore/10.0.9/lib/net10.0/Microsoft.EntityFrameworkCore.dll
- microsoft.extensions.ambientmetadata.application/10.10.0/lib/net10.0/Microsoft.Extensions.AmbientMetadata.Application.dll
- microsoft.extensions.compliance.abstractions/10.10.0/lib/net10.0/Microsoft.Extensions.Compliance.Abstractions.dll
- microsoft.extensions.dependencyinjection.autoactivation/10.10.0/lib/net10.0/Microsoft.Extensions.DependencyInjection.AutoActivation.dll
- microsoft.extensions.dependencymodel/10.0.12/lib/net10.0/Microsoft.Extensions.DependencyModel.dll
- microsoft.extensions.diagnostics.exceptionsummarization/10.10.0/lib/net10.0/Microsoft.Extensions.Diagnostics.ExceptionSummarization.dll
- microsoft.extensions.http.diagnostics/10.10.0/lib/net10.0/Microsoft.Extensions.Http.Diagnostics.dll
- microsoft.extensions.http.resilience/10.10.0/lib/net10.0/Microsoft.Extensions.Http.Resilience.dll
- microsoft.extensions.resilience/10.10.0/lib/net10.0/Microsoft.Extensions.Resilience.dll
- microsoft.extensions.servicediscovery.abstractions/10.10.0/lib/net10.0/Microsoft.Extensions.ServiceDiscovery.Abstractions.dll
- microsoft.extensions.servicediscovery/10.10.0/lib/net10.0/Microsoft.Extensions.ServiceDiscovery.dll
- microsoft.extensions.telemetry.abstractions/10.10.0/lib/net10.0/Microsoft.Extensions.Telemetry.Abstractions.dll
- microsoft.extensions.telemetry/10.10.0/lib/net10.0/Microsoft.Extensions.Telemetry.dll
- microsoft.openapi/2.12.0/lib/net8.0/Microsoft.OpenApi.dll
+ microsoft.extensions.ambientmetadata.application/10.11.0/lib/net10.0/Microsoft.Extensions.AmbientMetadata.Application.dll
+ microsoft.extensions.compliance.abstractions/10.11.0/lib/net10.0/Microsoft.Extensions.Compliance.Abstractions.dll
+ microsoft.extensions.configuration.abstractions/10.0.13/lib/net10.0/Microsoft.Extensions.Configuration.Abstractions.dll
+ microsoft.extensions.configuration.binder/10.0.13/lib/net10.0/Microsoft.Extensions.Configuration.Binder.dll
+ microsoft.extensions.configuration.commandline/10.0.13/lib/net10.0/Microsoft.Extensions.Configuration.CommandLine.dll
+ microsoft.extensions.configuration.environmentvariables/10.0.13/lib/net10.0/Microsoft.Extensions.Configuration.EnvironmentVariables.dll
+ microsoft.extensions.configuration.fileextensions/10.0.13/lib/net10.0/Microsoft.Extensions.Configuration.FileExtensions.dll
+ microsoft.extensions.configuration.json/10.0.13/lib/net10.0/Microsoft.Extensions.Configuration.Json.dll
+ microsoft.extensions.configuration.usersecrets/10.0.13/lib/net10.0/Microsoft.Extensions.Configuration.UserSecrets.dll
+ microsoft.extensions.configuration/10.0.13/lib/net10.0/Microsoft.Extensions.Configuration.dll
+ microsoft.extensions.dependencyinjection.abstractions/10.0.13/lib/net10.0/Microsoft.Extensions.DependencyInjection.Abstractions.dll
+ microsoft.extensions.dependencyinjection.autoactivation/10.11.0/lib/net10.0/Microsoft.Extensions.DependencyInjection.AutoActivation.dll
+ microsoft.extensions.dependencyinjection/10.0.13/lib/net10.0/Microsoft.Extensions.DependencyInjection.dll
+ microsoft.extensions.dependencymodel/10.0.13/lib/net10.0/Microsoft.Extensions.DependencyModel.dll
+ microsoft.extensions.diagnostics.abstractions/10.0.13/lib/net10.0/Microsoft.Extensions.Diagnostics.Abstractions.dll
+ microsoft.extensions.diagnostics.exceptionsummarization/10.11.0/lib/net10.0/Microsoft.Extensions.Diagnostics.ExceptionSummarization.dll
+ microsoft.extensions.diagnostics/10.0.13/lib/net10.0/Microsoft.Extensions.Diagnostics.dll
+ microsoft.extensions.features/10.0.13/lib/net10.0/Microsoft.Extensions.Features.dll
+ microsoft.extensions.fileproviders.abstractions/10.0.13/lib/net10.0/Microsoft.Extensions.FileProviders.Abstractions.dll
+ microsoft.extensions.fileproviders.physical/10.0.13/lib/net10.0/Microsoft.Extensions.FileProviders.Physical.dll
+ microsoft.extensions.filesystemglobbing/10.0.13/lib/net10.0/Microsoft.Extensions.FileSystemGlobbing.dll
+ microsoft.extensions.hosting.abstractions/10.0.13/lib/net10.0/Microsoft.Extensions.Hosting.Abstractions.dll
+ microsoft.extensions.hosting/10.0.13/lib/net10.0/Microsoft.Extensions.Hosting.dll
+ microsoft.extensions.http.diagnostics/10.11.0/lib/net10.0/Microsoft.Extensions.Http.Diagnostics.dll
+ microsoft.extensions.http.resilience/10.11.0/lib/net10.0/Microsoft.Extensions.Http.Resilience.dll
+ microsoft.extensions.http/10.0.13/lib/net10.0/Microsoft.Extensions.Http.dll
+ microsoft.extensions.logging.abstractions/10.0.13/lib/net10.0/Microsoft.Extensions.Logging.Abstractions.dll
+ microsoft.extensions.logging.configuration/10.0.13/lib/net10.0/Microsoft.Extensions.Logging.Configuration.dll
+ microsoft.extensions.logging.console/10.0.13/lib/net10.0/Microsoft.Extensions.Logging.Console.dll
+ microsoft.extensions.logging.debug/10.0.13/lib/net10.0/Microsoft.Extensions.Logging.Debug.dll
+ microsoft.extensions.logging.eventlog/10.0.13/lib/net10.0/Microsoft.Extensions.Logging.EventLog.dll
+ microsoft.extensions.logging.eventsource/10.0.13/lib/net10.0/Microsoft.Extensions.Logging.EventSource.dll
+ microsoft.extensions.logging/10.0.13/lib/net10.0/Microsoft.Extensions.Logging.dll
+ microsoft.extensions.objectpool/10.0.13/lib/net10.0/Microsoft.Extensions.ObjectPool.dll
+ microsoft.extensions.options.configurationextensions/10.0.13/lib/net10.0/Microsoft.Extensions.Options.ConfigurationExtensions.dll
+ microsoft.extensions.options/10.0.13/lib/net10.0/Microsoft.Extensions.Options.dll
+ microsoft.extensions.primitives/10.0.13/lib/net10.0/Microsoft.Extensions.Primitives.dll
+ microsoft.extensions.resilience/10.11.0/lib/net10.0/Microsoft.Extensions.Resilience.dll
+ microsoft.extensions.servicediscovery.abstractions/10.11.0/lib/net10.0/Microsoft.Extensions.ServiceDiscovery.Abstractions.dll
+ microsoft.extensions.servicediscovery/10.11.0/lib/net10.0/Microsoft.Extensions.ServiceDiscovery.dll
+ microsoft.extensions.telemetry.abstractions/10.11.0/lib/net10.0/Microsoft.Extensions.Telemetry.Abstractions.dll
+ microsoft.extensions.telemetry/10.11.0/lib/net10.0/Microsoft.Extensions.Telemetry.dll
+ microsoft.openapi/2.12.2/lib/net8.0/Microsoft.OpenApi.dll
  microsoft.testing.extensions.telemetry/2.5.1/lib/net9.0/Microsoft.Testing.Extensions.Telemetry.dll
  microsoft.testing.extensions.trxreport.abstractions/2.5.1/lib/net9.0/Microsoft.Testing.Extensions.TrxReport.Abstractions.dll
  microsoft.testing.platform.msbuild/2.5.1/lib/net9.0/Microsoft.Testing.Extensions.MSBuild.dll
@@ -209,6 +239,7 @@ Microsoft.NETCore.App.Ref
  system.composition.hosting/9.0.0/lib/net9.0/System.Composition.Hosting.dll
  system.composition.runtime/9.0.0/lib/net9.0/System.Composition.Runtime.dll
  system.composition.typedparts/9.0.0/lib/net9.0/System.Composition.TypedParts.dll
+ system.diagnostics.eventlog/10.0.13/lib/net10.0/System.Diagnostics.EventLog.dll
  testcontainers.localstack/4.16.0/lib/net10.0/Testcontainers.LocalStack.dll
  testcontainers.postgresql/4.16.0/lib/net10.0/Testcontainers.PostgreSql.dll
  testcontainers/4.16.0/lib/net10.0/Testcontainers.dll
@@ -245,12 +276,13 @@ Microsoft.NETCore.App.Ref
  awssdk.sqs/4.0.2.15/analyzers/dotnet/cs/
   AWSSDK.SQS.CodeAnalysis.dll
   SharedAnalysisCode.dll
- microsoft.aspnetcore.openapi/10.0.12/analyzers/dotnet/cs/Microsoft.AspNetCore.OpenApi.SourceGenerators.dll
+ microsoft.aspnetcore.openapi/10.0.13/analyzers/dotnet/cs/Microsoft.AspNetCore.OpenApi.SourceGenerators.dll
  microsoft.codeanalysis.analyzers/3.11.0/analyzers/dotnet/cs/
   Microsoft.CodeAnalysis.Analyzers.dll
   Microsoft.CodeAnalysis.CSharp.Analyzers.dll
  microsoft.entityframeworkcore.analyzers/10.0.9/analyzers/dotnet/cs/Microsoft.EntityFrameworkCore.Analyzers.dll
- microsoft.extensions.telemetry.abstractions/10.10.0/analyzers/dotnet/cs/
+ microsoft.extensions.options/10.0.13/analyzers/dotnet/roslyn4.4/cs/Microsoft.Extensions.Options.SourceGeneration.dll
+ microsoft.extensions.telemetry.abstractions/10.11.0/analyzers/dotnet/cs/
   Microsoft.Gen.Logging.dll
   Microsoft.Gen.Metrics.dll
  sonaranalyzer.csharp/10.35.0.4138/analyzers/SonarAnalyzer.CSharp.dll

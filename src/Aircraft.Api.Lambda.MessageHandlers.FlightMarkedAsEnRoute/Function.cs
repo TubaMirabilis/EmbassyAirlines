@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Text.Json;
+using Aircraft.Infrastructure;
 using Aircraft.Infrastructure.Database;
 using Amazon.Lambda.Core;
 using Amazon.Lambda.Serialization.SystemTextJson;
@@ -29,7 +30,7 @@ public class Function
         builder.AddServiceDefaults();
         builder.Services.AddLogging();
         builder.Services.AddDatabaseConnection<ApplicationDbContext>(config, false, "aircraft");
-        builder.Services.AddSingleton(TimeProvider.System);
+        builder.Services.AddScoped<AircraftFlightStatusProcessor>();
         _host = builder.Build();
         _traceProvider = _host.Services.GetRequiredService<TracerProvider>();
     }
@@ -53,15 +54,8 @@ public class Function
         activity?.SetTag("flight.arrival_airport_icao_code", flightMarkedAsEnRouteEvent.ArrivalAirportIcaoCode);
         context.Logger.LogInformation($"Processing flightMarkedAsEnRouteEvent with ID: {flightMarkedAsEnRouteEvent.Id}");
         using var scope = _host.Services.CreateScope();
-        var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-        var aircraft = await dbContext.Aircraft.FindAsync(flightMarkedAsEnRouteEvent.AircraftId);
-        if (aircraft is null)
-        {
-            throw new InvalidOperationException($"Aircraft with ID {flightMarkedAsEnRouteEvent.AircraftId} was not found.");
-        }
-        var timeProvider = _host.Services.GetRequiredService<TimeProvider>();
-        aircraft.MarkAsEnRoute(flightMarkedAsEnRouteEvent.ArrivalAirportIcaoCode, timeProvider.GetUtcNow());
-        await dbContext.SaveChangesAsync();
-        context.Logger.LogInformation($"Aircraft with ID {aircraft.Id} marked as EnRoute to {aircraft.EnRouteTo}.");
+        var processor = scope.ServiceProvider.GetRequiredService<AircraftFlightStatusProcessor>();
+        await processor.ProcessAsync(flightMarkedAsEnRouteEvent.AircraftId, Core.Models.Status.EnRoute, flightMarkedAsEnRouteEvent.ArrivalAirportIcaoCode, flightMarkedAsEnRouteEvent.OccurredAt);
+        context.Logger.LogInformation($"Aircraft with ID {flightMarkedAsEnRouteEvent.AircraftId} marked as EnRoute to {flightMarkedAsEnRouteEvent.ArrivalAirportIcaoCode}.");
     }
 }

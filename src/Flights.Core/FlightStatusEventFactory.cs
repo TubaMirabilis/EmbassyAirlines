@@ -9,10 +9,10 @@ internal static class FlightStatusEventFactory
     public static IFlightStatusManagementEvent Create(Flight flight, FlightStatus status) => status switch
     {
         FlightStatus.Cancelled => new FlightCancelledEvent(Guid.NewGuid(), flight.Id),
-        FlightStatus.Arrived => new FlightArrivedEvent(Guid.NewGuid(), flight.Aircraft.Id, flight.Id, flight.ArrivalAirport.IcaoCode),
+        FlightStatus.Arrived => new FlightArrivedEvent(Guid.NewGuid(), flight.Aircraft.Id, flight.Id, flight.ArrivalAirport.IcaoCode, flight.UpdatedAt.ToDateTimeOffset()),
         FlightStatus.Delayed => new FlightDelayedEvent(Guid.NewGuid(), flight.Id),
-        FlightStatus.DelayedEnRoute => new FlightMarkedAsDelayedEnRouteEvent(Guid.NewGuid(), flight.Aircraft.Id, flight.Id, flight.ArrivalAirport.IcaoCode),
-        FlightStatus.EnRoute => new FlightMarkedAsEnRouteEvent(Guid.NewGuid(), flight.Aircraft.Id, flight.Id, flight.ArrivalAirport.IcaoCode),
+        FlightStatus.DelayedEnRoute => new FlightMarkedAsDelayedEnRouteEvent(Guid.NewGuid(), flight.Aircraft.Id, flight.Id, flight.ArrivalAirport.IcaoCode, flight.UpdatedAt.ToDateTimeOffset()),
+        FlightStatus.EnRoute => new FlightMarkedAsEnRouteEvent(Guid.NewGuid(), flight.Aircraft.Id, flight.Id, flight.ArrivalAirport.IcaoCode, flight.UpdatedAt.ToDateTimeOffset()),
         _ => throw new InvalidOperationException("No event defined for the given flight status.")
     };
 }
