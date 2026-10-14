@@ -70,6 +70,7 @@ obj/Debug/net10.0/
  Aircraft.Infrastructure.AssemblyInfo.cs
  Aircraft.Infrastructure.GlobalUsings.g.cs
 Outbox/OutboxProcessor.cs
+AircraftFlightStatusProcessingResult.cs
 AircraftFlightStatusProcessor.cs
 
 [frameworkPacks]

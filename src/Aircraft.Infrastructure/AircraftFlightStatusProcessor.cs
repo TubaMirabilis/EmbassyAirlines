@@ -7,12 +7,16 @@ public sealed class AircraftFlightStatusProcessor
 {
     private readonly ApplicationDbContext _ctx;
     public AircraftFlightStatusProcessor(ApplicationDbContext ctx) => _ctx = ctx;
-    public async Task ProcessAsync(Guid aircraftId, Status status, string airportIcaoCode, DateTimeOffset occurredAt)
+    public async Task<AircraftFlightStatusProcessingResult> ProcessAsync(Guid aircraftId, Status status, string airportIcaoCode, DateTimeOffset occurredAt)
     {
         var aircraft = await _ctx.Aircraft.FindAsync(aircraftId);
         if (aircraft is null)
         {
             throw new InvalidOperationException($"Aircraft with ID {aircraftId} was not found.");
+        }
+        if (occurredAt <= aircraft.UpdatedAt)
+        {
+            return AircraftFlightStatusProcessingResult.Stale;
         }
         switch (status)
         {
@@ -26,5 +30,6 @@ public sealed class AircraftFlightStatusProcessor
                 throw new ArgumentOutOfRangeException(nameof(status), status, null);
         }
         await _ctx.SaveChangesAsync();
+        return AircraftFlightStatusProcessingResult.Applied;
     }
 }
