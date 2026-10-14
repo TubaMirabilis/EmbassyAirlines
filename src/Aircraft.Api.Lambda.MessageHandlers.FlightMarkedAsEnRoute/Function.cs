@@ -57,7 +57,7 @@ public class Function
         var aircraft = await dbContext.Aircraft.FindAsync(flightMarkedAsEnRouteEvent.AircraftId);
         if (aircraft is null)
         {
-                        throw new InvalidOperationException($"Aircraft with ID {flightMarkedAsEnRouteEvent.AircraftId} was not found.");
+            throw new InvalidOperationException($"Aircraft with ID {flightMarkedAsEnRouteEvent.AircraftId} was not found.");
         }
         var timeProvider = _host.Services.GetRequiredService<TimeProvider>();
         aircraft.MarkAsEnRoute(flightMarkedAsEnRouteEvent.ArrivalAirportIcaoCode, timeProvider.GetUtcNow());
