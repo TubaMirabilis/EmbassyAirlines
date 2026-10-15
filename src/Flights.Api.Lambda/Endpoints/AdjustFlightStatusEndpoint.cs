@@ -20,6 +20,7 @@ internal sealed class AdjustFlightStatusEndpoint : IEndpoint
               .Produces<FlightDto>(StatusCodes.Status200OK)
               .ProducesProblem(StatusCodes.Status400BadRequest)
               .ProducesProblem(StatusCodes.Status404NotFound)
+              .ProducesProblem(StatusCodes.Status409Conflict)
               .ProducesProblem(StatusCodes.Status500InternalServerError);
     private static async Task<Results<Ok<FlightDto>, ProblemHttpResult>> InvokeAsync(ApplicationDbContext ctx,
                                                                                      IClock clock,
@@ -56,6 +57,12 @@ internal sealed class AdjustFlightStatusEndpoint : IEndpoint
         {
             logger.LogWarning(ex, "Invalid status transition from {From} to {To}", flight.Status, newStatus);
             var error = Error.Validation("Flight.InvalidStatusTransition", ex.Message);
+            return TypedResults.Problem(ErrorHandlingHelper.GetProblemDetails(error));
+        }
+        catch (DbUpdateConcurrencyException ex)
+        {
+            logger.LogWarning(ex, "Concurrency conflict while adjusting status for flight {FlightId}", id);
+            var error = Error.Conflict("Flight.ConcurrencyConflict", "The flight was modified by another request. Please retrieve its latest state and try again.");
             return TypedResults.Problem(ErrorHandlingHelper.GetProblemDetails(error));
         }
     }

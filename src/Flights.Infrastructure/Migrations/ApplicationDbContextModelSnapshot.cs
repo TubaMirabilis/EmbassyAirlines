@@ -171,6 +171,12 @@ namespace Flights.Infrastructure.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("updated_at");
 
+                    b.Property<uint>("xmin")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
                     b.ComplexProperty(typeof(Dictionary<string, object>), "BusinessPrice", "Flights.Core.Models.Flight.BusinessPrice#Money", b1 =>
                         {
                             b1.IsRequired();

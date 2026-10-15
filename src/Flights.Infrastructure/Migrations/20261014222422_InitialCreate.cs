@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore.Migrations;
+﻿using Microsoft.EntityFrameworkCore.Migrations;
 using NodaTime;
 
 #nullable disable
@@ -79,6 +79,7 @@ public partial class InitialCreate : Migration
                 arrival_airport_id = table.Column<Guid>(type: "uuid", nullable: false),
                 departure_airport_id = table.Column<Guid>(type: "uuid", nullable: false),
                 operation_type = table.Column<string>(type: "character varying(24)", unicode: false, maxLength: 24, nullable: false),
+                xmin = table.Column<uint>(type: "xid", rowVersion: true, nullable: false),
                 business_price_amount = table.Column<decimal>(type: "numeric", nullable: false),
                 economy_price_amount = table.Column<decimal>(type: "numeric", nullable: false)
             },

@@ -51,5 +51,6 @@ internal sealed class FlightConfiguration : IEntityTypeConfiguration<Flight>
                .IsRequired()
                .OnDelete(DeleteBehavior.Restrict);
         builder.Ignore(f => f.DomainEvents);
+        builder.Property<uint>("xmin").IsRowVersion();
     }
 }

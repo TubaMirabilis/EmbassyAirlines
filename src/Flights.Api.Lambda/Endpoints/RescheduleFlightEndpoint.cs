@@ -22,6 +22,7 @@ internal sealed class RescheduleFlightEndpoint : IEndpoint
               .Produces<FlightDto>(StatusCodes.Status200OK)
               .ProducesProblem(StatusCodes.Status400BadRequest)
               .ProducesProblem(StatusCodes.Status404NotFound)
+              .ProducesProblem(StatusCodes.Status409Conflict)
               .ProducesProblem(StatusCodes.Status500InternalServerError);
     private static async Task<Results<Ok<FlightDto>, ProblemHttpResult>> InvokeAsync(ApplicationDbContext ctx,
                                                    IClock clock,
@@ -70,6 +71,12 @@ internal sealed class RescheduleFlightEndpoint : IEndpoint
         {
             logger.LogWarning(ex, "Invalid operation while rescheduling flight: {Message}", ex.Message);
             var error = Error.Validation("Flight.ReschedulingFailed", ex.Message);
+            return TypedResults.Problem(ErrorHandlingHelper.GetProblemDetails(error));
+        }
+        catch (DbUpdateConcurrencyException ex)
+        {
+            logger.LogWarning(ex, "Concurrency conflict while rescheduling flight {FlightId}", id);
+            var error = Error.Conflict("Flight.ConcurrencyConflict", "The flight was modified by another request. Please retrieve its latest state and try again.");
             return TypedResults.Problem(ErrorHandlingHelper.GetProblemDetails(error));
         }
     }

@@ -22,6 +22,7 @@ internal sealed class AdjustFlightPricingEndpoint : IEndpoint
               .Produces<FlightDto>(StatusCodes.Status200OK)
               .ProducesProblem(StatusCodes.Status400BadRequest)
               .ProducesProblem(StatusCodes.Status404NotFound)
+              .ProducesProblem(StatusCodes.Status409Conflict)
               .ProducesProblem(StatusCodes.Status500InternalServerError);
     private static async Task<Results<Ok<FlightDto>, ProblemHttpResult>> InvokeAsync(ApplicationDbContext ctx,
                                                                                      IClock clock,
@@ -57,6 +58,12 @@ internal sealed class AdjustFlightPricingEndpoint : IEndpoint
         {
             logger.LogWarning(ex, "Invalid pricing values: Economy - {EconomyPrice}, Business - {BusinessPrice}", dto.EconomyPrice, dto.BusinessPrice);
             var error = Error.Validation("Flight.InvalidPricing", ex.Message);
+            return TypedResults.Problem(ErrorHandlingHelper.GetProblemDetails(error));
+        }
+        catch (DbUpdateConcurrencyException ex)
+        {
+            logger.LogWarning(ex, "Concurrency conflict while adjusting pricing for flight {FlightId}", id);
+            var error = Error.Conflict("Flight.ConcurrencyConflict", "The flight was modified by another request. Please retrieve its latest state and try again.");
             return TypedResults.Problem(ErrorHandlingHelper.GetProblemDetails(error));
         }
     }
