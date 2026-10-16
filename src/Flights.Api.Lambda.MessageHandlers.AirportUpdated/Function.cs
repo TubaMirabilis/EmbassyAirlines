@@ -39,7 +39,6 @@ public class Function
     private async Task ProcessMessageAsync(SQSEvent.SQSMessage message, ILambdaContext context)
     {
         using var activity = Activity.Current?.Source.StartActivity("AirportUpdatedEventHandler.ProcessMessage");
-        context.Logger.LogInformation($"Processed message {message.Body}");
         var messageElement = JsonDocument.Parse(message.Body).RootElement.GetProperty("Message").GetString();
         if (string.IsNullOrWhiteSpace(messageElement))
         {

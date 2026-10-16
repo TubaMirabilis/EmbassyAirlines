@@ -14,7 +14,18 @@ namespace Flights.Api.Lambda.FunctionalTests;
 public class FunctionalTestWebAppFactory : WebApplicationFactory<Program>, IAsyncLifetime
 {
     private readonly PostgreSqlContainer _dbContainer = new PostgreSqlBuilder("postgres:18").Build();
-    protected override void ConfigureWebHost(IWebHostBuilder builder) => builder.ConfigureTestServices(services => services.AddDatabaseConnection<ApplicationDbContext>(_dbContainer.GetConnectionString(), useNodaTime: true, schema: "flights"));
+    protected virtual void ConfigureAdditionalTestServices(
+    IServiceCollection services)
+    {
+    }
+    protected override void ConfigureWebHost(IWebHostBuilder builder) => builder.ConfigureTestServices(services =>
+                                                                              {
+                                                                                  services.AddDatabaseConnection<ApplicationDbContext>(
+                                                                                      _dbContainer.GetConnectionString(),
+                                                                                      useNodaTime: true,
+                                                                                      schema: "flights");
+                                                                                  ConfigureAdditionalTestServices(services);
+                                                                              });
     public async ValueTask InitializeAsync()
     {
         await _dbContainer.StartAsync();

@@ -38,7 +38,6 @@ public class Function
     private async Task ProcessMessageAsync(SQSEvent.SQSMessage message, ILambdaContext context)
     {
         using var activity = Activity.Current?.Source.StartActivity("FlightMarkedAsEnRouteEventHandler.ProcessMessage");
-        context.Logger.LogInformation($"Processed message {message.Body}");
         var messageElement = JsonDocument.Parse(message.Body).RootElement.GetProperty("Message").GetString();
         if (string.IsNullOrWhiteSpace(messageElement))
         {
@@ -59,7 +58,7 @@ public class Function
         var finalMessage = result switch
         {
             AircraftFlightStatusProcessingResult.Applied => $"Aircraft with ID {flightMarkedAsEnRouteEvent.AircraftId} marked as EnRoute to {flightMarkedAsEnRouteEvent.ArrivalAirportIcaoCode}.",
-            AircraftFlightStatusProcessingResult.Stale => $"Stale event for aircraft with ID {flightMarkedAsEnRouteEvent.AircraftId}. Event occurred at {flightMarkedAsEnRouteEvent.OccurredAt}, but the aircraft was last updated at an earlier time.",
+            AircraftFlightStatusProcessingResult.Stale => $"Stale event for aircraft with ID {flightMarkedAsEnRouteEvent.AircraftId}. The stored update time is equal to or later than the event time {flightMarkedAsEnRouteEvent.OccurredAt}.",
             _ => throw new ArgumentOutOfRangeException($"Unexpected result from AircraftFlightStatusProcessor: {result}.")
         };
         context.Logger.LogInformation(finalMessage);
