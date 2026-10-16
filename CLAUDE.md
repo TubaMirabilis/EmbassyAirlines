@@ -8,7 +8,7 @@ Embassy Airlines is a demonstration event-driven microservices backend built on 
 
 ## Build, test, and tooling commands
 
-The solution file is `EmbassyAirlines.slnx` (the newer XML solution format — most `dotnet` commands pick it up automatically from the repo root).
+The solution file is `EmbassyAirlines.slnx` (the newer XML solution format — most `dotnet` commands pick it up automatically from the repo root). Tests run on **Microsoft.Testing.Platform** (selected in `global.json`), so pass a test project with `--project`.
 
 ```bash
 # Build (warnings are errors — see below)
@@ -26,18 +26,19 @@ npx prettier --write .
 dotnet test
 
 # Run one test project
-dotnet test tests/Aircraft.Api.Lambda.FunctionalTests
+dotnet test --project tests/Aircraft.Api.Lambda.FunctionalTests
 
 # Run a single test by name
 dotnet test --filter "FullyQualifiedName~AircraftTests.CreateAircraft_ShouldReturnCreated"
 
-# Test with coverage
-dotnet test --settings coverlet.runsettings
+# Coverage: runs the tests with coverlet, then writes an HTML report to Reports/CoverageReport/
+# (requires ReportGenerator: dotnet tool install -g dotnet-reportgenerator-globaltool)
+dotnet run scripts/Coverage.cs
 ```
 
-**Docker is required to run the functional tests** — they spin up PostgreSQL and LocalStack containers via Testcontainers.
+**Docker is required to run the functional and integration tests** — they spin up PostgreSQL (and, for Aircraft, LocalStack) containers via Testcontainers.
 
-CI (`.github/workflows/main.yml`, runs on push to `main`) enforces, in order: `prettier --check`, `dotnet format --verify-no-changes`, `dotnet build -c Release`, `dotnet test`. All four must pass.
+CI (`.github/workflows/main.yml`, runs on push to `main`) has two parallel jobs: **Prettier** (`npx prettier --check .`) and **DotNet** (`dotnet format --verify-no-changes`, then `dotnet build -c Release`, then `dotnet test`). Both must pass.
 
 ### Code-quality enforcement (important)
 
@@ -47,39 +48,55 @@ CI (`.github/workflows/main.yml`, runs on push to `main`) enforces, in order: `p
 
 ### Per-service layering
 
-Each service (Aircraft, Flights) is split into layered projects; Airports is a slimmer variant with no database layer:
+All three services share one layered structure:
 
 - **`X.Core`** — domain models/aggregates with behavior (e.g. `Aircraft.Create(...)`, `aircraft.MarkAsParked(...)`). Entities extend the shared `Entity` base and raise domain events by calling `AddDomainEvent`.
-- **`X.Infrastructure`** — EF Core `ApplicationDbContext`, entity configurations, migrations, the outbox implementation, and `AddDatabaseConnection` DI wiring.
-- **`X.Api.Lambda`** — an ASP.NET Core Minimal API hosted in Lambda (`AddAWSLambdaHosting(LambdaEventSource.HttpApi)`). HTTP endpoints only.
+- **`X.Infrastructure`** — EF Core `ApplicationDbContext`, entity configurations, migrations, `DesignTimeDbContextFactory`, the service's `OutboxProcessor`, and the idempotent write paths its message handlers call (Flights' `AircraftProjectionWriter` / `AirportProjectionWriter`, Aircraft's `AircraftFlightStatusProcessor`).
+- **`X.Api.Lambda`** — an ASP.NET Core Minimal API hosted in Lambda via `AddHttpApiLambdaDefaults` (which calls `AddAWSLambdaHosting(LambdaEventSource.HttpApi)`). HTTP endpoints only.
 - **`X.Publisher.Lambda`** — the outbox drainer (see below), invoked on a 1-minute schedule.
-- **`X.Api.Lambda.MessageHandlers.<EventName>`** — one Lambda project **per consumed event**, each an SQS-triggered `Function` class that owns its own `HostApplicationBuilder`.
+- **`X.Migrations.Lambda`** — applies the service's EF Core migrations as the handler of a CloudFormation custom resource during `cdk deploy`.
+- **`X.Api.Lambda.MessageHandlers.<EventName>`** — one Lambda project **per consumed event**, each an SQS-triggered `Function` class that owns its own `HostApplicationBuilder` and processes batches with `SqsBatchProcessor` (partial batch failures). Airports consumes no events, so it has none.
 
-Airports uses **DynamoDB** (no `Core`/`Infrastructure` split); Aircraft and Flights share a **PostgreSQL** database (logically separated by per-service schema).
+All three services share one **PostgreSQL** database, logically separated by per-service schema (`airports`, `aircraft`, `flights`). Airports was originally on DynamoDB; nothing DynamoDB-related remains.
 
-### Shared library (`src/Shared`)
+### Shared libraries
 
-Cross-cutting contracts and infrastructure used by every service — read `src/Shared/README.md` for the full tour. Key pieces you will touch often:
+Cross-cutting code lives in four projects:
 
-- **`Shared.Contracts`** — immutable record DTOs (`AircraftDto`, `ScheduleFlightDto`, …) and integration events (`AircraftCreatedEvent`, `FlightArrivedEvent`, …) implementing `IDomainEvent` / `IFlightStatusManagementEvent`. These records are the wire contract between services — changing one affects producer and consumer.
-- **`IEndpoint`** — each Minimal API endpoint is a class implementing `MapEndpoint`; `AddEndpoints(assembly)` + `MapEndpoints()` discover and register them via reflection, so new endpoints need no manual registration.
-- **`Ensure`** — guard-clause helpers (`NotNullOrEmpty`, `ZeroOrGreater`, …) using `CallerArgumentExpression`. Prefer these over hand-written argument checks.
-- **Error handling** — endpoints return `ErrorOr`-based results mapped through `ErrorHandlingHelper.GetProblemDetails` and `GlobalExceptionHandler` into RFC-compliant `ProblemDetails`. Follow the existing endpoint pattern rather than throwing.
-- **`RequestContextLoggingMiddleware`** — enriches Serilog logs with a correlation id (`X-Correlation-Id` header, else trace id).
+- **`src/Shared`** — contracts and framework-agnostic building blocks; read `src/Shared/README.md` for the full tour. Key pieces you will touch often:
+    - **`Shared.Contracts`** — immutable record DTOs (`AircraftDto`, `ScheduleFlightDto`, …) and integration events (`AircraftCreatedEvent`, `FlightArrivedEvent`, …) implementing `IDomainEvent` / `IFlightStatusManagementEvent`. These records are the wire contract between services — changing one affects producer and consumer.
+    - **`IEndpoint`** — each Minimal API endpoint is a class implementing `MapEndpoint`; `AddEndpoints(assembly)` + `MapEndpoints()` discover and register them via reflection, so new endpoints need no manual registration.
+    - **`Ensure`** — guard-clause helpers (`NotNullOrEmpty`, `ZeroOrGreater`, `GreaterThanZero`, …) using `CallerArgumentExpression`. Prefer these over hand-written argument checks.
+    - **Error handling** — endpoints return `ErrorOr`-based results mapped through `ErrorHandlingHelper.GetProblemDetails` and `GlobalExceptionHandler` into RFC-compliant `ProblemDetails`. Follow the existing endpoint pattern rather than throwing.
+    - **`RequestContextLoggingMiddleware`** — enriches Serilog logs with a correlation id (`X-Correlation-Id` header, else trace id).
+    - **Outbox primitives** — `Entity`, `OutboxMessage`, `OutboxConstants`, and `OutboxProcessorBase<TPublisher>` (publish/retry/dead-letter policy).
+- **`src/Shared.Npgsql`** — `AddDatabaseConnection<TDbContext>` (an IAM/RDS Proxy overload and a plain connection-string overload used by tests), `InsertOutboxMessagesInterceptor`, `NpgsqlOutboxProcessorBase<TPublisher>` (claim → publish → record-outcome loop), `DatabaseClock`, and `ApplyMigrationsAsync`.
+- **`src/AWS.Aspire.ServiceDefaults`** — host wiring for the API and message-handler Lambdas: `AddServiceDefaults` (OpenTelemetry, service discovery, `HttpClient` resilience), `AddHttpApiLambdaDefaults`, `UseDefaultPipeline` / `MapDefaultEndpoints`, and `SqsBatchProcessor`. The name is historical — there is no Aspire AppHost.
+- **`src/Shared.AWS.CloudWatchLogs`** — helper used by the log-fetching scripts.
 
-### Transactional outbox (Aircraft & Flights)
+### Transactional outbox (all services)
 
 Events are **not** published inline. Instead:
 
 1. Domain models raise events into `Entity.DomainEvents` during a transaction.
 2. `InsertOutboxMessagesInterceptor` (an EF `SaveChangesInterceptor` registered in `AddDatabaseConnection`) serializes those events into `outbox_messages` in the **same transaction** as the state change, then clears them after save.
-3. The **Publisher Lambda** runs every minute. It claims due rows with a single statement (a `SELECT ... FOR UPDATE SKIP LOCKED` CTE feeding an `UPDATE ... RETURNING` that stamps `claim_id` + `claimed_until_utc`), then publishes to SNS via the `AWS.Messaging` bus, recording each message's outcome individually with exponential-backoff retries and dead-lettering (`OutboxProcessor`). Lease timing belongs to PostgreSQL: the expiry is stamped as `now() + OutboxConstants.ClaimDuration` and every check of it compares against `now()` (written in LINQ as `DatabaseClock.UtcNow()`), so clock skew between invocations cannot lengthen, shorten, or misjudge a lease. Claims expire after `ClaimDuration` so messages are not stranded when an invocation dies mid-batch. Each outcome is written by a single `UPDATE` conditioned on both the claim id and an unexpired `claimed_until_utc`, so an invocation that overran its lease cannot write state it no longer owns; if that `UPDATE` matches no rows, or fails outright, the worker abandons the rest of the claim rather than publishing messages whose outcomes it may equally be unable to record. The loop also stops publishing once the time elapsed since it claimed is within `OutboxConstants.ClaimSafetyMargin` of `ClaimDuration` — a local optimisation only, since ownership is decided in the database.
+3. The **Publisher Lambda** runs every minute. It claims due rows with a single statement (a `SELECT ... FOR UPDATE SKIP LOCKED` CTE feeding an `UPDATE ... RETURNING` that stamps `claim_id` + `claimed_until_utc`), then publishes to SNS via the `AWS.Messaging` bus, recording each message's outcome individually with exponential-backoff retries and dead-lettering. The loop is shared (`NpgsqlOutboxProcessorBase` + `OutboxProcessorBase`); each service's `OutboxProcessor` supplies only its claim SQL and `s_publishers` registry. Lease timing belongs to PostgreSQL: the expiry is stamped as `now() + OutboxConstants.ClaimDuration` and every check of it compares against `now()` (written in LINQ as `DatabaseClock.UtcNow()`), so clock skew between invocations cannot lengthen, shorten, or misjudge a lease. Claims expire after `ClaimDuration` so messages are not stranded when an invocation dies mid-batch. Each outcome is written by a single `UPDATE` conditioned on both the claim id and an unexpired `claimed_until_utc`, so an invocation that overran its lease cannot write state it no longer owns; if that `UPDATE` matches no rows, or fails outright, the worker abandons the rest of the claim rather than publishing messages whose outcomes it may equally be unable to record. The loop also stops publishing once the time elapsed since it claimed is within `OutboxConstants.ClaimSafetyMargin` of `ClaimDuration` — a local optimisation only, since ownership is decided in the database.
 
-When adding a new published event: raise it from the domain model, and register a publisher for it in that service's `OutboxProcessor.s_publishers` dictionary **and** its Publisher Lambda's `AddAWSMessageBus` configuration. Missing registration dead-letters the message.
+When adding a new published event: raise it from the domain model, register a publisher for it in that service's `OutboxProcessor.s_publishers` dictionary **and** its Publisher Lambda's `AddAWSMessageBus` configuration (Flights keeps this in `AwsMessageBusInstaller.cs`), then provision the SNS topic in `MessagingResources`, pass its ARN as `SNS:<EventName>TopicArn`, and add it to the `PublisherLambda` construct's `Topics`. Missing registration dead-letters the message.
+
+### Consumers, idempotency, and concurrency
+
+Delivery is at-least-once and unordered, so every consumer must be idempotent. Handlers parse the SNS-over-SQS envelope (`Message` → `data`) and **throw** on malformed payloads rather than acknowledging them; failed messages are retried individually and dead-lettered after 3 receives.
+
+- **Flights** maintains its aircraft/airport read models with atomic upserts: aircraft are inserted with `ON CONFLICT DO NOTHING`; airport snapshots apply only when their aggregate `Version` is newer than the stored one.
+- **Aircraft** uses a transactional inbox: `AircraftFlightStatusProcessor` inserts the event id into `inbox_messages` in the same transaction as the aircraft update and returns `Applied`, `Stale` (event `OccurredAt` ≤ aircraft `UpdatedAt`; inbox row still committed), or `Duplicate`. The flight status events (`FlightArrived`, `FlightMarkedAsEnRoute`, `FlightMarkedAsDelayedEnRoute`) carry `OccurredAt` for this.
+- **Optimistic concurrency**: Airports uses an application-managed `Version` concurrency token; `Flight` and `Aircraft` use PostgreSQL's `xmin` as an EF row version. Flights' `PATCH` endpoints catch `DbUpdateConcurrencyException` and return `409 Conflict`; `AircraftFlightStatusProcessor` rolls back, reloads, and retries (up to 3 attempts).
 
 ### Database access
 
-`AddDatabaseConnection` builds an Npgsql data source that authenticates to **RDS Proxy** using IAM tokens (`RDSAuthTokenGenerator`) — there is no static password; `SslMode.Require` is enforced. Each service uses a dedicated schema (e.g. `aircraft`) with snake_case naming (`UseSnakeCaseNamingConvention`). Migrations are applied automatically at API startup via `ApplyMigrationsAsync` (`Database.MigrateAsync()`).
+`AddDatabaseConnection` builds an Npgsql data source that authenticates to **RDS Proxy** using IAM tokens (`RDSAuthTokenGenerator`) — there is no static password; `SslMode.Require` is enforced. Each service uses a dedicated schema (e.g. `aircraft`) with snake_case naming (`UseSnakeCaseNamingConvention`).
+
+Migrations are applied in two ways. In deployed environments, each service's `X.Migrations.Lambda` runs them via a CloudFormation custom resource (`DatabaseMigrationLambda` in CDK) that re-runs whenever the migration image changes, and the service's other Lambdas depend on it. In the `Development` environment (which `WebApplicationFactory` uses), the API applies them at startup via `ApplyMigrationsAsync`.
 
 To add a migration, use the `DesignTimeDbContextFactory` in each `X.Infrastructure` project (it supplies a throwaway local connection string, so no live DB is needed). `Microsoft.EntityFrameworkCore.Design` is referenced by the `X.Api.Lambda` projects rather than the `X.Infrastructure` projects, so pass one as the startup project:
 
@@ -89,19 +106,15 @@ dotnet ef migrations add <Name> --project src/Aircraft.Infrastructure --startup-
 
 ### Configuration
 
-Each service reads environment variables under a **service-specific prefix**: `AIRCRAFT_`, `FLIGHTS_`, `AIRPORTS_` (e.g. `AIRCRAFT_DbConnection__Host`). Common keys: `DbConnection:{Host,Database,Username,Port}`, `SNS:<EventName>TopicArn`, `S3:BucketName`, and `Outbox:{BatchSize,MaxRetryAttempts,BaseRetryDelaySeconds,MaxRetryDelaySeconds}`.
+Each service reads environment variables under a **service-specific prefix**: `AIRCRAFT_`, `FLIGHTS_`, `AIRPORTS_` (e.g. `AIRCRAFT_DbConnection__Host`). Keys: `DbConnection:{Host,Database,Username,Port}`, `SNS:<EventName>TopicArn` (publishers), and `S3:BucketName` (Aircraft API). Outbox tuning (batch size, retry attempts and delays, claim duration, safety margin) is **not** runtime-configurable — it lives in `OutboxConstants` in `src/Shared`.
 
 ## Local development
 
-`src/AWS.Aspire.AppHost` is a .NET Aspire host that runs services locally against emulators (DynamoDB Local, the AWS Lambda service emulator, and an API Gateway emulator on port 3000). Note it currently wires up only the Airports service.
-
-```bash
-dotnet run --project src/AWS.Aspire.AppHost
-```
+There is **no local orchestration**. The former .NET Aspire AppHost (which ran Airports against DynamoDB Local) was removed when Airports moved to PostgreSQL. The test suites are the local harness; running an API with `dotnet run` is not supported as-is, because under `Development` it expects the host to register the `DbContext`, which only the test factories do.
 
 ## Deployment (`Deployment/`)
 
-A C# AWS CDK app (`cdk.json` → `dotnet run --project Deployment/Deployment.csproj`). `EmbassyAirlinesStack` composes networking (isolated-subnet VPC), SNS topics (`MessagingResources`), a shared API Gateway custom domain (`SharedInfra`), shared RDS + RDS Proxy, and the three service constructs. Reusable Lambda constructs live in `Deployment/Lambdas/`: `HttpDockerLambda` (API + route + DB access), `EventHandlerLambda` (SQS + DLQ + SNS subscription), `PublisherLambda` (scheduled outbox drainer). Every Lambda is a Docker image built from a dockerfile in `docker/`. See `Deployment/README.md` for the full infrastructure breakdown.
+A C# AWS CDK app (`cdk.json` → `dotnet run --project Deployment/Deployment.csproj`). `EmbassyAirlinesStack` composes networking (isolated-subnet VPC, no NAT, VPC endpoints for S3/SNS/SQS), SNS topics (`MessagingResources`), a shared API Gateway custom domain (`SharedInfra`), shared RDS + RDS Proxy (`RdsResources`), and the three service constructs. Reusable Lambda constructs live in `Deployment/Lambdas/`: `HttpDockerLambda` (API + route + DB access), `EventHandlerLambda` (SQS + DLQ with 14-day retention + SNS subscription), `PublisherLambda` (scheduled outbox drainer), `DatabaseMigrationLambda` (migrations custom resource). Every Lambda is a Docker image built from a dockerfile in `docker/`. See `Deployment/README.md` for the full infrastructure breakdown.
 
 ```bash
 cdk synth
@@ -110,7 +123,11 @@ cdk deploy
 
 ## Tests
 
-- **Functional tests** (`tests/*.FunctionalTests`) use `WebApplicationFactory<Program>` + xUnit v3 + FluentAssertions (pinned to 7.0.0). `FunctionalTestWebAppFactory` boots the real app under the `FunctionalTests` environment (which skips the RDS/IAM `AddDatabaseConnection` and substitutes Testcontainers PostgreSQL + LocalStack). `BaseFunctionalTest` provides the shared `HttpClient` and `ProblemDetails` assertion helpers.
+All automated suites use xUnit v3 on Microsoft.Testing.Platform, asserting with **AwesomeAssertions** (the Apache-licensed FluentAssertions fork).
+
+- **Functional tests** (`tests/*.Api.Lambda.FunctionalTests`) use `WebApplicationFactory<Program>`, which runs the app under `Development`, so it skips the RDS/IAM `AddDatabaseConnection` path and applies migrations at startup. `FunctionalTestWebAppFactory` registers the `DbContext` against Testcontainers PostgreSQL (`postgres:18`), plus LocalStack S3 for Aircraft. `BaseFunctionalTest` provides the shared `HttpClient` and `ProblemDetails` assertion helpers. Flights' `ConcurrencyFunctionalTestWebAppFactory` injects an interceptor that forces a concurrency conflict.
+- **Integration tests** (`tests/*.Infrastructure.IntegrationTests`) exercise the outbox, the Aircraft inbox, read-model projection writers, and optimistic concurrency against a real PostgreSQL container.
+- **Unit tests** (`tests/Shared.Npgsql.UnitTests`) cover `AddDatabaseConnection` registration.
 - **Smoke tests** (`tests/SmokeTests`) is a console app that exercises the full create-airports → upload-layout → create-aircraft → schedule-flight workflow against a **live** deployment, with retry/backoff for eventual consistency. Requires AWS credentials (uploads a seat layout to S3, resolves account/region via the AWS CLI):
 
     ```bash
@@ -119,7 +136,7 @@ cdk deploy
 
 ## Utility scripts
 
-`scripts/*.cs` are file-based C# apps (`#:project` directive) that fetch recent CloudWatch logs for a given Lambda. Run directly and require AWS credentials:
+`scripts/*.cs` are file-based C# apps (`#:project` directive). `Coverage.cs` produces the coverage report (see above); `Get{Aircraft,Airports,Flights}Logs.cs` fetch recent CloudWatch logs for that service's API Lambda and require AWS credentials:
 
 ```bash
 dotnet run scripts/GetAircraftLogs.cs

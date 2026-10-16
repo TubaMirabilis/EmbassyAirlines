@@ -89,14 +89,14 @@ Not shown: each service also has a **Migrations Lambda** that CloudFormation inv
 
 All three services follow the same layered structure:
 
-| Project                                    | Responsibility                                                                                                                                                                                             |
-| ------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `X.Core`                                   | Domain aggregates with real behaviour (`Airport.Update`, `Aircraft.Create`, `flight.AdjustStatus`). Entities extend `Entity` and raise domain events via `AddDomainEvent`. No infrastructure dependencies. |
-| `X.Infrastructure`                         | EF Core `ApplicationDbContext`, entity configurations, migrations, `DesignTimeDbContextFactory`, and the service's `OutboxProcessor` (its claim query and publisher registry).                             |
-| `X.Api.Lambda`                             | ASP.NET Core Minimal API hosted in Lambda via `AddHttpApiLambdaDefaults`, which calls `AddAWSLambdaHosting(LambdaEventSource.HttpApi)`. HTTP endpoints only.                                               |
-| `X.Publisher.Lambda`                       | The outbox drainer: a plain `LambdaBootstrapBuilder` handler invoked on a one-minute EventBridge schedule.                                                                                                 |
-| `X.Migrations.Lambda`                      | Applies the service's EF Core migrations. It is the handler behind a CloudFormation custom resource, so migrations run as part of a deployment.                                                            |
-| `X.Api.Lambda.MessageHandlers.<EventName>` | One Lambda project **per consumed event**. Each is an SQS-triggered `Function` class that builds its own `HostApplicationBuilder`. Airports consumes no events, so it has none.                            |
+| Project                                    | Responsibility                                                                                                                                                                                                                       |
+| ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `X.Core`                                   | Domain aggregates with real behaviour (`Airport.Update`, `Aircraft.Create`, `flight.AdjustStatus`). Entities extend `Entity` and raise domain events via `AddDomainEvent`. No infrastructure dependencies.                           |
+| `X.Infrastructure`                         | EF Core `ApplicationDbContext`, entity configurations, migrations, `DesignTimeDbContextFactory`, the service's `OutboxProcessor` (its claim query and publisher registry), and the idempotent write paths its message handlers call. |
+| `X.Api.Lambda`                             | ASP.NET Core Minimal API hosted in Lambda via `AddHttpApiLambdaDefaults`, which calls `AddAWSLambdaHosting(LambdaEventSource.HttpApi)`. HTTP endpoints only.                                                                         |
+| `X.Publisher.Lambda`                       | The outbox drainer: a plain `LambdaBootstrapBuilder` handler invoked on a one-minute EventBridge schedule.                                                                                                                           |
+| `X.Migrations.Lambda`                      | Applies the service's EF Core migrations. It is the handler behind a CloudFormation custom resource, so migrations run as part of a deployment.                                                                                      |
+| `X.Api.Lambda.MessageHandlers.<EventName>` | One Lambda project **per consumed event**. Each is an SQS-triggered `Function` class that builds its own `HostApplicationBuilder`. Airports consumes no events, so it has none.                                                      |
 
 Splitting message handlers one-per-event means each consumer scales, fails, retries, and dead-letters independently — a poison message on `FlightArrived` cannot stall `FlightMarkedAsEnRoute`.
 
@@ -152,6 +152,8 @@ Owns aircraft, their weights, their seat maps, and their current location. Backe
 
 Creating an aircraft reads `seat-layouts/{EquipmentCode}.json` from **S3** and expands the row-range definition into individual `Seat` entities, rejecting duplicate row/letter pairs. A missing layout yields a `404` rather than a `500`, and a duplicate tail number yields a `409`.
 
+Its three message handlers all delegate to `AircraftFlightStatusProcessor`, which records each consumed event in a transactional **inbox** (`inbox_messages`) in the same transaction as the aircraft update. See **Idempotency and ordering** under [Event choreography](#event-choreography).
+
 - Publishes: `AircraftCreated`
 - Consumes: `FlightArrived`, `FlightMarkedAsEnRoute`, `FlightMarkedAsDelayedEnRoute`
 - Owns an S3 bucket for seat layouts (`aircraft-bucket-{account}-{region}`)
@@ -164,6 +166,8 @@ It keeps **local read-model copies** of aircraft and airports, populated by the 
 
 Times are modelled with **NodaTime**: `LocalDateTime` for the scheduled wall-clock times, resolved to `ZonedDateTime`/`Instant` through the airport's IANA time zone.
 
+The `Flight` aggregate uses optimistic concurrency through PostgreSQL's `xmin` system column, mapped as an EF Core row version. If two requests modify the same flight concurrently, the slower one fails to save and its `PATCH` returns `409 Conflict` instead of silently overwriting the other. Its outbox event is not persisted either.
+
 - Publishes: `FlightScheduled`, `AircraftAssignedToFlight`, `FlightPricingAdjusted`, `FlightRescheduled`, `FlightCancelled`, `FlightDelayed`, `FlightArrived`, `FlightMarkedAsEnRoute`, `FlightMarkedAsDelayedEnRoute`
 - Consumes: `AircraftCreated`, `AirportCreated`, `AirportUpdated`
 
@@ -171,20 +175,28 @@ Times are modelled with **NodaTime**: `LocalDateTime` for the scheduled wall-clo
 
 ## Event choreography
 
-| Event                          | Published by | Consumed by | Effect on the consumer                      |
-| ------------------------------ | ------------ | ----------- | ------------------------------------------- |
-| `AirportCreated`               | Airports     | Flights     | Adds the airport to the local read model    |
-| `AirportUpdated`               | Airports     | Flights     | Updates the local airport read model        |
-| `AircraftCreated`              | Aircraft     | Flights     | Adds the aircraft to the local read model   |
-| `FlightMarkedAsEnRoute`        | Flights      | Aircraft    | `aircraft.MarkAsEnRoute(destination)`       |
-| `FlightMarkedAsDelayedEnRoute` | Flights      | Aircraft    | `aircraft.MarkAsEnRoute(destination)`       |
-| `FlightArrived`                | Flights      | Aircraft    | `aircraft.MarkAsParked(arrivalAirportIcao)` |
+| Event                          | Published by | Consumed by | Effect on the consumer                       |
+| ------------------------------ | ------------ | ----------- | -------------------------------------------- |
+| `AirportCreated`               | Airports     | Flights     | Adds the airport to the local read model     |
+| `AirportUpdated`               | Airports     | Flights     | Updates the local airport read model         |
+| `AircraftCreated`              | Aircraft     | Flights     | Adds the aircraft to the local read model    |
+| `FlightMarkedAsEnRoute`        | Flights      | Aircraft    | `aircraft.MarkAsEnRoute(arrivalAirportIcao)` |
+| `FlightMarkedAsDelayedEnRoute` | Flights      | Aircraft    | `aircraft.MarkAsEnRoute(arrivalAirportIcao)` |
+| `FlightArrived`                | Flights      | Aircraft    | `aircraft.MarkAsParked(arrivalAirportIcao)`  |
 
 Events published without a consumer today (`FlightScheduled`, `FlightCancelled`, `FlightDelayed`, `FlightRescheduled`, `FlightPricingAdjusted`, `AircraftAssignedToFlight`) still flow through SNS and exist as extension points for notification, pricing, or reporting consumers.
 
-**Message envelope.** Handlers receive an SQS message whose body is the SNS envelope; the domain payload sits at `Message` → `data`. Handlers parse that path explicitly. Malformed envelopes and payloads that cannot be deserialised cause the handler to fail rather than silently acknowledging the message. The shared `SqsBatchProcessor` processes each SQS record independently, catches and logs exceptions, and returns an `SQSBatchResponse` containing only failed message IDs. With partial batch failure reporting enabled, Lambda retries those messages individually. Messages that repeatedly fail are moved to the queue's dead-letter queue after the configured maximum of three receives. The SQS visibility timeout is 180 seconds.
+**Message envelope.** Handlers receive an SQS message whose body is the SNS envelope; the domain payload sits at `Message` → `data`. Handlers parse that path explicitly. Malformed envelopes and payloads that cannot be deserialised cause the handler to fail rather than silently acknowledging the message. The shared `SqsBatchProcessor` processes each SQS record independently, catches and logs exceptions, and returns an `SQSBatchResponse` containing only failed message IDs. With partial batch failure reporting enabled, Lambda retries those messages individually. Messages that repeatedly fail are moved to the queue's dead-letter queue after the configured maximum of three receives, and the dead-letter queue keeps them for 14 days. The SQS visibility timeout is 180 seconds.
 
-**Idempotency and ordering.** SNS/SQS delivery is at-least-once, so consumers must tolerate duplicate and out-of-order messages. Flights uses atomic PostgreSQL upserts to maintain its local aircraft and airport projections. Aircraft creation uses `INSERT ... ON CONFLICT DO NOTHING`, making duplicate deliveries harmless. Airport creation and update events carry complete snapshots with monotonically increasing aggregate versions. The airport projection applies a snapshot only when its version is newer than the stored version, allowing updates to arrive before creation events without regressing the read model. Event timestamps originate from the publishing service rather than the time of consumption.
+**Idempotency and ordering.** SNS/SQS delivery is at-least-once, so consumers must tolerate duplicate and out-of-order messages. Event timestamps come from the publishing service, not from the time the event is consumed.
+
+- **Flights** uses atomic PostgreSQL upserts to maintain its local aircraft and airport projections. Inserting an aircraft uses `INSERT ... ON CONFLICT DO NOTHING`, so a duplicate delivery does nothing and never overwrites an existing row. Each airport event carries a complete snapshot with a monotonically increasing aggregate version. The projection applies a snapshot only if its version is newer than the stored one, so an update can arrive before the creation event without rolling the read model back.
+- **Aircraft** uses a transactional inbox. `FlightArrived`, `FlightMarkedAsEnRoute`, and `FlightMarkedAsDelayedEnRoute` carry an `OccurredAt` timestamp, taken from the flight's `UpdatedAt` when its status changed. `AircraftFlightStatusProcessor` inserts the event id into `inbox_messages` with `ON CONFLICT DO NOTHING`, and returns one of three outcomes:
+    - **`Duplicate`** — the event id is already in the inbox, so the aircraft is not touched.
+    - **`Stale`** — the event is no newer than the aircraft's `UpdatedAt`. It is discarded, but its inbox row is still committed so that redeliveries are recognised as duplicates.
+    - **`Applied`** — the location change and the inbox row are committed in one transaction.
+
+    The aircraft row is guarded by an `xmin` row version. On a concurrency conflict, the processor rolls back, which also discards the inbox row, then reloads the aircraft and tries again. It makes up to three attempts. An event for an aircraft that does not exist throws, so the message is retried and eventually dead-lettered instead of being acknowledged.
 
 ---
 
@@ -256,6 +268,8 @@ All routes are served under the shared API Gateway custom domain at `/api`.
 - `RescheduleFlightDto`: `DepartureLocalTime`, `ArrivalLocalTime`, `SchedulingAmbiguityPolicy`.
 - `AdjustFlightStatusDto`: `Status`. `AssignAircraftToFlightDto`: `AircraftId`. `AdjustFlightPricingDto`: `EconomyPrice`, `BusinessPrice`.
 
+Each `PATCH` endpoint returns `409 Conflict` if the flight was modified by another request between being read and saved. Fetch the flight again and retry.
+
 ### Paging
 
 `GET /aircraft` and `GET /flights` take `page` (default `1`) and `pageSize` (default `50`, clamped to `1`–`200`), and return an `AircraftListDto` / `FlightListDto`: `Items`, `Page`, `PageSize`, `TotalItems`, `HasNextPage`. A `page` past the end is clamped to the last page. Filter values are trimmed and upper-cased before matching. Flights are ordered by departure local time; aircraft by id.
@@ -286,7 +300,7 @@ Each successful transition raises a matching event via `FlightStatusEventFactory
 
 **Operation types.** `RevenuePassenger`, `NonRevenuePositioning`, `MaintenanceFerry`, `PermitToFly`.
 
-**Aircraft location** is a small invariant: `MarkAsEnRoute` sets `EnRouteTo` and clears `ParkedAt`; `MarkAsParked` does the reverse. Both normalise the location code to trimmed uppercase, so an aircraft is never simultaneously parked and en route.
+**Aircraft location** is a small invariant: `MarkAsEnRoute` sets `EnRouteTo` and clears `ParkedAt`; `MarkAsParked` does the reverse. Both normalise the location code to trimmed uppercase, so an aircraft is never simultaneously parked and en route. Both also set the aircraft's `UpdatedAt` to the triggering event's `OccurredAt`, not to the time of processing. That timestamp is what the inbox compares against when it discards stale events.
 
 **Seat layouts** are declared as row ranges rather than individual seats, with an optional `EveryNthRowOnly` for staggered cabins. [`Resources/Layouts/B78X.json`](Resources/Layouts/B78X.json) staggers its business cabin across two overlapping ranges:
 
@@ -485,12 +499,12 @@ cdk deploy
 
 Reusable Lambda constructs live in `Deployment/Lambdas/`:
 
-| Construct                 | Provisions                                                                                         |
-| ------------------------- | -------------------------------------------------------------------------------------------------- |
-| `HttpDockerLambda`        | Docker Lambda + API Gateway route (`ANY /{service}`) + RDS Proxy access (30 s timeout)             |
-| `EventHandlerLambda`      | Docker Lambda + SQS queue + DLQ (max 3 receives) + SNS subscription + event source (batch size 10) |
-| `PublisherLambda`         | Docker Lambda on a one-minute EventBridge schedule + SNS publish grants (60 s timeout)             |
-| `DatabaseMigrationLambda` | Docker Lambda + custom-resource provider that runs migrations on deploy (10 min timeout)           |
+| Construct                 | Provisions                                                                                                           |
+| ------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| `HttpDockerLambda`        | Docker Lambda + API Gateway route (`ANY /{service}`) + RDS Proxy access (30 s timeout)                               |
+| `EventHandlerLambda`      | Docker Lambda + SQS queue + DLQ (max 3 receives, 14-day retention) + SNS subscription + event source (batch size 10) |
+| `PublisherLambda`         | Docker Lambda on a one-minute EventBridge schedule + SNS publish grants (60 s timeout)                               |
+| `DatabaseMigrationLambda` | Docker Lambda + custom-resource provider that runs migrations on deploy (10 min timeout)                             |
 
 Every Lambda is a Docker image built from a dockerfile in `docker/`, has 1,536 MB of memory, gets its own security group with access to the RDS Proxy, and has X-Ray active tracing enabled.
 
@@ -520,9 +534,15 @@ The automated suites run on **xUnit v3** under Microsoft.Testing.Platform. The f
 
 These are genuine HTTP tests against a real database — not mocked unit tests.
 
+The Flights suite also has `FlightConcurrencyFunctionalTests`, which boots the API through `ConcurrencyFunctionalTestWebAppFactory`. That factory registers an EF interceptor which, just before the API saves, modifies the same flight from a separate `DbContext`. The test asserts that the API returns `409 Conflict` and that the other context's change is kept.
+
 ### Integration tests
 
-`tests/*.Infrastructure.IntegrationTests` exercise the transactional outbox against a real PostgreSQL container. The Aircraft suite provides extensive outbox coverage: it covers the interceptor writing outbox rows in the same transaction, concurrent processors never publishing the same message, expired claims being reclaimed, a worker that lost its lease being unable to overwrite the new owner's outcome, exponential backoff, and dead-lettering of unknown types, invalid JSON, and unrecoverable failures. The Airports suite additionally verifies optimistic concurrency, including rejection of stale updates and rollback of their associated outbox events. The Flights suite tests version-aware airport projection updates against PostgreSQL, including duplicate delivery, stale events, and update events arriving before creation events.
+`tests/*.Infrastructure.IntegrationTests` run each service's persistence code against a real PostgreSQL container.
+
+- **Aircraft** has the most outbox coverage: outbox rows written in the same transaction as the change, concurrent processors never publishing the same message, expired claims being reclaimed, a worker that lost its lease being unable to overwrite the new owner's outcome, exponential backoff, and dead-lettering of unknown types, invalid JSON, and unrecoverable failures. `AircraftFlightStatusProcessorTests` cover the inbox: a redelivered event returns `Duplicate`, a stale event is still recorded and then deduplicated, a failed transition does not commit its inbox row, and concurrent updates are resolved by retrying, so the newer event wins whichever order the two arrive in.
+- **Airports** also verifies optimistic concurrency, including rejecting stale updates and rolling back their outbox events.
+- **Flights** tests the version-aware airport projection (duplicate delivery, stale events, and updates arriving before the creation event), the aircraft projection's insert-if-absent behaviour, and that saving a flight already modified by another context throws `DbUpdateConcurrencyException`.
 
 ### Unit tests
 
