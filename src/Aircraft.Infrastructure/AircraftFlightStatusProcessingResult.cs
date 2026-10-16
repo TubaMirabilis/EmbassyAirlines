@@ -3,5 +3,6 @@ namespace Aircraft.Infrastructure;
 public enum AircraftFlightStatusProcessingResult
 {
     Applied,
-    Stale
+    Stale,
+    Duplicate
 }

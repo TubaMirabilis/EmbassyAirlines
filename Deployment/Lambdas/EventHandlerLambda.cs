@@ -47,7 +47,10 @@ internal sealed class EventHandlerLambda : Construct
             }
         });
         props.DbProxyAccess.DbProxy.GrantConnect(Function, props.DbConnection.DbUsername);
-        var dlq = new Queue(this, "Dlq");
+        var dlq = new Queue(this, "Dlq", new QueueProps
+        {
+            RetentionPeriod = Duration.Days(14)
+        });
         var queue = new Queue(this, "Queue", new QueueProps
         {
             DeadLetterQueue = new DeadLetterQueue

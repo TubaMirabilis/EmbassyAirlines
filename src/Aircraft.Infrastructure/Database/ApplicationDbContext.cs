@@ -1,3 +1,4 @@
+using Aircraft.Core;
 using Aircraft.Core.Models;
 using Microsoft.EntityFrameworkCore;
 using Shared.Npgsql;
@@ -12,6 +13,7 @@ public sealed class ApplicationDbContext : DbContext
     }
     public DbSet<Core.Models.Aircraft> Aircraft { get; set; } = null!;
     public DbSet<Seat> Seats { get; set; } = null!;
+    public DbSet<InboxMessage> InboxMessages { get; set; } = null!;
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         var assembly = typeof(ApplicationDbContext).Assembly;

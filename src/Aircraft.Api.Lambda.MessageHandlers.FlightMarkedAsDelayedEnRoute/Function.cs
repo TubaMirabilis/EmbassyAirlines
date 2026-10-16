@@ -57,13 +57,7 @@ public class Function
         context.Logger.LogInformation($"Processing flightMarkedAsDelayedEnRouteEvent with ID: {flightMarkedAsDelayedEnRouteEvent.Id}");
         using var scope = _host.Services.CreateScope();
         var processor = scope.ServiceProvider.GetRequiredService<AircraftFlightStatusProcessor>();
-        var result = await processor.ProcessAsync(flightMarkedAsDelayedEnRouteEvent.AircraftId, Core.Models.Status.EnRoute, flightMarkedAsDelayedEnRouteEvent.ArrivalAirportIcaoCode, flightMarkedAsDelayedEnRouteEvent.OccurredAt);
-        var finalMessage = result switch
-        {
-            AircraftFlightStatusProcessingResult.Applied => $"Aircraft with ID {flightMarkedAsDelayedEnRouteEvent.AircraftId} marked as EnRoute to {flightMarkedAsDelayedEnRouteEvent.ArrivalAirportIcaoCode}.",
-            AircraftFlightStatusProcessingResult.Stale => $"Stale event for aircraft with ID {flightMarkedAsDelayedEnRouteEvent.AircraftId}. The stored update time is equal to or later than the event time {flightMarkedAsDelayedEnRouteEvent.OccurredAt}.",
-            _ => throw new ArgumentOutOfRangeException($"Unexpected result from AircraftFlightStatusProcessor: {result}.")
-        };
-        context.Logger.LogInformation(finalMessage);
+        var result = await processor.ProcessAsync(flightMarkedAsDelayedEnRouteEvent.Id, flightMarkedAsDelayedEnRouteEvent.AircraftId, Core.Models.Status.EnRoute, flightMarkedAsDelayedEnRouteEvent.ArrivalAirportIcaoCode, flightMarkedAsDelayedEnRouteEvent.OccurredAt);
+        context.Logger.LogInformation("FlightMarkedAsDelayedEnRouteEvent {EventId} for aircraft {AircraftId} completed with outcome {Outcome}", flightMarkedAsDelayedEnRouteEvent.Id, flightMarkedAsDelayedEnRouteEvent.AircraftId, result);
     }
 }

@@ -54,13 +54,7 @@ public class Function
         context.Logger.LogInformation($"Processing flightMarkedAsEnRouteEvent with ID: {flightMarkedAsEnRouteEvent.Id}");
         using var scope = _host.Services.CreateScope();
         var processor = scope.ServiceProvider.GetRequiredService<AircraftFlightStatusProcessor>();
-        var result = await processor.ProcessAsync(flightMarkedAsEnRouteEvent.AircraftId, Core.Models.Status.EnRoute, flightMarkedAsEnRouteEvent.ArrivalAirportIcaoCode, flightMarkedAsEnRouteEvent.OccurredAt);
-        var finalMessage = result switch
-        {
-            AircraftFlightStatusProcessingResult.Applied => $"Aircraft with ID {flightMarkedAsEnRouteEvent.AircraftId} marked as EnRoute to {flightMarkedAsEnRouteEvent.ArrivalAirportIcaoCode}.",
-            AircraftFlightStatusProcessingResult.Stale => $"Stale event for aircraft with ID {flightMarkedAsEnRouteEvent.AircraftId}. The stored update time is equal to or later than the event time {flightMarkedAsEnRouteEvent.OccurredAt}.",
-            _ => throw new ArgumentOutOfRangeException($"Unexpected result from AircraftFlightStatusProcessor: {result}.")
-        };
-        context.Logger.LogInformation(finalMessage);
+        var result = await processor.ProcessAsync(flightMarkedAsEnRouteEvent.Id, flightMarkedAsEnRouteEvent.AircraftId, Core.Models.Status.EnRoute, flightMarkedAsEnRouteEvent.ArrivalAirportIcaoCode, flightMarkedAsEnRouteEvent.OccurredAt);
+        context.Logger.LogInformation("flightMarkedAsEnRouteEvent {EventId} for aircraft {AircraftId} completed with outcome {Outcome}", flightMarkedAsEnRouteEvent.Id, flightMarkedAsEnRouteEvent.AircraftId, result);
     }
 }

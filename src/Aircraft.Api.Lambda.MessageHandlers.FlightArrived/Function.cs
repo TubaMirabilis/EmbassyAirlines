@@ -60,13 +60,11 @@ public class Function
             flightArrivedEvent.Id);
         using var scope = _host.Services.CreateScope();
         var processor = scope.ServiceProvider.GetRequiredService<AircraftFlightStatusProcessor>();
-        var result = await processor.ProcessAsync(flightArrivedEvent.AircraftId, Core.Models.Status.Parked, flightArrivedEvent.ArrivalAirportIcaoCode, flightArrivedEvent.OccurredAt);
-        var finalMessage = result switch
-        {
-            AircraftFlightStatusProcessingResult.Applied => $"Aircraft with ID {flightArrivedEvent.AircraftId} marked as Parked at {flightArrivedEvent.ArrivalAirportIcaoCode}.",
-            AircraftFlightStatusProcessingResult.Stale => $"Stale event for aircraft with ID {flightArrivedEvent.AircraftId}. The stored update time is equal to or later than the event time {flightArrivedEvent.OccurredAt}.",
-            _ => throw new ArgumentOutOfRangeException($"Unexpected result from AircraftFlightStatusProcessor: {result}.")
-        };
-        context.Logger.LogInformation(finalMessage);
+        var result = await processor.ProcessAsync(flightArrivedEvent.Id, flightArrivedEvent.AircraftId, Core.Models.Status.Parked, flightArrivedEvent.ArrivalAirportIcaoCode, flightArrivedEvent.OccurredAt);
+        context.Logger.LogInformation(
+            "FlightArrivedEvent {EventId} for aircraft {AircraftId} completed with outcome {Outcome}",
+            flightArrivedEvent.Id,
+            flightArrivedEvent.AircraftId,
+            result);
     }
 }

@@ -36,6 +36,16 @@ public partial class InitialCreate : Migration
             constraints: table => table.PrimaryKey("pk_aircraft", x => x.id));
 
         migrationBuilder.CreateTable(
+            name: "inbox_messages",
+            schema: "aircraft",
+            columns: table => new
+            {
+                event_id = table.Column<Guid>(type: "uuid", nullable: false),
+                processed_on_utc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+            },
+            constraints: table => table.PrimaryKey("pk_inbox_messages", x => x.event_id));
+
+        migrationBuilder.CreateTable(
             name: "outbox_messages",
             schema: "aircraft",
             columns: table => new
@@ -95,6 +105,10 @@ public partial class InitialCreate : Migration
     /// <inheritdoc />
     protected override void Down(MigrationBuilder migrationBuilder)
     {
+        migrationBuilder.DropTable(
+            name: "inbox_messages",
+            schema: "aircraft");
+
         migrationBuilder.DropTable(
             name: "outbox_messages",
             schema: "aircraft");
