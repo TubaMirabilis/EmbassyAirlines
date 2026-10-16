@@ -1,5 +1,6 @@
 using Aircraft.Infrastructure.Database;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Shared.Npgsql;
 using Testcontainers.PostgreSql;
 
@@ -16,7 +17,7 @@ public sealed class PostgreSqlFixture : IAsyncLifetime
         await db.Database.MigrateAsync();
     }
     public async ValueTask DisposeAsync() => await _postgres.DisposeAsync();
-    public ApplicationDbContext CreateDbContext()
+    public ApplicationDbContext CreateDbContext(params IInterceptor[] interceptors)
     {
         var options = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(ConnectionString, x =>
         {
@@ -25,6 +26,7 @@ public sealed class PostgreSqlFixture : IAsyncLifetime
         })
         .UseSnakeCaseNamingConvention()
         .AddInterceptors(new InsertOutboxMessagesInterceptor())
+        .AddInterceptors(interceptors)
             .Options;
         return new ApplicationDbContext(options);
     }

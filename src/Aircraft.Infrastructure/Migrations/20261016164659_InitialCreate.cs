@@ -26,6 +26,7 @@ public partial class InitialCreate : Migration
                 status = table.Column<string>(type: "character varying(12)", unicode: false, maxLength: 12, nullable: false),
                 parked_at = table.Column<string>(type: "character varying(4)", unicode: false, maxLength: 4, nullable: true),
                 en_route_to = table.Column<string>(type: "character varying(4)", unicode: false, maxLength: 4, nullable: true),
+                xmin = table.Column<uint>(type: "xid", rowVersion: true, nullable: false),
                 dry_operating_weight_kilograms = table.Column<int>(type: "integer", nullable: false),
                 maximum_fuel_weight_kilograms = table.Column<int>(type: "integer", nullable: false),
                 maximum_landing_weight_kilograms = table.Column<int>(type: "integer", nullable: false),

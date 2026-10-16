@@ -72,6 +72,12 @@ namespace Aircraft.Infrastructure.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("updated_at");
 
+                    b.Property<uint>("xmin")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
                     b.ComplexProperty(typeof(Dictionary<string, object>), "DryOperatingWeight", "Aircraft.Core.Models.Aircraft.DryOperatingWeight#Weight", b1 =>
                         {
                             b1.IsRequired();
