@@ -11,39 +11,34 @@ internal static class FlightsSmokeTestActions
     private const int MaxRetryAttempts = 180;
     private static readonly TimeSpan RetryDelay = TimeSpan.FromSeconds(1);
 
-    public static async Task AttemptPostAsync(
-        HttpClient client,
-        ScheduleFlightDto req,
-        CancellationToken cancellationToken = default)
+    public static async Task<FlightDto> AttemptPostAsync(HttpClient client, ScheduleFlightDto req, CancellationToken cancellationToken = default)
     {
-        Console.WriteLine(
-            $"Attempting to schedule flight between airports {req.DepartureAirportId} and {req.ArrivalAirportId}");
-
+        Console.WriteLine($"Attempting to schedule flight between airports {req.DepartureAirportId} and {req.ArrivalAirportId}");
         var startTime = Stopwatch.GetTimestamp();
-
-        using var res = await PostWithRetryAsync(
-            client, req, cancellationToken);
-
+        using var res = await PostWithRetryAsync(client, req, cancellationToken);
         res.EnsureSuccessStatusCode();
-
         await using var stream = await res.Content.ReadAsStreamAsync(cancellationToken);
-        var flight = await JsonSerializer.DeserializeAsync<FlightDto>(
-            stream, JsonSerializerOptions.Web, cancellationToken);
-
+        var flight = await JsonSerializer.DeserializeAsync<FlightDto>(stream, JsonSerializerOptions.Web, cancellationToken);
         if (flight is null)
         {
             throw new JsonException("Deserialization returned null");
         }
-
         var diff = Stopwatch.GetElapsedTime(startTime);
-        Console.WriteLine(
-            $"Operation completed in {diff.TotalMilliseconds:F0} milliseconds");
+        Console.WriteLine($"Operation completed in {diff.TotalMilliseconds:F0} milliseconds");
         Console.WriteLine($"Scheduled flight with ID: {flight.Id}");
+        return flight;
     }
-    private static async Task<HttpResponseMessage> PostWithRetryAsync(
-        HttpClient client,
-        ScheduleFlightDto req,
-        CancellationToken cancellationToken)
+    public static async Task AttemptPatchStatusAsync(HttpClient client, Guid flightId, string status, CancellationToken cancellationToken = default)
+    {
+        Console.WriteLine($"Attempting to update flight {flightId} to status {status}");
+        var startTime = Stopwatch.GetTimestamp();
+        using var res = await client.PatchAsJsonAsync($"flights/{flightId}/status", new AdjustFlightStatusDto(status), cancellationToken);
+        res.EnsureSuccessStatusCode();
+        var diff = Stopwatch.GetElapsedTime(startTime);
+        Console.WriteLine($"Operation completed in {diff.TotalMilliseconds:F0} milliseconds");
+        Console.WriteLine($"Updated flight {flightId} to status {status}");
+    }
+    private static async Task<HttpResponseMessage> PostWithRetryAsync(HttpClient client, ScheduleFlightDto req, CancellationToken cancellationToken)
     {
         foreach (var attempt in Enumerable.Range(0, MaxRetryAttempts + 1))
         {

@@ -39,4 +39,5 @@ var req4 = new ScheduleFlightDto
     SchedulingAmbiguityPolicy = "ThrowWhenAmbiguous",
     OperationType = "RevenuePassenger"
 };
-await FlightsSmokeTestActions.AttemptPostAsync(client, req4);
+var flight = await FlightsSmokeTestActions.AttemptPostAsync(client, req4);
+await FlightsSmokeTestActions.AttemptPatchStatusAsync(client, flight.Id, "EnRoute");

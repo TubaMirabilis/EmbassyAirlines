@@ -144,6 +144,29 @@ This validates the complete scheduling workflow.
 
 ---
 
+## Step 8 – Dispatch and mark the flight as en-route
+
+After successfully scheduling a flight, the application verifies that its status can be updated through the Flights API.
+
+It performs an HTTP PATCH request using the endpoint:
+
+`PATCH /flights/{id}/status`
+
+The request uses `AdjustFlightStatusDto` and marks the flight as en-route.
+
+The request:
+
+- Sends the required status as JSON.
+- Verifies that the API returns a successful HTTP status code.
+- Logs the time taken to complete the operation.
+- Logs the flight ID and requested status.
+
+If a status update fails, the smoke test stops with an exception.
+
+This extends the end-to-end smoke test to cover flight status transitions after scheduling.
+
+---
+
 ## Retry behavior
 
 The Embassy Airlines backend relies on eventual consistency. Therefore, newly created airports or aircraft may not be immediately visible to the flight service.
