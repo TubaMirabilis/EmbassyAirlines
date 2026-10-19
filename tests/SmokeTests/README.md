@@ -30,17 +30,17 @@ This makes it easy to run against different environments.
 
 ## Step 2 – Check service readiness
 
-Before using each microservice, the application performs a simple GET request.
-
-For example:
+Before interacting with each service, the application performs a GET request against its corresponding API endpoint:
 
 - `/airports`
 - `/aircraft`
 - `/flights`
 
-If any service doesn't return HTTP 200, execution stops with an exception.
+Each readiness check expects an HTTP `200 OK` response.
 
-This prevents later failures caused simply by a service not having finished starting up.
+If an endpoint returns any other HTTP status code, execution stops with an exception.
+
+These checks provide an initial indication that the API endpoints are responding before the smoke test attempts to create resources. They do not continuously poll or wait for services to become ready.
 
 ---
 
@@ -111,15 +111,18 @@ The aircraft API returns an `AircraftDto`, whose ID is then used when scheduling
 
 ## Step 6 – Calculate flight times
 
-Instead of hard-coding dates, the application computes realistic times.
+Instead of hard-coding dates, the application calculates departure and arrival times dynamically using the **NodaTime** library.
 
 It:
 
-- schedules departure **30 minutes from now**
-- uses a **10 hour 30 minute** flight duration
-- converts the times into the departure and arrival airports' local time zones using the **NodaTime** library
+- Calculates a target departure time **30 minutes from the current time**.
+- Rounds the departure time forward to the next whole-minute boundary.
+- Uses a flight duration of **10 hours and 30 minutes**.
+- Calculates the arrival time by adding the flight duration to the departure instant.
+- Converts departure and arrival instants into the respective airports' local time zones using NodaTime.
+- Converts the resulting zoned times into local `DateTime` values for the scheduling request.
 
-This ensures the scheduled flight uses correct local times despite differing time zones.
+This ensures that departure and arrival times account for the different time zones of the airports, including applicable daylight saving time rules.
 
 ---
 
@@ -141,21 +144,30 @@ This validates the complete scheduling workflow.
 
 ---
 
-## Retry behaviour
+## Retry behavior
 
-The Embassy Airlines backend relies on eventual consistency. Therefore newly created airports or aircraft may not be immediately visible to the flight service.
+The Embassy Airlines backend relies on eventual consistency. Therefore, newly created airports or aircraft may not be immediately visible to the flight service.
 
-The SmokeTests project has a smoke test for scheduling a flight via a HTTP request. If the schedule request fails with a Not Found HTTP status code, the request is retried in accordance with the provided retry policy:
+When scheduling a flight, the SmokeTests project retries HTTP POST requests that return a `404 Not Found` status code, allowing time for newly created resources to become available.
 
-- up to 5 retries
-- exponential backoff
-- 1 second initial delay
+The retry policy is configured as follows:
+
+- Up to **180 retries** after the initial request (**181 attempts in total**).
+- A **fixed delay of 1 second** between retries.
+- Only HTTP `404 Not Found` responses trigger a retry.
+- Other HTTP responses are returned immediately and unsuccessful status codes cause an exception.
+- If the maximum number of retries is reached, the final response is returned and the failure is logged.
+- Retry operations support cancellation through a `CancellationToken`.
+
+The maximum retry delay is approximately **3 minutes**, excluding the time taken to execute HTTP requests.
+
+This approach allows the smoke test to tolerate temporary resource-visibility delays caused by eventual consistency without immediately failing.
 
 ---
 
 ## Design characteristics
 
-The SmokeTests project is organised into small, focused components:
+The SmokeTests project is organized into small, focused components:
 
 - `ServiceReadiness` – checks APIs are available.
 - `AirportsSmokeTestActions` – manages airports.
