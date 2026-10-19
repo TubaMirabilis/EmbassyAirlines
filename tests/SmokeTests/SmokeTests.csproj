@@ -8,7 +8,6 @@
     <PackageReference Include="AWSSDK.S3" />
     <PackageReference Include="CliWrap" />
     <PackageReference Include="NodaTime" />
-    <PackageReference Include="Polly" />
   </ItemGroup>
 
   <PropertyGroup>

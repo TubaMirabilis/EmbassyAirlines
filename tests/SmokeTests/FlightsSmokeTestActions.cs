@@ -2,35 +2,68 @@ using System.Diagnostics;
 using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
-using Polly;
-using Polly.Retry;
 using Shared.Contracts;
 
 namespace SmokeTests;
 
 internal static class FlightsSmokeTestActions
 {
-    private static readonly ResiliencePipeline<HttpResponseMessage> RetryNotFoundPipeline = new ResiliencePipelineBuilder<HttpResponseMessage>().AddRetry(new RetryStrategyOptions<HttpResponseMessage>
+    private const int MaxRetryAttempts = 180;
+    private static readonly TimeSpan RetryDelay = TimeSpan.FromSeconds(1);
+
+    public static async Task AttemptPostAsync(
+        HttpClient client,
+        ScheduleFlightDto req,
+        CancellationToken cancellationToken = default)
     {
-        MaxRetryAttempts = 180,
-        Delay = TimeSpan.FromSeconds(1),
-        BackoffType = DelayBackoffType.Constant,
-        ShouldHandle = new PredicateBuilder<HttpResponseMessage>().HandleResult(r => r.StatusCode == HttpStatusCode.NotFound)
-    }).Build();
-    public static async Task AttemptPostAsync(HttpClient client, ScheduleFlightDto req)
-    {
-        Console.WriteLine($"Attempting to schedule flight between airports {req.DepartureAirportId} and {req.ArrivalAirportId}");
+        Console.WriteLine(
+            $"Attempting to schedule flight between airports {req.DepartureAirportId} and {req.ArrivalAirportId}");
+
         var startTime = Stopwatch.GetTimestamp();
-        var res = await RetryNotFoundPipeline.ExecuteAsync(async cancellationToken => await client.PostAsJsonAsync("flights", req, cancellationToken));
+
+        using var res = await PostWithRetryAsync(
+            client, req, cancellationToken);
+
         res.EnsureSuccessStatusCode();
-        var stream = await res.Content.ReadAsStreamAsync();
-        var flight = await JsonSerializer.DeserializeAsync<FlightDto>(stream, JsonSerializerOptions.Web);
+
+        await using var stream = await res.Content.ReadAsStreamAsync(cancellationToken);
+        var flight = await JsonSerializer.DeserializeAsync<FlightDto>(
+            stream, JsonSerializerOptions.Web, cancellationToken);
+
         if (flight is null)
         {
             throw new JsonException("Deserialization returned null");
         }
+
         var diff = Stopwatch.GetElapsedTime(startTime);
-        Console.WriteLine($"Operation completed in {diff.TotalMilliseconds:F0} milliseconds");
+        Console.WriteLine(
+            $"Operation completed in {diff.TotalMilliseconds:F0} milliseconds");
         Console.WriteLine($"Scheduled flight with ID: {flight.Id}");
+    }
+    private static async Task<HttpResponseMessage> PostWithRetryAsync(
+        HttpClient client,
+        ScheduleFlightDto req,
+        CancellationToken cancellationToken)
+    {
+        foreach (var attempt in Enumerable.Range(0, MaxRetryAttempts + 1))
+        {
+            var response = await client.PostAsJsonAsync(
+                "flights", req, cancellationToken);
+            if (response.StatusCode != HttpStatusCode.NotFound ||
+                attempt == MaxRetryAttempts)
+            {
+                if (response.StatusCode == HttpStatusCode.NotFound &&
+                    attempt == MaxRetryAttempts)
+                {
+                    Console.WriteLine(
+                        $"Flight scheduling failed after {attempt + 1} attempts. " +
+                        $"Last status: {response.StatusCode}");
+                }
+                return response;
+            }
+            response.Dispose();
+            await Task.Delay(RetryDelay, cancellationToken);
+        }
+        throw new InvalidOperationException("Retry loop exited unexpectedly.");
     }
 }
