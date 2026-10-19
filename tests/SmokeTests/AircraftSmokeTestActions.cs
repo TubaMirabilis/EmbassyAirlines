@@ -12,6 +12,8 @@ namespace SmokeTests;
 
 internal static class AircraftSmokeTestActions
 {
+    private const int MaxRetryAttempts = 180;
+    private static readonly TimeSpan RetryDelay = TimeSpan.FromSeconds(1);
     public static async Task<AircraftDto> AttemptPostAsync(HttpClient client, CreateAircraftDto req)
     {
         Console.WriteLine($"Attempting to create aircraft with tail number {req.TailNumber}");
@@ -58,5 +60,39 @@ internal static class AircraftSmokeTestActions
             throw new InvalidOperationException("Failed to upload seat layout to S3");
         }
         Console.WriteLine($"AWS S3 upload of file {path} to bucket aircraft-bucket-{accountId}-{region} completed successfully");
+    }
+    public static async Task EnsureStatusAsync(HttpClient client, Guid aircraftId, string expectedStatus, CancellationToken cancellationToken = default)
+    {
+        Console.WriteLine($"Waiting for aircraft {aircraftId} to reach status {expectedStatus}");
+        var startTime = Stopwatch.GetTimestamp();
+        ArgumentNullException.ThrowIfNull(client.BaseAddress);
+        var uri = new Uri(client.BaseAddress, $"aircraft/{aircraftId}");
+        foreach (var attempt in Enumerable.Range(0, MaxRetryAttempts + 1))
+        {
+            using var response = await client.GetAsync(uri, cancellationToken);
+            response.EnsureSuccessStatusCode();
+            var aircraft = await response.Content.ReadFromJsonAsync<AircraftDto>(JsonSerializerOptions.Web, cancellationToken);
+            if (aircraft is null)
+            {
+                throw new JsonException("Deserialization returned null");
+            }
+            if (aircraft.Status == expectedStatus)
+            {
+                var diff = Stopwatch.GetElapsedTime(startTime);
+                Console.WriteLine(
+                    $"Aircraft {aircraftId} reached status {expectedStatus} " +
+                    $"after {attempt + 1} attempts " +
+                    $"in {diff.TotalMilliseconds:F0} milliseconds");
+                return;
+            }
+            if (attempt == MaxRetryAttempts)
+            {
+                throw new InvalidOperationException(
+                    $"Aircraft {aircraftId} did not reach status {expectedStatus} " +
+                    $"after {attempt + 1} attempts. " +
+                    $"Last observed status: {aircraft.Status}");
+            }
+            await Task.Delay(RetryDelay, cancellationToken);
+        }
     }
 }

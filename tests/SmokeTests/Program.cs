@@ -41,3 +41,4 @@ var req4 = new ScheduleFlightDto
 };
 var flight = await FlightsSmokeTestActions.AttemptPostAsync(client, req4);
 await FlightsSmokeTestActions.AttemptPatchStatusAsync(client, flight.Id, "EnRoute");
+await AircraftSmokeTestActions.EnsureStatusAsync(client, aircraft.Id, "EnRoute");

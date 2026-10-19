@@ -128,7 +128,7 @@ This ensures that departure and arrival times account for the different time zon
 
 ## Step 7 – Schedule a flight
 
-Finally it sends a `ScheduleFlightDto` containing:
+A `ScheduleFlightDto` is sent containing:
 
 - aircraft ID
 - departure airport
@@ -144,7 +144,7 @@ This validates the complete scheduling workflow.
 
 ---
 
-## Step 8 – Dispatch and mark the flight as en-route
+## Step 8 – Mark the flight as en-route
 
 After successfully scheduling a flight, the application verifies that its status can be updated through the Flights API.
 
@@ -164,6 +164,33 @@ The request:
 If a status update fails, the smoke test stops with an exception.
 
 This extends the end-to-end smoke test to cover flight status transitions after scheduling.
+
+---
+
+## Step 9 – Verify aircraft status propagation
+
+After marking the flight as en-route, the application verifies that the corresponding aircraft status has been updated by the Aircraft service.
+
+The Flights service publishes a `FlightMarkedAsEnRouteEvent`, which is consumed by the Aircraft service to update the aircraft's status.
+
+The smoke test sends an HTTP GET request to:
+
+`GET /aircraft/{id}`
+
+It deserializes the response into an `AircraftDto` and examines the `Status` property.
+
+The expected aircraft status is `EnRoute`.
+
+Because event propagation is asynchronous, the aircraft may initially retain its previous status. The smoke test therefore uses a retry policy:
+
+- Up to **180 retries** after the initial request (**181 attempts in total**).
+- A **fixed delay of 1 second** between attempts.
+- Retries when the returned aircraft status does not match `EnRoute`.
+- Stops immediately when the expected status is observed.
+- Throws an exception if the expected status is not observed after the maximum number of attempts.
+- Supports cancellation through a `CancellationToken`.
+
+Successful completion verifies that the aircraft's status has been updated following the flight status transition, providing end-to-end coverage of the event-driven workflow.
 
 ---
 
