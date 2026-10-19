@@ -11,6 +11,86 @@ When the application starts, it:
 5. Creates an aircraft.
 6. Calculates realistic departure and arrival times.
 7. Schedules a flight using the newly created resources.
+8. Marks the flight as en-route.
+9. Verifies that the aircraft's status is updated to `EnRoute` once the event propagates to the Aircraft service.
+
+---
+
+## Prerequisites
+
+### .NET SDK
+
+- The **.NET 10 SDK** (the project targets `net10.0`). Check with `dotnet --list-sdks`.
+- `dotnet run` restores and builds the project and its reference to `src/Shared`, so no separate build step is needed.
+
+### A live deployment
+
+- `EmbassyAirlinesStack` deployed with `cdk deploy` (see [`Deployment/README.md`](../../Deployment/README.md)), with its API reachable at the base URL you pass. The APIs are unauthenticated, so the HTTP calls need no credentials.
+- A deployment the smoke test has not already run against. The test creates fixed resources (airports `ICN` and `AMS`, aircraft `PH-JRN`) and there are no delete endpoints, so a second run fails with `409 Conflict` when it tries to create the first airport.
+
+### AWS CLI
+
+The program shells out to `aws` (via CliWrap) to discover the account ID and region, so you need:
+
+- **AWS CLI v2**, installed and on your `PATH` as `aws`.
+- A **region set in the AWS config file** for the active profile, matching the region the stack is deployed to (`eu-west-2`). The program reads it with `aws configure get region`, which only reads the config file and ignores the `AWS_REGION` and `AWS_DEFAULT_REGION` environment variables:
+
+    ```bash
+    aws configure set region eu-west-2
+    ```
+
+- `aws sts get-caller-identity` returning the account the stack is deployed to.
+
+If you use a named profile, select it with the `AWS_PROFILE` environment variable rather than `--profile`. The program passes no profile to either the CLI or the SDK, so `AWS_PROFILE` is the only way to make both use it.
+
+### AWS credentials
+
+The S3 upload uses the AWS SDK for .NET (`AmazonS3Client`), which resolves credentials and region on its own, separately from the CLI. Both must resolve to the same account and region; otherwise the bucket name built from the CLI's answers won't match the bucket the SDK calls.
+
+- **Access keys** in environment variables (`AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, optionally `AWS_SESSION_TOKEN`) or in the shared credentials file work for both.
+- **IAM Identity Center (SSO) and assume-role profiles** do not work for the S3 upload as-is. The SDK needs extra packages to resolve them (`AWSSDK.SSO` and `AWSSDK.SSOOIDC`, or `AWSSDK.SecurityToken`), and this project references only `AWSSDK.S3`. Sign in with the CLI and export temporary credentials into your shell first:
+
+    ```powershell
+    # PowerShell
+    aws configure export-credentials --format powershell | Invoke-Expression
+    ```
+
+    ```bash
+    # bash / zsh
+    eval "$(aws configure export-credentials --format env)"
+    ```
+
+### AWS permissions
+
+The identity only needs to write the seat layout to the Aircraft bucket:
+
+```json
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": "s3:PutObject",
+            "Resource": "arn:aws:s3:::aircraft-bucket-<account-id>-eu-west-2/seat-layouts/*"
+        }
+    ]
+}
+```
+
+- `sts:GetCallerIdentity` needs no policy; AWS always allows it.
+- The bucket uses default S3-managed encryption, so no KMS permissions are needed.
+
+---
+
+## Running the smoke tests
+
+Run from the **repository root**. The seat layout path `Resources/Layouts/B78X.json` is resolved relative to the current directory, and the file lives at the repository root, not in this project.
+
+```bash
+dotnet run --project tests/SmokeTests -- https://embassyairlines.com/api/
+```
+
+Omit the URL to use the default, `https://embassyairlines.com/api/`. Keep the trailing slash on any URL you pass: endpoint paths such as `airports` are resolved relative to the base URL, so without it the final segment (`api`) is dropped.
 
 ---
 
