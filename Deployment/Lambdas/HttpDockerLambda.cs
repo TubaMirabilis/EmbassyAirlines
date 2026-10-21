@@ -2,6 +2,7 @@ using Amazon.CDK;
 using Amazon.CDK.AWS.Apigatewayv2;
 using Amazon.CDK.AWS.EC2;
 using Amazon.CDK.AWS.Lambda;
+using Amazon.CDK.AWS.Logs;
 using Amazon.CDK.AwsApigatewayv2Integrations;
 using Constructs;
 using Deployment.Networking;
@@ -13,30 +14,35 @@ internal sealed class HttpDockerLambda : Construct
     internal DockerImageFunction Function { get; }
     internal HttpDockerLambda(Construct scope, string id, HttpDockerLambdaProps props) : base(scope, id)
     {
-        var imageCode = DockerImageCode.FromImageAsset(".", new AssetImageCodeProps
-        {
-            File = props.DockerfilePath
-        });
         var securityGroup = new SecurityGroup(this, "LambdaSg", new SecurityGroupProps
         {
             Vpc = props.Vpc,
             AllowAllOutbound = true,
             Description = props.SecurityGroupDescription
         });
+        var imageCode = DockerImageCode.FromImageAsset(".", new AssetImageCodeProps
+        {
+            File = props.DockerfilePath
+        });
+        var logGroup = new LogGroup(this, "LogGroup", new LogGroupProps
+        {
+            LogGroupName = $"/aws/lambda/{props.FunctionName}",
+        });
         Function = new DockerImageFunction(this, "Lambda", new DockerImageFunctionProps
         {
-            FunctionName = props.FunctionName,
             Code = imageCode,
-            Timeout = Duration.Seconds(30),
             Environment = props.Environment,
-            Tracing = Tracing.ACTIVE,
+            FunctionName = props.FunctionName,
+            LogGroup = logGroup,
             MemorySize = 1536,
+            SecurityGroups = [securityGroup],
+            Timeout = Duration.Seconds(30),
+            Tracing = Tracing.ACTIVE,
             Vpc = props.Vpc,
             VpcSubnets = new SubnetSelection
             {
                 SubnetType = SubnetType.PRIVATE_ISOLATED
-            },
-            SecurityGroups = [securityGroup]
+            }
         });
         props.Api.AddRoutes(new AddRoutesOptions
         {

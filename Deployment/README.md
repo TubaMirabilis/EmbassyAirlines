@@ -149,11 +149,13 @@ Publishes the following domain events:
 
 Rather than subscribing Lambda functions directly to SNS topics, every event consumer is provisioned with its own dedicated SQS queue. SNS fans events out to the appropriate queues, while each queue triggers its corresponding Lambda function. This architecture provides several advantages over direct SNS-to-Lambda integration, including durable message storage, automatic retry behaviour, dead-letter queues for failed messages, independent scaling of consumers, and the ability for services to process events at their own pace without affecting publishers.
 
+Each consumer queue has a visibility timeout of 180 seconds and a dead-letter queue with a 14-day retention period. Messages that repeatedly fail processing are moved to the dead-letter queue after the configured receive threshold of three. Consumer Lambdas process batches of up to ten messages and support partial batch failure reporting, allowing unsuccessful messages to be retried independently when handlers return the appropriate failure response.
+
 ---
 
 ## Publisher pattern
 
-Each service publishes domain events using the Transactional Outbox Pattern rather than emitting events directly from the API. When a business operation modifies application data, the corresponding domain event is written to an outbox table within the same database transaction. Scheduled Publisher Lambdas run every minute, retrieve unpublished events from the outbox, publish them to the appropriate SNS topics, and then mark them as published. This approach guarantees that events are only emitted after the associated database transaction has completed successfully, preventing inconsistencies between the application's persistent state and the events observed by downstream services.
+Each service publishes domain events using the Transactional Outbox Pattern rather than emitting events directly from the API. When a business operation modifies application data, the corresponding domain event is written to an outbox table within the same database transaction. Scheduled Publisher Lambdas run every minute, retrieve unpublished events from the outbox, publish them to the appropriate SNS topics, and then mark them as published. This approach ensures that business data changes and their corresponding outbox records can be committed atomically. Publisher Lambdas subsequently deliver committed events to SNS, reducing the risk of inconsistencies between database state and published events. Because publishing and message delivery may be retried, consumers should be designed to handle duplicate events safely.
 
 ---
 
@@ -190,6 +192,16 @@ The system has been designed to follow several good security practices:
 - Database credentials come from generated Secrets Manager secrets.
 - S3 bucket blocks all public access.
 - API uses TLS with ACM certificates.
+
+## Database migrations
+
+Each service provisions a dedicated database migration Lambda using a CloudFormation custom resource.
+
+Migrations are invoked during stack creation and relevant updates. The Docker image asset hash is included in the custom resource properties so that changes to the migration image can trigger another migration invocation.
+
+API, publisher, and event handler Lambdas declare dependencies on their respective migration resources, ensuring migrations complete successfully before those Lambda resources are created or updated.
+
+Migration handlers must support the CloudFormation custom resource lifecycle, including create, update, and delete events.
 
 ## Resource lifecycle
 

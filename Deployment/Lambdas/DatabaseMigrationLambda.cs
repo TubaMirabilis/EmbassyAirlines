@@ -2,6 +2,7 @@ using Amazon.CDK;
 using Amazon.CDK.AWS.EC2;
 using Amazon.CDK.AWS.Ecr.Assets;
 using Amazon.CDK.AWS.Lambda;
+using Amazon.CDK.AWS.Logs;
 using Amazon.CDK.CustomResources;
 using Constructs;
 using Deployment.Networking;
@@ -25,6 +26,10 @@ internal sealed class DatabaseMigrationLambda : Construct
             Other = props.DbProxyAccess.DbProxySecurityGroup,
             PortRange = Port.Tcp(props.DbConnection.DbPort)
         });
+        var logGroup = new LogGroup(this, "LogGroup", new LogGroupProps
+        {
+            LogGroupName = $"/aws/lambda/{props.FunctionName}",
+        });
         var imageAsset = new DockerImageAsset(this, "Image", new DockerImageAssetProps
         {
             Directory = ".",
@@ -32,21 +37,22 @@ internal sealed class DatabaseMigrationLambda : Construct
         });
         var function = new DockerImageFunction(this, "Function", new DockerImageFunctionProps
         {
-            FunctionName = props.FunctionName,
             Code = DockerImageCode.FromEcr(imageAsset.Repository, new EcrImageCodeProps
             {
                 TagOrDigest = imageAsset.ImageTag
             }),
             Environment = props.Environment,
-            Timeout = Duration.Minutes(10),
+            FunctionName = props.FunctionName,
+            LogGroup = logGroup,
             MemorySize = 1536,
+            SecurityGroups = [securityGroup],
+            Timeout = Duration.Minutes(10),
             Tracing = Tracing.ACTIVE,
             Vpc = props.Vpc,
             VpcSubnets = new SubnetSelection
             {
                 SubnetType = SubnetType.PRIVATE_ISOLATED
-            },
-            SecurityGroups = [securityGroup]
+            }
         });
         props.DbProxyAccess.DbProxy.GrantConnect(function, props.DbConnection.DbUsername);
         var provider = new Provider(this, "Provider", new ProviderProps

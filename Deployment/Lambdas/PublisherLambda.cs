@@ -3,6 +3,7 @@ using Amazon.CDK.AWS.EC2;
 using Amazon.CDK.AWS.Events;
 using Amazon.CDK.AWS.Events.Targets;
 using Amazon.CDK.AWS.Lambda;
+using Amazon.CDK.AWS.Logs;
 using Constructs;
 using Deployment.Networking;
 
@@ -25,6 +26,10 @@ internal sealed class PublisherLambda : Construct
             Other = props.DbProxyAccess.DbProxySecurityGroup,
             PortRange = Port.Tcp(props.DbConnection.DbPort)
         });
+        var logGroup = new LogGroup(this, "LogGroup", new Amazon.CDK.AWS.Logs.LogGroupProps
+        {
+            LogGroupName = $"/aws/lambda/{props.FunctionName}",
+        });
         var imageCode = DockerImageCode.FromImageAsset(directory: ".", new AssetImageCodeProps
         {
             File = props.DockerfilePath
@@ -34,6 +39,7 @@ internal sealed class PublisherLambda : Construct
             Code = imageCode,
             Environment = props.Environment,
             FunctionName = props.FunctionName,
+            LogGroup = logGroup,
             MemorySize = 1536,
             SecurityGroups = [publisherSg],
             Timeout = Duration.Seconds(60),

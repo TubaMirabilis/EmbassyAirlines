@@ -2,6 +2,7 @@ using Amazon.CDK;
 using Amazon.CDK.AWS.EC2;
 using Amazon.CDK.AWS.Lambda;
 using Amazon.CDK.AWS.Lambda.EventSources;
+using Amazon.CDK.AWS.Logs;
 using Amazon.CDK.AWS.SNS.Subscriptions;
 using Amazon.CDK.AWS.SQS;
 using Constructs;
@@ -27,6 +28,10 @@ internal sealed class EventHandlerLambda : Construct
             PortRange = Port.Tcp(props.DbConnection.DbPort)
         };
         handlerSg.Connections.AllowTo(handlerSgRule);
+        var logGroup = new LogGroup(this, "LogGroup", new LogGroupProps
+        {
+            LogGroupName = $"/aws/lambda/{props.FunctionName}",
+        });
         var imageCode = DockerImageCode.FromImageAsset(directory: ".", new AssetImageCodeProps
         {
             File = props.Path
@@ -36,6 +41,7 @@ internal sealed class EventHandlerLambda : Construct
             Code = imageCode,
             Environment = props.Environment,
             FunctionName = props.FunctionName,
+            LogGroup = logGroup,
             MemorySize = 1536,
             SecurityGroups = [handlerSg],
             Timeout = Duration.Seconds(30),
