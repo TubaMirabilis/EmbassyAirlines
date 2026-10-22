@@ -44,10 +44,19 @@ internal sealed class HttpDockerLambda : Construct
                 SubnetType = SubnetType.PRIVATE_ISOLATED
             }
         });
+        var integration = new HttpLambdaIntegration(
+            $"{props.FunctionName}Integration",
+            Function);
         props.Api.AddRoutes(new AddRoutesOptions
         {
             Path = props.RoutePath,
-            Integration = new HttpLambdaIntegration($"{props.FunctionName}Integration", Function),
+            Integration = integration,
+            Methods = [Amazon.CDK.AWS.Apigatewayv2.HttpMethod.ANY]
+        });
+        props.Api.AddRoutes(new AddRoutesOptions
+        {
+            Path = $"{props.RoutePath}/{{proxy+}}",
+            Integration = integration,
             Methods = [Amazon.CDK.AWS.Apigatewayv2.HttpMethod.ANY]
         });
         props.DbProxyAccess.DbProxy.GrantConnect(Function, props.DbConnection.DbUsername);
