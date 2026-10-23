@@ -7,7 +7,7 @@ namespace Deployment.Services;
 
 internal sealed class FlightsService : Construct
 {
-    internal FlightsService(Construct scope, string id, FlightsServiceProps props) : base(scope, id)
+    internal FlightsService(Construct scope, string id, ServiceProps props) : base(scope, id)
     {
         var commonEnv = new Dictionary<string, string>
         {
@@ -47,7 +47,7 @@ internal sealed class FlightsService : Construct
             Environment = new Dictionary<string, string>(commonEnv),
             FunctionName = "FlightsAircraftCreatedHandlerLambda",
             SecurityGroupDescription = "Security group for Flights AircraftCreated handler Lambda",
-            Topic = props.AircraftCreatedTopic,
+            Topic = props.Topics["AircraftCreated"],
             Vpc = props.Vpc
         });
         handler1.Function.Node.AddDependency(migrations.Migration);
@@ -59,7 +59,7 @@ internal sealed class FlightsService : Construct
             Environment = new Dictionary<string, string>(commonEnv),
             FunctionName = "FlightsAirportCreatedHandlerLambda",
             SecurityGroupDescription = "Security group for Flights AirportCreated handler Lambda",
-            Topic = props.AirportCreatedTopic,
+            Topic = props.Topics["AirportCreated"],
             Vpc = props.Vpc
         });
         handler2.Function.Node.AddDependency(migrations.Migration);
@@ -71,7 +71,7 @@ internal sealed class FlightsService : Construct
             Environment = new Dictionary<string, string>(commonEnv),
             FunctionName = "FlightsAirportUpdatedHandlerLambda",
             SecurityGroupDescription = "Security group for Flights AirportUpdated handler Lambda",
-            Topic = props.AirportUpdatedTopic,
+            Topic = props.Topics["AirportUpdated"],
             Vpc = props.Vpc
         });
         handler3.Function.Node.AddDependency(migrations.Migration);
@@ -82,30 +82,30 @@ internal sealed class FlightsService : Construct
             DockerfilePath = "docker/Flights.Publisher.Lambda.dockerfile",
             Environment = new Dictionary<string, string>(commonEnv)
             {
-                { "FLIGHTS_SNS__FlightScheduledTopicArn", props.FlightScheduledTopic.TopicArn },
-                { "FLIGHTS_SNS__AircraftAssignedToFlightTopicArn", props.AircraftAssignedToFlightTopic.TopicArn },
-                { "FLIGHTS_SNS__FlightPricingAdjustedTopicArn", props.FlightPricingAdjustedTopic.TopicArn },
-                { "FLIGHTS_SNS__FlightRescheduledTopicArn", props.FlightRescheduledTopic.TopicArn },
-                { "FLIGHTS_SNS__FlightCancelledTopicArn", props.FlightCancelledTopic.TopicArn },
-                { "FLIGHTS_SNS__FlightDelayedTopicArn", props.FlightDelayedTopic.TopicArn },
-                { "FLIGHTS_SNS__FlightMarkedAsEnRouteTopicArn", props.FlightMarkedAsEnRouteTopic.TopicArn },
-                { "FLIGHTS_SNS__FlightMarkedAsDelayedEnRouteTopicArn", props.FlightMarkedAsDelayedEnRouteTopic.TopicArn },
-                { "FLIGHTS_SNS__FlightArrivedTopicArn", props.FlightArrivedTopic.TopicArn }
+                { "FLIGHTS_SNS__FlightScheduledTopicArn", props.Topics["FlightScheduled"].TopicArn },
+                { "FLIGHTS_SNS__AircraftAssignedToFlightTopicArn", props.Topics["AircraftAssignedToFlight"].TopicArn },
+                { "FLIGHTS_SNS__FlightPricingAdjustedTopicArn", props.Topics["FlightPricingAdjusted"].TopicArn },
+                { "FLIGHTS_SNS__FlightRescheduledTopicArn", props.Topics["FlightRescheduled"].TopicArn },
+                { "FLIGHTS_SNS__FlightCancelledTopicArn", props.Topics["FlightCancelled"].TopicArn },
+                { "FLIGHTS_SNS__FlightDelayedTopicArn", props.Topics["FlightDelayed"].TopicArn },
+                { "FLIGHTS_SNS__FlightMarkedAsEnRouteTopicArn", props.Topics["FlightMarkedAsEnRoute"].TopicArn },
+                { "FLIGHTS_SNS__FlightMarkedAsDelayedEnRouteTopicArn", props.Topics["FlightMarkedAsDelayedEnRoute"].TopicArn },
+                { "FLIGHTS_SNS__FlightArrivedTopicArn", props.Topics["FlightArrived"].TopicArn }
             },
             FunctionName = "FlightsPublisherLambda",
             PollInterval = Duration.Minutes(1),
             SecurityGroupDescription = "Security group for Flights outbox publisher Lambda",
             Topics =
             [
-                props.FlightScheduledTopic,
-                props.AircraftAssignedToFlightTopic,
-                props.FlightPricingAdjustedTopic,
-                props.FlightRescheduledTopic,
-                props.FlightCancelledTopic,
-                props.FlightDelayedTopic,
-                props.FlightMarkedAsEnRouteTopic,
-                props.FlightMarkedAsDelayedEnRouteTopic,
-                props.FlightArrivedTopic
+                props.Topics["FlightScheduled"],
+                props.Topics["AircraftAssignedToFlight"],
+                props.Topics["FlightPricingAdjusted"],
+                props.Topics["FlightRescheduled"],
+                props.Topics["FlightCancelled"],
+                props.Topics["FlightDelayed"],
+                props.Topics["FlightMarkedAsEnRoute"],
+                props.Topics["FlightMarkedAsDelayedEnRoute"],
+                props.Topics["FlightArrived"]
             ],
             Vpc = props.Vpc
         });

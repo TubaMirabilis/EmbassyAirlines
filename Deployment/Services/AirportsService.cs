@@ -7,7 +7,7 @@ namespace Deployment.Services;
 
 internal sealed class AirportsService : Construct
 {
-    internal AirportsService(Construct scope, string id, AirportsServiceProps props) : base(scope, id)
+    internal AirportsService(Construct scope, string id, ServiceProps props) : base(scope, id)
     {
         var commonEnv = new Dictionary<string, string>
         {
@@ -46,16 +46,16 @@ internal sealed class AirportsService : Construct
             DockerfilePath = "docker/Airports.Publisher.Lambda.dockerfile",
             Environment = new Dictionary<string, string>(commonEnv)
             {
-                { "AIRPORTS_SNS__AirportCreatedTopicArn", props.AirportCreatedTopic.TopicArn },
-                { "AIRPORTS_SNS__AirportUpdatedTopicArn", props.AirportUpdatedTopic.TopicArn }
+                { "AIRPORTS_SNS__AirportCreatedTopicArn", props.Topics["AirportCreated"].TopicArn },
+                { "AIRPORTS_SNS__AirportUpdatedTopicArn", props.Topics["AirportUpdated"].TopicArn }
             },
             FunctionName = "AirportsPublisherLambda",
             PollInterval = Duration.Minutes(1),
             SecurityGroupDescription = "Security group for Airports outbox publisher Lambda",
             Topics =
             [
-                props.AirportCreatedTopic,
-                props.AirportUpdatedTopic
+                props.Topics["AirportCreated"],
+                props.Topics["AirportUpdated"]
             ],
             Vpc = props.Vpc
         });

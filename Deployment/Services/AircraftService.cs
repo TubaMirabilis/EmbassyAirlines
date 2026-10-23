@@ -8,7 +8,7 @@ namespace Deployment.Services;
 
 internal sealed class AircraftService : Construct
 {
-    internal AircraftService(Construct scope, string id, AircraftServiceProps props) : base(scope, id)
+    internal AircraftService(Construct scope, string id, ServiceProps props) : base(scope, id)
     {
         var commonEnv = new Dictionary<string, string>
         {
@@ -59,7 +59,7 @@ internal sealed class AircraftService : Construct
             Environment = new Dictionary<string, string>(commonEnv),
             FunctionName = "AircraftFlightArrivedHandlerLambda",
             SecurityGroupDescription = "Security group for Aircraft FlightArrived handler Lambda",
-            Topic = props.FlightArrivedTopic,
+            Topic = props.Topics["FlightArrived"],
             Vpc = props.Vpc
         });
         handler1.Function.Node.AddDependency(migrations.Migration);
@@ -71,7 +71,7 @@ internal sealed class AircraftService : Construct
             Environment = new Dictionary<string, string>(commonEnv),
             FunctionName = "AircraftFlightMarkedAsDelayedEnRouteHandlerLambda",
             SecurityGroupDescription = "Security group for Aircraft FlightMarkedAsDelayedEnRoute handler Lambda",
-            Topic = props.FlightMarkedAsDelayedEnRouteTopic,
+            Topic = props.Topics["FlightMarkedAsDelayedEnRoute"],
             Vpc = props.Vpc
         });
         handler2.Function.Node.AddDependency(migrations.Migration);
@@ -83,7 +83,7 @@ internal sealed class AircraftService : Construct
             Environment = new Dictionary<string, string>(commonEnv),
             FunctionName = "AircraftFlightMarkedAsEnRouteHandlerLambda",
             SecurityGroupDescription = "Security group for Aircraft FlightMarkedAsEnRoute handler Lambda",
-            Topic = props.FlightMarkedAsEnRouteTopic,
+            Topic = props.Topics["FlightMarkedAsEnRoute"],
             Vpc = props.Vpc
         });
         handler3.Function.Node.AddDependency(migrations.Migration);
@@ -94,12 +94,12 @@ internal sealed class AircraftService : Construct
             DockerfilePath = "docker/Aircraft.Publisher.Lambda.dockerfile",
             Environment = new Dictionary<string, string>(commonEnv)
             {
-                { "AIRCRAFT_SNS__AircraftCreatedTopicArn", props.AircraftCreatedTopic.TopicArn }
+                { "AIRCRAFT_SNS__AircraftCreatedTopicArn", props.Topics["AircraftCreated"].TopicArn }
             },
             FunctionName = "AircraftPublisherLambda",
             PollInterval = Duration.Minutes(1),
             SecurityGroupDescription = "Security group for Aircraft outbox publisher Lambda",
-            Topics = [props.AircraftCreatedTopic],
+            Topics = [props.Topics["AircraftCreated"]],
             Vpc = props.Vpc
         });
         publisher.Function.Node.AddDependency(migrations.Migration);

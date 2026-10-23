@@ -1,4 +1,5 @@
 using Amazon.CDK;
+using Amazon.CDK.AWS.SNS;
 using Constructs;
 using Deployment.Database;
 using Deployment.Networking;
@@ -29,43 +30,52 @@ internal sealed class EmbassyAirlinesStack : Stack
             DbProxy = rds.DbProxy,
             DbProxySecurityGroup = rds.DbProxySecurityGroup
         };
-        new AirportsService(this, "AirportsService", new AirportsServiceProps
+        new AirportsService(this, "AirportsService", new ServiceProps
         {
-            AirportCreatedTopic = messaging.AirportCreatedTopic,
-            AirportUpdatedTopic = messaging.AirportUpdatedTopic,
             Api = shared.Api,
             DbConnection = dbConnection,
             DbProxyAccess = dbProxyAccess,
+            Topics = new Dictionary<string, Topic>
+            {
+                { "AirportCreated", messaging.AirportCreatedTopic },
+                { "AirportUpdated", messaging.AirportUpdatedTopic }
+            },
             Vpc = network.Vpc
         });
-        new AircraftService(this, "AircraftService", new AircraftServiceProps
+        new AircraftService(this, "AircraftService", new ServiceProps
         {
-            AircraftCreatedTopic = messaging.AircraftCreatedTopic,
             Api = shared.Api,
             DbConnection = dbConnection,
             DbProxyAccess = dbProxyAccess,
-            FlightArrivedTopic = messaging.FlightArrivedTopic,
-            FlightMarkedAsDelayedEnRouteTopic = messaging.FlightMarkedAsDelayedEnRouteTopic,
-            FlightMarkedAsEnRouteTopic = messaging.FlightMarkedAsEnRouteTopic,
+            Topics = new Dictionary<string, Topic>
+            {
+                { "AircraftCreated", messaging.AircraftCreatedTopic },
+                { "FlightArrived", messaging.FlightArrivedTopic },
+                { "FlightMarkedAsDelayedEnRoute", messaging.FlightMarkedAsDelayedEnRouteTopic },
+                { "FlightMarkedAsEnRoute", messaging.FlightMarkedAsEnRouteTopic }
+            },
             Vpc = network.Vpc
         });
-        new FlightsService(this, "FlightsService", new FlightsServiceProps
+        new FlightsService(this, "FlightsService", new ServiceProps
         {
-            AircraftCreatedTopic = messaging.AircraftCreatedTopic,
-            AirportCreatedTopic = messaging.AirportCreatedTopic,
-            AirportUpdatedTopic = messaging.AirportUpdatedTopic,
             Api = shared.Api,
             DbConnection = dbConnection,
             DbProxyAccess = dbProxyAccess,
-            FlightScheduledTopic = messaging.FlightScheduledTopic,
-            AircraftAssignedToFlightTopic = messaging.AircraftAssignedToFlightTopic,
-            FlightPricingAdjustedTopic = messaging.FlightPricingAdjustedTopic,
-            FlightRescheduledTopic = messaging.FlightRescheduledTopic,
-            FlightCancelledTopic = messaging.FlightCancelledTopic,
-            FlightDelayedTopic = messaging.FlightDelayedTopic,
-            FlightMarkedAsEnRouteTopic = messaging.FlightMarkedAsEnRouteTopic,
-            FlightMarkedAsDelayedEnRouteTopic = messaging.FlightMarkedAsDelayedEnRouteTopic,
-            FlightArrivedTopic = messaging.FlightArrivedTopic,
+            Topics = new Dictionary<string, Topic>
+            {
+                { "AircraftCreated", messaging.AircraftCreatedTopic },
+                { "AirportCreated", messaging.AirportCreatedTopic },
+                { "AirportUpdated", messaging.AirportUpdatedTopic },
+                { "FlightScheduled", messaging.FlightScheduledTopic },
+                { "AircraftAssignedToFlight", messaging.AircraftAssignedToFlightTopic },
+                { "FlightPricingAdjusted", messaging.FlightPricingAdjustedTopic },
+                { "FlightRescheduled", messaging.FlightRescheduledTopic },
+                { "FlightCancelled", messaging.FlightCancelledTopic },
+                { "FlightDelayed", messaging.FlightDelayedTopic },
+                { "FlightMarkedAsEnRoute", messaging.FlightMarkedAsEnRouteTopic },
+                { "FlightMarkedAsDelayedEnRoute", messaging.FlightMarkedAsDelayedEnRouteTopic },
+                { "FlightArrived", messaging.FlightArrivedTopic }
+            },
             Vpc = network.Vpc,
         });
     }
