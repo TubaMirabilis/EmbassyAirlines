@@ -1,6 +1,4 @@
 using Amazon.CDK.AWS.Apigatewayv2;
-using Amazon.CDK.AWS.EC2;
-using Deployment.Database;
 
 namespace Deployment.Lambdas;
 

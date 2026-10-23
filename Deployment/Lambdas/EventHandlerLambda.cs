@@ -1,58 +1,26 @@
 using Amazon.CDK;
-using Amazon.CDK.AWS.EC2;
 using Amazon.CDK.AWS.Lambda;
 using Amazon.CDK.AWS.Lambda.EventSources;
-using Amazon.CDK.AWS.Logs;
 using Amazon.CDK.AWS.SNS.Subscriptions;
 using Amazon.CDK.AWS.SQS;
 using Constructs;
-using Deployment.Networking;
 
 namespace Deployment.Lambdas;
 
 internal sealed class EventHandlerLambda : Construct
 {
     internal DockerImageFunction Function { get; }
-    internal EventHandlerLambda(Construct scope, string id, EventHandlerLambdaProps props) : base(scope, id)
+    internal EventHandlerLambda(
+        Construct scope,
+        string id,
+        EventHandlerLambdaProps props) : base(scope, id)
     {
-        var handlerSg = new SecurityGroup(this, "HandlerSg", new SecurityGroupProps
-        {
-            AllowAllOutbound = true,
-            Description = props.SecurityGroupDescription,
-            Vpc = props.Vpc
-        });
-        var handlerSgRule = new SecurityGroupConnection
-        {
-            Description = "Allow handler Lambda to access RDS Proxy",
-            Other = props.DbProxyAccess.DbProxySecurityGroup,
-            PortRange = Port.Tcp(props.DbConnection.DbPort)
-        };
-        handlerSg.Connections.AllowTo(handlerSgRule);
-        var logGroup = new LogGroup(this, "LogGroup", new LogGroupProps
-        {
-            LogGroupName = $"/aws/lambda/{props.FunctionName}",
-        });
-        var imageCode = DockerImageCode.FromImageAsset(directory: ".", new AssetImageCodeProps
-        {
-            File = props.DockerfilePath
-        });
-        Function = new DockerImageFunction(this, "Handler", new DockerImageFunctionProps
-        {
-            Code = imageCode,
-            Environment = props.Environment,
-            FunctionName = props.FunctionName,
-            LogGroup = logGroup,
-            MemorySize = 1536,
-            SecurityGroups = [handlerSg],
-            Timeout = Duration.Seconds(30),
-            Tracing = Tracing.ACTIVE,
-            Vpc = props.Vpc,
-            VpcSubnets = new SubnetSelection
-            {
-                SubnetType = SubnetType.PRIVATE_ISOLATED
-            }
-        });
-        props.DbProxyAccess.DbProxy.GrantConnect(Function, props.DbConnection.DbUsername);
+        var lambda = new DatabaseBackedDockerLambda(
+            this,
+            "Lambda",
+            props,
+            Duration.Seconds(30));
+        Function = lambda.Function;
         var dlq = new Queue(this, "Dlq", new QueueProps
         {
             RetentionPeriod = Duration.Days(14)
@@ -67,11 +35,12 @@ internal sealed class EventHandlerLambda : Construct
             VisibilityTimeout = Duration.Seconds(180)
         });
         props.Topic.AddSubscription(new SqsSubscription(queue));
-        Function.AddEventSource(new SqsEventSource(queue, new SqsEventSourceProps
-        {
-            BatchSize = 10,
-            ReportBatchItemFailures = true
-        }));
+        Function.AddEventSource(
+            new SqsEventSource(queue, new SqsEventSourceProps
+            {
+                BatchSize = 10,
+                ReportBatchItemFailures = true
+            }));
         queue.GrantConsumeMessages(Function);
     }
 }

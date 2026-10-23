@@ -1,73 +1,52 @@
 using Amazon.CDK;
-using Amazon.CDK.AWS.EC2;
 using Amazon.CDK.AWS.Ecr.Assets;
 using Amazon.CDK.AWS.Lambda;
-using Amazon.CDK.AWS.Logs;
 using Amazon.CDK.CustomResources;
 using Constructs;
-using Deployment.Networking;
 
 namespace Deployment.Lambdas;
 
 internal sealed class DatabaseMigrationLambda : Construct
 {
     internal CustomResource Migration { get; }
-    internal DatabaseMigrationLambda(Construct scope, string id, DatabaseBackedLambdaProps props) : base(scope, id)
+    internal DatabaseMigrationLambda(
+        Construct scope,
+        string id,
+        DatabaseBackedLambdaProps props) : base(scope, id)
     {
-        var securityGroup = new SecurityGroup(this, "SecurityGroup", new SecurityGroupProps
-        {
-            Vpc = props.Vpc,
-            AllowAllOutbound = true,
-            Description = props.SecurityGroupDescription
-        });
-        securityGroup.Connections.AllowTo(new SecurityGroupConnection
-        {
-            Description = "Allow migrations Lambda to access RDS Proxy",
-            Other = props.DbProxyAccess.DbProxySecurityGroup,
-            PortRange = Port.Tcp(props.DbConnection.DbPort)
-        });
-        var logGroup = new LogGroup(this, "LogGroup", new LogGroupProps
-        {
-            LogGroupName = $"/aws/lambda/{props.FunctionName}",
-        });
-        var imageAsset = new DockerImageAsset(this, "Image", new DockerImageAssetProps
-        {
-            Directory = ".",
-            File = props.DockerfilePath
-        });
-        var function = new DockerImageFunction(this, "Function", new DockerImageFunctionProps
-        {
-            Code = DockerImageCode.FromEcr(imageAsset.Repository, new EcrImageCodeProps
+        var imageAsset = new DockerImageAsset(
+            this, "Image", new DockerImageAssetProps
+            {
+                Directory = ".",
+                File = props.DockerfilePath
+            });
+        var imageCode = DockerImageCode.FromEcr(
+            imageAsset.Repository, new EcrImageCodeProps
             {
                 TagOrDigest = imageAsset.ImageTag
-            }),
-            Environment = props.Environment,
-            FunctionName = props.FunctionName,
-            LogGroup = logGroup,
-            MemorySize = 1536,
-            SecurityGroups = [securityGroup],
-            Timeout = Duration.Minutes(10),
-            Tracing = Tracing.ACTIVE,
-            Vpc = props.Vpc,
-            VpcSubnets = new SubnetSelection
+            });
+        var lambda = new DatabaseBackedDockerLambda(
+            this,
+            "Lambda",
+            props,
+            Duration.Minutes(10),
+            imageCode);
+        var provider = new Provider(this, "Provider",
+            new ProviderProps
             {
-                SubnetType = SubnetType.PRIVATE_ISOLATED
-            }
-        });
-        props.DbProxyAccess.DbProxy.GrantConnect(function, props.DbConnection.DbUsername);
-        var provider = new Provider(this, "Provider", new ProviderProps
-        {
-            OnEventHandler = function
-        });
-        Migration = new CustomResource(this, "Migration", new CustomResourceProps
-        {
-            ServiceToken = provider.ServiceToken,
-            Properties = new Dictionary<string, object>
+                OnEventHandler = lambda.Function
+            });
+        Migration = new CustomResource(
+            this, "Migration", new CustomResourceProps
             {
-                ["MigrationImageHash"] = imageAsset.AssetHash
-            }
-        });
-        Migration.Node.AddDependency(function);
-        Migration.Node.AddDependency(props.DbProxyAccess.DbProxy);
+                ServiceToken = provider.ServiceToken,
+                Properties = new Dictionary<string, object>
+                {
+                    ["MigrationImageHash"] = imageAsset.AssetHash
+                }
+            });
+        Migration.Node.AddDependency(lambda);
+        Migration.Node.AddDependency(
+            props.DbProxyAccess.DbProxy);
     }
 }
