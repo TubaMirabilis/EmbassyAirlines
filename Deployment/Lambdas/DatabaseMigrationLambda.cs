@@ -12,7 +12,7 @@ namespace Deployment.Lambdas;
 internal sealed class DatabaseMigrationLambda : Construct
 {
     internal CustomResource Migration { get; }
-    internal DatabaseMigrationLambda(Construct scope, string id, DatabaseMigrationLambdaProps props) : base(scope, id)
+    internal DatabaseMigrationLambda(Construct scope, string id, DatabaseBackedLambdaProps props) : base(scope, id)
     {
         var securityGroup = new SecurityGroup(this, "SecurityGroup", new SecurityGroupProps
         {

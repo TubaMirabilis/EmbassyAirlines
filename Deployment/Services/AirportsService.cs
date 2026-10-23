@@ -16,7 +16,7 @@ internal sealed class AirportsService : Construct
             { "AIRPORTS_DbConnection__Port", props.DbConnection.DbPort.ToString(CultureInfo.InvariantCulture) },
             { "AIRPORTS_DbConnection__Username", props.DbConnection.DbUsername }
         };
-        var migrations = new DatabaseMigrationLambda(this, "AirportsMigrations", new DatabaseMigrationLambdaProps
+        var migrations = new DatabaseMigrationLambda(this, "AirportsMigrations", new DatabaseBackedLambdaProps
         {
             DbConnection = props.DbConnection,
             DbProxyAccess = props.DbProxyAccess,

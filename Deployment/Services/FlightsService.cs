@@ -16,7 +16,7 @@ internal sealed class FlightsService : Construct
             { "FLIGHTS_DbConnection__Port", props.DbConnection.DbPort.ToString(CultureInfo.InvariantCulture) },
             { "FLIGHTS_DbConnection__Username", props.DbConnection.DbUsername }
         };
-        var migrations = new DatabaseMigrationLambda(this, "FlightsMigrations", new DatabaseMigrationLambdaProps
+        var migrations = new DatabaseMigrationLambda(this, "FlightsMigrations", new DatabaseBackedLambdaProps
         {
             DbConnection = props.DbConnection,
             DbProxyAccess = props.DbProxyAccess,
@@ -43,9 +43,9 @@ internal sealed class FlightsService : Construct
         {
             DbConnection = props.DbConnection,
             DbProxyAccess = props.DbProxyAccess,
+            DockerfilePath = "docker/Flights.Api.Lambda.MessageHandlers.AircraftCreated.dockerfile",
             Environment = new Dictionary<string, string>(commonEnv),
             FunctionName = "FlightsAircraftCreatedHandlerLambda",
-            Path = "docker/Flights.Api.Lambda.MessageHandlers.AircraftCreated.dockerfile",
             SecurityGroupDescription = "Security group for Flights AircraftCreated handler Lambda",
             Topic = props.AircraftCreatedTopic,
             Vpc = props.Vpc
@@ -55,9 +55,9 @@ internal sealed class FlightsService : Construct
         {
             DbConnection = props.DbConnection,
             DbProxyAccess = props.DbProxyAccess,
+            DockerfilePath = "docker/Flights.Api.Lambda.MessageHandlers.AirportCreated.dockerfile",
             Environment = new Dictionary<string, string>(commonEnv),
             FunctionName = "FlightsAirportCreatedHandlerLambda",
-            Path = "docker/Flights.Api.Lambda.MessageHandlers.AirportCreated.dockerfile",
             SecurityGroupDescription = "Security group for Flights AirportCreated handler Lambda",
             Topic = props.AirportCreatedTopic,
             Vpc = props.Vpc
@@ -67,9 +67,9 @@ internal sealed class FlightsService : Construct
         {
             DbConnection = props.DbConnection,
             DbProxyAccess = props.DbProxyAccess,
+            DockerfilePath = "docker/Flights.Api.Lambda.MessageHandlers.AirportUpdated.dockerfile",
             Environment = new Dictionary<string, string>(commonEnv),
             FunctionName = "FlightsAirportUpdatedHandlerLambda",
-            Path = "docker/Flights.Api.Lambda.MessageHandlers.AirportUpdated.dockerfile",
             SecurityGroupDescription = "Security group for Flights AirportUpdated handler Lambda",
             Topic = props.AirportUpdatedTopic,
             Vpc = props.Vpc

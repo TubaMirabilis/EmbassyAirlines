@@ -4,14 +4,7 @@ using Deployment.Database;
 
 namespace Deployment.Lambdas;
 
-internal sealed record EventHandlerLambdaProps
+internal sealed record EventHandlerLambdaProps : DatabaseBackedLambdaProps
 {
-    internal required DatabaseConnectionProps DbConnection { get; init; }
-    internal required DatabaseProxyAccessProps DbProxyAccess { get; init; }
-    internal required Dictionary<string, string> Environment { get; init; }
-    internal required string FunctionName { get; init; }
-    internal required string Path { get; init; }
-    internal required string SecurityGroupDescription { get; init; }
     internal required Topic Topic { get; init; }
-    internal required Vpc Vpc { get; init; }
 }

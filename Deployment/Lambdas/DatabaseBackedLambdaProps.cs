@@ -3,7 +3,7 @@ using Deployment.Database;
 
 namespace Deployment.Lambdas;
 
-internal sealed record DatabaseMigrationLambdaProps
+internal record DatabaseBackedLambdaProps
 {
     internal required DatabaseConnectionProps DbConnection { get; init; }
     internal required DatabaseProxyAccessProps DbProxyAccess { get; init; }

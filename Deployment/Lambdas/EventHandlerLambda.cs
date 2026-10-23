@@ -34,7 +34,7 @@ internal sealed class EventHandlerLambda : Construct
         });
         var imageCode = DockerImageCode.FromImageAsset(directory: ".", new AssetImageCodeProps
         {
-            File = props.Path
+            File = props.DockerfilePath
         });
         Function = new DockerImageFunction(this, "Handler", new DockerImageFunctionProps
         {

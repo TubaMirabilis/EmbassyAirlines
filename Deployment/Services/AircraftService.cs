@@ -24,7 +24,7 @@ internal sealed class AircraftService : Construct
             RemovalPolicy = RemovalPolicy.DESTROY,
             AutoDeleteObjects = true
         });
-        var migrations = new DatabaseMigrationLambda(this, "AircraftMigrations", new DatabaseMigrationLambdaProps
+        var migrations = new DatabaseMigrationLambda(this, "AircraftMigrations", new DatabaseBackedLambdaProps
         {
             DbConnection = props.DbConnection,
             DbProxyAccess = props.DbProxyAccess,
@@ -55,9 +55,9 @@ internal sealed class AircraftService : Construct
         {
             DbConnection = props.DbConnection,
             DbProxyAccess = props.DbProxyAccess,
+            DockerfilePath = "docker/Aircraft.Api.Lambda.MessageHandlers.FlightArrived.dockerfile",
             Environment = new Dictionary<string, string>(commonEnv),
             FunctionName = "AircraftFlightArrivedHandlerLambda",
-            Path = "docker/Aircraft.Api.Lambda.MessageHandlers.FlightArrived.dockerfile",
             SecurityGroupDescription = "Security group for Aircraft FlightArrived handler Lambda",
             Topic = props.FlightArrivedTopic,
             Vpc = props.Vpc
@@ -67,9 +67,9 @@ internal sealed class AircraftService : Construct
         {
             DbConnection = props.DbConnection,
             DbProxyAccess = props.DbProxyAccess,
+            DockerfilePath = "docker/Aircraft.Api.Lambda.MessageHandlers.FlightMarkedAsDelayedEnRoute.dockerfile",
             Environment = new Dictionary<string, string>(commonEnv),
             FunctionName = "AircraftFlightMarkedAsDelayedEnRouteHandlerLambda",
-            Path = "docker/Aircraft.Api.Lambda.MessageHandlers.FlightMarkedAsDelayedEnRoute.dockerfile",
             SecurityGroupDescription = "Security group for Aircraft FlightMarkedAsDelayedEnRoute handler Lambda",
             Topic = props.FlightMarkedAsDelayedEnRouteTopic,
             Vpc = props.Vpc
@@ -79,9 +79,9 @@ internal sealed class AircraftService : Construct
         {
             DbConnection = props.DbConnection,
             DbProxyAccess = props.DbProxyAccess,
+            DockerfilePath = "docker/Aircraft.Api.Lambda.MessageHandlers.FlightMarkedAsEnRoute.dockerfile",
             Environment = new Dictionary<string, string>(commonEnv),
             FunctionName = "AircraftFlightMarkedAsEnRouteHandlerLambda",
-            Path = "docker/Aircraft.Api.Lambda.MessageHandlers.FlightMarkedAsEnRoute.dockerfile",
             SecurityGroupDescription = "Security group for Aircraft FlightMarkedAsEnRoute handler Lambda",
             Topic = props.FlightMarkedAsEnRouteTopic,
             Vpc = props.Vpc
