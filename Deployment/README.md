@@ -61,6 +61,8 @@ Each service registers its own routes on the shared HTTP API:
 
 Each route points to its own Docker Lambda.
 
+Both the base route and a greedy proxy route (`/{proxy+}`) are registered for each service, allowing nested resource paths to be forwarded to the corresponding Lambda. All HTTP methods are supported.
+
 A custom domain is also configured:
 
 ```
@@ -120,7 +122,7 @@ Publishes:
 
 ---
 
-## Flights
+### Flights
 
 Deploys:
 
@@ -153,6 +155,21 @@ Each consumer queue has a visibility timeout of 180 seconds and a dead-letter qu
 
 ---
 
+## Monitoring and alerting
+
+Each event consumer is provisioned with two CloudWatch alarms to detect message-processing failures and delays.
+
+- **Dead-letter queue alarm:** Monitors the approximate number of visible messages in the dead-letter queue. The alarm triggers when at least one message is detected during a one-minute evaluation period.
+- **Queue age alarm:** Monitors the approximate age of the oldest message in the consumer queue. The alarm triggers when the oldest message exceeds 300 seconds for three consecutive one-minute evaluation periods.
+
+Both alarms publish notifications to a shared SNS alarm topic, which has an email subscription configured using the `alarmEmailAddress` CDK context value.
+
+The email subscription must be confirmed by the recipient before notifications can be delivered.
+
+Missing CloudWatch metric data is treated as non-breaching to avoid alarms being triggered when queues are inactive.
+
+---
+
 ## Publisher pattern
 
 Each service publishes domain events using the Transactional Outbox Pattern rather than emitting events directly from the API. When a business operation modifies application data, the corresponding domain event is written to an outbox table within the same database transaction. Scheduled Publisher Lambdas run every minute, retrieve unpublished events from the outbox, publish them to the appropriate SNS topics, and then mark them as published. This approach ensures that business data changes and their corresponding outbox records can be committed atomically. Publisher Lambdas subsequently deliver committed events to SNS, reducing the risk of inconsistencies between database state and published events. Because publishing and message delivery may be retried, consumers should be designed to handle duplicate events safely.
@@ -179,6 +196,8 @@ Advantages:
 - larger deployment package limits than ZIP-based Lambdas
 - easier local testing
 
+Database-backed Lambda functions share a common DatabaseBackedDockerLambda CDK construct, which configures Docker image deployment, VPC networking, security groups, CloudWatch logging, X-Ray tracing, and IAM permissions for connecting through the RDS Proxy. HTTP API, event handler, publisher, and database migration Lambdas reuse this construct while retaining their own invocation mechanisms and timeout configurations.
+
 ---
 
 ## Security
@@ -193,6 +212,8 @@ The system has been designed to follow several good security practices:
 - S3 bucket blocks all public access.
 - API uses TLS with ACM certificates.
 
+---
+
 ## Database migrations
 
 Each service provisions a dedicated database migration Lambda using a CloudFormation custom resource.
@@ -202,6 +223,24 @@ Migrations are invoked during stack creation and relevant updates. The Docker im
 API, publisher, and event handler Lambdas declare dependencies on their respective migration resources, ensuring migrations complete successfully before those Lambda resources are created or updated.
 
 Migration handlers must support the CloudFormation custom resource lifecycle, including create, update, and delete events.
+
+---
+
+## Deployment configuration
+
+The deployment requires an email address for operational alarm notifications. This is supplied through the `alarmEmailAddress` AWS CDK context value.
+
+For example:
+
+```bash
+cdk deploy -c alarmEmailAddress=alerts@example.com
+```
+
+The deployment fails during CDK stack construction if this value is missing or empty.
+
+After deployment, the recipient must confirm the SNS email subscription to receive CloudWatch alarm notifications.
+
+---
 
 ## Resource lifecycle
 
