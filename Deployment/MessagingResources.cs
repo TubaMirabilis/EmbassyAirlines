@@ -1,11 +1,12 @@
 using Amazon.CDK.AWS.SNS;
+using Amazon.CDK.AWS.SNS.Subscriptions;
 using Constructs;
 
 namespace Deployment;
 
 internal sealed class MessagingResources : Construct
 {
-    internal MessagingResources(Construct scope, string id) : base(scope, id)
+    internal MessagingResources(Construct scope, string id, string alarmEmailAddress) : base(scope, id)
     {
         AircraftCreatedTopic = new Topic(this, "AircraftCreatedTopic");
         AirportCreatedTopic = new Topic(this, "AirportCreatedTopic");
@@ -19,7 +20,10 @@ internal sealed class MessagingResources : Construct
         FlightRescheduledTopic = new Topic(this, "FlightRescheduledTopic");
         FlightCancelledTopic = new Topic(this, "FlightCancelledTopic");
         FlightDelayedTopic = new Topic(this, "FlightDelayedTopic");
+        AlarmTopic = new Topic(this, "AlarmTopic");
+        AlarmTopic.AddSubscription(new EmailSubscription(alarmEmailAddress));
     }
+    internal Topic AlarmTopic { get; }
     internal Topic AircraftCreatedTopic { get; }
     internal Topic AirportCreatedTopic { get; }
     internal Topic AirportUpdatedTopic { get; }

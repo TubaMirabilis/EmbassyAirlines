@@ -41,6 +41,7 @@ internal sealed class FlightsService : Construct
         api.Function.Node.AddDependency(migrations.Migration);
         var handler1 = new EventHandlerLambda(this, "FlightsAircraftCreatedHandlerLambda", new EventHandlerLambdaProps
         {
+            AlarmTopic = props.Topics["Alarm"],
             DbConnection = props.DbConnection,
             DbProxyAccess = props.DbProxyAccess,
             DockerfilePath = "docker/Flights.Api.Lambda.MessageHandlers.AircraftCreated.dockerfile",
@@ -53,6 +54,7 @@ internal sealed class FlightsService : Construct
         handler1.Function.Node.AddDependency(migrations.Migration);
         var handler2 = new EventHandlerLambda(this, "FlightsAirportCreatedHandlerLambda", new EventHandlerLambdaProps
         {
+            AlarmTopic = props.Topics["Alarm"],
             DbConnection = props.DbConnection,
             DbProxyAccess = props.DbProxyAccess,
             DockerfilePath = "docker/Flights.Api.Lambda.MessageHandlers.AirportCreated.dockerfile",
@@ -65,6 +67,7 @@ internal sealed class FlightsService : Construct
         handler2.Function.Node.AddDependency(migrations.Migration);
         var handler3 = new EventHandlerLambda(this, "FlightsAirportUpdatedHandlerLambda", new EventHandlerLambdaProps
         {
+            AlarmTopic = props.Topics["Alarm"],
             DbConnection = props.DbConnection,
             DbProxyAccess = props.DbProxyAccess,
             DockerfilePath = "docker/Flights.Api.Lambda.MessageHandlers.AirportUpdated.dockerfile",

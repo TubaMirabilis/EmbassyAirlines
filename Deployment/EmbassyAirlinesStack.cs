@@ -11,8 +11,13 @@ internal sealed class EmbassyAirlinesStack : Stack
 {
     internal EmbassyAirlinesStack(Construct scope, string id, IStackProps props) : base(scope, id, props)
     {
+        var alarmEmailAddress = Node.TryGetContext("alarmEmailAddress") as string;
+        if (string.IsNullOrWhiteSpace(alarmEmailAddress))
+        {
+            throw new InvalidOperationException("CDK context 'alarmEmailAddress' is required.");
+        }
         var network = new Network(this, "Networking");
-        var messaging = new MessagingResources(this, "Messaging");
+        var messaging = new MessagingResources(this, "Messaging", alarmEmailAddress);
         var shared = new SharedInfra(this, "Shared");
         var dbConnection = new DatabaseConnectionProps
         {
@@ -49,6 +54,7 @@ internal sealed class EmbassyAirlinesStack : Stack
             DbProxyAccess = dbProxyAccess,
             Topics = new Dictionary<string, Topic>
             {
+                { "Alarm", messaging.AlarmTopic },
                 { "AircraftCreated", messaging.AircraftCreatedTopic },
                 { "FlightArrived", messaging.FlightArrivedTopic },
                 { "FlightMarkedAsDelayedEnRoute", messaging.FlightMarkedAsDelayedEnRouteTopic },
@@ -63,6 +69,7 @@ internal sealed class EmbassyAirlinesStack : Stack
             DbProxyAccess = dbProxyAccess,
             Topics = new Dictionary<string, Topic>
             {
+                { "Alarm", messaging.AlarmTopic },
                 { "AircraftCreated", messaging.AircraftCreatedTopic },
                 { "AirportCreated", messaging.AirportCreatedTopic },
                 { "AirportUpdated", messaging.AirportUpdatedTopic },

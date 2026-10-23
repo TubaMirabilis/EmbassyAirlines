@@ -53,6 +53,7 @@ internal sealed class AircraftService : Construct
         bucket.GrantRead(api.Function);
         var handler1 = new EventHandlerLambda(this, "AircraftFlightArrivedHandlerLambda", new EventHandlerLambdaProps
         {
+            AlarmTopic = props.Topics["Alarm"],
             DbConnection = props.DbConnection,
             DbProxyAccess = props.DbProxyAccess,
             DockerfilePath = "docker/Aircraft.Api.Lambda.MessageHandlers.FlightArrived.dockerfile",
@@ -65,6 +66,7 @@ internal sealed class AircraftService : Construct
         handler1.Function.Node.AddDependency(migrations.Migration);
         var handler2 = new EventHandlerLambda(this, "AircraftFlightMarkedAsDelayedEnRouteHandlerLambda", new EventHandlerLambdaProps
         {
+            AlarmTopic = props.Topics["Alarm"],
             DbConnection = props.DbConnection,
             DbProxyAccess = props.DbProxyAccess,
             DockerfilePath = "docker/Aircraft.Api.Lambda.MessageHandlers.FlightMarkedAsDelayedEnRoute.dockerfile",
@@ -77,6 +79,7 @@ internal sealed class AircraftService : Construct
         handler2.Function.Node.AddDependency(migrations.Migration);
         var handler3 = new EventHandlerLambda(this, "AircraftFlightMarkedAsEnRouteHandlerLambda", new EventHandlerLambdaProps
         {
+            AlarmTopic = props.Topics["Alarm"],
             DbConnection = props.DbConnection,
             DbProxyAccess = props.DbProxyAccess,
             DockerfilePath = "docker/Aircraft.Api.Lambda.MessageHandlers.FlightMarkedAsEnRoute.dockerfile",
