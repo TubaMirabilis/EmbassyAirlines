@@ -4,13 +4,13 @@
     <CentralPackageTransitivePinningEnabled>false</CentralPackageTransitivePinningEnabled>
   </PropertyGroup>
   <ItemGroup Condition="'$(MSBuildProjectExtension)' != '.dcproj'">
-    <PackageVersion Include="Amazon.CDK.Lib" Version="2.274.0" />
+    <PackageVersion Include="Amazon.CDK.Lib" Version="2.275.0" />
     <PackageVersion Include="Amazon.JSII.Analyzers" Version="1.142.0" />
     <PackageVersion Include="Amazon.Lambda.RuntimeSupport" Version="2.3.0" />
     <PackageVersion Include="AWS.Messaging" Version="1.6.0" />
     <PackageVersion Include="AWS.Messaging.Telemetry.OpenTelemetry" Version="1.0.1" />
-    <PackageVersion Include="AWSSDK.CloudWatchLogs" Version="4.0.106.1" />
-    <PackageVersion Include="AWSSDK.RDS" Version="4.0.107.1" />
+    <PackageVersion Include="AWSSDK.CloudWatchLogs" Version="4.0.106.2" />
+    <PackageVersion Include="AWSSDK.RDS" Version="4.0.107.2" />
     <PackageVersion Include="Constructs" Version="10.8.1" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.Binder" Version="10.0.14" />
     <PackageVersion Include="Microsoft.Extensions.Hosting" Version="10.0.14" />
@@ -32,8 +32,8 @@
     <PackageVersion Include="Amazon.Lambda.Core" Version="3.4.0" />
     <PackageVersion Include="Amazon.Lambda.Serialization.SystemTextJson" Version="3.0.1" />
     <PackageVersion Include="Amazon.Lambda.SQSEvents" Version="3.0.1" />
-    <PackageVersion Include="AWSSDK.Extensions.NETCore.Setup" Version="4.0.102.6" />
-    <PackageVersion Include="AWSSDK.S3" Version="4.0.104.6" />
+    <PackageVersion Include="AWSSDK.Extensions.NETCore.Setup" Version="4.0.102.7" />
+    <PackageVersion Include="AWSSDK.S3" Version="4.0.104.7" />
     <PackageVersion Include="CliWrap" Version="3.10.5" />
     <PackageVersion Include="coverlet.MTP" Version="10.1.0" />
     <PackageVersion Include="EFCore.NamingConventions" Version="10.0.1" />

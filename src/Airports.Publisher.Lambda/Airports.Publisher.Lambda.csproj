@@ -2,6 +2,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Airports.Infrastructure\Airports.Infrastructure.csproj" />
+    <ProjectReference Include="..\Shared.ServiceDefaults\Shared.ServiceDefaults.csproj" />
   </ItemGroup>
 
   <ItemGroup>

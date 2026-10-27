@@ -7,11 +7,13 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Shared.Npgsql;
+using Shared.ServiceDefaults;
 using Shared.TransactionalOutbox;
 
 var builder = Host.CreateApplicationBuilder(args);
 var config = builder.Configuration;
 config.AddEnvironmentVariables(prefix: "FLIGHTS_");
+builder.AddServiceDefaults();
 builder.Services.AddDatabaseConnection<ApplicationDbContext>(config, true, "flights");
 builder.Services.AddScoped<IOutboxProcessor, OutboxProcessor>();
 builder.Services.AddAWSMessageBus(config);
