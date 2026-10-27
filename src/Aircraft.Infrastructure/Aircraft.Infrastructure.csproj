@@ -1,18 +1,14 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>
-
   <ItemGroup>
     <PackageReference Include="AWS.Messaging" />
   </ItemGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\Aircraft.Core\Aircraft.Core.csproj" />
     <ProjectReference Include="..\Shared.Npgsql\Shared.Npgsql.csproj" />
   </ItemGroup>
-
 </Project>

@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Routing;
 
-namespace Shared.Endpoints;
+namespace Shared.HttpApiLambdaDefaults;
 
 public interface IEndpoint
 {

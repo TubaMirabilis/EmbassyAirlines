@@ -7,10 +7,9 @@ using ErrorOr;
 using FluentValidation;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
-using Shared;
 using Shared.Contracts;
-using Shared.Endpoints;
-using Shared.Extensions;
+using Shared.HttpApiLambdaDefaults;
+using Shared.HttpApiLambdaDefaults.Extensions;
 
 namespace Aircraft.Api.Lambda.Endpoints;
 

@@ -3,7 +3,6 @@ using System.Text.Json;
 using Amazon.Lambda.Core;
 using Amazon.Lambda.Serialization.SystemTextJson;
 using Amazon.Lambda.SQSEvents;
-using AWS.Aspire.ServiceDefaults;
 using Flights.Infrastructure;
 using Flights.Infrastructure.Database;
 using Microsoft.Extensions.Configuration;
@@ -13,7 +12,9 @@ using NodaTime;
 using OpenTelemetry.Instrumentation.AWSLambda;
 using OpenTelemetry.Trace;
 using Shared.Contracts;
+using Shared.Messaging;
 using Shared.Npgsql;
+using Shared.ServiceDefaults;
 
 [assembly: LambdaSerializer(typeof(DefaultLambdaJsonSerializer))]
 

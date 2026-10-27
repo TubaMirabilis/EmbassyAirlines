@@ -1,4 +1,4 @@
-namespace Shared;
+namespace Shared.TransactionalOutbox;
 
 public static class OutboxConstants
 {

@@ -6,9 +6,9 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Shared;
-using Shared.Abstractions;
 using Shared.Contracts;
 using Shared.Npgsql;
+using Shared.TransactionalOutbox;
 
 var builder = Host.CreateApplicationBuilder(args);
 var config = builder.Configuration;

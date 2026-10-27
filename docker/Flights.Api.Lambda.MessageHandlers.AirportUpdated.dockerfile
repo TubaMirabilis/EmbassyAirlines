@@ -4,8 +4,10 @@ COPY ./src/Flights.Api.Lambda.MessageHandlers.AirportUpdated/ /src/Flights.Api.L
 COPY ./src/Flights.Core/ /src/Flights.Core/
 COPY ./src/Flights.Infrastructure/ /src/Flights.Infrastructure/
 COPY ./src/Shared/ /src/Shared/
+COPY ./src/Shared.Messaging/ /src/Shared.Messaging/
 COPY ./src/Shared.Npgsql/ /src/Shared.Npgsql/
-COPY ./src/AWS.Aspire.ServiceDefaults/ /src/AWS.Aspire.ServiceDefaults/
+COPY ./src/Shared.ServiceDefaults/ /src/Shared.ServiceDefaults/
+COPY ./src/Shared.TransactionalOutbox/ /src/Shared.TransactionalOutbox/
 COPY ./Directory.Packages.props /Directory.Packages.props
 WORKDIR /src/Flights.Api.Lambda.MessageHandlers.AirportUpdated
 RUN dotnet restore -r linux-x64

@@ -2,7 +2,7 @@ using System.Diagnostics.CodeAnalysis;
 using Amazon.Lambda.Core;
 using Amazon.Lambda.SQSEvents;
 
-namespace AWS.Aspire.ServiceDefaults;
+namespace Shared.Messaging;
 
 public static class SqsBatchProcessor
 {

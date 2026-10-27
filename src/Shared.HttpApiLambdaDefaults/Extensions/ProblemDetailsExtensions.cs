@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 
-namespace Shared.Extensions;
+namespace Shared.HttpApiLambdaDefaults.Extensions;
 
 internal static class ProblemDetailsExtensions
 {

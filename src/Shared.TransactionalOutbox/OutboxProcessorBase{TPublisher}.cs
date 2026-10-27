@@ -1,7 +1,7 @@
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
 
-namespace Shared;
+namespace Shared.TransactionalOutbox;
 
 public abstract class OutboxProcessorBase<TPublisher>
 {

@@ -1,7 +1,7 @@
 using System.Net;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Shared.Extensions;
+namespace Shared.HttpApiLambdaDefaults.Extensions;
 
 public static class HttpStatusCodeExtensions
 {

@@ -7,9 +7,9 @@ using Flights.Infrastructure.Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using NodaTime;
-using Shared;
 using Shared.Contracts;
-using Shared.Extensions;
+using Shared.HttpApiLambdaDefaults.Extensions;
+using Shared.TransactionalOutbox;
 
 namespace Flights.Api.Lambda.FunctionalTests;
 

@@ -1,9 +1,9 @@
 using Microsoft.AspNetCore.Http;
 using Serilog.Context;
 
-namespace Shared.Middleware;
+namespace Shared.HttpApiLambdaDefaults;
 
-public class RequestContextLoggingMiddleware
+internal sealed class RequestContextLoggingMiddleware
 {
     private const string CorrelationIdHeaderName = "X-Correlation-Id";
     private readonly RequestDelegate _next;

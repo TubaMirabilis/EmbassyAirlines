@@ -3,9 +3,8 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Shared.Endpoints;
 
-namespace Shared.Extensions;
+namespace Shared.HttpApiLambdaDefaults.Extensions;
 
 public static class EndpointExtensions
 {

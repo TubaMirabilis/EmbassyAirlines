@@ -4,6 +4,7 @@ using FluentValidation;
 using NodaTime;
 using Serilog;
 using Shared.Contracts;
+using Shared.HttpApiLambdaDefaults;
 using Shared.Npgsql;
 
 var builder = WebApplication.CreateBuilder(args);

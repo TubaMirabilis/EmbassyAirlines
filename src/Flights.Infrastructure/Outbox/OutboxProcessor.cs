@@ -2,9 +2,9 @@ using AWS.Messaging;
 using Flights.Infrastructure.Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Shared;
 using Shared.Contracts;
 using Shared.Npgsql;
+using Shared.TransactionalOutbox;
 
 namespace Flights.Infrastructure.Outbox;
 

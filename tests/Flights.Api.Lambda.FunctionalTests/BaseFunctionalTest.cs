@@ -1,5 +1,5 @@
 using AwesomeAssertions;
-using Shared.Extensions;
+using Shared.HttpApiLambdaDefaults.Extensions;
 
 namespace Flights.Api.Lambda.FunctionalTests;
 

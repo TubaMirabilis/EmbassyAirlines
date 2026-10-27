@@ -2,8 +2,8 @@ using System.Text.Json;
 using Flights.Core.Models;
 using Microsoft.EntityFrameworkCore;
 using NodaTime;
-using Shared;
 using Shared.Contracts;
+using Shared.TransactionalOutbox;
 
 namespace Flights.Infrastructure.IntegrationTests;
 

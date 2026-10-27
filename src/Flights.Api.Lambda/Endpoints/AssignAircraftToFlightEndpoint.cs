@@ -4,9 +4,8 @@ using Flights.Infrastructure.Database;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 using NodaTime;
-using Shared;
 using Shared.Contracts;
-using Shared.Endpoints;
+using Shared.HttpApiLambdaDefaults;
 
 namespace Flights.Api.Lambda.Endpoints;
 

@@ -5,14 +5,15 @@ using Aircraft.Infrastructure.Database;
 using Amazon.Lambda.Core;
 using Amazon.Lambda.Serialization.SystemTextJson;
 using Amazon.Lambda.SQSEvents;
-using AWS.Aspire.ServiceDefaults;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using OpenTelemetry.Instrumentation.AWSLambda;
 using OpenTelemetry.Trace;
 using Shared.Contracts;
+using Shared.Messaging;
 using Shared.Npgsql;
+using Shared.ServiceDefaults;
 
 [assembly: LambdaSerializer(typeof(DefaultLambdaJsonSerializer))]
 

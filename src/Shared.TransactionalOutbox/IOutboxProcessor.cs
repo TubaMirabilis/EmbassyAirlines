@@ -1,4 +1,4 @@
-namespace Shared.Abstractions;
+namespace Shared.TransactionalOutbox;
 
 public interface IOutboxProcessor
 {

@@ -4,8 +4,10 @@ COPY ./src/Airports.Api.Lambda/ /src/Airports.Api.Lambda/
 COPY ./src/Airports.Core/ /src/Airports.Core/
 COPY ./src/Airports.Infrastructure/ /src/Airports.Infrastructure/
 COPY ./src/Shared/ /src/Shared/
+COPY ./src/Shared.HttpApiLambdaDefaults/ /src/Shared.HttpApiLambdaDefaults/
 COPY ./src/Shared.Npgsql/ /src/Shared.Npgsql/
-COPY ./src/AWS.Aspire.ServiceDefaults/ /src/AWS.Aspire.ServiceDefaults/
+COPY ./src/Shared.ServiceDefaults/ /src/Shared.ServiceDefaults/
+COPY ./src/Shared.TransactionalOutbox/ /src/Shared.TransactionalOutbox/
 COPY ./Directory.Packages.props /Directory.Packages.props
 WORKDIR /src/Airports.Api.Lambda
 RUN dotnet restore

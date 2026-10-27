@@ -2,7 +2,7 @@ using Airports.Infrastructure.Database;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 using Shared.Contracts;
-using Shared.Endpoints;
+using Shared.HttpApiLambdaDefaults;
 
 namespace Airports.Api.Lambda.Endpoints;
 

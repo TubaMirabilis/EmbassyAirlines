@@ -2,8 +2,8 @@ using System.Text.Json;
 using Flights.Infrastructure.Outbox;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Abstractions;
-using Shared;
 using Shared.Contracts;
+using Shared.TransactionalOutbox;
 
 namespace Flights.Infrastructure.IntegrationTests;
 

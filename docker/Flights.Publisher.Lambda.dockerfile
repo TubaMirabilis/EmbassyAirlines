@@ -5,6 +5,7 @@ COPY ./src/Flights.Core/ /src/Flights.Core/
 COPY ./src/Flights.Infrastructure/ /src/Flights.Infrastructure/
 COPY ./src/Shared/ /src/Shared/
 COPY ./src/Shared.Npgsql/ /src/Shared.Npgsql/
+COPY ./src/Shared.TransactionalOutbox/ /src/Shared.TransactionalOutbox/
 COPY ./Directory.Packages.props /Directory.Packages.props
 WORKDIR /src/Flights.Publisher.Lambda
 RUN dotnet restore

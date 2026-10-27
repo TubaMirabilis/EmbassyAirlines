@@ -8,7 +8,6 @@
     <PackageReference Include="Amazon.Lambda.Core" />
     <PackageReference Include="Amazon.Lambda.RuntimeSupport" />
     <PackageReference Include="AWSSDK.Extensions.NETCore.Setup" />
-    <PackageReference Include="Microsoft.Extensions.Hosting" />
   </ItemGroup>
 
   <PropertyGroup>

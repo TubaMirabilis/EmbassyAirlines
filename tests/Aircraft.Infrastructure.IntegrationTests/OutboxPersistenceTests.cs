@@ -4,8 +4,8 @@ using Aircraft.Infrastructure.Outbox;
 using AWS.Messaging;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Abstractions;
-using Shared;
 using Shared.Contracts;
+using Shared.TransactionalOutbox;
 
 namespace Aircraft.Infrastructure.IntegrationTests;
 

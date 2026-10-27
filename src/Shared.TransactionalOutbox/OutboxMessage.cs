@@ -1,4 +1,4 @@
-namespace Shared;
+namespace Shared.TransactionalOutbox;
 
 public sealed record OutboxMessage(Guid Id, string Name, string Content, DateTime CreatedOnUtc)
 {

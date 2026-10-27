@@ -1,6 +1,6 @@
 using Airports.Core.Models;
 using Microsoft.EntityFrameworkCore;
-using Shared;
+using Shared.TransactionalOutbox;
 
 namespace Airports.Infrastructure.IntegrationTests;
 

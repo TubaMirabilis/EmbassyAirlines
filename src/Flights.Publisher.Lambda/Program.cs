@@ -6,8 +6,8 @@ using Flights.Publisher.Lambda;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Shared.Abstractions;
 using Shared.Npgsql;
+using Shared.TransactionalOutbox;
 
 var builder = Host.CreateApplicationBuilder(args);
 var config = builder.Configuration;

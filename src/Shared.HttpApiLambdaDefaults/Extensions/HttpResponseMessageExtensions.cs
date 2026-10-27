@@ -1,7 +1,7 @@
 using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Shared.Extensions;
+namespace Shared.HttpApiLambdaDefaults.Extensions;
 
 public static class HttpResponseMessageExtensions
 {

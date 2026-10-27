@@ -3,6 +3,7 @@ using Airports.Infrastructure.Database;
 using FluentValidation;
 using Serilog;
 using Shared.Contracts;
+using Shared.HttpApiLambdaDefaults;
 using Shared.Npgsql;
 
 var builder = WebApplication.CreateBuilder(args);

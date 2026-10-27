@@ -5,6 +5,7 @@ COPY ./src/Airports.Core/ /src/Airports.Core/
 COPY ./src/Airports.Infrastructure/ /src/Airports.Infrastructure/
 COPY ./src/Shared/ /src/Shared/
 COPY ./src/Shared.Npgsql/ /src/Shared.Npgsql/
+COPY ./src/Shared.TransactionalOutbox/ /src/Shared.TransactionalOutbox/
 COPY ./Directory.Packages.props /Directory.Packages.props
 WORKDIR /src/Airports.Migrations.Lambda
 RUN dotnet restore -r linux-x64

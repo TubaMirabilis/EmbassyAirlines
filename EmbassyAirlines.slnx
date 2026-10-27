@@ -13,7 +13,6 @@
     <Project Path="src/Airports.Infrastructure/Airports.Infrastructure.csproj" />
     <Project Path="src/Airports.Migrations.Lambda/Airports.Migrations.Lambda.csproj" />
     <Project Path="src/Airports.Publisher.Lambda/Airports.Publisher.Lambda.csproj" />
-    <Project Path="src/AWS.Aspire.ServiceDefaults/AWS.Aspire.ServiceDefaults.csproj" />
     <Project Path="src/Flights.Api.Lambda.MessageHandlers.AircraftCreated/Flights.Api.Lambda.MessageHandlers.AircraftCreated.csproj" />
     <Project Path="src/Flights.Api.Lambda.MessageHandlers.AirportCreated/Flights.Api.Lambda.MessageHandlers.AirportCreated.csproj" />
     <Project Path="src/Flights.Api.Lambda.MessageHandlers.AirportUpdated/Flights.Api.Lambda.MessageHandlers.AirportUpdated.csproj" />
@@ -23,7 +22,11 @@
     <Project Path="src/Flights.Migrations.Lambda/Flights.Migrations.Lambda.csproj" />
     <Project Path="src/Flights.Publisher.Lambda/Flights.Publisher.Lambda.csproj" />
     <Project Path="src/Shared.AWS.CloudWatchLogs/Shared.AWS.CloudWatchLogs.csproj" />
+    <Project Path="src/Shared.HttpApiLambdaDefaults/Shared.HttpApiLambdaDefaults.csproj" />
+    <Project Path="src/Shared.Messaging/Shared.Messaging.csproj" />
     <Project Path="src/Shared.Npgsql/Shared.Npgsql.csproj" />
+    <Project Path="src/Shared.ServiceDefaults/Shared.ServiceDefaults.csproj" />
+    <Project Path="src/Shared.TransactionalOutbox/Shared.TransactionalOutbox.csproj" />
     <Project Path="src/Shared/Shared.csproj" />
   </Folder>
   <Folder Name="/tests/">

@@ -1,16 +1,16 @@
 using System.Diagnostics;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 namespace Shared.Npgsql;
 
 public static class MigrationExtensions
 {
-    public static async Task ApplyMigrationsAsync<TDbContext>(this IApplicationBuilder app) where TDbContext : DbContext
+    public static async Task ApplyMigrationsAsync<TDbContext>(this IHost app) where TDbContext : DbContext
     {
-        using var scope = app.ApplicationServices.CreateScope();
+        using var scope = app.Services.CreateScope();
         var logger = scope.ServiceProvider.GetRequiredService<ILogger<TDbContext>>();
         await using var dbContext = scope.ServiceProvider.GetRequiredService<TDbContext>();
         var startTime = Stopwatch.GetTimestamp();

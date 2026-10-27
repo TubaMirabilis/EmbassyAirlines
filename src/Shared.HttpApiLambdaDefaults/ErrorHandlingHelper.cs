@@ -3,7 +3,7 @@ using ErrorOr;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Shared;
+namespace Shared.HttpApiLambdaDefaults;
 
 public static class ErrorHandlingHelper
 {

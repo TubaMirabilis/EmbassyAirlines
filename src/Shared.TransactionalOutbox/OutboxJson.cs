@@ -1,6 +1,6 @@
 using System.Text.Json;
 
-namespace Shared;
+namespace Shared.TransactionalOutbox;
 
 public static class OutboxJson
 {

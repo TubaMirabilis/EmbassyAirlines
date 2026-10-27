@@ -2,9 +2,8 @@ using Aircraft.Infrastructure.Database;
 using ErrorOr;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
-using Shared;
 using Shared.Contracts;
-using Shared.Endpoints;
+using Shared.HttpApiLambdaDefaults;
 
 namespace Aircraft.Api.Lambda.Endpoints;
 

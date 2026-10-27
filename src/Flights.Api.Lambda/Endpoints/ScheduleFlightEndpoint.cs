@@ -6,10 +6,9 @@ using Flights.Core.Models;
 using FluentValidation;
 using Microsoft.AspNetCore.Http.HttpResults;
 using NodaTime;
-using Shared;
 using Shared.Contracts;
-using Shared.Endpoints;
-using Shared.Extensions;
+using Shared.HttpApiLambdaDefaults;
+using Shared.HttpApiLambdaDefaults.Extensions;
 
 namespace Flights.Api.Lambda.Endpoints;
 
