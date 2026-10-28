@@ -27,20 +27,7 @@ public sealed class OutboxPersistenceTests
         // Arrange
         await ResetDatabase();
         await using var db = _postgres.CreateDbContext();
-        var args = new AircraftCreationArgs
-        {
-            TailNumber = "C-FJRN",
-            EquipmentCode = "B78X",
-            DryOperatingWeight = new Weight(135500),
-            MaximumTakeoffWeight = new Weight(254011),
-            MaximumLandingWeight = new Weight(201848),
-            MaximumZeroFuelWeight = new Weight(192777),
-            MaximumFuelWeight = new Weight(101522),
-            CreatedAt = _timeProvider.GetUtcNow(),
-            Seats = JsonSerializer.Deserialize<SeatLayoutDefinition>(SeatLayoutDefinitionJson) ?? throw new JsonException(),
-            AircraftLocationData = new AircraftLocationData(Status.Parked, "CYVR", null)
-        };
-        var aircraft = Core.Models.Aircraft.Create(args);
+        var aircraft = CreateAircraft("C-FJRN");
         var domainEvent = Assert.Single(aircraft.DomainEvents);
         db.Aircraft.Add(aircraft);
 
@@ -58,6 +45,37 @@ public sealed class OutboxPersistenceTests
         var publishedEvent = JsonSerializer.Deserialize<AircraftCreatedEvent>(message.Content, _options);
         Assert.NotNull(publishedEvent);
         Assert.Equal(domainEvent.Id, publishedEvent.Id);
+    }
+
+    [Fact]
+    public void Synchronous_SaveChanges_should_persist_domain_events_to_outbox_and_clear_them()
+    {
+        // Arrange: SaveChanges() runs the interceptor's synchronous SavingChanges/SavedChanges overrides.
+        ResetDatabaseSynchronously();
+        using var db = _postgres.CreateDbContext();
+        Core.Models.Aircraft[] aircraft = [CreateAircraft("C-FJRN"), CreateAircraft("C-FRSA")];
+        var domainEvents = aircraft
+            .Select(x => Assert.IsType<AircraftCreatedEvent>(Assert.Single(x.DomainEvents)))
+            .ToList();
+        db.Aircraft.AddRange(aircraft);
+
+        // Act
+        db.SaveChanges();
+
+        // Assert
+        Assert.All(aircraft, x => Assert.Empty(x.DomainEvents));
+        using var verificationDb = _postgres.CreateDbContext();
+        var messages = verificationDb.Set<OutboxMessage>().AsNoTracking().ToList();
+        Assert.Equal(domainEvents.Select(x => x.Id).Order(), messages.Select(x => x.Id).Order());
+        foreach (var domainEvent in domainEvents)
+        {
+            var message = messages.Single(x => x.Id == domainEvent.Id);
+            Assert.Equal(nameof(AircraftCreatedEvent), message.Name);
+            Assert.Null(message.ProcessedOnUtc);
+            Assert.Null(message.DeadLetteredOnUtc);
+            Assert.Null(message.ClaimId);
+            Assert.Equal(domainEvent, JsonSerializer.Deserialize<AircraftCreatedEvent>(message.Content, _options));
+        }
     }
 
     [Fact]
@@ -557,6 +575,34 @@ public sealed class OutboxPersistenceTests
             TRUNCATE TABLE aircraft.outbox_messages CASCADE;
             """);
     }
+
+    private void ResetDatabaseSynchronously()
+    {
+        using var db = _postgres.CreateDbContext();
+        db.Database.ExecuteSqlRaw(
+            """
+            TRUNCATE TABLE aircraft.outbox_messages CASCADE;
+            """);
+    }
+
+    private Core.Models.Aircraft CreateAircraft(string tailNumber)
+    {
+        var args = new AircraftCreationArgs
+        {
+            TailNumber = tailNumber,
+            EquipmentCode = "B78X",
+            DryOperatingWeight = new Weight(135500),
+            MaximumTakeoffWeight = new Weight(254011),
+            MaximumLandingWeight = new Weight(201848),
+            MaximumZeroFuelWeight = new Weight(192777),
+            MaximumFuelWeight = new Weight(101522),
+            CreatedAt = _timeProvider.GetUtcNow(),
+            Seats = JsonSerializer.Deserialize<SeatLayoutDefinition>(SeatLayoutDefinitionJson) ?? throw new JsonException(),
+            AircraftLocationData = new AircraftLocationData(Status.Parked, "CYVR", null)
+        };
+        return Core.Models.Aircraft.Create(args);
+    }
+
     private static string SeatLayoutDefinitionJson => """
     {
         "EquipmentType": "B78X",
