@@ -16,7 +16,7 @@ builder.AddHttpApiLambdaDefaults(assembly);
 var services = builder.Services;
 if (!builder.Environment.IsDevelopment())
 {
-    services.AddDatabaseConnection<ApplicationDbContext>(config, false, "aircraft");
+    services.AddDatabaseConnection<ApplicationDbContext>(config, false, "aircraft").AddOutboxInterceptor();
 }
 services.AddAWSService<IAmazonS3>();
 services.AddSingleton<IValidator<CreateAircraftDto>, CreateAircraftDtoValidator>();

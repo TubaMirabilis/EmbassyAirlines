@@ -16,7 +16,7 @@ builder.AddHttpApiLambdaDefaults(assembly);
 var services = builder.Services;
 if (!builder.Environment.IsDevelopment())
 {
-    services.AddDatabaseConnection<ApplicationDbContext>(config, true, "flights");
+    services.AddDatabaseConnection<ApplicationDbContext>(config, true, "flights").AddOutboxInterceptor();
 }
 services.AddSingleton<IValidator<ScheduleFlightDto>, ScheduleFlightDtoValidator>();
 services.AddSingleton<IClock>(SystemClock.Instance);

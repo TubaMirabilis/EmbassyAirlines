@@ -15,7 +15,7 @@ builder.AddHttpApiLambdaDefaults(assembly);
 var services = builder.Services;
 if (!builder.Environment.IsDevelopment())
 {
-    services.AddDatabaseConnection<ApplicationDbContext>(config, false, "airports");
+    services.AddDatabaseConnection<ApplicationDbContext>(config, false, "airports").AddOutboxInterceptor();
 }
 services.AddSingleton<IValidator<CreateOrUpdateAirportDto>, CreateOrUpdateAirportDtoValidator>();
 services.AddSingleton(TimeProvider.System);

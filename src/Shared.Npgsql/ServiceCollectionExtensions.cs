@@ -2,6 +2,7 @@ using Amazon.RDS.Util;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Npgsql;
 
 namespace Shared.Npgsql;
@@ -43,32 +44,49 @@ public static class ServiceCollectionExtensions
             useNodaTime,
             schema);
     }
+    public static IServiceCollection AddOutboxInterceptor(
+    this IServiceCollection services)
+    {
+        services.TryAddSingleton<InsertOutboxMessagesInterceptor>();
+        return services;
+    }
     private static IServiceCollection AddDatabaseConnection<TDbContext>(
-    IServiceCollection services,
-    NpgsqlDataSource dataSource,
-    bool useNodaTime,
-    string schema)
-    where TDbContext : DbContext
+        IServiceCollection services,
+        NpgsqlDataSource dataSource,
+        bool useNodaTime,
+        string schema)
+        where TDbContext : DbContext
     {
         services.AddSingleton(dataSource);
-        services.AddSingleton<InsertOutboxMessagesInterceptor>();
+
         services.AddDbContext<TDbContext>((sp, options) =>
+        {
             options
                 .UseNpgsql(dataSource, npgsql =>
                 {
                     npgsql.MigrationsHistoryTable(
                         "__EFMigrationsHistory",
                         schema);
+
                     if (useNodaTime)
                     {
                         npgsql.UseNodaTime();
                     }
+
                     npgsql.UseQuerySplittingBehavior(
                         QuerySplittingBehavior.SplitQuery);
                 })
-                .UseSnakeCaseNamingConvention()
-                .AddInterceptors(
-                    sp.GetRequiredService<InsertOutboxMessagesInterceptor>()));
+                .UseSnakeCaseNamingConvention();
+
+            var outboxInterceptor =
+                sp.GetService<InsertOutboxMessagesInterceptor>();
+
+            if (outboxInterceptor is not null)
+            {
+                options.AddInterceptors(outboxInterceptor);
+            }
+        });
+
         return services;
     }
     private static string BuildConnectionString(DatabaseConnectionOptions config) => new NpgsqlConnectionStringBuilder

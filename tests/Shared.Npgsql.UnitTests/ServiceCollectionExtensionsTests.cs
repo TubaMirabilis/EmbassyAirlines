@@ -25,10 +25,7 @@ public class ServiceCollectionExtensionsTests
         var services = new ServiceCollection();
 
         // Act
-        services.AddDatabaseConnection<TestDbContext>(
-            configuration,
-            useNodaTime: false,
-            schema: "test_schema");
+        services.AddDatabaseConnection<TestDbContext>(configuration, useNodaTime: false, schema: "test_schema").AddOutboxInterceptor();
 
         // Assert
         using var provider = services.BuildServiceProvider();
