@@ -1,12 +1,25 @@
-# Shared Library
+# Shared Libraries
 
-The Shared project exposes utility APIs which have been designed to support the microservices architecture of the Embassy Airlines system and its various bounded contexts, including aircraft management, airport management, flight scheduling and flight status management.
+The `Shared` project and its companion `Shared.*` projects hold the code that the Airports, Aircraft, and Flights services share instead of each defining their own: contracts, the domain-event base entity, guard clauses, the transactional outbox, PostgreSQL wiring, host defaults, the HTTP pipeline, and SQS batch handling.
 
-Instead of each service defining its own DTOs, events, middleware, validation helpers, and endpoint infrastructure, they all share these definitions.
+Until October 2026 the contracts, outbox primitives, and HTTP plumbing all lived in `Shared`. They are now split by dependency footprint, so `Shared` itself has no package dependencies and each Lambda builds against only what it uses. A migration Lambda, for example, takes neither ASP.NET Core nor OpenTelemetry.
+
+| Project                        | Contents                                                                           | Depends on                                                                                 | Used by                                       |
+| ------------------------------ | ---------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ | --------------------------------------------- |
+| `Shared`                       | Contracts, domain events, `Entity`, `Ensure`                                       | nothing                                                                                    | every service's `X.Core`, and so every Lambda |
+| `Shared.TransactionalOutbox`   | `OutboxMessage`, `OutboxConstants`, `OutboxJson`, the outbox processor base        | `Microsoft.Extensions.Logging`                                                             | `Shared.Npgsql`                               |
+| `Shared.Npgsql`                | EF Core/PostgreSQL wiring, the outbox interceptor, the outbox drain loop           | `Shared`, `Shared.TransactionalOutbox`, Npgsql, AWS SDK (RDS)                              | every service's `X.Infrastructure`            |
+| `Shared.ServiceDefaults`       | `AddServiceDefaults`: OpenTelemetry, service discovery, `HttpClient` resilience    | OpenTelemetry and `Microsoft.Extensions.*` packages                                        | API, publisher, and message-handler Lambdas   |
+| `Shared.HttpApiLambdaDefaults` | HTTP API Lambda hosting, endpoint discovery, error handling, logging, test helpers | `Shared.ServiceDefaults`, ASP.NET Core, Lambda hosting, ErrorOr, FluentValidation, Serilog | API Lambdas and their functional tests        |
+| `Shared.Messaging`             | `SqsBatchProcessor`                                                                | `Amazon.Lambda.Core`, `Amazon.Lambda.SQSEvents`                                            | message-handler Lambdas                       |
+
+Each Lambda's dockerfile in `docker/` copies exactly the projects it builds against, so adding a project reference to a Lambda also means adding a matching `COPY` line to its dockerfile.
 
 ---
 
-## Shared contracts (DTOs)
+## `Shared`
+
+### Shared contracts (DTOs)
 
 The largest part of the project is the **Contracts** folder.
 
@@ -26,9 +39,9 @@ along with request DTOs such as:
 
 These are immutable record types used for communication between APIs or services rather than representing database entities. For example, `ScheduleFlightDto` contains all the information required to schedule a flight, including airports, aircraft, prices, flight numbers, and scheduling policy.
 
----
+The folder also holds `MigrationRequest` and `MigrationResponse`, the CloudFormation custom-resource payloads that each service's Migrations Lambda receives and returns.
 
-## Domain events
+### Domain events
 
 The Embassy Airlines system uses domain events, message broker-dispatched integration events and relies on eventually consistent communication. Consequently, the Shared Library contains a substantial number of event contracts.
 
@@ -42,11 +55,9 @@ Examples include:
 - FlightDelayedEvent
 - FlightPricingAdjustedEvent
 
-These immutable record types implement `IDomainEvent` (or the more specific `IFlightStatusManagementEvent`) and represent domain events that are persisted to the Transactional Outbox before being asynchronously published between services.
+These immutable record types implement `IDomainEvent` (or the more specific `IFlightStatusManagementEvent`, which adds a `FlightId`) and represent domain events that are persisted to the Transactional Outbox before being asynchronously published between services.
 
----
-
-## Base entity
+### Base entity
 
 The project contains a reusable `Entity` base class.
 
@@ -56,15 +67,27 @@ It stores domain events raised by an entity:
 - ClearDomainEvents()
 - DomainEvents collection
 
-This is a common Domain-Driven Design pattern where entities accumulate events during a transaction, which are published after persistence.
+This is a common Domain-Driven Design pattern where entities accumulate events during a transaction, which are published after persistence. `InsertOutboxMessagesInterceptor` in `Shared.Npgsql` collects these events from every tracked entity when the context saves, and clears them once the save succeeds.
+
+### Validation helpers
+
+The `Ensure` class centralizes guard clauses:
+
+- `NotEmpty(Guid)`
+- `NotNullOrEmpty(string)`
+- `NotNull<T>(T)`
+- `ZeroOrGreater(decimal)`
+- `GreaterThanZero(int)`
+
+It also uses `CallerArgumentExpression`, allowing exceptions to automatically include the caller's parameter name without manually specifying it.
 
 ---
 
-## Outbox support
+## `Shared.TransactionalOutbox`
 
-The Shared library provides common infrastructure for implementing the **Transactional Outbox** pattern, allowing services to reliably publish integration events after database transactions have been committed.
+The project provides the database- and publisher-agnostic half of the **Transactional Outbox** pattern, allowing services to reliably publish integration events after database transactions have been committed. It knows nothing about PostgreSQL or SNS.
 
-The shared components include:
+The components include:
 
 - `OutboxMessage`, which represents a persisted outbox entry containing:
 
@@ -79,19 +102,42 @@ The shared components include:
     - claim identifier,
     - last processing error.
 
-- `OutboxProcessorBase`, an abstract base class that provides publisher-agnostic processing behaviour, including:
+- `OutboxProcessorBase<TPublisher>`, an abstract base class that owns the per-message processing lifecycle (resolve publisher, publish, mark as processed, register failures) and holds the publisher instance that publish delegates are invoked with. It provides:
 
-    - JSON deserialization helpers,
     - exponential retry backoff,
     - retry scheduling,
-    - dead-letter handling after repeated or unrecoverable failures,
+    - dead-letter handling after repeated or unrecoverable failures (a message type with no registered publisher, a `JsonException`, or a `NotSupportedException`),
     - consistent structured logging.
 
-- `OutboxProcessorBase<TPublisher>`, which extends it with the per-message processing lifecycle (resolve publisher, publish, mark as processed, register failures) and holds the publisher instance that publish delegates are invoked with. The type parameter keeps the shared abstraction decoupled from any particular publisher type.
+    The type parameter keeps the shared abstraction decoupled from any particular publisher type.
+
+- `OutboxJson`, which deserializes an outbox payload with web defaults for publish delegates to use, and throws a `JsonException` (an unrecoverable failure) when a payload deserializes to `null`.
+
+- `IOutboxProcessor`, the `ProcessAsync` contract that each Publisher Lambda resolves and invokes.
 
 - `OutboxConstants`, which centralises shared processing configuration such as batch size, retry limits, retry delays, how long a claim on a message stays valid and how much of that claim is reserved as a safety margin.
 
-Relational services do not inherit from `OutboxProcessorBase<TPublisher>` directly. `Shared.Npgsql.NpgsqlOutboxProcessorBase<TPublisher>` sits between them and implements `IOutboxProcessor`, owning the drain loop: it claims a batch of due messages with a single statement — a `SELECT ... FOR UPDATE SKIP LOCKED` CTE feeding an `UPDATE ... RETURNING` that stamps a freshly generated claim identifier and a claim expiry, so a second invocation cannot take the same rows — and only then publishes each message and persists that message's outcome on its own. Publishing therefore never happens with a row lock or an open transaction held, and one message's failure cannot roll back the outcomes already recorded for the rest of the batch.
+---
+
+## `Shared.Npgsql`
+
+Everything that touches PostgreSQL or EF Core:
+
+- `AddDatabaseConnection<TDbContext>`, with one overload that reads `DbConnection:*` configuration and authenticates to RDS Proxy with IAM tokens, and another that takes a plain connection string for the tests. Both use snake_case naming and a per-schema `__EFMigrationsHistory` table, and can enable NodaTime.
+- `AddOutboxInterceptor` and `InsertOutboxMessagesInterceptor`, described below.
+- `NpgsqlOutboxProcessorBase<TPublisher>`, the outbox drain loop, also described below.
+- `ApplyOutboxConfiguration`, which maps `outbox_messages` and registers `DatabaseClock.UtcNow()` as PostgreSQL's built-in `now()`.
+- `ApplyMigrationsAsync`, which applies migrations at startup in the `Development` environment.
+
+### Writing to the outbox
+
+`InsertOutboxMessagesInterceptor` is an EF Core `SaveChangesInterceptor`. As a context saves, synchronously or asynchronously, the interceptor turns every domain event on every tracked `Entity` into an `OutboxMessage`, named after the event type and serialized as JSON. It skips any event whose id is already tracked as an outbox message. Those rows are inserted by the same `SaveChanges` call as the state change, so they commit or roll back together. After a successful save, the interceptor clears the entities' events.
+
+The interceptor is opt-in. `AddOutboxInterceptor` registers it, and `AddDatabaseConnection` attaches it to the `DbContext` only if it is registered. The API Lambdas are the only code paths that raise events, so they are the ones that call `AddDatabaseConnection(...).AddOutboxInterceptor()`.
+
+### Draining the outbox
+
+Relational services do not inherit from `OutboxProcessorBase<TPublisher>` directly. `NpgsqlOutboxProcessorBase<TPublisher>` sits between them and implements `IOutboxProcessor`, owning the drain loop: it claims a batch of due messages with a single statement — a `SELECT ... FOR UPDATE SKIP LOCKED` CTE feeding an `UPDATE ... RETURNING` that stamps a freshly generated claim identifier and a claim expiry, so a second invocation cannot take the same rows — and only then publishes each message and persists that message's outcome on its own. Publishing therefore never happens with a row lock or an open transaction held, and one message's failure cannot roll back the outcomes already recorded for the rest of the batch.
 
 The claim identifier gives the lease explicit ownership rather than leaving ownership implied by wall-clock timing, and PostgreSQL rather than the worker decides when that ownership begins and ends:
 
@@ -108,19 +154,44 @@ Concrete services implement their own processors by inheriting from that base, p
 
 ---
 
-## Validation helpers
+## `Shared.ServiceDefaults`
 
-The `Ensure` class centralizes guard clauses such as:
+`AddServiceDefaults()` is the host setup that every API, publisher, and message-handler Lambda calls; the migration Lambdas do not. It is generic over `IHostApplicationBuilder`, so it works on a `WebApplicationBuilder` and a plain `HostApplicationBuilder` alike. It configures:
 
-- NotEmpty(Guid)
-- NotNullOrEmpty(string)
-- ZeroOrGreater(decimal)
-
-It also uses `CallerArgumentExpression`, allowing exceptions to automatically include the caller's parameter name without manually specifying it.
+- OpenTelemetry logging, metrics, and tracing, with ASP.NET Core, `HttpClient`, runtime, AWS SDK, AWS.Messaging, and Lambda instrumentation, and a trace source named after the application. No exporter is registered; see Observability in the [top-level README](../../README.md#observability).
+- Service discovery.
+- The standard resilience handler on every `HttpClient` created through `IHttpClientFactory`.
 
 ---
 
-## Error handling
+## `Shared.HttpApiLambdaDefaults`
+
+The ASP.NET Core layer, used only by the API Lambdas. It references `Shared.ServiceDefaults`.
+
+### Host wiring
+
+`AddHttpApiLambdaDefaults(assembly)` calls `AddServiceDefaults`, then discovers the assembly's endpoints, hosts the app as a Lambda behind API Gateway with `AddAWSLambdaHosting(LambdaEventSource.HttpApi)`, and registers `GlobalExceptionHandler`, `ProblemDetails`, and OpenAPI. `UseDefaultPipeline()` adds the exception handler, the correlation-id middleware, and Serilog request logging. `MapDefaultEndpoints()` maps the discovered endpoints, plus the OpenAPI document in `Development`. Each API still configures its own environment-variable prefix and Serilog logger, so its `Program.cs` follows this shape (taken from Airports):
+
+```csharp
+var builder = WebApplication.CreateBuilder(args);
+var config = builder.Configuration;
+config.AddEnvironmentVariables(prefix: "AIRPORTS_");
+builder.Host.UseSerilog((context, loggerConfig) => loggerConfig.ReadFrom.Configuration(context.Configuration));
+builder.AddHttpApiLambdaDefaults(typeof(Program).Assembly);
+if (!builder.Environment.IsDevelopment())
+{
+    builder.Services.AddDatabaseConnection<ApplicationDbContext>(config, false, "airports").AddOutboxInterceptor();
+}
+// service-specific registrations
+var app = builder.Build().UseDefaultPipeline().MapDefaultEndpoints();
+if (app.Environment.IsDevelopment())
+{
+    await app.ApplyMigrationsAsync<ApplicationDbContext>();
+}
+await app.RunAsync();
+```
+
+### Error handling
 
 The library standardizes API error responses.
 
@@ -130,11 +201,11 @@ It includes:
 - `GlobalExceptionHandler`
 - `ProblemDetails` extension methods
 
-Validation, conflict, and not-found errors are mapped to RFC-compliant `ProblemDetails` responses with consistent titles and status codes, while unexpected exceptions are logged and returned as HTTP 500 responses.
+`ErrorHandlingHelper.GetProblemDetails` maps `ErrorOr` validation, not-found, and conflict errors to RFC-compliant `ProblemDetails` responses (`400`, `404`, and `409`) with consistent titles. `GlobalExceptionHandler` logs unexpected exceptions and returns them as HTTP 500 `application/problem+json` responses.
 
----
+Exception handlers run in registration order, so a service can handle a specific exception before `GlobalExceptionHandler` sees it by registering its own handler before calling `AddHttpApiLambdaDefaults`. Flights does this with `ConcurrencyExceptionHandler`, which turns a `DbUpdateConcurrencyException` into a `409 Conflict`.
 
-## Endpoint discovery
+### Endpoint discovery
 
 Instead of manually registering every Minimal API endpoint, the project defines:
 
@@ -150,21 +221,11 @@ Each feature implements this interface, and the extension methods automatically:
 
 This pattern helps to control the cleanliness of top-level code in Web API projects.
 
----
+### Validation extensions
 
-## HTTP testing helpers
+A small helper, `IsValid(out string formattedErrors)`, converts `FluentValidation` results into a newline-separated string of error messages, simplifying error reporting.
 
-The Shared Library provides useful extension methods for integration tests, including methods to deserialize ProblemDetails from an HttpResponseMessage and construct expected ProblemDetails for assertions based on HTTP status codes.
-
----
-
-## Validation extensions
-
-A small helper converts `FluentValidation` results into a formatted string of error messages, simplifying error reporting.
-
----
-
-## Logging middleware
+### Logging middleware
 
 `RequestContextLoggingMiddleware` adds a correlation ID to the Serilog logging context.
 
@@ -175,3 +236,13 @@ It:
 - enriches all logs for the request with that ID.
 
 This makes tracing requests across multiple services much easier.
+
+### HTTP testing helpers
+
+The project also provides extension methods for the functional tests: `ReadProblemDetailsAsync` deserializes `ProblemDetails` from an `HttpResponseMessage`, and `CreateExpectedProblemDetails` builds the expected `ProblemDetails` for a `400`, `404`, or `409` status code.
+
+---
+
+## `Shared.Messaging`
+
+`SqsBatchProcessor.ProcessAsync` is the batch loop shared by all six message-handler Lambdas. It passes each SQS record to the handler's per-message delegate in turn, catches and logs any exception, and returns an `SQSBatchResponse` listing only the failed message IDs. With `ReportBatchItemFailures` enabled on the event source mapping, which the `EventHandlerLambda` CDK construct does, Lambda retries those messages individually rather than the whole batch.

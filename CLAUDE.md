@@ -61,17 +61,22 @@ All three services share one **PostgreSQL** database, logically separated by per
 
 ### Shared libraries
 
-Cross-cutting code lives in four projects:
+Cross-cutting code is split across projects by dependency footprint, so each Lambda references only what it needs; `src/Shared/README.md` tours all of them in depth. Each Lambda's dockerfile in `docker/` `COPY`s exactly the projects it builds against, so **adding a project reference to a Lambda also means adding a matching `COPY` line to its dockerfile**.
 
-- **`src/Shared`** — contracts and framework-agnostic building blocks; read `src/Shared/README.md` for the full tour. Key pieces you will touch often:
+- **`src/Shared`** — dependency-free contracts and domain building blocks. Key pieces you will touch often:
     - **`Shared.Contracts`** — immutable record DTOs (`AircraftDto`, `ScheduleFlightDto`, …) and integration events (`AircraftCreatedEvent`, `FlightArrivedEvent`, …) implementing `IDomainEvent` / `IFlightStatusManagementEvent`. These records are the wire contract between services — changing one affects producer and consumer.
-    - **`IEndpoint`** — each Minimal API endpoint is a class implementing `MapEndpoint`; `AddEndpoints(assembly)` + `MapEndpoints()` discover and register them via reflection, so new endpoints need no manual registration.
+    - **`Entity`** — the aggregate base class that collects raised events (`AddDomainEvent`, `DomainEvents`, `ClearDomainEvents`).
     - **`Ensure`** — guard-clause helpers (`NotNullOrEmpty`, `ZeroOrGreater`, `GreaterThanZero`, …) using `CallerArgumentExpression`. Prefer these over hand-written argument checks.
-    - **Error handling** — endpoints return `ErrorOr`-based results mapped through `ErrorHandlingHelper.GetProblemDetails` and `GlobalExceptionHandler` into RFC-compliant `ProblemDetails`. Follow the existing endpoint pattern rather than throwing.
+- **`src/Shared.TransactionalOutbox`** — database- and publisher-agnostic outbox primitives: `OutboxMessage`, `OutboxConstants`, `OutboxJson`, `IOutboxProcessor`, and `OutboxProcessorBase<TPublisher>` (publish/retry/dead-letter policy).
+- **`src/Shared.Npgsql`** — builds on `Shared` and `Shared.TransactionalOutbox`: `AddDatabaseConnection<TDbContext>` (an IAM/RDS Proxy overload and a plain connection-string overload used by tests), `AddOutboxInterceptor` (registers `InsertOutboxMessagesInterceptor`, which `AddDatabaseConnection` attaches to the `DbContext` only if it is registered), `NpgsqlOutboxProcessorBase<TPublisher>` (claim → publish → record-outcome loop), `DatabaseClock`, and `ApplyMigrationsAsync`.
+- **`src/Shared.ServiceDefaults`** — `AddServiceDefaults()`, generic over `IHostApplicationBuilder`: OpenTelemetry logging, metrics, and tracing (ASP.NET Core, `HttpClient`, runtime, AWS SDK, AWS.Messaging, and Lambda instrumentation), service discovery, and standard `HttpClient` resilience. Every API, publisher, and message-handler Lambda calls it; the migration Lambdas do not.
+- **`src/Shared.HttpApiLambdaDefaults`** — the ASP.NET Core layer, referenced only by the three API Lambdas (and, through them, the functional tests). It references `Shared.ServiceDefaults`.
+    - **`AddHttpApiLambdaDefaults(assembly)`** — `AddServiceDefaults` plus endpoint discovery, `AddAWSLambdaHosting(LambdaEventSource.HttpApi)`, `GlobalExceptionHandler`, `ProblemDetails`, and OpenAPI. Pair it with `UseDefaultPipeline()` (exception handler, correlation-id middleware, Serilog request logging) and `MapDefaultEndpoints()` (the discovered endpoints, plus the OpenAPI document in `Development`).
+    - **`IEndpoint`** — each Minimal API endpoint is a class implementing `MapEndpoint`; `AddEndpoints(assembly)` + `MapEndpoints()` discover and register them via reflection, so new endpoints need no manual registration.
+    - **Error handling** — endpoints return `ErrorOr`-based results mapped through `ErrorHandlingHelper.GetProblemDetails` and `GlobalExceptionHandler` into RFC-compliant `ProblemDetails`. Follow the existing endpoint pattern rather than throwing. `IExceptionHandler`s run in registration order, so a service-specific handler registered before `AddHttpApiLambdaDefaults` runs ahead of `GlobalExceptionHandler` (Flights does this with `ConcurrencyExceptionHandler`).
     - **`RequestContextLoggingMiddleware`** — enriches Serilog logs with a correlation id (`X-Correlation-Id` header, else trace id).
-    - **Outbox primitives** — `Entity`, `OutboxMessage`, `OutboxConstants`, and `OutboxProcessorBase<TPublisher>` (publish/retry/dead-letter policy).
-- **`src/Shared.Npgsql`** — `AddDatabaseConnection<TDbContext>` (an IAM/RDS Proxy overload and a plain connection-string overload used by tests), `InsertOutboxMessagesInterceptor`, `NpgsqlOutboxProcessorBase<TPublisher>` (claim → publish → record-outcome loop), `DatabaseClock`, and `ApplyMigrationsAsync`.
-- **`src/AWS.Aspire.ServiceDefaults`** — host wiring for the API and message-handler Lambdas: `AddServiceDefaults` (OpenTelemetry, service discovery, `HttpClient` resilience), `AddHttpApiLambdaDefaults`, `UseDefaultPipeline` / `MapDefaultEndpoints`, and `SqsBatchProcessor`. The name is historical — there is no Aspire AppHost.
+    - **Test helpers** — `ReadProblemDetailsAsync` and `CreateExpectedProblemDetails`, which each `BaseFunctionalTest` uses for its `ProblemDetails` assertions.
+- **`src/Shared.Messaging`** — `SqsBatchProcessor`, the partial-batch-failure loop shared by the six message-handler Lambdas. Depends only on `Amazon.Lambda.Core` and `Amazon.Lambda.SQSEvents`.
 - **`src/Shared.AWS.CloudWatchLogs`** — helper used by the log-fetching scripts.
 
 ### Transactional outbox (all services)
@@ -79,7 +84,7 @@ Cross-cutting code lives in four projects:
 Events are **not** published inline. Instead:
 
 1. Domain models raise events into `Entity.DomainEvents` during a transaction.
-2. `InsertOutboxMessagesInterceptor` (an EF `SaveChangesInterceptor` registered in `AddDatabaseConnection`) serializes those events into `outbox_messages` in the **same transaction** as the state change, then clears them after save.
+2. `InsertOutboxMessagesInterceptor` (an EF `SaveChangesInterceptor`) serializes those events into `outbox_messages` in the **same transaction** as the state change, then clears them after save. It is opt-in: the API Lambdas, the only code paths that raise events, register it with `AddDatabaseConnection(...).AddOutboxInterceptor()`. Without that call, raised events are silently not persisted.
 3. The **Publisher Lambda** runs every minute. It claims due rows with a single statement (a `SELECT ... FOR UPDATE SKIP LOCKED` CTE feeding an `UPDATE ... RETURNING` that stamps `claim_id` + `claimed_until_utc`), then publishes to SNS via the `AWS.Messaging` bus, recording each message's outcome individually with exponential-backoff retries and dead-lettering. The loop is shared (`NpgsqlOutboxProcessorBase` + `OutboxProcessorBase`); the base also owns the claim SQL, so each service's `OutboxProcessor` supplies only its schema name and `s_publishers` registry. Lease timing belongs to PostgreSQL: the expiry is stamped as `now() + OutboxConstants.ClaimDuration` and every check of it compares against `now()` (written in LINQ as `DatabaseClock.UtcNow()`), so clock skew between invocations cannot lengthen, shorten, or misjudge a lease. Claims expire after `ClaimDuration` so messages are not stranded when an invocation dies mid-batch. Each outcome is written by a single `UPDATE` conditioned on both the claim id and an unexpired `claimed_until_utc`, so an invocation that overran its lease cannot write state it no longer owns; if that `UPDATE` matches no rows, or fails outright, the worker abandons the rest of the claim rather than publishing messages whose outcomes it may equally be unable to record. The loop also stops publishing once the time elapsed since it claimed is within `OutboxConstants.ClaimSafetyMargin` of `ClaimDuration` — a local optimisation only, since ownership is decided in the database.
 
 When adding a new published event: raise it from the domain model, register a publisher for it in that service's `OutboxProcessor.s_publishers` dictionary **and** its Publisher Lambda's `AddAWSMessageBus` configuration (Flights keeps this in `AwsMessageBusInstaller.cs`), then provision the SNS topic in `MessagingResources`, pass its ARN as `SNS:<EventName>TopicArn`, and add it to the `PublisherLambda` construct's `Topics`. Missing registration dead-letters the message.
@@ -90,7 +95,7 @@ Delivery is at-least-once and unordered, so every consumer must be idempotent. H
 
 - **Flights** maintains its aircraft/airport read models with atomic upserts: aircraft are inserted with `ON CONFLICT DO NOTHING`; airport snapshots apply only when their aggregate `Version` is newer than the stored one.
 - **Aircraft** uses a transactional inbox: `AircraftFlightStatusProcessor` inserts the event id into `inbox_messages` in the same transaction as the aircraft update and returns `Applied`, `Stale` (event `OccurredAt` ≤ aircraft `UpdatedAt`; inbox row still committed), or `Duplicate`. The flight status events (`FlightArrived`, `FlightMarkedAsEnRoute`, `FlightMarkedAsDelayedEnRoute`) carry `OccurredAt` for this.
-- **Optimistic concurrency**: Airports uses an application-managed `Version` concurrency token; `Flight` and `Aircraft` use PostgreSQL's `xmin` as an EF row version. Flights' `PATCH` endpoints catch `DbUpdateConcurrencyException` and return `409 Conflict`; `AircraftFlightStatusProcessor` rolls back, reloads, and retries (up to 3 attempts).
+- **Optimistic concurrency**: Airports uses an application-managed `Version` concurrency token; `Flight` and `Aircraft` use PostgreSQL's `xmin` as an EF row version. in Flights, a `DbUpdateConcurrencyException` from a `PATCH` endpoint propagates to `ConcurrencyExceptionHandler`, which returns `409 Conflict`; `AircraftFlightStatusProcessor` rolls back, reloads, and retries (up to 3 attempts).
 
 ### Database access
 
@@ -106,7 +111,7 @@ dotnet ef migrations add <Name> --project src/Aircraft.Infrastructure --startup-
 
 ### Configuration
 
-Each service reads environment variables under a **service-specific prefix**: `AIRCRAFT_`, `FLIGHTS_`, `AIRPORTS_` (e.g. `AIRCRAFT_DbConnection__Host`). Keys: `DbConnection:{Host,Database,Username,Port}`, `SNS:<EventName>TopicArn` (publishers), and `S3:BucketName` (Aircraft API). Outbox tuning (batch size, retry attempts and delays, claim duration, safety margin) is **not** runtime-configurable — it lives in `OutboxConstants` in `src/Shared`.
+Each service reads environment variables under a **service-specific prefix**: `AIRCRAFT_`, `FLIGHTS_`, `AIRPORTS_` (e.g. `AIRCRAFT_DbConnection__Host`). Keys: `DbConnection:{Host,Database,Username,Port}`, `SNS:<EventName>TopicArn` (publishers), and `S3:BucketName` (Aircraft API). Outbox tuning (batch size, retry attempts and delays, claim duration, safety margin) is **not** runtime-configurable — it lives in `OutboxConstants` in `src/Shared.TransactionalOutbox`.
 
 ## Local development
 

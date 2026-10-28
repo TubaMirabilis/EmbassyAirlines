@@ -102,30 +102,53 @@ Splitting message handlers one-per-event means each consumer scales, fails, retr
 
 ### Shared libraries
 
-Four projects hold the cross-cutting code every service depends on.
+Seven projects hold the cross-cutting code. They are split by **dependency footprint**, so that each Lambda builds against only what it uses: a migration Lambda takes neither the HTTP pipeline nor the OpenTelemetry defaults, and a message handler takes the OpenTelemetry defaults but not the HTTP pipeline.
 
-**`src/Shared`** — contracts and framework-agnostic building blocks. See [`src/Shared/README.md`](src/Shared/README.md) for the full tour. The pieces you touch most often:
+| Lambda kind     | Shared projects it builds against                                                                                 |
+| --------------- | ----------------------------------------------------------------------------------------------------------------- |
+| API             | `Shared`, `Shared.TransactionalOutbox`, `Shared.Npgsql`, `Shared.ServiceDefaults`, `Shared.HttpApiLambdaDefaults` |
+| Publisher       | `Shared`, `Shared.TransactionalOutbox`, `Shared.Npgsql`, `Shared.ServiceDefaults`                                 |
+| Message handler | `Shared`, `Shared.TransactionalOutbox`, `Shared.Npgsql`, `Shared.ServiceDefaults`, `Shared.Messaging`             |
+| Migrations      | `Shared`, `Shared.TransactionalOutbox`, `Shared.Npgsql`                                                           |
+
+Each Lambda's dockerfile in `docker/` copies exactly those project directories before `dotnet restore`, so a new project reference also needs a matching `COPY` line there.
+
+The summaries below cover what you will touch most often. [`src/Shared/README.md`](src/Shared/README.md) tours every one of these projects in depth.
+
+**`src/Shared`** — dependency-free contracts and domain building blocks. The pieces you touch most often:
 
 - **`Shared.Contracts`** — immutable record DTOs (`AircraftDto`, `ScheduleFlightDto`, …) and integration events (`AircraftCreatedEvent`, `FlightArrivedEvent`, …) implementing `IDomainEvent` / `IFlightStatusManagementEvent`. **These records are the wire contract between services** — changing one affects both producer and consumer, and they deploy independently.
-- **`IEndpoint`** — every Minimal API endpoint is a class implementing `MapEndpoint`. `AddEndpoints(assembly)` + `MapEndpoints()` discover and register them by reflection, so a new endpoint needs no manual registration.
+- **`Entity`** — the aggregate base class that collects raised domain events (`AddDomainEvent`, `DomainEvents`, `ClearDomainEvents`).
 - **`Ensure`** — guard-clause helpers (`NotNullOrEmpty`, `GreaterThanZero`, …) using `CallerArgumentExpression`, so the failing parameter name comes for free. Prefer these over hand-written argument checks.
-- **Error handling** — endpoints return `ErrorOr`-based errors mapped through `ErrorHandlingHelper.GetProblemDetails`; `GlobalExceptionHandler` catches the rest. Everything surfaces as RFC-compliant `ProblemDetails`. Follow the existing endpoint pattern rather than throwing.
-- **`RequestContextLoggingMiddleware`** — enriches Serilog logs with a correlation id from the `X-Correlation-Id` header, falling back to the trace id.
-- **Outbox primitives** — `Entity` (the domain-event list), `OutboxMessage`, `OutboxConstants`, and `OutboxProcessorBase<TPublisher>`, which owns the publish/retry/dead-letter policy.
 
-**`src/Shared.Npgsql`** — everything that touches PostgreSQL or EF Core:
+**`src/Shared.TransactionalOutbox`** — the outbox primitives, with no knowledge of the database or the message bus:
+
+- **`OutboxMessage`** — the persisted outbox row: payload, type, retry metadata, processed and dead-lettered timestamps, and the claim id and expiry.
+- **`OutboxProcessorBase<TPublisher>`** — owns the publish/retry/dead-letter policy and the per-message lifecycle. The type parameter keeps it independent of any particular publisher.
+- **`IOutboxProcessor`**, **`OutboxJson`**, and **`OutboxConstants`** — the processor contract the Publisher Lambdas resolve, the payload deserialiser, and the [outbox tuning constants](#configuration).
+
+**`src/Shared.Npgsql`** — everything that touches PostgreSQL or EF Core. It builds on `Shared` and `Shared.TransactionalOutbox`:
 
 - **`AddDatabaseConnection<TDbContext>`** — two overloads: one reads `DbConnection:*` configuration and authenticates to RDS Proxy with IAM tokens; the other takes a plain connection string and is what the tests use.
-- **`InsertOutboxMessagesInterceptor`** — writes raised domain events into `outbox_messages` inside the same `SaveChanges` call.
+- **`AddOutboxInterceptor`** and **`InsertOutboxMessagesInterceptor`** — the interceptor writes raised domain events into `outbox_messages` inside the same `SaveChanges` call. It is opt-in: `AddOutboxInterceptor` registers it, and `AddDatabaseConnection` attaches it to the `DbContext` only if it is registered.
 - **`NpgsqlOutboxProcessorBase<TPublisher>`** — the claim → publish → record-outcome loop described in [The transactional outbox](#the-transactional-outbox).
 - **`ApplyOutboxConfiguration`**, **`DatabaseClock`**, and **`ApplyMigrationsAsync`** — the outbox table mapping, a LINQ handle on PostgreSQL's `now()`, and startup migrations for the `Development` environment.
 
-**`src/AWS.Aspire.ServiceDefaults`** — host wiring shared by the API and message-handler Lambdas. The name is historical: no Aspire AppHost uses it any more.
+**`src/Shared.ServiceDefaults`** — **`AddServiceDefaults()`**, the host defaults every API, publisher, and message-handler Lambda calls. It is generic over `IHostApplicationBuilder`, so it works on a `WebApplicationBuilder` and a plain `HostApplicationBuilder` alike. It configures:
 
-- **`AddServiceDefaults`** — OpenTelemetry tracing and metrics (ASP.NET Core, `HttpClient`, runtime, AWS SDK, AWS.Messaging, and Lambda instrumentation), service discovery, and standard `HttpClient` resilience.
-- **`AddHttpApiLambdaDefaults`** — `AddServiceDefaults` plus endpoint discovery, Lambda HTTP API hosting, `GlobalExceptionHandler`, `ProblemDetails`, and OpenAPI.
+- OpenTelemetry logging, metrics, and tracing, with ASP.NET Core, `HttpClient`, runtime, AWS SDK, AWS.Messaging, and Lambda instrumentation. See [Observability](#observability) for where that telemetry does and does not go.
+- Service discovery, and the standard resilience handler on every `HttpClient` created through `IHttpClientFactory`.
+
+**`src/Shared.HttpApiLambdaDefaults`** — the ASP.NET Core layer, referenced only by the three API Lambdas. It references `Shared.ServiceDefaults`.
+
+- **`AddHttpApiLambdaDefaults(assembly)`** — `AddServiceDefaults` plus endpoint discovery, `AddAWSLambdaHosting(LambdaEventSource.HttpApi)`, `GlobalExceptionHandler`, `ProblemDetails`, and OpenAPI.
 - **`UseDefaultPipeline`** / **`MapDefaultEndpoints`** — exception handler, correlation-id middleware, and Serilog request logging; then the discovered endpoints, plus the OpenAPI document in `Development`.
-- **`SqsBatchProcessor`** — shared SQS batch-processing helper used by all six message-handler Lambdas. Processes messages sequentially, catches and logs individual failures, and returns an `SQSBatchResponse` containing the failed message IDs for partial batch retry handling.
+- **`IEndpoint`** — every Minimal API endpoint is a class implementing `MapEndpoint`. `AddEndpoints(assembly)` + `MapEndpoints()` discover and register them by reflection, so a new endpoint needs no manual registration.
+- **Error handling** — endpoints return `ErrorOr`-based errors mapped through `ErrorHandlingHelper.GetProblemDetails`; `GlobalExceptionHandler` catches the rest. Everything surfaces as RFC-compliant `ProblemDetails`. Follow the existing endpoint pattern rather than throwing. Exception handlers run in registration order, so a service can register its own ahead of `GlobalExceptionHandler`, as Flights does with `ConcurrencyExceptionHandler`.
+- **`RequestContextLoggingMiddleware`** — enriches Serilog logs with a correlation id from the `X-Correlation-Id` header, falling back to the trace id.
+- **Test helpers** — `ReadProblemDetailsAsync` and `CreateExpectedProblemDetails`, which the functional tests use to assert on error responses.
+
+**`src/Shared.Messaging`** — **`SqsBatchProcessor`**, the SQS batch-processing helper used by all six message-handler Lambdas. It processes messages sequentially, catches and logs individual failures, and returns an `SQSBatchResponse` containing the failed message IDs for partial batch retry handling. It depends only on `Amazon.Lambda.Core` and `Amazon.Lambda.SQSEvents`.
 
 **`src/Shared.AWS.CloudWatchLogs`** — a small helper used by the log-fetching scripts in `scripts/`.
 
@@ -166,7 +189,7 @@ It keeps **local read-model copies** of aircraft and airports, populated by the 
 
 Times are modelled with **NodaTime**: `LocalDateTime` for the scheduled wall-clock times, resolved to `ZonedDateTime`/`Instant` through the airport's IANA time zone.
 
-The `Flight` aggregate uses optimistic concurrency through PostgreSQL's `xmin` system column, mapped as an EF Core row version. If two requests modify the same flight concurrently, the slower one fails to save and its `PATCH` returns `409 Conflict` instead of silently overwriting the other. Its outbox event is not persisted either.
+The `Flight` aggregate uses optimistic concurrency through PostgreSQL's `xmin` system column, mapped as an EF Core row version. If two requests modify the same flight concurrently, the slower one fails to save with a `DbUpdateConcurrencyException`. The endpoints let it propagate to `ConcurrencyExceptionHandler`, which the Flights API registers ahead of `GlobalExceptionHandler`, and which turns it into a `409 Conflict` instead of silently overwriting the other change. The losing request's outbox event is not persisted either.
 
 - Publishes: `FlightScheduled`, `AircraftAssignedToFlight`, `FlightPricingAdjusted`, `FlightRescheduled`, `FlightCancelled`, `FlightDelayed`, `FlightArrived`, `FlightMarkedAsEnRoute`, `FlightMarkedAsDelayedEnRoute`
 - Consumes: `AircraftCreated`, `AirportCreated`, `AirportUpdated`
@@ -205,7 +228,7 @@ Events published without a consumer today (`FlightScheduled`, `FlightCancelled`,
 No service publishes from a request handler. Instead:
 
 1. Domain models raise events into `Entity.DomainEvents` during a unit of work.
-2. `InsertOutboxMessagesInterceptor` — an EF `SaveChangesInterceptor` registered by `AddDatabaseConnection` — serialises those events into `outbox_messages` **in the same transaction as the state change**, then clears them after save.
+2. `InsertOutboxMessagesInterceptor` — an EF `SaveChangesInterceptor` — serialises those events into `outbox_messages` **in the same transaction as the state change**, then clears them after save. The interceptor is opt-in: each API Lambda registers it with `AddDatabaseConnection(...).AddOutboxInterceptor()`. The API Lambdas are the only code paths that raise events, so the publisher, message-handler, and migration Lambdas leave it out.
 3. Each service's **Publisher Lambda** runs every minute. It claims due rows with a single statement — a `SELECT … FOR UPDATE SKIP LOCKED` CTE feeding an `UPDATE … RETURNING` that stamps a claim id and a claim expiry — and only then publishes them to SNS via the `AWS.Messaging` bus, recording each message's outcome on its own.
 
 The shared loop lives in `NpgsqlOutboxProcessorBase<TPublisher>` (claiming with schema-qualified SQL, leasing, recording outcomes) and `OutboxProcessorBase<TPublisher>` (publishing, retries, dead-lettering). Each service's `OutboxProcessor` supplies only its schema name (validated and quoted by the base before it is embedded in the claim SQL) and its `s_publishers` registry.
@@ -325,10 +348,13 @@ Each successful transition raises a matching event via `FlightStatusEventFactory
 
 ```
 ├── src/
-│   ├── Shared/                                  # Contracts, endpoints, guards, error handling, outbox primitives
+│   ├── Shared/                                  # Contracts, domain-event base entity, guards
+│   ├── Shared.TransactionalOutbox/              # Outbox message, constants, publish/retry/dead-letter base
 │   ├── Shared.Npgsql/                           # PostgreSQL/EF Core wiring, outbox interceptor and drain loop
+│   ├── Shared.ServiceDefaults/                  # AddServiceDefaults: OpenTelemetry, service discovery, resilience
+│   ├── Shared.HttpApiLambdaDefaults/            # HTTP API Lambda hosting, endpoints, error handling, middleware
+│   ├── Shared.Messaging/                        # SqsBatchProcessor for the message-handler Lambdas
 │   ├── Shared.AWS.CloudWatchLogs/               # Log-fetching helper used by scripts/
-│   ├── AWS.Aspire.ServiceDefaults/              # OpenTelemetry + HTTP API Lambda host defaults
 │   ├── Airports.Core|Infrastructure|Api.Lambda/
 │   ├── Airports.Publisher.Lambda|Migrations.Lambda/
 │   ├── Aircraft.Core|Infrastructure|Api.Lambda/
@@ -448,7 +474,7 @@ Each service reads environment variables under a **service-specific prefix**: `A
 | `SNS:<EventName>TopicArn`                    | Publisher Lambdas         | Target topic per event type                   |
 | `S3:BucketName`                              | Aircraft API              | Seat-layout bucket                            |
 
-Outbox tuning is **not** configurable at runtime. It lives in `OutboxConstants` in `src/Shared`:
+Outbox tuning is **not** configurable at runtime. It lives in `OutboxConstants` in `src/Shared.TransactionalOutbox`:
 
 | Constant            | Value      | Meaning                                               |
 | ------------------- | ---------- | ----------------------------------------------------- |
@@ -513,7 +539,7 @@ Every Lambda is a Docker image built from a dockerfile in `docker/`, has 1,536 M
 ## Observability
 
 - **Structured logging** via Serilog. The API Lambdas write compact JSON to the console (and so to CloudWatch), with a correlation id attached by `RequestContextLoggingMiddleware` (`X-Correlation-Id`, falling back to the trace id) so a request can be followed across services.
-- **Tracing.** Every Lambda has **AWS X-Ray active tracing** enabled in CDK, which is what produces the traces visible in X-Ray today. Separately, `AddServiceDefaults` wires up OpenTelemetry instrumentation, and message handlers wrap their invocation in `AWSLambdaWrapper.TraceAsync` and tag spans with domain identifiers (`flight.id`, `airport.icao_code`, …). No OpenTelemetry exporter is registered, though, so those in-process spans and metrics are not currently shipped anywhere — see [Deliberate trade-offs](#deliberate-trade-offs).
+- **Tracing.** Every Lambda has **AWS X-Ray active tracing** enabled in CDK, which is what produces the traces visible in X-Ray today. Separately, `AddServiceDefaults` (in `Shared.ServiceDefaults`) wires up OpenTelemetry instrumentation in every API, publisher, and message-handler Lambda, and message handlers wrap their invocation in `AWSLambdaWrapper.TraceAsync` and tag spans with domain identifiers (`flight.id`, `airport.icao_code`, …). No OpenTelemetry exporter is registered, though, so those in-process spans and metrics are not currently shipped anywhere — see [Deliberate trade-offs](#deliberate-trade-offs).
 - **Log retrieval.** `scripts/Get*Logs.cs` are file-based C# apps (using the `#:project` directive) that print recent CloudWatch logs for each service's **API** Lambda. They require AWS credentials:
 
     ```bash
@@ -580,7 +606,7 @@ Choices made for a demonstration project that would differ in production:
 
 **Adding a published event.** Add the event record to `Shared.Contracts`, then follow every step in [The transactional outbox](#the-transactional-outbox): raise it from the domain model, register it in `OutboxProcessor.s_publishers` and the Publisher Lambda's `AddAWSMessageBus`, and provision and grant the SNS topic in CDK.
 
-**Adding a consumer.** Create a new `X.Api.Lambda.MessageHandlers.<EventName>` project with its own `Function` class and `HostApplicationBuilder`, add it to `EmbassyAirlines.slnx`, add a matching dockerfile in `docker/`, and wire an `EventHandlerLambda` construct in the service's CDK construct to create the queue, DLQ, and SNS subscription. Make the dependency on the service's migration explicit, as the existing handlers do. Remember that the payload sits at `Message` → `data` in the SNS-over-SQS envelope, and that delivery is at-least-once. Use `SqsBatchProcessor.ProcessAsync` inside `AWSLambdaWrapper.TraceAsync` and return `Task<SQSBatchResponse>` from the Lambda handler. Ensure the SQS event source mapping enables `ReportBatchItemFailures` so failed messages can be retried individually.
+**Adding a consumer.** Create a new `X.Api.Lambda.MessageHandlers.<EventName>` project with its own `Function` class and `HostApplicationBuilder`, referencing the service's `X.Infrastructure` plus `Shared.Messaging` and `Shared.ServiceDefaults`, and calling `AddServiceDefaults()` on the builder. Add it to `EmbassyAirlines.slnx`, add a matching dockerfile in `docker/` that copies each of those projects, and wire an `EventHandlerLambda` construct in the service's CDK construct to create the queue, DLQ, and SNS subscription. Make the dependency on the service's migration explicit, as the existing handlers do. Remember that the payload sits at `Message` → `data` in the SNS-over-SQS envelope, and that delivery is at-least-once. Use `SqsBatchProcessor.ProcessAsync` inside `AWSLambdaWrapper.TraceAsync` and return `Task<SQSBatchResponse>` from the Lambda handler. Ensure the SQS event source mapping enables `ReportBatchItemFailures` so failed messages can be retried individually.
 
 **Changing a schema.** Change the model in `X.Core` / `X.Infrastructure`, add a migration with `dotnet ef` (see [Database and migrations](#database-and-migrations)), and deploy. The Migrations Lambda applies it before the dependent Lambdas are updated.
 
