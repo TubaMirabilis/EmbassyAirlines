@@ -59,11 +59,5 @@ internal sealed class AdjustFlightPricingEndpoint : IEndpoint
             var error = Error.Validation("Flight.InvalidPricing", ex.Message);
             return TypedResults.Problem(ErrorHandlingHelper.GetProblemDetails(error));
         }
-        catch (DbUpdateConcurrencyException ex)
-        {
-            logger.LogWarning(ex, "Concurrency conflict while adjusting pricing for flight {FlightId}", id);
-            var error = Error.Conflict("Flight.ConcurrencyConflict", "The flight was modified by another request. Please retrieve its latest state and try again.");
-            return TypedResults.Problem(ErrorHandlingHelper.GetProblemDetails(error));
-        }
     }
 }

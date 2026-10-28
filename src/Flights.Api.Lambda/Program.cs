@@ -11,9 +11,10 @@ var builder = WebApplication.CreateBuilder(args);
 var config = builder.Configuration;
 config.AddEnvironmentVariables(prefix: "FLIGHTS_");
 builder.Host.UseSerilog((context, loggerConfig) => loggerConfig.ReadFrom.Configuration(context.Configuration));
+var services = builder.Services;
+services.AddExceptionHandler<ConcurrencyExceptionHandler>();
 var assembly = typeof(Program).Assembly;
 builder.AddHttpApiLambdaDefaults(assembly);
-var services = builder.Services;
 if (!builder.Environment.IsDevelopment())
 {
     services.AddDatabaseConnection<ApplicationDbContext>(config, true, "flights").AddOutboxInterceptor();

@@ -58,11 +58,5 @@ internal sealed class AdjustFlightStatusEndpoint : IEndpoint
             var error = Error.Validation("Flight.InvalidStatusTransition", ex.Message);
             return TypedResults.Problem(ErrorHandlingHelper.GetProblemDetails(error));
         }
-        catch (DbUpdateConcurrencyException ex)
-        {
-            logger.LogWarning(ex, "Concurrency conflict while adjusting status for flight {FlightId}", id);
-            var error = Error.Conflict("Flight.ConcurrencyConflict", "The flight was modified by another request. Please retrieve its latest state and try again.");
-            return TypedResults.Problem(ErrorHandlingHelper.GetProblemDetails(error));
-        }
     }
 }

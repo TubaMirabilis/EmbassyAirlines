@@ -15,7 +15,7 @@ namespace Flights.Api.Lambda.FunctionalTests;
 
 public sealed class FlightConcurrencyFunctionalTests : IClassFixture<ConcurrencyFunctionalTestWebAppFactory>
 {
-    private const string ConcurrencyConflictDetail = "The flight was modified by another request. Please retrieve its latest state and try again.";
+    private const string ConcurrencyConflictDetail = "The resource has changed or is no longer available. Refresh its state before retrying the operation.";
     private static readonly DateTimeZone _incheonTimeZone = DateTimeZoneProviders.Tzdb["Asia/Seoul"];
     private static readonly DateTimeZone _schipholTimeZone = DateTimeZoneProviders.Tzdb["Europe/Amsterdam"];
     private static readonly Duration _flightDuration = Duration.FromHours(10) + Duration.FromMinutes(30);

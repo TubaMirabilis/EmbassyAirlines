@@ -72,11 +72,5 @@ internal sealed class RescheduleFlightEndpoint : IEndpoint
             var error = Error.Validation("Flight.ReschedulingFailed", ex.Message);
             return TypedResults.Problem(ErrorHandlingHelper.GetProblemDetails(error));
         }
-        catch (DbUpdateConcurrencyException ex)
-        {
-            logger.LogWarning(ex, "Concurrency conflict while rescheduling flight {FlightId}", id);
-            var error = Error.Conflict("Flight.ConcurrencyConflict", "The flight was modified by another request. Please retrieve its latest state and try again.");
-            return TypedResults.Problem(ErrorHandlingHelper.GetProblemDetails(error));
-        }
     }
 }

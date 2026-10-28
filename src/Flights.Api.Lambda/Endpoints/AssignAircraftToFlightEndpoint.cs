@@ -43,20 +43,11 @@ internal sealed class AssignAircraftToFlightEndpoint : IEndpoint
             return TypedResults.Problem(ErrorHandlingHelper.GetProblemDetails(error));
         }
         flight.AssignAircraft(aircraft, clock.GetCurrentInstant());
-        try
+        await ctx.SaveChangesAsync(ct);
+        if (logger.IsEnabled(LogLevel.Information))
         {
-            await ctx.SaveChangesAsync(ct);
-            if (logger.IsEnabled(LogLevel.Information))
-            {
-                logger.LogInformation("Assigned aircraft {AircraftId} to flight {FlightId}", aircraft.Id, flight.Id);
-            }
-            return TypedResults.Ok(flight.ToDto());
+            logger.LogInformation("Assigned aircraft {AircraftId} to flight {FlightId}", aircraft.Id, flight.Id);
         }
-        catch (DbUpdateConcurrencyException ex)
-        {
-            logger.LogWarning(ex, "Concurrency conflict while assigning aircraft {AircraftId} to flight {FlightId}", aircraft.Id, flight.Id);
-            var error = Error.Conflict("Flight.ConcurrencyConflict", "The flight was modified by another request. Please retrieve its latest state and try again.");
-            return TypedResults.Problem(ErrorHandlingHelper.GetProblemDetails(error));
-        }
+        return TypedResults.Ok(flight.ToDto());
     }
 }
