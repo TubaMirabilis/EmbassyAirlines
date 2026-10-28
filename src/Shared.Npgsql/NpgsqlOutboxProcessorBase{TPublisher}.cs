@@ -8,7 +8,13 @@ namespace Shared.Npgsql;
 
 public abstract class NpgsqlOutboxProcessorBase<TPublisher> : OutboxProcessorBase<TPublisher>, IOutboxProcessor
 {
-    protected NpgsqlOutboxProcessorBase(DbContext dbContext, TPublisher publisher, ILogger logger) : base(publisher, logger) => DbContext = dbContext;
+    private const int MaxIdentifierLength = 63;
+    private readonly string _claimEligibleMessagesSql;
+    protected NpgsqlOutboxProcessorBase(DbContext dbContext, string schema, TPublisher publisher, ILogger logger) : base(publisher, logger)
+    {
+        DbContext = dbContext;
+        _claimEligibleMessagesSql = CreateClaimEligibleMessagesSql(QuoteSchema(schema));
+    }
     protected DbContext DbContext { get; }
     public async Task<int> ProcessAsync(CancellationToken cancellationToken = default)
     {
@@ -21,7 +27,40 @@ public abstract class NpgsqlOutboxProcessorBase<TPublisher> : OutboxProcessorBas
         LogBatchResult(result.PublishedCount, result.AttemptedCount);
         return result.PublishedCount;
     }
-    protected abstract Task<List<OutboxMessage>> ClaimEligibleMessagesAsync(Guid claimId, CancellationToken cancellationToken);
+    private static string QuoteSchema(string schema)
+    {
+        Ensure.NotNullOrEmpty(schema);
+        if (schema.Length > MaxIdentifierLength
+            || char.IsAsciiDigit(schema[0])
+            || !schema.All(static c => char.IsAsciiLetterOrDigit(c) || c == '_'))
+        {
+            throw new ArgumentException($"Schema name '{schema}' must be at most {MaxIdentifierLength} characters, start with an ASCII letter or underscore, and contain only ASCII letters, digits, and underscores.", nameof(schema));
+        }
+        return $"\"{schema}\"";
+    }
+    // Identifiers cannot be bound as parameters, so the validated, quoted schema is embedded in the SQL;
+    // {0}..{2} remain placeholders that FromSqlRaw binds as parameters.
+    private static string CreateClaimEligibleMessagesSql(string quotedSchema) =>
+    $$"""
+        WITH due AS (
+            SELECT id FROM {{quotedSchema}}.outbox_messages
+            WHERE processed_on_utc IS NULL
+            AND dead_lettered_on_utc IS NULL
+            AND (claimed_until_utc IS NULL OR claimed_until_utc <= now())
+            AND (next_attempt_on_utc IS NULL OR next_attempt_on_utc <= now())
+            ORDER BY created_on_utc, id
+            LIMIT {0}
+            FOR UPDATE SKIP LOCKED
+        )
+        UPDATE {{quotedSchema}}.outbox_messages AS m
+        SET claim_id = {1}, claimed_until_utc = now() + {2}
+        FROM due
+        WHERE m.id = due.id
+        RETURNING m.*
+    """;
+    private Task<List<OutboxMessage>> ClaimEligibleMessagesAsync(Guid claimId, CancellationToken cancellationToken) => DbContext.Set<OutboxMessage>()
+        .FromSqlRaw(_claimEligibleMessagesSql, OutboxConstants.BatchSize, claimId, OutboxConstants.ClaimDuration)
+        .ToListAsync(cancellationToken);
     private async Task<ClaimedBatch?> ClaimBatchAsync(CancellationToken cancellationToken)
     {
         var claimId = Guid.CreateVersion7();

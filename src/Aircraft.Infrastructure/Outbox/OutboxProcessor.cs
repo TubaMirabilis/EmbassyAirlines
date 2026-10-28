@@ -1,6 +1,5 @@
 using Aircraft.Infrastructure.Database;
 using AWS.Messaging;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Shared.Contracts;
 using Shared.Npgsql;
@@ -17,27 +16,9 @@ public sealed class OutboxProcessor : NpgsqlOutboxProcessorBase<IMessagePublishe
         };
     public OutboxProcessor(ApplicationDbContext dbContext,
                            IMessagePublisher publisher,
-                           ILogger<OutboxProcessor> logger) : base(dbContext, publisher, logger)
+                           ILogger<OutboxProcessor> logger) : base(dbContext, "aircraft", publisher, logger)
     {
     }
-    protected override Task<List<OutboxMessage>> ClaimEligibleMessagesAsync(Guid claimId, CancellationToken cancellationToken) => DbContext.Set<OutboxMessage>().FromSql(
-    $"""
-        WITH due AS (
-            SELECT id FROM aircraft.outbox_messages
-            WHERE processed_on_utc IS NULL
-            AND dead_lettered_on_utc IS NULL
-            AND (claimed_until_utc IS NULL OR claimed_until_utc <= now())
-            AND (next_attempt_on_utc IS NULL OR next_attempt_on_utc <= now())
-            ORDER BY created_on_utc
-            LIMIT {OutboxConstants.BatchSize}
-            FOR UPDATE SKIP LOCKED
-        )
-        UPDATE aircraft.outbox_messages AS m
-        SET claim_id = {claimId}, claimed_until_utc = now() + {OutboxConstants.ClaimDuration}
-        FROM due
-        WHERE m.id = due.id
-        RETURNING m.*
-    """).ToListAsync(cancellationToken);
     protected override Func<IMessagePublisher, string, CancellationToken, Task>? ResolvePublisher(string messageName)
         => s_publishers.GetValueOrDefault(messageName);
 }
