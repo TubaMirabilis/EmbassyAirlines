@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Text.Json;
+using Aircraft.Core.Models;
 using Aircraft.Infrastructure;
 using Aircraft.Infrastructure.Database;
 using Amazon.Lambda.Core;
@@ -31,7 +32,8 @@ public class Function
         builder.AddServiceDefaults();
         builder.Services.AddLogging();
         builder.Services.AddDatabaseConnection<ApplicationDbContext>(config, false, "aircraft");
-        builder.Services.AddScoped<AircraftFlightStatusProcessor>();
+        builder.Services.AddSingleton(TimeProvider.System);
+        builder.Services.AddScoped<FlightArrivalNotificationProcessor>();
         _host = builder.Build();
         _traceProvider = _host.Services.GetRequiredService<TracerProvider>();
     }
@@ -60,12 +62,9 @@ public class Function
             flightArrivedEvent.ArrivalAirportIcaoCode,
             flightArrivedEvent.Id);
         using var scope = _host.Services.CreateScope();
-        var processor = scope.ServiceProvider.GetRequiredService<AircraftFlightStatusProcessor>();
-        var result = await processor.ProcessAsync(flightArrivedEvent.Id, flightArrivedEvent.AircraftId, Core.Models.Status.Parked, flightArrivedEvent.ArrivalAirportIcaoCode, flightArrivedEvent.OccurredAt);
-        context.Logger.LogInformation(
-            "FlightArrivedEvent {EventId} for aircraft {AircraftId} completed with outcome {Outcome}",
-            flightArrivedEvent.Id,
-            flightArrivedEvent.AircraftId,
-            result);
+        var processor = scope.ServiceProvider.GetRequiredService<FlightArrivalNotificationProcessor>();
+        var milestones = new FlightMilestones(flightArrivedEvent.OffBlockAt, flightArrivedEvent.TakeOffAt, flightArrivedEvent.LandingAt, flightArrivedEvent.OnBlockAt);
+        var result = await processor.ProcessAsync(flightArrivedEvent.Id, flightArrivedEvent.AircraftId, flightArrivedEvent.FlightId, flightArrivedEvent.DepartureAirportIcaoCode, flightArrivedEvent.ArrivalAirportIcaoCode, milestones);
+        context.Logger.LogInformation("FlightArrivedEvent {EventId} for aircraft {AircraftId} completed with outcome {Outcome}", flightArrivedEvent.Id, flightArrivedEvent.AircraftId, result);
     }
 }

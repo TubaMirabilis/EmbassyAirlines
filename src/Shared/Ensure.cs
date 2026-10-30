@@ -54,4 +54,17 @@ public static class Ensure
             throw new ArgumentOutOfRangeException(paramName, "Value must be greater than zero.");
         }
     }
+    public static void IsNonDecreasing(
+        DateTimeOffset[] value,
+        [CallerArgumentExpression(nameof(value))] string? paramName = null)
+    {
+        for (var i = 1; i < value.Length; i++)
+        {
+            if (value[i] < value[i - 1])
+            {
+                throw new ArgumentException(
+                    "Value must be a non-decreasing sequence.", paramName);
+            }
+        }
+    }
 }

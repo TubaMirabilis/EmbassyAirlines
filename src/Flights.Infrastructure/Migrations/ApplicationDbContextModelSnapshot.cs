@@ -146,6 +146,18 @@ namespace Flights.Infrastructure.Migrations
                         .HasColumnType("character varying(7)")
                         .HasColumnName("flight_number_icao");
 
+                    b.Property<Instant?>("LandingAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("landing_at");
+
+                    b.Property<Instant?>("OffBlockAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("off_block_at");
+
+                    b.Property<Instant?>("OnBlockAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("on_block_at");
+
                     b.Property<string>("OperationType")
                         .IsRequired()
                         .HasMaxLength(24)
@@ -166,6 +178,10 @@ namespace Flights.Infrastructure.Migrations
                         .IsUnicode(false)
                         .HasColumnType("character varying(20)")
                         .HasColumnName("status");
+
+                    b.Property<Instant?>("TakeoffAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("takeoff_at");
 
                     b.Property<Instant>("UpdatedAt")
                         .HasColumnType("timestamp with time zone")
@@ -210,7 +226,7 @@ namespace Flights.Infrastructure.Migrations
                     b.ToTable("flights", "flights");
                 });
 
-            modelBuilder.Entity("Shared.OutboxMessage", b =>
+            modelBuilder.Entity("Shared.TransactionalOutbox.OutboxMessage", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()

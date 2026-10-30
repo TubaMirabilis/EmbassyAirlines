@@ -129,14 +129,14 @@ public class FlightsTests : BaseFunctionalTest
         var id = Guid.NewGuid();
         var dto = new AdjustFlightStatusDto("Asdf");
         var response = await HttpClient.PatchAsJsonAsync($"flights/{id}/status", dto, TestContext.Current.CancellationToken);
-        await GetProblemDetailsFromResponseAndAssert(response, "Invalid flight status: Asdf");
+        await GetProblemDetailsFromResponseAndAssert(response, "Only Delayed and Cancelled can be set directly. Record operational milestones to transition to EnRoute or Arrived.");
     }
 
     [Fact]
     public async Task AdjustFlightStatus_Should_ReturnNotFound_WhenFlightDoesNotExist()
     {
         var id = Guid.NewGuid();
-        var dto = new AdjustFlightStatusDto("EnRoute");
+        var dto = new AdjustFlightStatusDto("Cancelled");
         var response = await HttpClient.PatchAsJsonAsync($"flights/{id}/status", dto, TestContext.Current.CancellationToken);
         await GetProblemDetailsFromResponseAndAssert(response, $"Flight with ID {id} not found");
     }
@@ -160,41 +160,70 @@ public class FlightsTests : BaseFunctionalTest
     }
 
     [Fact]
+    public async Task RecordOffBlockMilestone_Should_ReturnNotFound_WhenFlightDoesNotExist()
+    {
+        var id = Guid.NewGuid();
+        var dto = new RecordFlightMilestoneDto("OffBlock", DateTimeOffset.UtcNow);
+        var response = await HttpClient.PatchAsJsonAsync($"flights/{id}/milestones", dto, TestContext.Current.CancellationToken);
+        await GetProblemDetailsFromResponseAndAssert(response, $"Flight with ID {id} not found");
+    }
+
+    [Fact]
+    public async Task RecordOffBlockMilestone_Should_ReturnBadRequest_WhenFutureToleranceLimitIsViolated()
+    {
+        var id = Guid.NewGuid();
+        var dto = new RecordFlightMilestoneDto("OffBlock", DateTimeOffset.UtcNow.AddMinutes(15));
+        var response = await HttpClient.PatchAsJsonAsync($"flights/{id}/milestones", dto, TestContext.Current.CancellationToken);
+        await GetProblemDetailsFromResponseAndAssert(response, "The request submitted a timestamp which violates the future tolerance limit.");
+    }
+
+    [Fact]
     public async Task Flight_Lifecycle_Should_Succeed()
     {
-        // List should be empty initially
-        var initialListUri = new Uri("flights", UriKind.Relative);
-        var initialListResponse = await HttpClient.GetAsync(initialListUri, TestContext.Current.CancellationToken);
-        initialListResponse.EnsureSuccessStatusCode();
-        var initialFlights = await initialListResponse.Content.ReadFromJsonAsync<FlightListDto>(TestContext.Current.CancellationToken);
-        initialFlights.Should().BeEquivalentTo(new FlightListDto([], 1, 50, 0, false));
+        await VerifyFlightListIsEmptyAsync();
+        var flight = await ScheduleFlightAsync();
+        await VerifyFlightIsListedAsync(flight);
+        await VerifyFilteredListContainsFlightAsync(flight);
+        await VerifyExcessPageReturnsLastPageAsync(flight);
+        await VerifyFlightCanBeRetrievedByIdAsync(flight);
+        flight = await AssignAircraftAsync(flight, _aircraft2);
+        flight = await AdjustPricingAsync(flight, new AdjustFlightPricingDto(500, 5000));
+        await RescheduleFlightAsync(flight);
+        await RecordOffBlockMilestoneAsync(flight);
+    }
 
+    private async Task VerifyFlightListIsEmptyAsync()
+    {
+        var flights = await ListFlightsAsync(new Uri("flights", UriKind.Relative));
+        flights.Should().BeEquivalentTo(new FlightListDto([], 1, 50, 0, false));
+    }
+
+    private async Task<FlightDto> ScheduleFlightAsync()
+    {
         var departureInstant = TimeHelpers.MinutesFromNowRoundedUp(_clock, 30);
         var arrivalInstant = departureInstant + _flightDuration;
         var departureZoned = departureInstant.InZone(_incheonTimeZone);
         var arrivalZoned = arrivalInstant.InZone(_schipholTimeZone);
-        var scheduleRequest = CreateValidScheduleRequest(
+        var request = CreateValidScheduleRequest(
             departureLocalTime: departureZoned.ToDateTimeUnspecified(),
             arrivalLocalTime: arrivalZoned.ToDateTimeUnspecified());
         var duration = _flightDuration.ToTimeSpan();
-
-        // Schedule
-        var scheduleResponse = await HttpClient.PostAsJsonAsync("flights", scheduleRequest, TestContext.Current.CancellationToken);
-        if (!scheduleResponse.IsSuccessStatusCode)
+        var response = await HttpClient.PostAsJsonAsync("flights", request, TestContext.Current.CancellationToken);
+        if (!response.IsSuccessStatusCode)
         {
-            var problemDetails = await DeserializeAsync<ProblemDetails>(scheduleResponse);
-            throw new HttpRequestException($"Scheduling flight failed with status code {scheduleResponse.StatusCode}: {problemDetails.Detail}");
+            var problemDetails = await DeserializeAsync<ProblemDetails>(response);
+            throw new HttpRequestException($"Scheduling flight failed with status code {response.StatusCode}: {problemDetails.Detail}");
         }
-        var flight = await DeserializeAsync<FlightDto>(scheduleResponse);
+        var flight = await DeserializeAsync<FlightDto>(response);
         flight.Should().Match<FlightDto>(x =>
-            x.FlightNumberIata == scheduleRequest.FlightNumberIata &&
-            x.FlightNumberIcao == scheduleRequest.FlightNumberIcao &&
-            x.DepartureAirportId == scheduleRequest.DepartureAirportId &&
+            x.FlightNumberIata == request.FlightNumberIata &&
+            x.FlightNumberIcao == request.FlightNumberIcao &&
+            x.DepartureAirportId == request.DepartureAirportId &&
             x.DepartureAirportIataCode == _incheon.IataCode &&
             x.DepartureAirportIcaoCode == _incheon.IcaoCode &&
             x.DepartureAirportName == _incheon.Name &&
             x.DepartureAirportTimeZoneId == _incheon.TimeZoneId &&
-            x.ArrivalAirportId == scheduleRequest.ArrivalAirportId &&
+            x.ArrivalAirportId == request.ArrivalAirportId &&
             x.ArrivalAirportIataCode == _schiphol.IataCode &&
             x.ArrivalAirportIcaoCode == _schiphol.IcaoCode &&
             x.ArrivalAirportName == _schiphol.Name &&
@@ -202,98 +231,113 @@ public class FlightsTests : BaseFunctionalTest
             x.DepartureTime == departureZoned.ToDateTimeOffset() &&
             x.ArrivalTime == arrivalZoned.ToDateTimeOffset() &&
             x.Duration == duration &&
-            x.EconomyPrice == scheduleRequest.EconomyPrice &&
-            x.BusinessPrice == scheduleRequest.BusinessPrice &&
-            x.AircraftId == scheduleRequest.AircraftId &&
+            x.EconomyPrice == request.EconomyPrice &&
+            x.BusinessPrice == request.BusinessPrice &&
+            x.AircraftId == request.AircraftId &&
             x.AircraftEquipmentCode == _aircraft1.EquipmentCode &&
             x.Status == "Scheduled" &&
             x.AircraftTailNumber == _aircraft1.TailNumber);
+        return flight;
+    }
 
-        // List
-        var uri = new Uri("flights", UriKind.Relative);
-        var listResponse = await HttpClient.GetAsync(uri, TestContext.Current.CancellationToken);
-        listResponse.EnsureSuccessStatusCode();
-        var listedFlights = await listResponse.Content.ReadFromJsonAsync<FlightListDto>(TestContext.Current.CancellationToken);
-        listedFlights.Should().BeEquivalentTo(new FlightListDto([flight], 1, 50, 1, false));
+    private async Task VerifyFlightIsListedAsync(FlightDto flight)
+    {
+        var flights = await ListFlightsAsync(new Uri("flights", UriKind.Relative));
+        flights.Should().BeEquivalentTo(new FlightListDto([flight], 1, 50, 1, false));
+    }
 
-        // List with filters
-        var uriWithFilters = new Uri($"flights?from={_incheon.IataCode}&to={_schiphol.IataCode}&page=1&pageSize=50", UriKind.Relative);
-        var filteredListResponse = await HttpClient.GetAsync(uriWithFilters, TestContext.Current.CancellationToken);
-        filteredListResponse.EnsureSuccessStatusCode();
-        var filteredFlights = await filteredListResponse.Content.ReadFromJsonAsync<FlightListDto>(TestContext.Current.CancellationToken);
-        filteredFlights.Should().BeEquivalentTo(new FlightListDto([flight], 1, 50, 1, false));
+    private async Task VerifyFilteredListContainsFlightAsync(FlightDto flight)
+    {
+        var uri = new Uri($"flights?from={_incheon.IataCode}&to={_schiphol.IataCode}&page=1&pageSize=50", UriKind.Relative);
+        var flights = await ListFlightsAsync(uri);
+        flights.Should().BeEquivalentTo(new FlightListDto([flight], 1, 50, 1, false));
+    }
 
-        // List should return last page when requested page exceeds available pages
-        var uriWithExcessPage = new Uri($"flights?from={_incheon.IataCode}&to={_schiphol.IataCode}&page=2&pageSize=50", UriKind.Relative);
-        var excessPageResponse = await HttpClient.GetAsync(uriWithExcessPage, TestContext.Current.CancellationToken);
-        excessPageResponse.EnsureSuccessStatusCode();
-        var excessPageFlights = await excessPageResponse.Content.ReadFromJsonAsync<FlightListDto>(TestContext.Current.CancellationToken);
-        excessPageFlights.Should().BeEquivalentTo(new FlightListDto([flight], 1, 50, 1, false));
+    // Requesting a page beyond the last one should return the last page
+    private async Task VerifyExcessPageReturnsLastPageAsync(FlightDto flight)
+    {
+        var uri = new Uri($"flights?from={_incheon.IataCode}&to={_schiphol.IataCode}&page=2&pageSize=50", UriKind.Relative);
+        var flights = await ListFlightsAsync(uri);
+        flights.Should().BeEquivalentTo(new FlightListDto([flight], 1, 50, 1, false));
+    }
 
-        // Get by id
-        var getByIdUri = new Uri($"flights/{flight.Id}", UriKind.Relative);
-        var getByIdResponse = await HttpClient.GetAsync(getByIdUri, TestContext.Current.CancellationToken);
-        getByIdResponse.EnsureSuccessStatusCode();
-        var fetchedFlight = await getByIdResponse.Content.ReadFromJsonAsync<FlightDto>(TestContext.Current.CancellationToken);
+    private async Task VerifyFlightCanBeRetrievedByIdAsync(FlightDto flight)
+    {
+        var uri = new Uri($"flights/{flight.Id}", UriKind.Relative);
+        var response = await HttpClient.GetAsync(uri, TestContext.Current.CancellationToken);
+        response.EnsureSuccessStatusCode();
+        var fetchedFlight = await response.Content.ReadFromJsonAsync<FlightDto>(TestContext.Current.CancellationToken);
         fetchedFlight.Should().BeEquivalentTo(flight);
+    }
 
-        // Assign aircraft
-        var assignAircraftRequest = new AssignAircraftToFlightDto(_aircraft2.Id);
-        var assignAircraftResponse = await HttpClient.PatchAsJsonAsync(
+    private async Task<FlightDto> AssignAircraftAsync(FlightDto flight, Aircraft aircraft)
+    {
+        var request = new AssignAircraftToFlightDto(aircraft.Id);
+        var response = await HttpClient.PatchAsJsonAsync(
             $"flights/{flight.Id}/aircraft",
-            assignAircraftRequest,
+            request,
             TestContext.Current.CancellationToken);
-        assignAircraftResponse.EnsureSuccessStatusCode();
-        flight = await DeserializeAsync<FlightDto>(assignAircraftResponse);
-        flight.AircraftId.Should().Be(_aircraft2.Id);
+        response.EnsureSuccessStatusCode();
+        var updatedFlight = await DeserializeAsync<FlightDto>(response);
+        updatedFlight.AircraftId.Should().Be(aircraft.Id);
+        return updatedFlight;
+    }
 
-        // Adjust pricing
-        var adjustPricingRequest = new AdjustFlightPricingDto(500, 5000);
-        var adjustPricingResponse = await HttpClient.PatchAsJsonAsync(
+    private async Task<FlightDto> AdjustPricingAsync(FlightDto flight, AdjustFlightPricingDto request)
+    {
+        var response = await HttpClient.PatchAsJsonAsync(
             $"flights/{flight.Id}/pricing",
-            adjustPricingRequest,
+            request,
             TestContext.Current.CancellationToken);
-        adjustPricingResponse.EnsureSuccessStatusCode();
-        flight = await DeserializeAsync<FlightDto>(adjustPricingResponse);
-        flight.Should().Match<FlightDto>(x =>
-            x.AircraftId == _aircraft2.Id &&
+        response.EnsureSuccessStatusCode();
+        var updatedFlight = await DeserializeAsync<FlightDto>(response);
+        updatedFlight.Should().Match<FlightDto>(x =>
+            x.AircraftId == flight.AircraftId &&
             x.Status == "Scheduled" &&
-            x.EconomyPrice == adjustPricingRequest.EconomyPrice &&
-            x.BusinessPrice == adjustPricingRequest.BusinessPrice);
+            x.EconomyPrice == request.EconomyPrice &&
+            x.BusinessPrice == request.BusinessPrice);
+        return updatedFlight;
+    }
 
-        // Reschedule
-        var newDepartureInstant = TimeHelpers.MinutesFromNowRoundedUp(_clock, 24 * 60);
-        var newArrivalInstant = newDepartureInstant + _flightDuration;
-
-        var rescheduleRequest = new RescheduleFlightDto(
-            newDepartureInstant.InZone(_incheonTimeZone).ToDateTimeUnspecified(),
-            newArrivalInstant.InZone(_schipholTimeZone).ToDateTimeUnspecified(),
+    private async Task RescheduleFlightAsync(FlightDto flight)
+    {
+        var departureInstant = TimeHelpers.MinutesFromNowRoundedUp(_clock, 35);
+        var arrivalInstant = departureInstant + _flightDuration;
+        var departureZoned = departureInstant.InZone(_incheonTimeZone);
+        var arrivalZoned = arrivalInstant.InZone(_schipholTimeZone);
+        var request = new RescheduleFlightDto(
+            departureZoned.ToDateTimeUnspecified(),
+            arrivalZoned.ToDateTimeUnspecified(),
             "ThrowWhenAmbiguous");
-        var rescheduleResponse = await HttpClient.PatchAsJsonAsync(
+        var response = await HttpClient.PatchAsJsonAsync(
             $"flights/{flight.Id}/schedule",
-            rescheduleRequest,
+            request,
             TestContext.Current.CancellationToken);
-        rescheduleResponse.EnsureSuccessStatusCode();
-        flight = await DeserializeAsync<FlightDto>(rescheduleResponse);
-        flight.Should().Match<FlightDto>(x =>
-            x.DepartureTime == newDepartureInstant.InZone(_incheonTimeZone).ToDateTimeOffset() &&
-            x.ArrivalTime == newArrivalInstant.InZone(_schipholTimeZone).ToDateTimeOffset() &&
+        response.EnsureSuccessStatusCode();
+        var rescheduledFlight = await DeserializeAsync<FlightDto>(response);
+        rescheduledFlight.Should().Match<FlightDto>(x =>
+            x.DepartureTime == departureZoned.ToDateTimeOffset() &&
+            x.ArrivalTime == arrivalZoned.ToDateTimeOffset() &&
             x.Status == "Scheduled" &&
-            x.EconomyPrice == 500 &&
-            x.BusinessPrice == 5000 &&
-            x.AircraftId == _aircraft2.Id);
+            x.EconomyPrice == flight.EconomyPrice &&
+            x.BusinessPrice == flight.BusinessPrice &&
+            x.AircraftId == flight.AircraftId);
+    }
 
-        // Adjust status
-        var adjustStatusRequest = new AdjustFlightStatusDto("EnRoute");
-        var adjustStatusResponse = await HttpClient.PatchAsJsonAsync(
-            $"flights/{flight.Id}/status",
-            adjustStatusRequest,
-            TestContext.Current.CancellationToken);
-        adjustStatusResponse.EnsureSuccessStatusCode();
-        flight = await DeserializeAsync<FlightDto>(adjustStatusResponse);
-        flight.Should().Match<FlightDto>(x =>
-            x.AircraftId == _aircraft2.Id &&
-            x.Status == "EnRoute");
+    private async Task RecordOffBlockMilestoneAsync(FlightDto flight)
+    {
+        var request = new RecordFlightMilestoneDto("OffBlock", DateTimeOffset.UtcNow);
+        var response = await HttpClient.PatchAsJsonAsync($"flights/{flight.Id}/milestones", request, TestContext.Current.CancellationToken);
+        response.EnsureSuccessStatusCode();
+        var enRouteFlight = await DeserializeAsync<FlightDto>(response);
+        enRouteFlight.Status.Should().BeEquivalentTo("EnRoute");
+    }
+
+    private async Task<FlightListDto?> ListFlightsAsync(Uri uri)
+    {
+        var response = await HttpClient.GetAsync(uri, TestContext.Current.CancellationToken);
+        response.EnsureSuccessStatusCode();
+        return await response.Content.ReadFromJsonAsync<FlightListDto>(TestContext.Current.CancellationToken);
     }
 
     private ScheduleFlightDto CreateValidScheduleRequest(

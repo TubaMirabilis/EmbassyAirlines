@@ -31,7 +31,8 @@ public class Function
         builder.AddServiceDefaults();
         builder.Services.AddLogging();
         builder.Services.AddDatabaseConnection<ApplicationDbContext>(config, false, "aircraft");
-        builder.Services.AddScoped<AircraftFlightStatusProcessor>();
+        builder.Services.AddSingleton(TimeProvider.System);
+        builder.Services.AddScoped<FlightDepartureNotificationProcessor>();
         _host = builder.Build();
         _traceProvider = _host.Services.GetRequiredService<TracerProvider>();
     }
@@ -54,8 +55,8 @@ public class Function
         activity?.SetTag("flight.arrival_airport_icao_code", flightMarkedAsEnRouteEvent.ArrivalAirportIcaoCode);
         context.Logger.LogInformation($"Processing flightMarkedAsEnRouteEvent with ID: {flightMarkedAsEnRouteEvent.Id}");
         using var scope = _host.Services.CreateScope();
-        var processor = scope.ServiceProvider.GetRequiredService<AircraftFlightStatusProcessor>();
-        var result = await processor.ProcessAsync(flightMarkedAsEnRouteEvent.Id, flightMarkedAsEnRouteEvent.AircraftId, Core.Models.Status.EnRoute, flightMarkedAsEnRouteEvent.ArrivalAirportIcaoCode, flightMarkedAsEnRouteEvent.OccurredAt);
+        var processor = scope.ServiceProvider.GetRequiredService<FlightDepartureNotificationProcessor>();
+        var result = await processor.ProcessAsync(flightMarkedAsEnRouteEvent.Id, flightMarkedAsEnRouteEvent.AircraftId, flightMarkedAsEnRouteEvent.ArrivalAirportIcaoCode, flightMarkedAsEnRouteEvent.OffBlockAt);
         context.Logger.LogInformation("flightMarkedAsEnRouteEvent {EventId} for aircraft {AircraftId} completed with outcome {Outcome}", flightMarkedAsEnRouteEvent.Id, flightMarkedAsEnRouteEvent.AircraftId, result);
     }
 }

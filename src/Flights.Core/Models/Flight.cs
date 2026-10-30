@@ -39,6 +39,10 @@ public sealed class Flight : Entity
     public string FlightNumberIata { get; private set; }
     public string FlightNumberIcao { get; private set; }
     public FlightStatus Status { get; private set; }
+    public Instant? OffBlockAt { get; private set; }
+    public Instant? TakeoffAt { get; private set; }
+    public Instant? LandingAt { get; private set; }
+    public Instant? OnBlockAt { get; private set; }
     public LocalDateTime DepartureLocalTime { get; private set; }
     public LocalDateTime ArrivalLocalTime { get; private set; }
     public SchedulingAmbiguityPolicy SchedulingAmbiguityPolicy { get; private set; }
@@ -73,16 +77,6 @@ public sealed class Flight : Entity
         UpdatedAt = instant;
         AddDomainEvent(new AircraftAssignedToFlightEvent(Guid.NewGuid(), Id, aircraft.Id));
     }
-    public void AdjustStatus(FlightStatus status, Instant instant)
-    {
-        if (!FlightStatusTransitions.CanTransition(Status, status))
-        {
-            throw new ArgumentException($"Cannot transition flight status from {Status} to {status}");
-        }
-        Status = status;
-        UpdatedAt = instant;
-        AddDomainEvent(FlightStatusEventFactory.Create(this, status));
-    }
     public void AdjustPricing(Money economyPrice, Money businessPrice, Instant instant)
     {
         BusinessPrice = businessPrice;
@@ -97,5 +91,147 @@ public sealed class Flight : Entity
         SchedulingAmbiguityPolicy = schedule.SchedulingAmbiguityPolicy;
         UpdatedAt = instant;
         AddDomainEvent(new FlightRescheduledEvent(Guid.NewGuid(), Id, schedule.DepartureTime.ToDateTimeUnspecified(), schedule.ArrivalTime.ToDateTimeUnspecified()));
+    }
+    public void RecordMilestone(
+        FlightMilestone milestone,
+        Instant occurredAt,
+        Instant updatedAt)
+    {
+        switch (milestone)
+        {
+            case FlightMilestone.OffBlock:
+                ValidateOffBlock();
+                EnsureStatusTransitionAllowed(FlightStatus.EnRoute);
+                OffBlockAt = occurredAt;
+                AdjustStatus(FlightStatus.EnRoute, updatedAt);
+                break;
+
+            case FlightMilestone.Takeoff:
+                EnsureEnRoute(milestone);
+                ValidateTakeoff(occurredAt);
+                TakeoffAt = occurredAt;
+                UpdatedAt = updatedAt;
+                break;
+
+            case FlightMilestone.Landing:
+                EnsureEnRoute(milestone);
+                ValidateLanding(occurredAt);
+                LandingAt = occurredAt;
+                UpdatedAt = updatedAt;
+                break;
+
+            case FlightMilestone.OnBlock:
+                EnsureEnRoute(milestone);
+                ValidateOnBlock(occurredAt);
+                EnsureStatusTransitionAllowed(FlightStatus.Arrived);
+                OnBlockAt = occurredAt;
+                AdjustStatus(FlightStatus.Arrived, updatedAt);
+                break;
+
+            default:
+                throw new ArgumentOutOfRangeException(nameof(milestone));
+        }
+    }
+    public void MarkAsDelayed(Instant occurredAt) => AdjustStatus(FlightStatus.Delayed, occurredAt);
+    public void Cancel(Instant occurredAt) => AdjustStatus(FlightStatus.Cancelled, occurredAt);
+    private void AdjustStatus(FlightStatus status, Instant updatedAt)
+    {
+        EnsureStatusTransitionAllowed(status);
+
+        Status = status;
+        UpdatedAt = updatedAt;
+
+        AddDomainEvent(FlightStatusEventFactory.Create(this, status));
+    }
+    private void EnsureStatusTransitionAllowed(FlightStatus newStatus)
+    {
+        if (!FlightStatusTransitions.CanTransition(Status, newStatus))
+        {
+            throw new InvalidOperationException(
+                $"Cannot transition flight from {Status} to {newStatus}.");
+        }
+    }
+    private void ValidateOffBlock()
+    {
+        if (Status is not (FlightStatus.Scheduled or FlightStatus.Delayed))
+        {
+            throw new InvalidOperationException(
+                $"Cannot record OffBlock for a flight with status {Status}. " +
+                "The flight must be Scheduled or Delayed.");
+        }
+        if (OffBlockAt is not null)
+        {
+            throw new InvalidOperationException(
+                "The OffBlock milestone has already been recorded.");
+        }
+    }
+    private void ValidateTakeoff(Instant occurredAt)
+    {
+        if (OffBlockAt is null)
+        {
+            throw new InvalidOperationException(
+                "Cannot record Takeoff before the OffBlock milestone.");
+        }
+        if (TakeoffAt is not null)
+        {
+            throw new InvalidOperationException(
+                "The Takeoff milestone has already been recorded.");
+        }
+        if (occurredAt < OffBlockAt.Value)
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(occurredAt),
+                occurredAt,
+                "The Takeoff timestamp cannot be earlier than the OffBlock timestamp.");
+        }
+    }
+    private void ValidateLanding(Instant occurredAt)
+    {
+        if (TakeoffAt is null)
+        {
+            throw new InvalidOperationException(
+                "Cannot record Landing before the Takeoff milestone.");
+        }
+        if (LandingAt is not null)
+        {
+            throw new InvalidOperationException(
+                "The Landing milestone has already been recorded.");
+        }
+        if (occurredAt < TakeoffAt.Value)
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(occurredAt),
+                occurredAt,
+                "The Landing timestamp cannot be earlier than the Takeoff timestamp.");
+        }
+    }
+    private void ValidateOnBlock(Instant occurredAt)
+    {
+        if (LandingAt is null)
+        {
+            throw new InvalidOperationException(
+                "Cannot record OnBlock before the Landing milestone.");
+        }
+        if (OnBlockAt is not null)
+        {
+            throw new InvalidOperationException(
+                "The OnBlock milestone has already been recorded.");
+        }
+        if (occurredAt < LandingAt.Value)
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(occurredAt),
+                occurredAt,
+                "The OnBlock timestamp cannot be earlier than the Landing timestamp.");
+        }
+    }
+    private void EnsureEnRoute(FlightMilestone milestone)
+    {
+        if (Status is not FlightStatus.EnRoute)
+        {
+            throw new InvalidOperationException(
+                $"Cannot record {milestone} for a flight " +
+                $"with status {Status}. The flight must be EnRoute.");
+        }
     }
 }

@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore.Migrations;
+﻿using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
@@ -21,6 +21,7 @@ public partial class InitialCreate : Migration
                 id = table.Column<Guid>(type: "uuid", nullable: false),
                 created_at = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                 updated_at = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                last_flight_movement_at = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
                 tail_number = table.Column<string>(type: "character varying(12)", unicode: false, maxLength: 12, nullable: false),
                 equipment_code = table.Column<string>(type: "character varying(4)", unicode: false, maxLength: 4, nullable: false),
                 status = table.Column<string>(type: "character varying(12)", unicode: false, maxLength: 12, nullable: false),
@@ -65,6 +66,33 @@ public partial class InitialCreate : Migration
             constraints: table => table.PrimaryKey("pk_outbox_messages", x => x.id));
 
         migrationBuilder.CreateTable(
+            name: "completed_flight",
+            schema: "aircraft",
+            columns: table => new
+            {
+                id = table.Column<Guid>(type: "uuid", nullable: false),
+                created_at = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                departure_airport_icao = table.Column<string>(type: "character varying(4)", unicode: false, maxLength: 4, nullable: false),
+                arrival_airport_icao = table.Column<string>(type: "character varying(4)", unicode: false, maxLength: 4, nullable: false),
+                aircraft_id = table.Column<Guid>(type: "uuid", nullable: false),
+                milestones_landing_at = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                milestones_off_block_at = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                milestones_on_block_at = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                milestones_take_off_at = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false)
+            },
+            constraints: table =>
+            {
+                table.PrimaryKey("pk_completed_flight", x => x.id);
+                table.ForeignKey(
+                    name: "fk_completed_flight_aircraft_aircraft_id",
+                    column: x => x.aircraft_id,
+                    principalSchema: "aircraft",
+                    principalTable: "aircraft",
+                    principalColumn: "id",
+                    onDelete: ReferentialAction.Cascade);
+            });
+
+        migrationBuilder.CreateTable(
             name: "seats",
             schema: "aircraft",
             columns: table => new
@@ -89,6 +117,12 @@ public partial class InitialCreate : Migration
             });
 
         migrationBuilder.CreateIndex(
+            name: "ix_completed_flight_aircraft_id",
+            schema: "aircraft",
+            table: "completed_flight",
+            column: "aircraft_id");
+
+        migrationBuilder.CreateIndex(
             name: "ix_outbox_messages_unprocessed",
             schema: "aircraft",
             table: "outbox_messages",
@@ -105,6 +139,10 @@ public partial class InitialCreate : Migration
     /// <inheritdoc />
     protected override void Down(MigrationBuilder migrationBuilder)
     {
+        migrationBuilder.DropTable(
+            name: "completed_flight",
+            schema: "aircraft");
+
         migrationBuilder.DropTable(
             name: "inbox_messages",
             schema: "aircraft");
