@@ -13,9 +13,7 @@ internal static class AircraftExtensions
         aircraft.MaximumLandingWeight.Kilograms,
         aircraft.MaximumZeroFuelWeight.Kilograms,
         aircraft.MaximumFuelWeight.Kilograms,
-        aircraft.Status.ToString(),
-        aircraft.ParkedAt,
-        aircraft.EnRouteTo,
+        aircraft.Situation.ToDto(),
         aircraft.Seats.Count
     );
 }

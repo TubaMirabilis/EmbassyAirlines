@@ -73,7 +73,7 @@ namespace Airports.Infrastructure.Migrations
                     b.ToTable("airports", "airports");
                 });
 
-            modelBuilder.Entity("Shared.OutboxMessage", b =>
+            modelBuilder.Entity("Shared.TransactionalOutbox.OutboxMessage", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()

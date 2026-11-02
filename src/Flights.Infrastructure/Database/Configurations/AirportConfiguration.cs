@@ -18,8 +18,6 @@ internal sealed class AirportConfiguration : IEntityTypeConfiguration<Airport>
             .IsRequired()
             .HasMaxLength(4);
         builder.Property(a => a.Version)
-    .HasColumnName("version")
-    .HasColumnType("bigint")
     .IsRequired();
         builder.Property(a => a.IataCode)
             .IsRequired()

@@ -35,12 +35,12 @@ internal sealed class ListAircraftEndpoint : IEndpoint
         if (!string.IsNullOrWhiteSpace(parkedAt))
         {
             var parkedAtNorm = parkedAt.Trim().ToUpperInvariant();
-            query = query.Where(a => a.ParkedAt == parkedAtNorm);
+            query = query.Where(a => a.Situation.ParkedAt == parkedAtNorm);
         }
         if (!string.IsNullOrWhiteSpace(enRouteTo))
         {
             var enRouteToNorm = enRouteTo.Trim().ToUpperInvariant();
-            query = query.Where(a => a.EnRouteTo == enRouteToNorm);
+            query = query.Where(a => a.Situation.EnRouteTo == enRouteToNorm);
         }
         var count = await query.CountAsync(ct);
         var pages = (int)Math.Ceiling(count / (double)pageSize);

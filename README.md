@@ -171,7 +171,7 @@ The `Airport` aggregate uses optimistic concurrency through an application-manag
 
 ### Aircraft
 
-Owns aircraft, their weights, their seat maps, and their current location. Backed by **PostgreSQL** (`aircraft` schema).
+Owns aircraft, their weights, their seat maps, and their current situation (parked at, or en route to, an airport). Backed by **PostgreSQL** (`aircraft` schema).
 
 Creating an aircraft reads `seat-layouts/{EquipmentCode}.json` from **S3** and expands the row-range definition into individual `Seat` entities, rejecting duplicate row/letter pairs. A missing layout yields a `404` rather than a `500`, and a duplicate tail number yields a `409`.
 
@@ -214,10 +214,10 @@ Events published without a consumer today (`FlightScheduled`, `FlightCancelled`,
 **Idempotency and ordering.** SNS/SQS delivery is at-least-once, so consumers must tolerate duplicate and out-of-order messages. Event timestamps come from the publishing service, not from the time the event is consumed.
 
 - **Flights** uses atomic PostgreSQL upserts to maintain its local aircraft and airport projections. Inserting an aircraft uses `INSERT ... ON CONFLICT DO NOTHING`, so a duplicate delivery does nothing and never overwrites an existing row. Each airport event carries a complete snapshot with a monotonically increasing aggregate version. The projection applies a snapshot only if its version is newer than the stored one, so an update can arrive before the creation event without rolling the read model back.
-- **Aircraft** uses a transactional inbox. `FlightMarkedAsEnRoute` and `FlightMarkedAsDelayedEnRoute` carry the flight's `OffBlockAt`, and `FlightArrived` carries all four flight milestones. Each processor inserts the event id into `inbox_messages` with `ON CONFLICT DO NOTHING`, then compares the event's timestamp (`OffBlockAt`, or `OnBlockAt` for an arrival) with the aircraft's `LastFlightMovementAt` (or, if the aircraft has not moved since it was created, its `CreatedAt`) to decide whether the event may change the aircraft's current state. `UpdatedAt` plays no part in this, so modifying an aircraft for any other reason cannot cause a flight movement that is reported later to be discarded:
+- **Aircraft** uses a transactional inbox. `FlightMarkedAsEnRoute` and `FlightMarkedAsDelayedEnRoute` carry the flight's `OffBlockAt`, and `FlightArrived` carries all four flight milestones. Each processor inserts the event id into `inbox_messages` with `ON CONFLICT DO NOTHING`, then compares the event's timestamp (`OffBlockAt`, or `OnBlockAt` for an arrival) with the `EffectiveAt` of the aircraft's current `AircraftSituation` (the time of its last flight movement or, if the aircraft has not moved since it was created, its creation time) to decide whether the event may change the aircraft's current state. `UpdatedAt` plays no part in this, so modifying an aircraft for any other reason cannot cause a flight movement that is reported later to be discarded:
     - **`Duplicate`** — the event id is already in the inbox, so nothing is touched.
-    - **`Stale`** — the event is no newer than the aircraft's last flight movement, so the aircraft's status, location, `LastFlightMovementAt`, and `UpdatedAt` are left as they are. The inbox row is still committed so that redeliveries are recognised as duplicates.
-    - **`Applied`** — the location change and the inbox row are committed in one transaction.
+    - **`Stale`** — the event is no newer than the aircraft's last flight movement, so the aircraft's situation and `UpdatedAt` are left as they are. The inbox row is still committed so that redeliveries are recognised as duplicates.
+    - **`Applied`** — the new situation and the inbox row are committed in one transaction.
 
     An arrival also records the flight in the aircraft's completed-flight history, and does so whether or not it is stale: an arrival that is delivered after the aircraft's next departure still describes a flight that happened. History is keyed by flight id, so a second event for an already-recorded flight inserts nothing and reports `AlreadyRecorded`, even if the two events have different ids. If the existing record disagrees with the event (a different aircraft, airport, or milestone), the processor throws `CompletedFlightConflictException` rather than overwrite history, so the message is retried and eventually dead-lettered for investigation.
 
@@ -275,7 +275,9 @@ All routes are served under the shared API Gateway custom domain at `/api`.
 | `GET`  | `/aircraft/{id}` | —                   | Fetch one aircraft                                                          |
 | `POST` | `/aircraft`      | `CreateAircraftDto` | Resolves the seat layout from S3; `404` if missing, `409` on duplicate tail |
 
-`CreateAircraftDto`: `TailNumber`, `EquipmentCode`, `DryOperatingWeight`, `Status` (`Parked` \| `EnRoute`), `MaximumTakeoffWeight`, `ParkedAt?`, `EnRouteTo?`, `MaximumLandingWeight`, `MaximumZeroFuelWeight`, `MaximumFuelWeight`.
+`CreateAircraftDto`: `TailNumber`, `EquipmentCode`, `DryOperatingWeight`, `MaximumTakeoffWeight`, `MaximumLandingWeight`, `MaximumZeroFuelWeight`, `MaximumFuelWeight`, `Situation`.
+
+`AircraftSituationDto`: `Status` (`Parked` \| `EnRoute`, case-insensitive) and `AirportIcaoCode` (four letters): the airport the aircraft is parked at, or the one it is en route to. `AircraftDto` returns the aircraft's current situation in the same shape.
 
 ### Flights
 
@@ -327,7 +329,7 @@ Each successful transition raises a matching event via `FlightStatusEventFactory
 
 **Operation types.** `RevenuePassenger`, `NonRevenuePositioning`, `MaintenanceFerry`, `PermitToFly`.
 
-**Aircraft location** is a small invariant: `MarkAsEnRoute` sets `EnRouteTo` and clears `ParkedAt`; `MarkAsParked` does the reverse. Both normalise the location code to trimmed uppercase, so an aircraft is never simultaneously parked and en route. Like `RecordMilestone`, both keep two times apart: the movement's own time (`OffBlockAt` or `OnBlockAt`), which becomes `LastFlightMovementAt`, and the moment the change is made, which becomes `UpdatedAt`. `LastFlightMovementAt` exists only to order flight movements: `IsStaleFlightMovement` compares against it (or `CreatedAt` before the first movement), and both methods refuse a movement that is not newer, so it never moves backwards. `UpdatedAt` is the general modification time.
+**Aircraft situation.** An aircraft's current state is an `AircraftSituation` value object, which can only be built through `AircraftSituation.Parked(airport, effectiveAt)` or `AircraftSituation.EnRoute(destination, effectiveAt)`. Each sets exactly one of `ParkedAt` and `EnRouteTo` and normalises the code to trimmed uppercase, so an aircraft is never simultaneously parked and en route. `EffectiveAt` is when the situation began: an aircraft's initial situation must be effective at its `CreatedAt` (`Aircraft.Create` rejects anything else), and each later one at the time of the flight movement that produced it. `MarkAsEnRoute` and `MarkAsParked` replace the situation as a whole. Like `RecordMilestone`, both keep two times apart: the movement's own time (`OffBlockAt` or `OnBlockAt`), which becomes the new situation's `EffectiveAt`, and the moment the change is made, which becomes `UpdatedAt`. `EffectiveAt` exists only to order flight movements: `IsStaleFlightMovement` compares against it, and both methods refuse a situation that is not newer than the current one, so it never moves backwards. `UpdatedAt` is the general modification time. EF Core maps the situation as a complex property, stored in the `situation_*` columns of the `aircraft` table.
 
 **Seat layouts** are declared as row ranges rather than individual seats, with an optional `EveryNthRowOnly` for staggered cabins. [`Resources/Layouts/B78X.json`](Resources/Layouts/B78X.json) staggers its business cabin across two overlapping ranges:
 

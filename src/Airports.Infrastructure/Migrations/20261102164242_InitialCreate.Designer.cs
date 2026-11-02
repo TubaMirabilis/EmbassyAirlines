@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Airports.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20261012174545_InitialCreate")]
+    [Migration("20261102164242_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -76,7 +76,7 @@ namespace Airports.Infrastructure.Migrations
                     b.ToTable("airports", "airports");
                 });
 
-            modelBuilder.Entity("Shared.OutboxMessage", b =>
+            modelBuilder.Entity("Shared.TransactionalOutbox.OutboxMessage", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()

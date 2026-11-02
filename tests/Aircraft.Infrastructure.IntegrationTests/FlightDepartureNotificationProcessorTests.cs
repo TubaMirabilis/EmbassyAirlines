@@ -32,10 +32,7 @@ public sealed class FlightDepartureNotificationProcessorTests
         Assert.Equal(AircraftFlightStatusProcessingResult.Applied, result);
 
         var aircraft = await _postgres.GetAircraftWithHistoryAsync(aircraftId);
-        Assert.Equal(Status.EnRoute, aircraft.Status);
-        Assert.Equal("EHAM", aircraft.EnRouteTo);
-        Assert.Null(aircraft.ParkedAt);
-        Assert.Equal(At(10, 0), aircraft.LastFlightMovementAt);
+        Assert.Equal(AircraftSituation.EnRoute("EHAM", At(10, 0)), aircraft.Situation);
         Assert.Equal(At(10, 5), aircraft.UpdatedAt);
 
         Assert.True(await _postgres.InboxContainsAsync(eventId));
@@ -64,10 +61,7 @@ public sealed class FlightDepartureNotificationProcessorTests
         Assert.Equal(AircraftFlightStatusProcessingResult.Applied, result);
 
         var aircraft = await _postgres.GetAircraftWithHistoryAsync(aircraftId);
-        Assert.Equal(Status.EnRoute, aircraft.Status);
-        Assert.Equal("KJFK", aircraft.EnRouteTo);
-        Assert.Null(aircraft.ParkedAt);
-        Assert.Equal(At(11, 30), aircraft.LastFlightMovementAt);
+        Assert.Equal(AircraftSituation.EnRoute("KJFK", At(11, 30)), aircraft.Situation);
         Assert.Equal(At(12, 0), aircraft.UpdatedAt);
 
         Assert.True(await _postgres.InboxContainsAsync(eventId));
@@ -97,10 +91,7 @@ public sealed class FlightDepartureNotificationProcessorTests
         Assert.Equal(AircraftFlightStatusProcessingResult.Stale, result);
 
         var aircraft = await _postgres.GetAircraftWithHistoryAsync(aircraftId);
-        Assert.Equal(Status.Parked, aircraft.Status);
-        Assert.Equal("EGLL", aircraft.ParkedAt);
-        Assert.Null(aircraft.EnRouteTo);
-        Assert.Equal(At(10, 0), aircraft.LastFlightMovementAt);
+        Assert.Equal(AircraftSituation.Parked("EGLL", At(10, 0)), aircraft.Situation);
         Assert.Equal(At(10, 5), aircraft.UpdatedAt);
 
         Assert.True(await _postgres.InboxContainsAsync(eventId));
@@ -128,9 +119,7 @@ public sealed class FlightDepartureNotificationProcessorTests
         Assert.Equal(AircraftFlightStatusProcessingResult.Stale, result);
 
         var aircraft = await _postgres.GetAircraftWithHistoryAsync(aircraftId);
-        Assert.Equal(Status.Parked, aircraft.Status);
-        Assert.Equal("CYVR", aircraft.ParkedAt);
-        Assert.Null(aircraft.LastFlightMovementAt);
+        Assert.Equal(AircraftSituation.Parked("CYVR", CreatedAt), aircraft.Situation);
         Assert.Equal(CreatedAt, aircraft.UpdatedAt);
 
         Assert.True(await _postgres.InboxContainsAsync(eventId));

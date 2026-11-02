@@ -587,6 +587,7 @@ public sealed class OutboxPersistenceTests
 
     private Core.Models.Aircraft CreateAircraft(string tailNumber)
     {
+        var createdAt = _timeProvider.GetUtcNow();
         var args = new AircraftCreationArgs
         {
             TailNumber = tailNumber,
@@ -596,9 +597,9 @@ public sealed class OutboxPersistenceTests
             MaximumLandingWeight = new Weight(201848),
             MaximumZeroFuelWeight = new Weight(192777),
             MaximumFuelWeight = new Weight(101522),
-            CreatedAt = _timeProvider.GetUtcNow(),
+            CreatedAt = createdAt,
             Seats = JsonSerializer.Deserialize<SeatLayoutDefinition>(SeatLayoutDefinitionJson) ?? throw new JsonException(),
-            AircraftLocationData = new AircraftLocationData(Status.Parked, "CYVR", null)
+            Situation = AircraftSituation.Parked("CYVR", createdAt)
         };
         return Core.Models.Aircraft.Create(args);
     }

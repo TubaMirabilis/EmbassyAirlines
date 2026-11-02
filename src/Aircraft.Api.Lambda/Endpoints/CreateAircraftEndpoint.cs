@@ -40,12 +40,6 @@ internal sealed class CreateAircraftEndpoint : IEndpoint
             var error = Error.Validation("Aircraft.ValidationFailed", formattedErrors);
             return TypedResults.Problem(ErrorHandlingHelper.GetProblemDetails(error));
         }
-        if (!Enum.TryParse<Status>(dto.Status, out var status))
-        {
-            logger.LogWarning("Invalid status value: {Status}", dto.Status);
-            var error = Error.Validation("Aircraft.InvalidStatus", $"{dto.Status} is not a valid status");
-            return TypedResults.Problem(ErrorHandlingHelper.GetProblemDetails(error));
-        }
         if (await ctx.Aircraft.AsNoTracking().AnyAsync(a => a.TailNumber == dto.TailNumber, ct))
         {
             logger.LogWarning("Aircraft with tail number {TailNumber} already exists", dto.TailNumber);
@@ -70,6 +64,7 @@ internal sealed class CreateAircraftEndpoint : IEndpoint
                 var error = Error.Validation("Aircraft.SeatLayoutDefinitionMalfunction", $"Seat layout definition for {equipmentCode} is null");
                 return TypedResults.Problem(ErrorHandlingHelper.GetProblemDetails(error));
             }
+            var createdAt = timeProvider.GetUtcNow();
             var args = new AircraftCreationArgs
             {
                 TailNumber = dto.TailNumber,
@@ -79,9 +74,9 @@ internal sealed class CreateAircraftEndpoint : IEndpoint
                 MaximumLandingWeight = new Weight(dto.MaximumLandingWeight),
                 MaximumZeroFuelWeight = new Weight(dto.MaximumZeroFuelWeight),
                 MaximumFuelWeight = new Weight(dto.MaximumFuelWeight),
-                CreatedAt = timeProvider.GetUtcNow(),
+                CreatedAt = createdAt,
                 Seats = def,
-                AircraftLocationData = new AircraftLocationData(status, dto.ParkedAt, dto.EnRouteTo)
+                Situation = dto.Situation.ToDomain(createdAt)
             };
             var aircraft = Core.Models.Aircraft.Create(args);
             ctx.Aircraft.Add(aircraft);

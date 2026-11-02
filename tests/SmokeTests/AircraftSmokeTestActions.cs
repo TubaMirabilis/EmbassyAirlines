@@ -76,7 +76,7 @@ internal static class AircraftSmokeTestActions
             {
                 throw new JsonException("Deserialization returned null");
             }
-            if (aircraft.Status == expectedStatus)
+            if (aircraft.Situation.Status == expectedStatus)
             {
                 var diff = Stopwatch.GetElapsedTime(startTime);
                 Console.WriteLine(
@@ -90,7 +90,7 @@ internal static class AircraftSmokeTestActions
                 throw new InvalidOperationException(
                     $"Aircraft {aircraftId} did not reach status {expectedStatus} " +
                     $"after {attempt + 1} attempts. " +
-                    $"Last observed status: {aircraft.Status}");
+                    $"Last observed status: {aircraft.Situation.Status}");
             }
             await Task.Delay(RetryDelay, cancellationToken);
         }

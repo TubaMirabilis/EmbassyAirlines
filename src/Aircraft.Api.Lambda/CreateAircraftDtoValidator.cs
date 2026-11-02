@@ -32,5 +32,8 @@ internal sealed class CreateAircraftDtoValidator : AbstractValidator<CreateAircr
         RuleFor(x => x.MaximumFuelWeight)
             .GreaterThan(0)
             .WithMessage("Maximum fuel weight must be greater than zero.");
+        RuleFor(x => x.Situation)
+            .NotNull()
+            .SetValidator(new AircraftSituationDtoValidator());
     }
 }

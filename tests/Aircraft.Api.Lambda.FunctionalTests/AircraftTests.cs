@@ -15,7 +15,8 @@ public class AircraftTests : BaseFunctionalTest
     public async Task Create_Should_ReturnNotFound_WhenSeatLayoutDefinitionDoesNotExist()
     {
         // Arrange
-        var request = new CreateAircraftDto("C-FZTY", "B38M", 42045, "Parked", 82190, "CYVR", null, 69308, 65952, 20826);
+        var situation = new AircraftSituationDto("Parked", "CYVR");
+        var request = new CreateAircraftDto("C-FZTY", "B38M", 42045, 82190, 69308, 65952, 20826, situation);
         var error = "Seat layout definition for B38M not found";
 
         // Act
@@ -29,78 +30,9 @@ public class AircraftTests : BaseFunctionalTest
     public async Task Create_Should_ReturnBadRequest_WhenRequestIsInvalid()
     {
         // Arrange
-        var request = new CreateAircraftDto("C-FJRO", "B78X", 135500, "Parked", 0, "CYVR", null, 201848, 192777, 101522);
+        var situation = new AircraftSituationDto("Parked", "CYVR");
+        var request = new CreateAircraftDto("C-FJRO", "B78X", 135500, 0, 201848, 192777, 101522, situation);
         var error = "Maximum takeoff weight must be greater than zero.";
-
-        // Act
-        var response = await HttpClient.PostAsJsonAsync("aircraft", request, TestContext.Current.CancellationToken);
-
-        // Assert
-        await GetProblemDetailsFromResponseAndAssert(response, error);
-    }
-
-    [Fact]
-    public async Task Create_Should_ReturnBadRequest_WhenStatusIsInvalid()
-    {
-        // Arrange
-        var request = new CreateAircraftDto("C-FJRP", "B78X", 135500, "Delayed", 254011, null, null, 201848, 192777, 101522);
-        var error = "Delayed is not a valid status";
-
-        // Act
-        var response = await HttpClient.PostAsJsonAsync("aircraft", request, TestContext.Current.CancellationToken);
-
-        // Assert
-        await GetProblemDetailsFromResponseAndAssert(response, error);
-    }
-
-    [Fact]
-    public async Task Create_Should_ReturnBadRequest_WhenStatusIsParkedAndParkedAtIsNotProvided()
-    {
-        // Arrange
-        var request = new CreateAircraftDto("C-FJRQ", "B78X", 135500, "Parked", 254011, null, null, 201848, 192777, 101522);
-        var error = "Error creating aircraft: Status is Parked, so ParkedAt must be provided.";
-
-        // Act
-        var response = await HttpClient.PostAsJsonAsync("aircraft", request, TestContext.Current.CancellationToken);
-
-        // Assert
-        await GetProblemDetailsFromResponseAndAssert(response, error);
-    }
-
-    [Fact]
-    public async Task Create_Should_ReturnBadRequest_WhenStatusIsParkedAndEnRouteToIsProvided()
-    {
-        // Arrange
-        var request = new CreateAircraftDto("C-FJRR", "B78X", 135500, "Parked", 254011, "CYVR", "CYYZ", 201848, 192777, 101522);
-        var error = "Error creating aircraft: Status is Parked, so EnRouteTo must be empty.";
-
-        // Act
-        var response = await HttpClient.PostAsJsonAsync("aircraft", request, TestContext.Current.CancellationToken);
-
-        // Assert
-        await GetProblemDetailsFromResponseAndAssert(response, error);
-    }
-
-    [Fact]
-    public async Task Create_Should_ReturnBadRequest_WhenStatusIsEnRouteAndEnRouteToIsNotProvided()
-    {
-        // Arrange
-        var request = new CreateAircraftDto("C-FJRS", "B78X", 135500, "EnRoute", 254011, null, null, 201848, 192777, 101522);
-        var error = "Error creating aircraft: Status is EnRoute, so EnRouteTo must be provided.";
-
-        // Act
-        var response = await HttpClient.PostAsJsonAsync("aircraft", request, TestContext.Current.CancellationToken);
-
-        // Assert
-        await GetProblemDetailsFromResponseAndAssert(response, error);
-    }
-
-    [Fact]
-    public async Task Create_Should_ReturnBadRequest_WhenStatusIsEnRouteAndParkedAtIsProvided()
-    {
-        // Arrange
-        var request = new CreateAircraftDto("C-FJRT", "B78X", 135500, "EnRoute", 254011, "CYVR", "CYYZ", 201848, 192777, 101522);
-        var error = "Error creating aircraft: Status is EnRoute, so ParkedAt must be empty.";
 
         // Act
         var response = await HttpClient.PostAsJsonAsync("aircraft", request, TestContext.Current.CancellationToken);
@@ -149,7 +81,7 @@ public class AircraftTests : BaseFunctionalTest
         emptyAircraftList.Should().BeEquivalentTo(new AircraftListDto([], 1, 50, 0, false));
 
         // Create
-        var request = new CreateAircraftDto("C-FJRN", "B78X", 135500, "Parked", 254011, "CYVR", null, 201848, 192777, 101522);
+        var request = new CreateAircraftDto("C-FJRN", "B78X", 135500, 254011, 201848, 192777, 101522, new AircraftSituationDto("Parked", "CYVR"));
         var aircraft = await CreateAircraftAsync(request);
         aircraft.Should().Match<AircraftDto>(x =>
             x.TailNumber == request.TailNumber &&
@@ -175,7 +107,7 @@ public class AircraftTests : BaseFunctionalTest
         aircraftList.Should().BeEquivalentTo(expected);
 
         // List filtered by parkedAt
-        var listFilterUri = new Uri($"aircraft?parkedAt={request.ParkedAt}", UriKind.Relative);
+        var listFilterUri = new Uri($"aircraft?parkedAt={request.Situation.AirportIcaoCode}", UriKind.Relative);
         var listFilterResponse = await HttpClient.GetAsync(listFilterUri, TestContext.Current.CancellationToken);
         listFilterResponse.EnsureSuccessStatusCode();
         var listFilterContent = await listFilterResponse.Content.ReadAsStreamAsync(TestContext.Current.CancellationToken);
@@ -191,10 +123,10 @@ public class AircraftTests : BaseFunctionalTest
         aircraftListExceedPage.Should().BeEquivalentTo(expected);
 
         // List filtered by enRouteTo
-        var req2 = request with { Status = "EnRoute", ParkedAt = null, EnRouteTo = "CYYZ", TailNumber = "C-FJRO" };
+        var req2 = request with { TailNumber = "C-FJRO", Situation = new AircraftSituationDto("EnRoute", "CYYZ") };
         var aircraft2 = await CreateAircraftAsync(req2);
         var expected2 = new AircraftListDto([aircraft2], 1, 50, 1, false);
-        var listFilterUri2 = new Uri($"aircraft?enRouteTo={req2.EnRouteTo}", UriKind.Relative);
+        var listFilterUri2 = new Uri($"aircraft?enRouteTo={req2.Situation.AirportIcaoCode}", UriKind.Relative);
         var listFilterResponse2 = await HttpClient.GetAsync(listFilterUri2, TestContext.Current.CancellationToken);
         listFilterResponse2.EnsureSuccessStatusCode();
         var listFilterContent2 = await listFilterResponse2.Content.ReadAsStreamAsync(TestContext.Current.CancellationToken);

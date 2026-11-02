@@ -181,8 +181,7 @@ The application creates an aircraft with data including:
 
 - Tail number (`PH-JRN`)
 - Aircraft type (`B78X`)
-- Status
-- Current airport
+- Situation (parked at `RKSI`)
 - Operational limits such as weights
 
 The aircraft API returns an `AircraftDto`, whose ID is then used when scheduling the flight.
@@ -257,7 +256,7 @@ The smoke test sends an HTTP GET request to:
 
 `GET /aircraft/{id}`
 
-It deserializes the response into an `AircraftDto` and examines the `Status` property.
+It deserializes the response into an `AircraftDto` and examines its `Situation.Status` property.
 
 The expected aircraft status is `EnRoute`.
 

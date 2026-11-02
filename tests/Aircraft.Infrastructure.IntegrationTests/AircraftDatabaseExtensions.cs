@@ -50,7 +50,7 @@ internal static class AircraftDatabaseExtensions
                     }
                 }
             },
-            AircraftLocationData = new AircraftLocationData(Status.Parked, "CYVR", null)
+            Situation = AircraftSituation.Parked("CYVR", createdAt)
         };
 
         var aircraft = Core.Models.Aircraft.Create(args);
@@ -63,7 +63,7 @@ internal static class AircraftDatabaseExtensions
     }
 
     // Stands in for a modification unrelated to flight movements, which
-    // moves the aircraft's UpdatedAt but not its LastFlightMovementAt.
+    // moves the aircraft's UpdatedAt but not its Situation.EffectiveAt.
     public static async Task SetUpdatedAtAsync(
         this PostgreSqlFixture postgres,
         Guid aircraftId,

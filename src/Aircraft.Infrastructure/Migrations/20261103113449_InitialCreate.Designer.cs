@@ -13,7 +13,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Aircraft.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20261031152304_InitialCreate")]
+    [Migration("20261103113449_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -54,35 +54,12 @@ namespace Aircraft.Infrastructure.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at");
 
-                    b.Property<string>("EnRouteTo")
-                        .HasMaxLength(4)
-                        .IsUnicode(false)
-                        .HasColumnType("character varying(4)")
-                        .HasColumnName("en_route_to");
-
                     b.Property<string>("EquipmentCode")
                         .IsRequired()
                         .HasMaxLength(4)
                         .IsUnicode(false)
                         .HasColumnType("character varying(4)")
                         .HasColumnName("equipment_code");
-
-                    b.Property<DateTimeOffset?>("LastFlightMovementAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("last_flight_movement_at");
-
-                    b.Property<string>("ParkedAt")
-                        .HasMaxLength(4)
-                        .IsUnicode(false)
-                        .HasColumnType("character varying(4)")
-                        .HasColumnName("parked_at");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasMaxLength(12)
-                        .IsUnicode(false)
-                        .HasColumnType("character varying(12)")
-                        .HasColumnName("status");
 
                     b.Property<string>("TailNumber")
                         .IsRequired()
@@ -146,10 +123,41 @@ namespace Aircraft.Infrastructure.Migrations
                                 .HasColumnName("maximum_zero_fuel_weight_kilograms");
                         });
 
+                    b.ComplexProperty(typeof(Dictionary<string, object>), "Situation", "Aircraft.Core.Models.Aircraft.Situation#AircraftSituation", b1 =>
+                        {
+                            b1.IsRequired();
+
+                            b1.Property<DateTimeOffset>("EffectiveAt")
+                                .HasColumnType("timestamp with time zone")
+                                .HasColumnName("situation_effective_at");
+
+                            b1.Property<string>("EnRouteTo")
+                                .HasMaxLength(4)
+                                .IsUnicode(false)
+                                .HasColumnType("character varying(4)")
+                                .HasColumnName("situation_en_route_to");
+
+                            b1.Property<string>("ParkedAt")
+                                .HasMaxLength(4)
+                                .IsUnicode(false)
+                                .HasColumnType("character varying(4)")
+                                .HasColumnName("situation_parked_at");
+
+                            b1.Property<string>("Status")
+                                .IsRequired()
+                                .HasMaxLength(12)
+                                .IsUnicode(false)
+                                .HasColumnType("character varying(12)")
+                                .HasColumnName("situation_status");
+                        });
+
                     b.HasKey("Id")
                         .HasName("pk_aircraft");
 
-                    b.ToTable("aircraft", "aircraft");
+                    b.ToTable("aircraft", "aircraft", t =>
+                        {
+                            t.HasCheckConstraint("ck_aircraft_situation", "(\r\n    situation_status = 'Parked'\r\n    AND situation_parked_at IS NOT NULL\r\n    AND btrim(situation_parked_at) <> ''\r\n    AND situation_en_route_to IS NULL\r\n)\r\nOR\r\n(\r\n    situation_status = 'EnRoute'\r\n    AND situation_en_route_to IS NOT NULL\r\n    AND btrim(situation_en_route_to) <> ''\r\n    AND situation_parked_at IS NULL\r\n)");
+                        });
                 });
 
             modelBuilder.Entity("Aircraft.Core.Models.CompletedFlight", b =>

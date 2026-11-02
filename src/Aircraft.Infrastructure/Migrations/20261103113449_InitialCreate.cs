@@ -21,20 +21,24 @@ public partial class InitialCreate : Migration
                 id = table.Column<Guid>(type: "uuid", nullable: false),
                 created_at = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                 updated_at = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
-                last_flight_movement_at = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
                 tail_number = table.Column<string>(type: "character varying(12)", unicode: false, maxLength: 12, nullable: false),
                 equipment_code = table.Column<string>(type: "character varying(4)", unicode: false, maxLength: 4, nullable: false),
-                status = table.Column<string>(type: "character varying(12)", unicode: false, maxLength: 12, nullable: false),
-                parked_at = table.Column<string>(type: "character varying(4)", unicode: false, maxLength: 4, nullable: true),
-                en_route_to = table.Column<string>(type: "character varying(4)", unicode: false, maxLength: 4, nullable: true),
                 xmin = table.Column<uint>(type: "xid", rowVersion: true, nullable: false),
                 dry_operating_weight_kilograms = table.Column<int>(type: "integer", nullable: false),
                 maximum_fuel_weight_kilograms = table.Column<int>(type: "integer", nullable: false),
                 maximum_landing_weight_kilograms = table.Column<int>(type: "integer", nullable: false),
                 maximum_takeoff_weight_kilograms = table.Column<int>(type: "integer", nullable: false),
-                maximum_zero_fuel_weight_kilograms = table.Column<int>(type: "integer", nullable: false)
+                maximum_zero_fuel_weight_kilograms = table.Column<int>(type: "integer", nullable: false),
+                situation_effective_at = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                situation_en_route_to = table.Column<string>(type: "character varying(4)", unicode: false, maxLength: 4, nullable: true),
+                situation_parked_at = table.Column<string>(type: "character varying(4)", unicode: false, maxLength: 4, nullable: true),
+                situation_status = table.Column<string>(type: "character varying(12)", unicode: false, maxLength: 12, nullable: false)
             },
-            constraints: table => table.PrimaryKey("pk_aircraft", x => x.id));
+            constraints: table =>
+            {
+                table.PrimaryKey("pk_aircraft", x => x.id);
+                table.CheckConstraint("ck_aircraft_situation", "(\r\n    situation_status = 'Parked'\r\n    AND situation_parked_at IS NOT NULL\r\n    AND btrim(situation_parked_at) <> ''\r\n    AND situation_en_route_to IS NULL\r\n)\r\nOR\r\n(\r\n    situation_status = 'EnRoute'\r\n    AND situation_en_route_to IS NOT NULL\r\n    AND btrim(situation_en_route_to) <> ''\r\n    AND situation_parked_at IS NULL\r\n)");
+            });
 
         migrationBuilder.CreateTable(
             name: "inbox_messages",

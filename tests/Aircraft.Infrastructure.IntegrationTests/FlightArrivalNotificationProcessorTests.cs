@@ -51,10 +51,7 @@ public sealed class FlightArrivalNotificationProcessorTests
             result);
 
         var aircraft = await _postgres.GetAircraftWithHistoryAsync(aircraftId);
-        Assert.Equal(Status.Parked, aircraft.Status);
-        Assert.Equal("EHAM", aircraft.ParkedAt);
-        Assert.Null(aircraft.EnRouteTo);
-        Assert.Equal(ArrivalMilestones.OnBlockAt, aircraft.LastFlightMovementAt);
+        Assert.Equal(AircraftSituation.Parked("EHAM", ArrivalMilestones.OnBlockAt), aircraft.Situation);
         Assert.Equal(RecordedAt, aircraft.UpdatedAt);
         AssertCompletedFlight(Assert.Single(aircraft.CompletedFlights), flightId, RecordedAt);
 
@@ -90,10 +87,7 @@ public sealed class FlightArrivalNotificationProcessorTests
             result);
 
         var aircraft = await _postgres.GetAircraftWithHistoryAsync(aircraftId);
-        Assert.Equal(Status.Parked, aircraft.Status);
-        Assert.Equal("EHAM", aircraft.ParkedAt);
-        Assert.Null(aircraft.EnRouteTo);
-        Assert.Equal(ArrivalMilestones.OnBlockAt, aircraft.LastFlightMovementAt);
+        Assert.Equal(AircraftSituation.Parked("EHAM", ArrivalMilestones.OnBlockAt), aircraft.Situation);
         Assert.Equal(RecordedAt, aircraft.UpdatedAt);
     }
 
@@ -128,10 +122,7 @@ public sealed class FlightArrivalNotificationProcessorTests
             result);
 
         var aircraft = await _postgres.GetAircraftWithHistoryAsync(aircraftId);
-        Assert.Equal(Status.EnRoute, aircraft.Status);
-        Assert.Equal("EGLL", aircraft.EnRouteTo);
-        Assert.Null(aircraft.ParkedAt);
-        Assert.Equal(departedAt, aircraft.LastFlightMovementAt);
+        Assert.Equal(AircraftSituation.EnRoute("EGLL", departedAt), aircraft.Situation);
         Assert.Equal(departureRecordedAt, aircraft.UpdatedAt);
         AssertCompletedFlight(Assert.Single(aircraft.CompletedFlights), flightId, RecordedAt);
 
@@ -170,9 +161,7 @@ public sealed class FlightArrivalNotificationProcessorTests
         Assert.Equal(FlightArrivalProcessingResult.Duplicate, result);
 
         var aircraft = await _postgres.GetAircraftWithHistoryAsync(aircraftId);
-        Assert.Equal(Status.Parked, aircraft.Status);
-        Assert.Equal("EHAM", aircraft.ParkedAt);
-        Assert.Equal(ArrivalMilestones.OnBlockAt, aircraft.LastFlightMovementAt);
+        Assert.Equal(AircraftSituation.Parked("EHAM", ArrivalMilestones.OnBlockAt), aircraft.Situation);
         Assert.Equal(RecordedAt, aircraft.UpdatedAt);
         AssertCompletedFlight(Assert.Single(aircraft.CompletedFlights), flightId, RecordedAt);
     }
@@ -267,9 +256,7 @@ public sealed class FlightArrivalNotificationProcessorTests
         Assert.False(await _postgres.InboxContainsAsync(conflictingEventId));
 
         var aircraft = await _postgres.GetAircraftWithHistoryAsync(aircraftId);
-        Assert.Equal(Status.Parked, aircraft.Status);
-        Assert.Equal("EHAM", aircraft.ParkedAt);
-        Assert.Equal(ArrivalMilestones.OnBlockAt, aircraft.LastFlightMovementAt);
+        Assert.Equal(AircraftSituation.Parked("EHAM", ArrivalMilestones.OnBlockAt), aircraft.Situation);
         Assert.Equal(RecordedAt, aircraft.UpdatedAt);
         AssertCompletedFlight(Assert.Single(aircraft.CompletedFlights), flightId, RecordedAt);
     }
@@ -312,9 +299,7 @@ public sealed class FlightArrivalNotificationProcessorTests
         AssertCompletedFlight(Assert.Single(firstAircraft.CompletedFlights), flightId, RecordedAt);
 
         var secondAircraft = await _postgres.GetAircraftWithHistoryAsync(secondAircraftId);
-        Assert.Equal(Status.Parked, secondAircraft.Status);
-        Assert.Equal("CYVR", secondAircraft.ParkedAt);
-        Assert.Null(secondAircraft.LastFlightMovementAt);
+        Assert.Equal(AircraftSituation.Parked("CYVR", T0), secondAircraft.Situation);
         Assert.Equal(T0, secondAircraft.UpdatedAt);
         Assert.Empty(secondAircraft.CompletedFlights);
     }
@@ -357,9 +342,7 @@ public sealed class FlightArrivalNotificationProcessorTests
             result);
 
         var aircraft = await _postgres.GetAircraftWithHistoryAsync(aircraftId);
-        Assert.Equal(Status.Parked, aircraft.Status);
-        Assert.Equal("EHAM", aircraft.ParkedAt);
-        Assert.Equal(ArrivalMilestones.OnBlockAt, aircraft.LastFlightMovementAt);
+        Assert.Equal(AircraftSituation.Parked("EHAM", ArrivalMilestones.OnBlockAt), aircraft.Situation);
         Assert.Equal(RecordedAt, aircraft.UpdatedAt);
         AssertCompletedFlight(Assert.Single(aircraft.CompletedFlights), flightId, concurrentlyRecordedAt);
 
@@ -401,10 +384,7 @@ public sealed class FlightArrivalNotificationProcessorTests
             result);
 
         var aircraft = await _postgres.GetAircraftWithHistoryAsync(aircraftId);
-        Assert.Equal(Status.EnRoute, aircraft.Status);
-        Assert.Equal("EGLL", aircraft.EnRouteTo);
-        Assert.Null(aircraft.ParkedAt);
-        Assert.Equal(departedAt, aircraft.LastFlightMovementAt);
+        Assert.Equal(AircraftSituation.EnRoute("EGLL", departedAt), aircraft.Situation);
         Assert.Equal(departureRecordedAt, aircraft.UpdatedAt);
         AssertCompletedFlight(Assert.Single(aircraft.CompletedFlights), flightId, RecordedAt);
 
@@ -439,9 +419,7 @@ public sealed class FlightArrivalNotificationProcessorTests
         Assert.False(await _postgres.InboxContainsAsync(eventId));
 
         var aircraft = await _postgres.GetAircraftWithHistoryAsync(aircraftId);
-        Assert.Equal(Status.Parked, aircraft.Status);
-        Assert.Equal("CYVR", aircraft.ParkedAt);
-        Assert.Null(aircraft.LastFlightMovementAt);
+        Assert.Equal(AircraftSituation.Parked("CYVR", T0), aircraft.Situation);
         Assert.Equal(T0, aircraft.UpdatedAt);
         Assert.Empty(aircraft.CompletedFlights);
     }
