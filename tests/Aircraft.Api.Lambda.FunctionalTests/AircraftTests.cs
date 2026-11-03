@@ -91,6 +91,7 @@ public class AircraftTests : BaseFunctionalTest
             x.MaximumLandingWeight == request.MaximumLandingWeight &&
             x.MaximumTakeoffWeight == request.MaximumTakeoffWeight &&
             x.MaximumZeroFuelWeight == request.MaximumZeroFuelWeight &&
+            x.Situation == request.Situation &&
             x.Seats == 337);
 
         // Create should return conflict when creating aircraft with same tail number
