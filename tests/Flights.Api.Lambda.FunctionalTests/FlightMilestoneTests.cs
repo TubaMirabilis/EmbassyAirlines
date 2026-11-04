@@ -33,6 +33,115 @@ public sealed class FlightMilestoneTests : BaseFunctionalTest
         _clock = factory.Services.GetRequiredService<IClock>();
     }
 
+    [Theory]
+    [InlineData(FlightMilestone.Takeoff)]
+    [InlineData(FlightMilestone.Landing)]
+    [InlineData(FlightMilestone.OnBlock)]
+    public async Task RecordMilestone_Should_ReturnBadRequest_WhenFlightIsNotEnRoute(
+    FlightMilestone milestone)
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var flightId = await ScheduleFlightAsync(ct);
+        var occurredAt = TimeHelpers.MinutesFromNowRoundedUp(_clock, -60);
+
+        using var response = await RecordMilestoneAsync(
+            flightId, milestone, occurredAt, ct);
+
+        await GetProblemDetailsFromResponseAndAssert(
+            response,
+            $"Cannot record {milestone} for a flight " +
+            "with status Scheduled. The flight must be EnRoute.");
+    }
+
+    [Theory]
+    [InlineData(FlightMilestone.Takeoff)]
+    [InlineData(FlightMilestone.Landing)]
+    public async Task RecordMilestone_Should_ReturnBadRequest_WhenMilestoneAlreadyRecorded(
+    FlightMilestone milestone)
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var flightId = await ScheduleFlightAsync(ct);
+        var start = TimeHelpers.MinutesFromNowRoundedUp(_clock, -60);
+
+        using (var offBlock = await RecordMilestoneAsync(
+            flightId, FlightMilestone.OffBlock, start, ct))
+        {
+            offBlock.EnsureSuccessStatusCode();
+        }
+
+        var occurredAt = start + Duration.FromMinutes(10);
+
+        if (milestone == FlightMilestone.Landing)
+        {
+            using var takeoff = await RecordMilestoneAsync(
+                flightId, FlightMilestone.Takeoff, occurredAt, ct);
+
+            takeoff.EnsureSuccessStatusCode();
+            occurredAt += Duration.FromMinutes(10);
+        }
+
+        using (var first = await RecordMilestoneAsync(
+            flightId, milestone, occurredAt, ct))
+        {
+            first.EnsureSuccessStatusCode();
+        }
+
+        using var duplicate = await RecordMilestoneAsync(
+            flightId, milestone, occurredAt, ct);
+
+        await GetProblemDetailsFromResponseAndAssert(
+            duplicate,
+            $"The {milestone} milestone has already been recorded.");
+    }
+
+    [Theory]
+    [InlineData(FlightMilestone.Takeoff)]
+    [InlineData(FlightMilestone.Landing)]
+    [InlineData(FlightMilestone.OnBlock)]
+    public async Task RecordMilestone_Should_ReturnBadRequest_WhenTimestampPrecedesPreviousMilestone(
+    FlightMilestone milestone)
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var flightId = await ScheduleFlightAsync(ct);
+        var start = TimeHelpers.MinutesFromNowRoundedUp(_clock, -60);
+
+        FlightMilestone[] prerequisites = milestone switch
+        {
+            FlightMilestone.Takeoff => [FlightMilestone.OffBlock],
+            FlightMilestone.Landing =>
+                [FlightMilestone.OffBlock, FlightMilestone.Takeoff],
+            FlightMilestone.OnBlock =>
+                [FlightMilestone.OffBlock, FlightMilestone.Takeoff,
+             FlightMilestone.Landing],
+            _ => throw new ArgumentOutOfRangeException(nameof(milestone))
+        };
+
+        for (var i = 0; i < prerequisites.Length; i++)
+        {
+            using var response = await RecordMilestoneAsync(
+                flightId,
+                prerequisites[i],
+                start + Duration.FromMinutes(i * 10),
+                ct);
+
+            response.EnsureSuccessStatusCode();
+        }
+
+        var invalidTime = start +
+            Duration.FromMinutes((prerequisites.Length - 1) * 10 - 1);
+
+        using var invalidResponse = await RecordMilestoneAsync(
+            flightId, milestone, invalidTime, ct);
+
+        var previousMilestone = prerequisites[^1];
+
+        await GetProblemDetailsFromResponseAndAssertDetailStartsWith(
+    invalidResponse,
+    $"The {milestone} timestamp cannot be earlier than " +
+    $"the {previousMilestone} timestamp. " +
+    "(Parameter 'occurredAt')");
+    }
+
     [Fact]
     public async Task RecordMilestone_Should_NotMoveUpdatedAtBackwards_WhenMilestonesAreRecordedRetrospectively()
     {
@@ -108,5 +217,21 @@ public sealed class FlightMilestoneTests : BaseFunctionalTest
         response.EnsureSuccessStatusCode();
         var flight = await response.Content.ReadFromJsonAsync<FlightDto>(ct);
         return flight?.Id ?? throw new JsonException();
+    }
+
+    private async Task<HttpResponseMessage> RecordMilestoneAsync(
+    Guid flightId,
+    FlightMilestone milestone,
+    Instant occurredAt,
+    CancellationToken ct)
+    {
+        var request = new RecordFlightMilestoneDto(
+            milestone.ToString(),
+            occurredAt.ToDateTimeOffset());
+
+        return await HttpClient.PatchAsJsonAsync(
+            $"flights/{flightId}/milestones",
+            request,
+            ct);
     }
 }

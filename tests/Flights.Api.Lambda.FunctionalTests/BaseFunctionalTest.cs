@@ -13,4 +13,21 @@ public abstract class BaseFunctionalTest : IClassFixture<FunctionalTestWebAppFac
         var actual = await response.ReadProblemDetailsAsync();
         actual.Should().BeEquivalentTo(expected, options => options.Excluding(p => p.Extensions));
     }
+    protected static async Task GetProblemDetailsFromResponseAndAssertDetailStartsWith(
+    HttpResponseMessage response,
+    string expectedDetailPrefix)
+    {
+        var expected = response.StatusCode.CreateExpectedProblemDetails(
+            expectedDetailPrefix);
+
+        var actual = await response.ReadProblemDetailsAsync();
+
+        actual.Should().BeEquivalentTo(
+            expected,
+            options => options
+                .Excluding(p => p.Extensions)
+                .Excluding(p => p.Detail));
+
+        actual.Detail.Should().StartWith(expectedDetailPrefix);
+    }
 }
