@@ -92,48 +92,51 @@ public abstract class NpgsqlOutboxProcessorBase<TPublisher> : OutboxProcessorBas
                 break;
             }
             attemptedCount++;
-            publishedCount += await ProcessMessageAsync(
-                message,
-                DateTime.UtcNow,
-                cancellationToken) ? 1 : 0;
-            var outcome = await RecordOutcomeAsync(message, batch.ClaimId);
-            if (outcome is not OutcomeResult.Recorded)
+            publishedCount += await ProcessMessageAsync(message, DateTime.UtcNow, cancellationToken) ? 1 : 0;
+            if (!await RecordOutcomeAsync(message, batch.ClaimId))
             {
                 LogAbandonedMessages(
                     batch.Messages.Count - attemptedCount,
-                    GetOutcomeFailureReason(outcome));
+                    "the claim was lost");
                 break;
             }
         }
         return new(publishedCount, attemptedCount);
     }
-    private async Task<OutcomeResult> RecordOutcomeAsync(OutboxMessage message, Guid claimId)
+
+    private async Task<bool> RecordOutcomeAsync(
+        OutboxMessage message,
+        Guid claimId)
     {
         DbContext.Entry(message).State = EntityState.Detached;
-        try
+
+        var updatedCount = await DbContext.Set<OutboxMessage>()
+            .Where(m =>
+                m.Id == message.Id &&
+                m.ClaimId == claimId &&
+                m.ClaimedUntilUtc > DatabaseClock.UtcNow())
+            .ExecuteUpdateAsync(setters => setters
+                .SetProperty(m => m.ProcessedOnUtc, message.ProcessedOnUtc)
+                .SetProperty(m => m.Error, message.Error)
+                .SetProperty(m => m.RetryCount, message.RetryCount)
+                .SetProperty(m => m.NextAttemptOnUtc, message.NextAttemptOnUtc)
+                .SetProperty(m => m.DeadLetteredOnUtc, message.DeadLetteredOnUtc)
+                .SetProperty(m => m.ClaimId, (Guid?)null)
+                .SetProperty(m => m.ClaimedUntilUtc, (DateTime?)null),
+                CancellationToken.None);
+
+        if (updatedCount > 0)
         {
-            var updatedCount = await DbContext.Set<OutboxMessage>()
-                .Where(m => m.Id == message.Id && m.ClaimId == claimId && m.ClaimedUntilUtc > DatabaseClock.UtcNow())
-                .ExecuteUpdateAsync(setters => setters
-                    .SetProperty(m => m.ProcessedOnUtc, message.ProcessedOnUtc)
-                    .SetProperty(m => m.Error, message.Error)
-                    .SetProperty(m => m.RetryCount, message.RetryCount)
-                    .SetProperty(m => m.NextAttemptOnUtc, message.NextAttemptOnUtc)
-                    .SetProperty(m => m.DeadLetteredOnUtc, message.DeadLetteredOnUtc)
-                    .SetProperty(m => m.ClaimId, (Guid?)null)
-                    .SetProperty(m => m.ClaimedUntilUtc, (DateTime?)null), CancellationToken.None);
-            if (updatedCount > 0)
-            {
-                return OutcomeResult.Recorded;
-            }
-            Logger.LogError("Outbox message {MessageId} of type {MessageType} is no longer validly claimed by {ClaimId}; its outcome was discarded because the claim expired or another worker now owns it", message.Id, message.Name, claimId);
-            return OutcomeResult.ClaimLost;
+            return true;
         }
-        catch (DbException e)
-        {
-            Logger.LogError(e, "Failed to record the outcome of outbox message {MessageId} of type {MessageType}; it will be reprocessed once its claim expires", message.Id, message.Name);
-            return OutcomeResult.PersistenceFailed;
-        }
+
+        Logger.LogError(
+            "Outbox message {MessageId} of type {MessageType} is no longer validly claimed by {ClaimId}; its outcome was discarded because the claim expired or another worker now owns it",
+            message.Id,
+            message.Name,
+            claimId);
+
+        return false;
     }
     private static string? GetStopReason(long claimIssuedAt, CancellationToken cancellationToken)
     {
@@ -148,12 +151,6 @@ public abstract class NpgsqlOutboxProcessorBase<TPublisher> : OutboxProcessorBas
         }
         return null;
     }
-    private static string GetOutcomeFailureReason(OutcomeResult outcome) => outcome switch
-    {
-        OutcomeResult.ClaimLost => "the claim was lost",
-        OutcomeResult.PersistenceFailed => "the outcome of the preceding message could not be persisted",
-        _ => throw new ArgumentOutOfRangeException(nameof(outcome), outcome, null)
-    };
     private void LogAbandonedMessages(int abandonedCount, string reason)
     {
         if (abandonedCount == 0)
@@ -172,10 +169,4 @@ public abstract class NpgsqlOutboxProcessorBase<TPublisher> : OutboxProcessorBas
     }
     private sealed record ClaimedBatch(Guid ClaimId, long ClaimIssuedAt, IReadOnlyList<OutboxMessage> Messages);
     private readonly record struct BatchResult(int PublishedCount, int AttemptedCount);
-    private enum OutcomeResult
-    {
-        Recorded,
-        ClaimLost,
-        PersistenceFailed
-    }
 }
