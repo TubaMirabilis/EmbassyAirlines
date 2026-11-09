@@ -1,8 +1,11 @@
+using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
 using AwesomeAssertions;
 using Flights.Core.Models;
+using Flights.Infrastructure.Database;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using NodaTime;
 using Shared.Contracts;
@@ -18,6 +21,7 @@ public class AdjustFlightStatusTests : BaseFunctionalTest
     private static readonly DateTimeZone _incheonTimeZone = DateTimeZoneProviders.Tzdb["Asia/Seoul"];
     private static readonly DateTimeZone _schipholTimeZone = DateTimeZoneProviders.Tzdb["Europe/Amsterdam"];
     private static readonly Duration _flightDuration = Duration.FromHours(10) + Duration.FromMinutes(30);
+    private readonly FunctionalTestWebAppFactory _factory;
     public AdjustFlightStatusTests(FunctionalTestWebAppFactory factory) : base(factory)
     {
         ArgumentNullException.ThrowIfNull(factory.IncheonAirport);
@@ -27,6 +31,7 @@ public class AdjustFlightStatusTests : BaseFunctionalTest
         _incheon = factory.IncheonAirport;
         _schiphol = factory.SchipholAirport;
         _aircraft1 = factory.Aircraft1;
+        _factory = factory;
         _clock = factory.Services.GetRequiredService<IClock>();
     }
 
@@ -53,6 +58,51 @@ public class AdjustFlightStatusTests : BaseFunctionalTest
             throw new JsonException("Deserialized aircraft is null");
         }
         flight3.Status.Should().BeEquivalentTo("Cancelled");
+    }
+    [Fact]
+    public async Task AdjustStatus_Should_ReturnConflict_WhenDelayingArrivedFlight()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var flight = await ScheduleFlightAsync();
+        var start = TimeHelpers.MinutesFromNowRoundedUp(_clock, -60);
+
+        FlightMilestone[] milestones =
+        [
+            FlightMilestone.OffBlock,
+        FlightMilestone.Takeoff,
+        FlightMilestone.Landing,
+        FlightMilestone.OnBlock
+        ];
+
+        for (var i = 0; i < milestones.Length; i++)
+        {
+            using var response = await RecordMilestoneAsync(
+                flight.Id,
+                milestones[i],
+                start + Duration.FromMinutes(i * 10),
+                ct);
+
+            response.EnsureSuccessStatusCode();
+        }
+
+        var arrivedFlight = await LoadFlightAsync(flight.Id, ct);
+        arrivedFlight.Status.Should().Be(FlightStatus.Arrived);
+
+        var request = new AdjustFlightStatusDto("Delayed");
+
+        using var invalidResponse = await HttpClient.PatchAsJsonAsync(
+            $"flights/{flight.Id}/status",
+            request,
+            ct);
+
+        invalidResponse.StatusCode.Should().Be(HttpStatusCode.Conflict);
+
+        await GetProblemDetailsFromResponseAndAssert(
+            invalidResponse,
+            "Cannot transition flight from Arrived to Delayed.");
+
+        var unchangedFlight = await LoadFlightAsync(flight.Id, ct);
+        unchangedFlight.Status.Should().Be(FlightStatus.Arrived);
     }
     private async Task<FlightDto> ScheduleFlightAsync()
     {
@@ -129,5 +179,28 @@ public class AdjustFlightStatusTests : BaseFunctionalTest
             SchedulingAmbiguityPolicy = schedulingAmbiguityPolicy,
             OperationType = "RevenuePassenger"
         };
+    }
+    private async Task<HttpResponseMessage> RecordMilestoneAsync(
+    Guid flightId,
+    FlightMilestone milestone,
+    Instant occurredAt,
+    CancellationToken ct)
+    {
+        var request = new RecordFlightMilestoneDto(
+            milestone.ToString(),
+            occurredAt.ToDateTimeOffset());
+
+        return await HttpClient.PatchAsJsonAsync(
+            $"flights/{flightId}/milestones",
+            request,
+            ct);
+    }
+    private async Task<Flight> LoadFlightAsync(Guid flightId, CancellationToken ct)
+    {
+        using var scope = _factory.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        return await db.Flights
+                       .AsNoTracking()
+                       .SingleAsync(f => f.Id == flightId, ct);
     }
 }

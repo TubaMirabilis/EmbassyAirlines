@@ -1,4 +1,5 @@
 #:package CliWrap
+#:package Microsoft.DotNet.ILCompiler
 using CliWrap;
 using CliWrap.Exceptions;
 

@@ -6,8 +6,6 @@ namespace Aircraft.Infrastructure;
 
 public sealed class FlightArrivalNotificationProcessor
 {
-    private const int MaxAttempts = 3;
-
     private readonly IDbContextFactory<ApplicationDbContext> _contextFactory;
     private readonly TimeProvider _timeProvider;
 
@@ -19,97 +17,85 @@ public sealed class FlightArrivalNotificationProcessor
         _timeProvider = timeProvider;
     }
 
-    public async Task<FlightArrivalProcessingResult> ProcessAsync(
+    public Task<FlightArrivalProcessingResult> ProcessAsync(
         Guid eventId,
         Guid aircraftId,
         Guid flightId,
         string departureAirportIcao,
         string arrivalAirportIcao,
         FlightMilestones milestones,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default) => AircraftConcurrencyRetry.ExecuteAsync(async ct =>
     {
-        for (var attempt = 1; attempt <= MaxAttempts; attempt++)
+        await using var ctx =
+            await _contextFactory.CreateDbContextAsync(ct);
+
+        await using var transaction =
+            await ctx.Database.BeginTransactionAsync(ct);
+
+        var claimed = await ctx.Database.ExecuteSqlInterpolatedAsync(
+            $"""
+            INSERT INTO aircraft.inbox_messages
+                (event_id, processed_on_utc)
+            VALUES
+                ({eventId}, now())
+            ON CONFLICT (event_id) DO NOTHING;
+            """,
+            ct);
+
+        if (claimed == 0)
         {
-            await using var ctx =
-                await _contextFactory.CreateDbContextAsync(cancellationToken);
-
-            try
-            {
-                await using var transaction =
-                    await ctx.Database.BeginTransactionAsync(cancellationToken);
-
-                var claimed = await ctx.Database.ExecuteSqlInterpolatedAsync(
-                    $"""
-                    INSERT INTO aircraft.inbox_messages
-                        (event_id, processed_on_utc)
-                    VALUES
-                        ({eventId}, now())
-                    ON CONFLICT (event_id) DO NOTHING;
-                    """,
-                    cancellationToken);
-
-                if (claimed == 0)
-                {
-                    return FlightArrivalProcessingResult.Duplicate;
-                }
-
-                var aircraft = await ctx.Aircraft
-                    .SingleOrDefaultAsync(
-                        a => a.Id == aircraftId,
-                        cancellationToken);
-
-                if (aircraft is null)
-                {
-                    throw new InvalidOperationException(
-                        $"Aircraft with ID {aircraftId} was not found.");
-                }
-
-                var now = _timeProvider.GetUtcNow();
-
-                var flight = CompletedFlight.Create(
-                    flightId,
-                    departureAirportIcao,
-                    arrivalAirportIcao,
-                    milestones,
-                    now);
-
-                // History is recorded regardless of event ordering;
-                // only the state transition below is subject to it.
-                var history = await RecordCompletedFlightAsync(
-                    ctx,
-                    eventId,
-                    aircraftId,
-                    flight,
-                    cancellationToken);
-
-                if (aircraft.IsStaleFlightMovement(milestones.OnBlockAt))
-                {
-                    await transaction.CommitAsync(cancellationToken);
-                    return new FlightArrivalProcessingResult(
-                        history,
-                        AircraftFlightStatusProcessingResult.Stale);
-                }
-
-                aircraft.MarkAsParked(arrivalAirportIcao, milestones.OnBlockAt, now);
-
-                await ctx.SaveChangesAsync(cancellationToken);
-                await transaction.CommitAsync(cancellationToken);
-
-                return new FlightArrivalProcessingResult(
-                    history,
-                    AircraftFlightStatusProcessingResult.Applied);
-            }
-            catch (DbUpdateConcurrencyException)
-                when (attempt < MaxAttempts)
-            {
-                // The transaction and context are disposed
-                // before the next iteration.
-            }
+            return FlightArrivalProcessingResult.Duplicate;
         }
 
-        throw new InvalidOperationException(
-            "Aircraft status processing exhausted its retry attempts.");
-    }
+        var aircraft = await ctx.Aircraft
+            .SingleOrDefaultAsync(
+                a => a.Id == aircraftId,
+                ct);
+
+        if (aircraft is null)
+        {
+            throw new InvalidOperationException(
+                $"Aircraft with ID {aircraftId} was not found.");
+        }
+
+        var now = _timeProvider.GetUtcNow();
+
+        var flight = CompletedFlight.Create(
+            flightId,
+            departureAirportIcao,
+            arrivalAirportIcao,
+            milestones,
+            now);
+
+        // History is recorded regardless of event ordering;
+        // only the state transition below is subject to it.
+        var history = await RecordCompletedFlightAsync(
+            ctx,
+            eventId,
+            aircraftId,
+            flight,
+            ct);
+
+        if (aircraft.IsStaleFlightMovement(milestones.OnBlockAt))
+        {
+            await transaction.CommitAsync(ct);
+            return new FlightArrivalProcessingResult(
+                history,
+                AircraftFlightStatusProcessingResult.Stale);
+        }
+
+        aircraft.MarkAsParked(
+            arrivalAirportIcao,
+            milestones.OnBlockAt,
+            now);
+
+        await ctx.SaveChangesAsync(ct);
+        await transaction.CommitAsync(ct);
+
+        return new FlightArrivalProcessingResult(
+            history,
+            AircraftFlightStatusProcessingResult.Applied);
+    }, cancellationToken);
 
     private static async Task<CompletedFlightRecordingResult> RecordCompletedFlightAsync(
         ApplicationDbContext ctx,
