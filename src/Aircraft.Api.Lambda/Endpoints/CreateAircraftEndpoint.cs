@@ -83,12 +83,6 @@ internal sealed class CreateAircraftEndpoint : IEndpoint
             await ctx.SaveChangesAsync(ct);
             return TypedResults.Created($"/aircraft/{aircraft.Id}", aircraft.ToDto());
         }
-        catch (ArgumentException e)
-        {
-            logger.LogError(e, "Error creating aircraft with tail number {TailNumber}", dto.TailNumber);
-            var error = Error.Validation("Aircraft.CreationFailed", $"Error creating aircraft: {e.Message}");
-            return TypedResults.Problem(ErrorHandlingHelper.GetProblemDetails(error));
-        }
         catch (AmazonS3Exception e)
         {
             logger.LogError(e, "Error retrieving seat layout definition for {EquipmentCode}", equipmentCode);

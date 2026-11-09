@@ -9,8 +9,6 @@ internal static class AircraftSituationDtoExtensions
         this AircraftSituationDto dto,
         DateTimeOffset effectiveAt)
     {
-        ArgumentNullException.ThrowIfNull(dto);
-
         if (!AircraftStatusNames.TryParse(dto.Status, out var status))
         {
             throw new ArgumentException(

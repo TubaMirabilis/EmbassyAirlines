@@ -177,6 +177,121 @@ public sealed class FlightMilestoneTests : BaseFunctionalTest
         (await LoadFlightAsync(flightId, ct)).Status.Should().Be(FlightStatus.Arrived);
     }
 
+
+    [Theory]
+    [InlineData(FlightMilestone.Landing)]
+    [InlineData(FlightMilestone.OnBlock)]
+    public async Task RecordMilestone_Should_ReturnBadRequest_WhenPrerequisiteMilestoneIsMissing(
+        FlightMilestone milestone)
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var flightId = await ScheduleFlightAsync(ct);
+        var occurredAt = TimeHelpers.MinutesFromNowRoundedUp(_clock, -60);
+
+        using (var offBlock = await RecordMilestoneAsync(
+            flightId, FlightMilestone.OffBlock, occurredAt, ct))
+        {
+            offBlock.EnsureSuccessStatusCode();
+        }
+
+        using var response = await RecordMilestoneAsync(
+            flightId,
+            milestone,
+            occurredAt + Duration.FromMinutes(10),
+            ct);
+
+        var missingMilestone = milestone switch
+        {
+            FlightMilestone.Landing => FlightMilestone.Takeoff,
+            FlightMilestone.OnBlock => FlightMilestone.Landing,
+            _ => throw new ArgumentOutOfRangeException(nameof(milestone))
+        };
+
+        await GetProblemDetailsFromResponseAndAssert(
+            response,
+            $"Cannot record {milestone} before the {missingMilestone} milestone.");
+
+        var flight = await LoadFlightAsync(flightId, ct);
+
+        flight.Status.Should().Be(FlightStatus.EnRoute);
+        GetMilestoneAt(flight, milestone).Should().BeNull();
+    }
+
+    [Fact]
+    public async Task RecordMilestone_Should_ReturnBadRequest_WhenOffBlockIsRecordedTwice()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var flightId = await ScheduleFlightAsync(ct);
+        var occurredAt = TimeHelpers.MinutesFromNowRoundedUp(_clock, -60);
+
+        using (var first = await RecordMilestoneAsync(
+            flightId, FlightMilestone.OffBlock, occurredAt, ct))
+        {
+            first.EnsureSuccessStatusCode();
+        }
+
+        using var duplicate = await RecordMilestoneAsync(
+            flightId,
+            FlightMilestone.OffBlock,
+            occurredAt + Duration.FromMinutes(10),
+            ct);
+
+        await GetProblemDetailsFromResponseAndAssert(
+            duplicate,
+            "Cannot record OffBlock for a flight with status EnRoute. " +
+            "The flight must be Scheduled or Delayed.");
+
+        var flight = await LoadFlightAsync(flightId, ct);
+
+        flight.Status.Should().Be(FlightStatus.EnRoute);
+        flight.OffBlockAt.Should().Be(occurredAt);
+    }
+
+    [Fact]
+    public async Task RecordMilestone_Should_ReturnBadRequest_WhenOnBlockIsRecordedTwice()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var flightId = await ScheduleFlightAsync(ct);
+        var start = TimeHelpers.MinutesFromNowRoundedUp(_clock, -60);
+
+        FlightMilestone[] milestones =
+        [
+            FlightMilestone.OffBlock,
+        FlightMilestone.Takeoff,
+        FlightMilestone.Landing,
+        FlightMilestone.OnBlock
+        ];
+
+        for (var i = 0; i < milestones.Length; i++)
+        {
+            using var response = await RecordMilestoneAsync(
+                flightId,
+                milestones[i],
+                start + Duration.FromMinutes(i * 10),
+                ct);
+
+            response.EnsureSuccessStatusCode();
+        }
+
+        var originalOnBlockAt = start + Duration.FromMinutes(30);
+
+        using var duplicate = await RecordMilestoneAsync(
+            flightId,
+            FlightMilestone.OnBlock,
+            start + Duration.FromMinutes(40),
+            ct);
+
+        await GetProblemDetailsFromResponseAndAssert(
+            duplicate,
+            "Cannot record OnBlock for a flight with status Arrived. " +
+            "The flight must be EnRoute.");
+
+        var flight = await LoadFlightAsync(flightId, ct);
+
+        flight.Status.Should().Be(FlightStatus.Arrived);
+        flight.OnBlockAt.Should().Be(originalOnBlockAt);
+    }
+
     private static Instant? GetMilestoneAt(Flight flight, FlightMilestone milestone) => milestone switch
     {
         FlightMilestone.OffBlock => flight.OffBlockAt,

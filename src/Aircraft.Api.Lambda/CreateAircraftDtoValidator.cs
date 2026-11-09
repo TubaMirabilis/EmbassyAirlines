@@ -8,15 +8,17 @@ internal sealed class CreateAircraftDtoValidator : AbstractValidator<CreateAircr
     public CreateAircraftDtoValidator()
     {
         RuleFor(x => x.TailNumber)
-            .Matches(@"^[A-Z0-9\-]+$")
+            .Cascade(CascadeMode.Stop)
+            .NotEmpty()
+            .Matches(@"^[A-Z0-9-]+$")
             .WithMessage("Tail number must only contain uppercase letters, numbers, and dashes.")
-            .MaximumLength(12)
-            .WithMessage("Tail number must be no longer than 12 characters.");
+            .MaximumLength(12);
         RuleFor(x => x.EquipmentCode)
-            .Matches("^[A-Z0-9]+$")
+            .Cascade(CascadeMode.Stop)
+            .NotEmpty()
+            .Matches(@"^[A-Z0-9]+$")
             .WithMessage("Equipment code must only contain uppercase letters and numbers.")
-            .MaximumLength(4)
-            .WithMessage("Equipment code must be no longer than 4 characters.");
+            .MaximumLength(4);
         RuleFor(x => x.DryOperatingWeight)
                     .GreaterThan(0)
                     .WithMessage("Dry operating weight must be greater than zero.");
