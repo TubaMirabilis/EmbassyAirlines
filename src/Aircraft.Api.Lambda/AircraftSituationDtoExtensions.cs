@@ -11,9 +11,7 @@ internal static class AircraftSituationDtoExtensions
     {
         if (!AircraftStatusNames.TryParse(dto.Status, out var status))
         {
-            throw new ArgumentException(
-                $"Invalid aircraft status: {dto.Status}",
-                nameof(dto));
+            throw new ArgumentException($"Invalid aircraft status: {dto.Status}", nameof(dto));
         }
 
         return status switch
@@ -26,9 +24,7 @@ internal static class AircraftSituationDtoExtensions
                 dto.AirportIcaoCode,
                 effectiveAt),
 
-            _ => throw new ArgumentOutOfRangeException(
-                nameof(dto),
-                $"Unsupported aircraft status: {dto.Status}")
+            _ => throw new ArgumentOutOfRangeException(nameof(dto), $"Unsupported aircraft status: {dto.Status}")
         };
     }
     public static AircraftSituationDto ToDto(
@@ -38,8 +34,7 @@ internal static class AircraftSituationDtoExtensions
         {
             Status.Parked => situation.ParkedAt!,
             Status.EnRoute => situation.EnRouteTo!,
-            _ => throw new InvalidOperationException(
-                "Unsupported aircraft situation.")
+            _ => throw new InvalidOperationException("Unsupported aircraft situation.")
         };
 
         return new AircraftSituationDto(
