@@ -188,6 +188,16 @@ public class FlightsTests : BaseFunctionalTest
         await VerifyFlightCanBeRetrievedByIdAsync(flight);
         flight = await AssignAircraftAsync(flight, _aircraft2);
         flight = await AdjustPricingAsync(flight, new AdjustFlightPricingDto(500, 5000));
+        var dto = new AdjustFlightPricingDto(-500, 5000);
+        var response = await HttpClient.PatchAsJsonAsync($"flights/{flight.Id}/pricing", dto, TestContext.Current.CancellationToken);
+        await GetProblemDetailsFromResponseAndAssert(response, "Value must be greater than or equal to zero. (Parameter 'amount')");
+        var departureInstant = TimeHelpers.MinutesFromNowRoundedUp(_clock, 1).Minus(Duration.FromHours(1));
+        var arrivalInstant = departureInstant + _flightDuration;
+        var departureZoned = departureInstant.InZone(_incheonTimeZone);
+        var arrivalZoned = arrivalInstant.InZone(_schipholTimeZone);
+        var dto2 = new RescheduleFlightDto(departureZoned.ToDateTimeUnspecified(), arrivalZoned.ToDateTimeUnspecified(), "ThrowWhenAmbiguous");
+        var response2 = await HttpClient.PatchAsJsonAsync($"flights/{flight.Id}/schedule", dto2, TestContext.Current.CancellationToken);
+        await GetProblemDetailsFromResponseAndAssert(response2, "Departure time cannot be in the past (Parameter 'args')");
         await RescheduleFlightAsync(flight);
         await RecordOffBlockMilestoneAsync(flight);
     }
@@ -305,14 +315,8 @@ public class FlightsTests : BaseFunctionalTest
         var arrivalInstant = departureInstant + _flightDuration;
         var departureZoned = departureInstant.InZone(_incheonTimeZone);
         var arrivalZoned = arrivalInstant.InZone(_schipholTimeZone);
-        var request = new RescheduleFlightDto(
-            departureZoned.ToDateTimeUnspecified(),
-            arrivalZoned.ToDateTimeUnspecified(),
-            "ThrowWhenAmbiguous");
-        var response = await HttpClient.PatchAsJsonAsync(
-            $"flights/{flight.Id}/schedule",
-            request,
-            TestContext.Current.CancellationToken);
+        var request = new RescheduleFlightDto(departureZoned.ToDateTimeUnspecified(), arrivalZoned.ToDateTimeUnspecified(), "ThrowWhenAmbiguous");
+        var response = await HttpClient.PatchAsJsonAsync($"flights/{flight.Id}/schedule", request, TestContext.Current.CancellationToken);
         response.EnsureSuccessStatusCode();
         var rescheduledFlight = await DeserializeAsync<FlightDto>(response);
         rescheduledFlight.Should().Match<FlightDto>(x =>
