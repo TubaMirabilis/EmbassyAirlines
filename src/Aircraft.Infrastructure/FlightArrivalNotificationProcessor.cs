@@ -1,6 +1,7 @@
 using Aircraft.Core.Models;
 using Aircraft.Infrastructure.Database;
 using Microsoft.EntityFrameworkCore;
+using Shared.Contracts;
 
 namespace Aircraft.Infrastructure;
 
@@ -17,14 +18,7 @@ public sealed class FlightArrivalNotificationProcessor
         _timeProvider = timeProvider;
     }
 
-    public Task<FlightArrivalProcessingResult> ProcessAsync(
-        Guid eventId,
-        Guid aircraftId,
-        Guid flightId,
-        string departureAirportIcao,
-        string arrivalAirportIcao,
-        FlightMilestones milestones,
-        CancellationToken cancellationToken = default) => AircraftConcurrencyRetry.ExecuteAsync(async ct =>
+    public Task<FlightArrivalProcessingResult> ProcessAsync(FlightArrivedEvent flightArrivedEvent, CancellationToken cancellationToken = default) => AircraftConcurrencyRetry.ExecuteAsync(async ct =>
     {
         await using var ctx =
             await _contextFactory.CreateDbContextAsync(ct);
@@ -37,7 +31,7 @@ public sealed class FlightArrivalNotificationProcessor
             INSERT INTO aircraft.inbox_messages
                 (event_id, processed_on_utc)
             VALUES
-                ({eventId}, now())
+                ({flightArrivedEvent.Id}, now())
             ON CONFLICT (event_id) DO NOTHING;
             """,
             ct);
@@ -49,32 +43,18 @@ public sealed class FlightArrivalNotificationProcessor
 
         var aircraft = await ctx.Aircraft
             .SingleOrDefaultAsync(
-                a => a.Id == aircraftId,
+                a => a.Id == flightArrivedEvent.AircraftId,
                 ct);
 
         if (aircraft is null)
         {
             throw new InvalidOperationException(
-                $"Aircraft with ID {aircraftId} was not found.");
+                $"Aircraft with ID {flightArrivedEvent.AircraftId} was not found.");
         }
-
         var now = _timeProvider.GetUtcNow();
-
-        var flight = CompletedFlight.Create(
-            flightId,
-            departureAirportIcao,
-            arrivalAirportIcao,
-            milestones,
-            now);
-
-        // History is recorded regardless of event ordering;
-        // only the state transition below is subject to it.
-        var history = await RecordCompletedFlightAsync(
-            ctx,
-            eventId,
-            aircraftId,
-            flight,
-            ct);
+        var milestones = new FlightMilestones(flightArrivedEvent.OffBlockAt, flightArrivedEvent.TakeOffAt, flightArrivedEvent.LandingAt, flightArrivedEvent.OnBlockAt);
+        var flight = CompletedFlight.Create(flightArrivedEvent.FlightId, flightArrivedEvent.DepartureAirportIcaoCode, flightArrivedEvent.ArrivalAirportIcaoCode, milestones, now);
+        var history = await RecordCompletedFlightAsync(ctx, flightArrivedEvent.Id, flightArrivedEvent.AircraftId, flight, ct);
 
         if (aircraft.IsStaleFlightMovement(milestones.OnBlockAt))
         {
@@ -83,18 +63,10 @@ public sealed class FlightArrivalNotificationProcessor
                 history,
                 AircraftFlightStatusProcessingResult.Stale);
         }
-
-        aircraft.MarkAsParked(
-            arrivalAirportIcao,
-            milestones.OnBlockAt,
-            now);
-
+        aircraft.MarkAsParked(flightArrivedEvent.ArrivalAirportIcaoCode, milestones.OnBlockAt, now);
         await ctx.SaveChangesAsync(ct);
         await transaction.CommitAsync(ct);
-
-        return new FlightArrivalProcessingResult(
-            history,
-            AircraftFlightStatusProcessingResult.Applied);
+        return new FlightArrivalProcessingResult(history, AircraftFlightStatusProcessingResult.Applied);
     }, cancellationToken);
 
     private static async Task<CompletedFlightRecordingResult> RecordCompletedFlightAsync(

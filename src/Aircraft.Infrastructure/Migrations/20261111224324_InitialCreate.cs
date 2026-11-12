@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
+using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
@@ -23,6 +23,7 @@ public partial class InitialCreate : Migration
                 updated_at = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                 tail_number = table.Column<string>(type: "character varying(12)", unicode: false, maxLength: 12, nullable: false),
                 equipment_code = table.Column<string>(type: "character varying(4)", unicode: false, maxLength: 4, nullable: false),
+                initial_block_time = table.Column<TimeSpan>(type: "interval", nullable: false),
                 xmin = table.Column<uint>(type: "xid", rowVersion: true, nullable: false),
                 dry_operating_weight_kilograms = table.Column<int>(type: "integer", nullable: false),
                 maximum_fuel_weight_kilograms = table.Column<int>(type: "integer", nullable: false),

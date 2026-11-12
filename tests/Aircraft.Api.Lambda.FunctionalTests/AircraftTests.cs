@@ -16,7 +16,7 @@ public class AircraftTests : BaseFunctionalTest
     {
         // Arrange
         var situation = new AircraftSituationDto("Parked", "CYVR");
-        var request = new CreateAircraftDto("C-FZTY", "B38M", 42045, 82190, 69308, 65952, 20826, situation);
+        var request = new CreateAircraftDto("C-FZTY", "B38M", 42045, 82190, 69308, 65952, 20826, situation, TimeSpan.FromHours(0));
         var error = "Seat layout definition for B38M not found";
 
         // Act
@@ -31,7 +31,7 @@ public class AircraftTests : BaseFunctionalTest
     {
         // Arrange
         var situation = new AircraftSituationDto("Parked", "CYVR");
-        var request = new CreateAircraftDto("C-FJRO", "B78X", 135500, 0, 201848, 192777, 101522, situation);
+        var request = new CreateAircraftDto("C-FJRO", "B78X", 135500, 0, 201848, 192777, 101522, situation, TimeSpan.FromHours(0));
         var error = "Maximum takeoff weight must be greater than zero.";
 
         // Act
@@ -81,7 +81,7 @@ public class AircraftTests : BaseFunctionalTest
         emptyAircraftList.Should().BeEquivalentTo(new AircraftListDto([], 1, 50, 0, false));
 
         // Create
-        var request = new CreateAircraftDto("C-FJRN", "B78X", 135500, 254011, 201848, 192777, 101522, new AircraftSituationDto("Parked", "CYVR"));
+        var request = new CreateAircraftDto("C-FJRN", "B78X", 135500, 254011, 201848, 192777, 101522, new AircraftSituationDto("Parked", "CYVR"), TimeSpan.FromHours(0));
         var aircraft = await CreateAircraftAsync(request);
         aircraft.Should().Match<AircraftDto>(x =>
             x.TailNumber == request.TailNumber &&

@@ -58,6 +58,10 @@ namespace Aircraft.Infrastructure.Migrations
                         .HasColumnType("character varying(4)")
                         .HasColumnName("equipment_code");
 
+                    b.Property<TimeSpan>("InitialBlockTime")
+                        .HasColumnType("interval")
+                        .HasColumnName("initial_block_time");
+
                     b.Property<string>("TailNumber")
                         .IsRequired()
                         .HasMaxLength(12)

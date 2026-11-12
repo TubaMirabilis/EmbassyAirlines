@@ -25,5 +25,7 @@ public sealed class CompletedFlight
     public string DepartureAirportIcao { get; init; }
     public string ArrivalAirportIcao { get; init; }
     public FlightMilestones Milestones { get; init; }
+    public TimeSpan BlockTime => Milestones.OnBlockAt - Milestones.OffBlockAt;
+    public TimeSpan AirTime => Milestones.LandingAt - Milestones.TakeOffAt;
     public static CompletedFlight Create(Guid id, string departureAirportIcao, string arrivalAirportIcao, FlightMilestones milestones, DateTimeOffset createdAt) => new(id, departureAirportIcao, arrivalAirportIcao, milestones, createdAt);
 }

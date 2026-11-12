@@ -590,6 +590,7 @@ public sealed class OutboxPersistenceTests
         var createdAt = _timeProvider.GetUtcNow();
         var args = new AircraftCreationArgs
         {
+            InitialBlockTime = TimeSpan.FromHours(0),
             TailNumber = tailNumber,
             EquipmentCode = "B78X",
             DryOperatingWeight = new Weight(135500),

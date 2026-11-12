@@ -30,14 +30,14 @@ internal static class AircraftDatabaseExtensions
     {
         var args = new AircraftCreationArgs
         {
-            TailNumber = tailNumber,
-            EquipmentCode = "B78X",
-            DryOperatingWeight = new Weight(135500),
-            MaximumTakeoffWeight = new Weight(254011),
-            MaximumLandingWeight = new Weight(201848),
-            MaximumZeroFuelWeight = new Weight(192777),
-            MaximumFuelWeight = new Weight(101522),
             CreatedAt = createdAt,
+            DryOperatingWeight = new Weight(135500),
+            EquipmentCode = "B78X",
+            InitialBlockTime = TimeSpan.FromHours(0),
+            MaximumFuelWeight = new Weight(101522),
+            MaximumLandingWeight = new Weight(201848),
+            MaximumTakeoffWeight = new Weight(254011),
+            MaximumZeroFuelWeight = new Weight(192777),
             Seats = new SeatLayoutDefinition
             {
                 EquipmentType = "B78X",
@@ -50,7 +50,8 @@ internal static class AircraftDatabaseExtensions
                     }
                 }
             },
-            Situation = AircraftSituation.Parked("CYVR", createdAt)
+            Situation = AircraftSituation.Parked("CYVR", createdAt),
+            TailNumber = tailNumber
         };
 
         var aircraft = Core.Models.Aircraft.Create(args);

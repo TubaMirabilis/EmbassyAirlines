@@ -26,6 +26,7 @@ public sealed class Aircraft : Entity
         MaximumZeroFuelWeight = args.MaximumZeroFuelWeight;
         MaximumFuelWeight = args.MaximumFuelWeight;
         Situation = args.Situation;
+        InitialBlockTime = args.InitialBlockTime;
         var seats = args.Seats.ToSeatsCollection(Id, args.CreatedAt).ToList();
         var seen = new HashSet<(byte RowNumber, char Letter)>();
         if (seats.Any(seat => !seen.Add((seat.RowNumber, seat.Letter))))
@@ -51,6 +52,8 @@ public sealed class Aircraft : Entity
     public Weight MaximumZeroFuelWeight { get; private set; }
     public Weight MaximumFuelWeight { get; private set; }
     public AircraftSituation Situation { get; private set; }
+    public TimeSpan InitialBlockTime { get; init; }
+    public TimeSpan TotalBlockTime => InitialBlockTime + TimeSpan.FromTicks(_completedFlights.Sum(flight => flight.BlockTime.Ticks));
     public IReadOnlyList<CompletedFlight> CompletedFlights => _completedFlights.AsReadOnly();
     public IReadOnlyList<Seat> Seats => _seats.AsReadOnly();
     public static Aircraft Create(AircraftCreationArgs args) => new(args);

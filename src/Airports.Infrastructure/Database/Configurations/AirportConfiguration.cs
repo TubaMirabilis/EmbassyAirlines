@@ -21,5 +21,6 @@ internal sealed class AirportConfiguration : IEntityTypeConfiguration<Airport>
         builder.Property(a => a.IataCode)
             .IsRequired()
             .HasMaxLength(3);
+        builder.Ignore(a => a.DomainEvents);
     }
 }

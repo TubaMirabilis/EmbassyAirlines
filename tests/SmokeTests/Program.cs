@@ -14,7 +14,7 @@ var airport1 = await AirportsSmokeTestActions.AttemptPostAsync(client, req1);
 var airport2 = await AirportsSmokeTestActions.AttemptPostAsync(client, req2);
 await ServiceReadiness.EnsureReadyAsync(client, "aircraft");
 await AircraftSmokeTestActions.PrepareS3Async("Resources/Layouts/B78X.json", "seat-layouts/B78X.json");
-var req3 = new CreateAircraftDto("PH-JRN", "B78X", 135500, 254011, 201848, 192777, 101522, new AircraftSituationDto("Parked", "RKSI"));
+var req3 = new CreateAircraftDto("PH-JRN", "B78X", 135500, 254011, 201848, 192777, 101522, new AircraftSituationDto("Parked", "RKSI"), TimeSpan.FromHours(0));
 var aircraft = await AircraftSmokeTestActions.AttemptPostAsync(client, req3);
 await ServiceReadiness.EnsureReadyAsync(client, "flights");
 var flightTimes = new FlightTimeCalculationRequest

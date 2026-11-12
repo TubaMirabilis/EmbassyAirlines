@@ -67,16 +67,17 @@ internal sealed class CreateAircraftEndpoint : IEndpoint
             var createdAt = timeProvider.GetUtcNow();
             var args = new AircraftCreationArgs
             {
-                TailNumber = dto.TailNumber,
-                EquipmentCode = equipmentCode,
-                DryOperatingWeight = new Weight(dto.DryOperatingWeight),
-                MaximumTakeoffWeight = new Weight(dto.MaximumTakeoffWeight),
-                MaximumLandingWeight = new Weight(dto.MaximumLandingWeight),
-                MaximumZeroFuelWeight = new Weight(dto.MaximumZeroFuelWeight),
-                MaximumFuelWeight = new Weight(dto.MaximumFuelWeight),
                 CreatedAt = createdAt,
+                DryOperatingWeight = new Weight(dto.DryOperatingWeight),
+                EquipmentCode = equipmentCode,
+                InitialBlockTime = dto.InitialBlockTime,
+                MaximumFuelWeight = new Weight(dto.MaximumFuelWeight),
+                MaximumLandingWeight = new Weight(dto.MaximumLandingWeight),
+                MaximumTakeoffWeight = new Weight(dto.MaximumTakeoffWeight),
+                MaximumZeroFuelWeight = new Weight(dto.MaximumZeroFuelWeight),
                 Seats = def,
-                Situation = dto.Situation.ToDomain(createdAt)
+                Situation = dto.Situation.ToDomain(createdAt),
+                TailNumber = dto.TailNumber
             };
             var aircraft = Core.Models.Aircraft.Create(args);
             ctx.Aircraft.Add(aircraft);

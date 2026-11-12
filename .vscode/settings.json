@@ -15,11 +15,14 @@
         "embassyairlinesdb",
         "evnt",
         "JSII",
+        "KJFK",
         "localstack",
+        "locktype",
         "reportgenerator",
         "reporttypes",
         "Schiphol",
         "targetdir",
-        "Testcontainers"
+        "Testcontainers",
+        "transactionid"
     ]
 }

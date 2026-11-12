@@ -3,6 +3,7 @@ using Aircraft.Infrastructure.Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Npgsql;
+using Shared.Contracts;
 
 namespace Aircraft.Infrastructure.IntegrationTests;
 
@@ -32,16 +33,10 @@ public sealed class FlightArrivalNotificationProcessorTests
         var aircraftId = await _postgres.CreateAircraftAsync("C-FJRN", T0);
         var eventId = Guid.NewGuid();
         var flightId = Guid.NewGuid();
+        var flightArrivedEvent = new FlightArrivedEvent(eventId, aircraftId, flightId, "CYVR", "EHAM", ArrivalMilestones.OffBlockAt, ArrivalMilestones.TakeOffAt, ArrivalMilestones.LandingAt, ArrivalMilestones.OnBlockAt);
 
         // Act
-        var result = await CreateProcessor(RecordedAt).ProcessAsync(
-            eventId,
-            aircraftId,
-            flightId,
-            "CYVR",
-            "EHAM",
-            ArrivalMilestones,
-            TestContext.Current.CancellationToken);
+        var result = await CreateProcessor(RecordedAt).ProcessAsync(flightArrivedEvent, TestContext.Current.CancellationToken);
 
         // Assert
         Assert.Equal(
@@ -68,16 +63,10 @@ public sealed class FlightArrivalNotificationProcessorTests
         await _postgres.SetUpdatedAtAsync(aircraftId, ArrivalMilestones.OnBlockAt.AddMinutes(30));
         var eventId = Guid.NewGuid();
         var flightId = Guid.NewGuid();
+        var flightArrivedEvent = new FlightArrivedEvent(eventId, aircraftId, flightId, "CYVR", "EHAM", ArrivalMilestones.OffBlockAt, ArrivalMilestones.TakeOffAt, ArrivalMilestones.LandingAt, ArrivalMilestones.OnBlockAt);
 
         // Act
-        var result = await CreateProcessor(RecordedAt).ProcessAsync(
-            eventId,
-            aircraftId,
-            flightId,
-            "CYVR",
-            "EHAM",
-            ArrivalMilestones,
-            TestContext.Current.CancellationToken);
+        var result = await CreateProcessor(RecordedAt).ProcessAsync(flightArrivedEvent, TestContext.Current.CancellationToken);
 
         // Assert: the arrival is ordered against the last flight movement, not UpdatedAt.
         Assert.Equal(
@@ -103,16 +92,10 @@ public sealed class FlightArrivalNotificationProcessorTests
         await ProcessDeparture(aircraftId, "EGLL", departedAt, departureRecordedAt, TestContext.Current.CancellationToken);
         var eventId = Guid.NewGuid();
         var flightId = Guid.NewGuid();
+        var flightArrivedEvent = new FlightArrivedEvent(eventId, aircraftId, flightId, "CYVR", "EHAM", ArrivalMilestones.OffBlockAt, ArrivalMilestones.TakeOffAt, ArrivalMilestones.LandingAt, ArrivalMilestones.OnBlockAt);
 
         // Act
-        var result = await CreateProcessor(RecordedAt).ProcessAsync(
-            eventId,
-            aircraftId,
-            flightId,
-            "CYVR",
-            "EHAM",
-            ArrivalMilestones,
-            TestContext.Current.CancellationToken);
+        var result = await CreateProcessor(RecordedAt).ProcessAsync(flightArrivedEvent, TestContext.Current.CancellationToken);
 
         // Assert: history is recorded; status, location, destination and timestamps are not.
         Assert.Equal(
@@ -137,25 +120,12 @@ public sealed class FlightArrivalNotificationProcessorTests
         var aircraftId = await _postgres.CreateAircraftAsync("C-FJRN", T0);
         var eventId = Guid.NewGuid();
         var flightId = Guid.NewGuid();
+        var flightArrivedEvent = new FlightArrivedEvent(eventId, aircraftId, flightId, "CYVR", "EHAM", ArrivalMilestones.OffBlockAt, ArrivalMilestones.TakeOffAt, ArrivalMilestones.LandingAt, ArrivalMilestones.OnBlockAt);
 
-        await CreateProcessor(RecordedAt).ProcessAsync(
-            eventId,
-            aircraftId,
-            flightId,
-            "CYVR",
-            "EHAM",
-            ArrivalMilestones,
-            TestContext.Current.CancellationToken);
+        await CreateProcessor(RecordedAt).ProcessAsync(flightArrivedEvent, TestContext.Current.CancellationToken);
 
         // Act: simulate SQS redelivery of the same message.
-        var result = await CreateProcessor(RecordedAt.AddHours(1)).ProcessAsync(
-            eventId,
-            aircraftId,
-            flightId,
-            "CYVR",
-            "EHAM",
-            ArrivalMilestones,
-            TestContext.Current.CancellationToken);
+        var result = await CreateProcessor(RecordedAt.AddHours(1)).ProcessAsync(flightArrivedEvent, TestContext.Current.CancellationToken);
 
         // Assert
         Assert.Equal(FlightArrivalProcessingResult.Duplicate, result);
@@ -175,25 +145,13 @@ public sealed class FlightArrivalNotificationProcessorTests
         var firstEventId = Guid.NewGuid();
         var secondEventId = Guid.NewGuid();
         var flightId = Guid.NewGuid();
+        var firstEvent = new FlightArrivedEvent(firstEventId, aircraftId, flightId, "CYVR", "EHAM", ArrivalMilestones.OffBlockAt, ArrivalMilestones.TakeOffAt, ArrivalMilestones.LandingAt, ArrivalMilestones.OnBlockAt);
+        var secondEvent = new FlightArrivedEvent(secondEventId, aircraftId, flightId, "CYVR", "EHAM", ArrivalMilestones.OffBlockAt, ArrivalMilestones.TakeOffAt, ArrivalMilestones.LandingAt, ArrivalMilestones.OnBlockAt);
 
-        await CreateProcessor(RecordedAt).ProcessAsync(
-            firstEventId,
-            aircraftId,
-            flightId,
-            "CYVR",
-            "EHAM",
-            ArrivalMilestones,
-            TestContext.Current.CancellationToken);
+        await CreateProcessor(RecordedAt).ProcessAsync(firstEvent, TestContext.Current.CancellationToken);
 
         // Act
-        var result = await CreateProcessor(RecordedAt.AddHours(1)).ProcessAsync(
-            secondEventId,
-            aircraftId,
-            flightId,
-            "CYVR",
-            "EHAM",
-            ArrivalMilestones,
-            TestContext.Current.CancellationToken);
+        var result = await CreateProcessor(RecordedAt.AddHours(1)).ProcessAsync(secondEvent, TestContext.Current.CancellationToken);
 
         // Assert: the original record, including its creation time, is kept.
         Assert.Equal(
@@ -223,33 +181,16 @@ public sealed class FlightArrivalNotificationProcessorTests
         await _postgres.ResetAsync();
         var aircraftId = await _postgres.CreateAircraftAsync("C-FJRN", T0);
         var flightId = Guid.NewGuid();
+        var recordedEvent = new FlightArrivedEvent(Guid.NewGuid(), aircraftId, flightId, "CYVR", "EHAM", ArrivalMilestones.OffBlockAt, ArrivalMilestones.TakeOffAt, ArrivalMilestones.LandingAt, ArrivalMilestones.OnBlockAt);
 
-        await CreateProcessor(RecordedAt).ProcessAsync(
-            Guid.NewGuid(),
-            aircraftId,
-            flightId,
-            "CYVR",
-            "EHAM",
-            ArrivalMilestones,
-            TestContext.Current.CancellationToken);
+        await CreateProcessor(RecordedAt).ProcessAsync(recordedEvent, TestContext.Current.CancellationToken);
 
         var conflictingEventId = Guid.NewGuid();
-        var conflictingMilestones = new FlightMilestones(
-            ArrivalMilestones.OffBlockAt,
-            ArrivalMilestones.TakeOffAt,
-            ArrivalMilestones.LandingAt,
-            ArrivalMilestones.OnBlockAt.AddSeconds(onBlockDelaySeconds));
+        var conflictingEvent = new FlightArrivedEvent(conflictingEventId, aircraftId, flightId, departureAirportIcao, arrivalAirportIcao, ArrivalMilestones.OffBlockAt, ArrivalMilestones.TakeOffAt, ArrivalMilestones.LandingAt, ArrivalMilestones.OnBlockAt.AddSeconds(onBlockDelaySeconds));
 
         // Act
         await Assert.ThrowsAsync<CompletedFlightConflictException>(() =>
-            CreateProcessor(RecordedAt.AddHours(1)).ProcessAsync(
-                conflictingEventId,
-                aircraftId,
-                flightId,
-                departureAirportIcao,
-                arrivalAirportIcao,
-                conflictingMilestones,
-                TestContext.Current.CancellationToken));
+            CreateProcessor(RecordedAt.AddHours(1)).ProcessAsync(conflictingEvent, TestContext.Current.CancellationToken));
 
         // Assert: neither history nor aircraft state changed, and the event
         // is not marked as processed, so it is retried and then dead-lettered.
@@ -269,28 +210,16 @@ public sealed class FlightArrivalNotificationProcessorTests
         var firstAircraftId = await _postgres.CreateAircraftAsync("C-FJRN", T0);
         var secondAircraftId = await _postgres.CreateAircraftAsync("C-FRSA", T0);
         var flightId = Guid.NewGuid();
+        var recordedEvent = new FlightArrivedEvent(Guid.NewGuid(), firstAircraftId, flightId, "CYVR", "EHAM", ArrivalMilestones.OffBlockAt, ArrivalMilestones.TakeOffAt, ArrivalMilestones.LandingAt, ArrivalMilestones.OnBlockAt);
 
-        await CreateProcessor(RecordedAt).ProcessAsync(
-            Guid.NewGuid(),
-            firstAircraftId,
-            flightId,
-            "CYVR",
-            "EHAM",
-            ArrivalMilestones,
-            TestContext.Current.CancellationToken);
+        await CreateProcessor(RecordedAt).ProcessAsync(recordedEvent, TestContext.Current.CancellationToken);
 
         var conflictingEventId = Guid.NewGuid();
+        var conflictingEvent = new FlightArrivedEvent(conflictingEventId, secondAircraftId, flightId, "CYVR", "EHAM", ArrivalMilestones.OffBlockAt, ArrivalMilestones.TakeOffAt, ArrivalMilestones.LandingAt, ArrivalMilestones.OnBlockAt);
 
         // Act
         await Assert.ThrowsAsync<CompletedFlightConflictException>(() =>
-            CreateProcessor(RecordedAt.AddHours(1)).ProcessAsync(
-                conflictingEventId,
-                secondAircraftId,
-                flightId,
-                "CYVR",
-                "EHAM",
-                ArrivalMilestones,
-                TestContext.Current.CancellationToken));
+            CreateProcessor(RecordedAt.AddHours(1)).ProcessAsync(conflictingEvent, TestContext.Current.CancellationToken));
 
         // Assert
         Assert.False(await _postgres.InboxContainsAsync(conflictingEventId));
@@ -313,6 +242,7 @@ public sealed class FlightArrivalNotificationProcessorTests
         var eventId = Guid.NewGuid();
         var flightId = Guid.NewGuid();
         var concurrentlyRecordedAt = RecordedAt.AddMinutes(-1);
+        var flightArrivedEvent = new FlightArrivedEvent(eventId, aircraftId, flightId, "CYVR", "EHAM", ArrivalMilestones.OffBlockAt, ArrivalMilestones.TakeOffAt, ArrivalMilestones.LandingAt, ArrivalMilestones.OnBlockAt);
 
         await using var concurrentDb = _postgres.CreateDbContext();
         await using var concurrentTransaction =
@@ -320,14 +250,7 @@ public sealed class FlightArrivalNotificationProcessorTests
         await InsertCompletedFlight(concurrentDb, aircraftId, flightId, concurrentlyRecordedAt);
 
         // Act
-        var processing = CreateProcessor(RecordedAt).ProcessAsync(
-            eventId,
-            aircraftId,
-            flightId,
-            "CYVR",
-            "EHAM",
-            ArrivalMilestones,
-            TestContext.Current.CancellationToken);
+        var processing = CreateProcessor(RecordedAt).ProcessAsync(flightArrivedEvent, TestContext.Current.CancellationToken);
 
         await WaitUntilBlockedOnAnotherTransaction(processing);
         Assert.False(processing.IsCompleted);
@@ -364,16 +287,10 @@ public sealed class FlightArrivalNotificationProcessorTests
         var concurrentDeparture = new BeforeSaveChangesHook(
             1,
             ct => ProcessDeparture(aircraftId, "EGLL", departedAt, departureRecordedAt, ct));
+        var flightArrivedEvent = new FlightArrivedEvent(eventId, aircraftId, flightId, "CYVR", "EHAM", ArrivalMilestones.OffBlockAt, ArrivalMilestones.TakeOffAt, ArrivalMilestones.LandingAt, ArrivalMilestones.OnBlockAt);
 
         // Act
-        var result = await CreateProcessor(RecordedAt, concurrentDeparture, conflicts).ProcessAsync(
-            eventId,
-            aircraftId,
-            flightId,
-            "CYVR",
-            "EHAM",
-            ArrivalMilestones,
-            TestContext.Current.CancellationToken);
+        var result = await CreateProcessor(RecordedAt, concurrentDeparture, conflicts).ProcessAsync(flightArrivedEvent, TestContext.Current.CancellationToken);
 
         // Assert: the retry re-recorded the history it rolled back, then found the arrival stale.
         Assert.Equal(1, conflicts.Count);
@@ -402,17 +319,11 @@ public sealed class FlightArrivalNotificationProcessorTests
         var competingWrite = new BeforeSaveChangesHook(
             3,
             ct => TouchAircraft(aircraftId, ct));
+        var flightArrivedEvent = new FlightArrivedEvent(eventId, aircraftId, Guid.NewGuid(), "CYVR", "EHAM", ArrivalMilestones.OffBlockAt, ArrivalMilestones.TakeOffAt, ArrivalMilestones.LandingAt, ArrivalMilestones.OnBlockAt);
 
         // Act
         await Assert.ThrowsAsync<DbUpdateConcurrencyException>(() =>
-            CreateProcessor(RecordedAt, competingWrite, conflicts).ProcessAsync(
-                eventId,
-                aircraftId,
-                Guid.NewGuid(),
-                "CYVR",
-                "EHAM",
-                ArrivalMilestones,
-                TestContext.Current.CancellationToken));
+            CreateProcessor(RecordedAt, competingWrite, conflicts).ProcessAsync(flightArrivedEvent, TestContext.Current.CancellationToken));
 
         // Assert
         Assert.Equal(3, conflicts.Count);
@@ -430,17 +341,11 @@ public sealed class FlightArrivalNotificationProcessorTests
         // Arrange
         await _postgres.ResetAsync();
         var eventId = Guid.NewGuid();
+        var flightArrivedEvent = new FlightArrivedEvent(eventId, Guid.NewGuid(), Guid.NewGuid(), "CYVR", "EHAM", ArrivalMilestones.OffBlockAt, ArrivalMilestones.TakeOffAt, ArrivalMilestones.LandingAt, ArrivalMilestones.OnBlockAt);
 
         // Act
         await Assert.ThrowsAsync<InvalidOperationException>(() =>
-            CreateProcessor(RecordedAt).ProcessAsync(
-                eventId,
-                Guid.NewGuid(),
-                Guid.NewGuid(),
-                "CYVR",
-                "EHAM",
-                ArrivalMilestones,
-                TestContext.Current.CancellationToken));
+            CreateProcessor(RecordedAt).ProcessAsync(flightArrivedEvent, TestContext.Current.CancellationToken));
 
         // Assert
         Assert.False(await _postgres.InboxContainsAsync(eventId));
