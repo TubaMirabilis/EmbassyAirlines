@@ -14,7 +14,7 @@ builder.Host.UseSerilog((context, loggerConfig) => loggerConfig.ReadFrom.Configu
 var services = builder.Services;
 services.AddExceptionHandler<ConcurrencyExceptionHandler>();
 var assembly = typeof(Program).Assembly;
-builder.AddHttpApiLambdaDefaults(assembly);
+builder.AddHttpApiLambdaDefaults(FlightsTelemetry.SourceName, assembly);
 if (!builder.Environment.IsDevelopment())
 {
     services.AddDatabaseConnection<ApplicationDbContext>(config, true, "flights").AddOutboxInterceptor();

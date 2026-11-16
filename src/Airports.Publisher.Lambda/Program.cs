@@ -1,10 +1,12 @@
 using Airports.Infrastructure.Database;
 using Airports.Infrastructure.Outbox;
+using Airports.Publisher.Lambda;
 using Amazon.Lambda.Core;
 using Amazon.Lambda.RuntimeSupport;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using OpenTelemetry.Trace;
 using Shared;
 using Shared.Contracts;
 using Shared.Npgsql;
@@ -15,6 +17,7 @@ var builder = Host.CreateApplicationBuilder(args);
 var config = builder.Configuration;
 config.AddEnvironmentVariables(prefix: "AIRPORTS_");
 builder.AddServiceDefaults();
+builder.Services.ConfigureOpenTelemetryTracerProvider(tracing => tracing.AddSource(PublisherTelemetry.SourceName));
 builder.Services.AddDatabaseConnection<ApplicationDbContext>(config, false, "airports");
 builder.Services.AddScoped<IOutboxProcessor, OutboxProcessor>();
 builder.Services.AddAWSMessageBus(bus =>

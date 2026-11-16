@@ -12,7 +12,7 @@ var config = builder.Configuration;
 config.AddEnvironmentVariables(prefix: "AIRCRAFT_");
 builder.Host.UseSerilog((context, loggerConfig) => loggerConfig.ReadFrom.Configuration(context.Configuration));
 var assembly = typeof(Program).Assembly;
-builder.AddHttpApiLambdaDefaults(assembly);
+builder.AddHttpApiLambdaDefaults(AircraftTelemetry.SourceName, assembly);
 var services = builder.Services;
 if (!builder.Environment.IsDevelopment())
 {
