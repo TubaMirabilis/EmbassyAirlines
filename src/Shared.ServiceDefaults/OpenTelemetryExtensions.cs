@@ -2,6 +2,7 @@ using AWS.Messaging.Telemetry.OpenTelemetry;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using OpenTelemetry;
 using OpenTelemetry.Instrumentation.AWSLambda;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
@@ -42,6 +43,11 @@ internal static class OpenTelemetryExtensions
                 tracing.AddAWSMessagingInstrumentation();
                 tracing.AddAWSLambdaConfigurations();
             });
+        var useOtlpExporter = !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("OTEL_EXPORTER_OTLP_ENDPOINT"));
+        if (useOtlpExporter)
+        {
+            builder.Services.AddOpenTelemetry().UseOtlpExporter();
+        }
         return builder;
     }
 }

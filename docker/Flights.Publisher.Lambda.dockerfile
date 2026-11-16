@@ -13,6 +13,15 @@ RUN dotnet restore
 RUN dotnet publish -c Release --os linux -o /app/publish
 
 FROM public.ecr.aws/lambda/dotnet:10
+
 WORKDIR /var/task
+
 COPY --from=build /app/publish .
+
+# Install AWS ADOT Collector Lambda extension
+COPY docker/observability/opt/ /opt/
+
+# Ensure the Linux extension is executable
+RUN chmod 755 /opt/extensions/collector
+
 CMD ["Flights.Publisher.Lambda"]

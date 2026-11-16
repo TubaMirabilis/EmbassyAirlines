@@ -45,7 +45,8 @@ internal sealed class EmbassyAirlinesStack : Stack
                 { "AirportCreated", messaging.AirportCreatedTopic },
                 { "AirportUpdated", messaging.AirportUpdatedTopic }
             },
-            Vpc = network.Vpc
+            Vpc = network.Vpc,
+            VpcEndpointSecurityGroup = network.VpcEndpointSecurityGroup
         });
         new AircraftService(this, "AircraftService", new ServiceProps
         {
@@ -60,7 +61,8 @@ internal sealed class EmbassyAirlinesStack : Stack
                 { "FlightMarkedAsDelayedEnRoute", messaging.FlightMarkedAsDelayedEnRouteTopic },
                 { "FlightMarkedAsEnRoute", messaging.FlightMarkedAsEnRouteTopic }
             },
-            Vpc = network.Vpc
+            Vpc = network.Vpc,
+            VpcEndpointSecurityGroup = network.VpcEndpointSecurityGroup
         });
         new FlightsService(this, "FlightsService", new ServiceProps
         {
@@ -84,6 +86,7 @@ internal sealed class EmbassyAirlinesStack : Stack
                 { "FlightArrived", messaging.FlightArrivedTopic }
             },
             Vpc = network.Vpc,
+            VpcEndpointSecurityGroup = network.VpcEndpointSecurityGroup
         });
     }
 }

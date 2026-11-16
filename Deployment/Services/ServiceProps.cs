@@ -12,4 +12,5 @@ internal sealed record ServiceProps
     internal required DatabaseProxyAccessProps DbProxyAccess { get; init; }
     internal required IReadOnlyDictionary<string, Topic> Topics { get; init; }
     internal required Vpc Vpc { get; init; }
+    internal required ISecurityGroup VpcEndpointSecurityGroup { get; init; }
 }

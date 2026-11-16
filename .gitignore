@@ -487,3 +487,6 @@ $RECYCLE.BIN/
 # CDK asset staging directory
 .cdk.staging
 cdk.out/
+
+# Downloaded AWS ADOT Collector artifacts
+/docker/observability/opt/

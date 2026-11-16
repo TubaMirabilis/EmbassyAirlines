@@ -28,15 +28,15 @@ internal static class FlightsSmokeTestActions
         Console.WriteLine($"Scheduled flight with ID: {flight.Id}");
         return flight;
     }
-    public static async Task AttemptPatchStatusAsync(HttpClient client, Guid flightId, string status, CancellationToken cancellationToken = default)
+    public static async Task AttemptPatchMilestoneAsync(HttpClient client, Guid flightId, string milestone, CancellationToken cancellationToken = default)
     {
-        Console.WriteLine($"Attempting to update flight {flightId} to status {status}");
+        Console.WriteLine($"Attempting to record flight milestone {milestone} for flight {flightId}");
         var startTime = Stopwatch.GetTimestamp();
-        using var res = await client.PatchAsJsonAsync($"flights/{flightId}/status", new AdjustFlightStatusDto(status), cancellationToken);
+        using var res = await client.PatchAsJsonAsync($"flights/{flightId}/milestones", new RecordFlightMilestoneDto(milestone, DateTimeOffset.UtcNow), cancellationToken);
         res.EnsureSuccessStatusCode();
         var diff = Stopwatch.GetElapsedTime(startTime);
         Console.WriteLine($"Operation completed in {diff.TotalMilliseconds:F0} milliseconds");
-        Console.WriteLine($"Updated flight {flightId} to status {status}");
+        Console.WriteLine($"Recorded milestone {milestone} for flight {flightId}");
     }
     private static async Task<HttpResponseMessage> PostWithRetryAsync(HttpClient client, ScheduleFlightDto req, CancellationToken cancellationToken)
     {

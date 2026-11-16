@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using System.Text.Json;
 using Aircraft.Infrastructure;
 using Aircraft.Infrastructure.Database;

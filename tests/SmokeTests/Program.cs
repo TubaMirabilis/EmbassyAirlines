@@ -40,5 +40,5 @@ var req4 = new ScheduleFlightDto
     OperationType = "RevenuePassenger"
 };
 var flight = await FlightsSmokeTestActions.AttemptPostAsync(client, req4);
-await FlightsSmokeTestActions.AttemptPatchStatusAsync(client, flight.Id, "EnRoute");
+await FlightsSmokeTestActions.AttemptPatchMilestoneAsync(client, flight.Id, "OffBlock");
 await AircraftSmokeTestActions.EnsureStatusAsync(client, aircraft.Id, "EnRoute");

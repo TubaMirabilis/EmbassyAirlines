@@ -24,25 +24,35 @@ internal sealed class DatabaseBackedDockerLambda : Construct
                 AllowAllOutbound = true,
                 Description = props.SecurityGroupDescription
             });
-        securityGroup.Connections.AllowTo(
-            new SecurityGroupConnection
-            {
-                Description = "Allow Lambda to access RDS Proxy",
-                Other = props.DbProxyAccess.DbProxySecurityGroup,
-                PortRange = Port.Tcp(props.DbConnection.DbPort)
-            });
-        var logGroup = new LogGroup(
-            this, "LogGroup", new LogGroupProps
-            {
-                LogGroupName = $"/aws/lambda/{props.FunctionName}"
-            });
+        securityGroup.Connections.AllowTo(new SecurityGroupConnection
+        {
+            Description = "Allow Lambda to access RDS Proxy",
+            Other = props.DbProxyAccess.DbProxySecurityGroup,
+            PortRange = Port.Tcp(props.DbConnection.DbPort)
+        });
+        securityGroup.Connections.AllowTo(new SecurityGroupConnection
+        {
+            Description = "Allow Lambda to access AWS interface VPC endpoints",
+            Other = props.VpcEndpointSecurityGroup,
+            PortRange = Port.Tcp(443)
+        });
+        var logGroup = new LogGroup(this, "LogGroup", new LogGroupProps
+        {
+            LogGroupName = $"/aws/lambda/{props.FunctionName}"
+        });
+        var environment = new Dictionary<string, string>(props.Environment)
+        {
+            ["OTEL_EXPORTER_OTLP_ENDPOINT"] = "http://localhost:4318",
+            ["OTEL_EXPORTER_OTLP_PROTOCOL"] = "http/protobuf",
+            ["OPENTELEMETRY_COLLECTOR_CONFIG_FILE"] = "/opt/collector-config/config.yaml"
+        };
         Function = new DockerImageFunction(this, "Function", new DockerImageFunctionProps
         {
             Code = code ?? DockerImageCode.FromImageAsset(".", new AssetImageCodeProps
             {
                 File = props.DockerfilePath
             }),
-            Environment = props.Environment,
+            Environment = environment,
             FunctionName = props.FunctionName,
             LogGroup = logGroup,
             MemorySize = 1536,

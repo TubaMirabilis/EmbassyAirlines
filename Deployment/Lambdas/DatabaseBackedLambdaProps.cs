@@ -12,4 +12,5 @@ internal record DatabaseBackedLambdaProps
     internal required string FunctionName { get; init; }
     internal required string SecurityGroupDescription { get; init; }
     internal required Vpc Vpc { get; init; }
+    internal required ISecurityGroup VpcEndpointSecurityGroup { get; init; }
 }

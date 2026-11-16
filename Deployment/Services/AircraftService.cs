@@ -32,7 +32,8 @@ internal sealed class AircraftService : Construct
             Environment = new Dictionary<string, string>(commonEnv),
             FunctionName = "AircraftMigrationsLambda",
             SecurityGroupDescription = "Security group for Aircraft migrations Lambda",
-            Vpc = props.Vpc
+            Vpc = props.Vpc,
+            VpcEndpointSecurityGroup = props.VpcEndpointSecurityGroup
         });
         var api = new HttpDockerLambda(this, "AircraftApi", new HttpDockerLambdaProps
         {
@@ -47,7 +48,8 @@ internal sealed class AircraftService : Construct
             FunctionName = "AircraftApiLambda",
             RoutePath = "/aircraft",
             SecurityGroupDescription = "Security group for Aircraft API Lambda",
-            Vpc = props.Vpc
+            Vpc = props.Vpc,
+            VpcEndpointSecurityGroup = props.VpcEndpointSecurityGroup
         });
         api.Function.Node.AddDependency(migrations.Migration);
         bucket.GrantRead(api.Function);
@@ -61,7 +63,8 @@ internal sealed class AircraftService : Construct
             FunctionName = "AircraftFlightArrivedHandlerLambda",
             SecurityGroupDescription = "Security group for Aircraft FlightArrived handler Lambda",
             Topic = props.Topics["FlightArrived"],
-            Vpc = props.Vpc
+            Vpc = props.Vpc,
+            VpcEndpointSecurityGroup = props.VpcEndpointSecurityGroup
         });
         handler1.Function.Node.AddDependency(migrations.Migration);
         var handler2 = new EventHandlerLambda(this, "AircraftFlightMarkedAsDelayedEnRouteHandlerLambda", new EventHandlerLambdaProps
@@ -74,7 +77,8 @@ internal sealed class AircraftService : Construct
             FunctionName = "AircraftFlightMarkedAsDelayedEnRouteHandlerLambda",
             SecurityGroupDescription = "Security group for Aircraft FlightMarkedAsDelayedEnRoute handler Lambda",
             Topic = props.Topics["FlightMarkedAsDelayedEnRoute"],
-            Vpc = props.Vpc
+            Vpc = props.Vpc,
+            VpcEndpointSecurityGroup = props.VpcEndpointSecurityGroup
         });
         handler2.Function.Node.AddDependency(migrations.Migration);
         var handler3 = new EventHandlerLambda(this, "AircraftFlightMarkedAsEnRouteHandlerLambda", new EventHandlerLambdaProps
@@ -87,7 +91,8 @@ internal sealed class AircraftService : Construct
             FunctionName = "AircraftFlightMarkedAsEnRouteHandlerLambda",
             SecurityGroupDescription = "Security group for Aircraft FlightMarkedAsEnRoute handler Lambda",
             Topic = props.Topics["FlightMarkedAsEnRoute"],
-            Vpc = props.Vpc
+            Vpc = props.Vpc,
+            VpcEndpointSecurityGroup = props.VpcEndpointSecurityGroup
         });
         handler3.Function.Node.AddDependency(migrations.Migration);
         var publisher = new PublisherLambda(this, "AircraftPublisherLambda", new PublisherLambdaProps
@@ -103,7 +108,8 @@ internal sealed class AircraftService : Construct
             PollInterval = Duration.Minutes(1),
             SecurityGroupDescription = "Security group for Aircraft outbox publisher Lambda",
             Topics = [props.Topics["AircraftCreated"]],
-            Vpc = props.Vpc
+            Vpc = props.Vpc,
+            VpcEndpointSecurityGroup = props.VpcEndpointSecurityGroup
         });
         publisher.Function.Node.AddDependency(migrations.Migration);
     }

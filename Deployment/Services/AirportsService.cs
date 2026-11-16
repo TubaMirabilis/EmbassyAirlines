@@ -24,7 +24,8 @@ internal sealed class AirportsService : Construct
             Environment = new Dictionary<string, string>(commonEnv),
             FunctionName = "AirportsMigrationsLambda",
             SecurityGroupDescription = "Security group for Airports migrations Lambda",
-            Vpc = props.Vpc
+            Vpc = props.Vpc,
+            VpcEndpointSecurityGroup = props.VpcEndpointSecurityGroup
         });
         var api = new HttpDockerLambda(this, "AirportsApi", new HttpDockerLambdaProps
         {
@@ -36,7 +37,8 @@ internal sealed class AirportsService : Construct
             FunctionName = "AirportsApiLambda",
             RoutePath = "/airports",
             SecurityGroupDescription = "Security group for Airports API Lambda",
-            Vpc = props.Vpc
+            Vpc = props.Vpc,
+            VpcEndpointSecurityGroup = props.VpcEndpointSecurityGroup
         });
         api.Function.Node.AddDependency(migrations.Migration);
         var publisher = new PublisherLambda(this, "AirportsPublisherLambda", new PublisherLambdaProps
@@ -57,7 +59,8 @@ internal sealed class AirportsService : Construct
                 props.Topics["AirportCreated"],
                 props.Topics["AirportUpdated"]
             ],
-            Vpc = props.Vpc
+            Vpc = props.Vpc,
+            VpcEndpointSecurityGroup = props.VpcEndpointSecurityGroup
         });
         publisher.Function.Node.AddDependency(migrations.Migration);
     }
