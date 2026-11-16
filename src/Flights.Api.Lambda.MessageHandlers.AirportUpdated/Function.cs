@@ -40,12 +40,12 @@ public class Function
     private async Task ProcessMessageAsync(SQSEvent.SQSMessage message, ILambdaContext context)
     {
         using var activity = Activity.Current?.Source.StartActivity("AirportUpdatedEventHandler.ProcessMessage");
-        var messageElement = JsonDocument.Parse(message.Body).RootElement.GetProperty("Message").GetString();
+        var messageElement = JsonElement.Parse(message.Body).GetProperty("Message").GetString();
         if (string.IsNullOrWhiteSpace(messageElement))
         {
             throw new JsonException("SNS message payload is null or empty.");
         }
-        var airportUpdatedEvent = JsonDocument.Parse(messageElement).RootElement.GetProperty("data").Deserialize<AirportUpdatedEvent>();
+        var airportUpdatedEvent = JsonElement.Parse(messageElement).GetProperty("data").Deserialize<AirportUpdatedEvent>();
         if (airportUpdatedEvent is null)
         {
             throw new JsonException("Failed to deserialize AirportUpdatedEvent.");

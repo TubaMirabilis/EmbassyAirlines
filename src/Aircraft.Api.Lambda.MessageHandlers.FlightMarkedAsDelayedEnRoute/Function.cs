@@ -40,15 +40,12 @@ public class Function
     private async Task ProcessMessageAsync(SQSEvent.SQSMessage message, ILambdaContext context)
     {
         using var activity = Activity.Current?.Source.StartActivity("FlightMarkedAsDelayedEnRouteEventHandler.ProcessMessage");
-        var messageElement = JsonDocument.Parse(message.Body).RootElement.GetProperty("Message").GetString();
+        var messageElement = JsonElement.Parse(message.Body).GetProperty("Message").GetString();
         if (string.IsNullOrWhiteSpace(messageElement))
         {
             throw new JsonException("SNS message payload is null or empty.");
         }
-        var flightMarkedAsDelayedEnRouteEvent = JsonDocument.Parse(messageElement)
-                                                            .RootElement
-                                                            .GetProperty("data")
-                                                            .Deserialize<FlightMarkedAsDelayedEnRouteEvent>();
+        var flightMarkedAsDelayedEnRouteEvent = JsonElement.Parse(messageElement).GetProperty("data").Deserialize<FlightMarkedAsDelayedEnRouteEvent>();
         if (flightMarkedAsDelayedEnRouteEvent is null)
         {
             throw new JsonException("Failed to deserialize FlightMarkedAsDelayedEnRouteEvent.");
