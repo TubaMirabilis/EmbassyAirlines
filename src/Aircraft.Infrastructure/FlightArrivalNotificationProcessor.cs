@@ -18,7 +18,8 @@ public sealed class FlightArrivalNotificationProcessor
         _timeProvider = timeProvider;
     }
 
-    public Task<FlightArrivalProcessingResult> ProcessAsync(FlightArrivedEvent flightArrivedEvent, CancellationToken cancellationToken = default) => AircraftConcurrencyRetry.ExecuteAsync(async ct =>
+    public Task<FlightArrivalProcessingResult> ProcessAsync(FlightArrivedEvent flightArrivedEvent, CancellationToken cancellationToken = default)
+        => AircraftConcurrencyRetry.ExecuteAsync(async ct =>
     {
         await using var ctx =
             await _contextFactory.CreateDbContextAsync(ct);
@@ -53,7 +54,15 @@ public sealed class FlightArrivalNotificationProcessor
         }
         var now = _timeProvider.GetUtcNow();
         var milestones = new FlightMilestones(flightArrivedEvent.OffBlockAt, flightArrivedEvent.TakeOffAt, flightArrivedEvent.LandingAt, flightArrivedEvent.OnBlockAt);
-        var flight = CompletedFlight.Create(flightArrivedEvent.FlightId, flightArrivedEvent.DepartureAirportIcaoCode, flightArrivedEvent.ArrivalAirportIcaoCode, milestones, now);
+        var args = new CompletedFlightCreationArgs
+        {
+            ArrivalAirportIcao = flightArrivedEvent.ArrivalAirportIcaoCode,
+            CreatedAt = now,
+            DepartureAirportIcao = flightArrivedEvent.DepartureAirportIcaoCode,
+            Id = flightArrivedEvent.FlightId,
+            Milestones = milestones
+        };
+        var flight = CompletedFlight.Create(args);
         var history = await RecordCompletedFlightAsync(ctx, flightArrivedEvent.Id, flightArrivedEvent.AircraftId, flight, ct);
 
         if (aircraft.IsStaleFlightMovement(milestones.OnBlockAt))

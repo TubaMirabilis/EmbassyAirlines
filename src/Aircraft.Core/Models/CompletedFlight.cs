@@ -4,16 +4,16 @@ namespace Aircraft.Core.Models;
 
 public sealed class CompletedFlight
 {
-    private CompletedFlight(Guid id, string departureAirportIcao, string arrivalAirportIcao, FlightMilestones milestones, DateTimeOffset createdAt)
+    private CompletedFlight(CompletedFlightCreationArgs args)
     {
-        Ensure.NotEmpty(id);
-        Ensure.NotNullOrEmpty(departureAirportIcao);
-        Ensure.NotNullOrEmpty(arrivalAirportIcao);
-        Id = id;
-        CreatedAt = createdAt;
-        DepartureAirportIcao = departureAirportIcao;
-        ArrivalAirportIcao = arrivalAirportIcao;
-        Milestones = milestones;
+        Ensure.NotEmpty(args.Id);
+        Ensure.NotNullOrEmpty(args.DepartureAirportIcao);
+        Ensure.NotNullOrEmpty(args.ArrivalAirportIcao);
+        Id = args.Id;
+        CreatedAt = args.CreatedAt;
+        DepartureAirportIcao = args.DepartureAirportIcao;
+        ArrivalAirportIcao = args.ArrivalAirportIcao;
+        Milestones = args.Milestones;
     }
 #pragma warning disable CS8618
     private CompletedFlight()
@@ -27,5 +27,5 @@ public sealed class CompletedFlight
     public FlightMilestones Milestones { get; init; }
     public TimeSpan BlockTime => Milestones.OnBlockAt - Milestones.OffBlockAt;
     public TimeSpan AirTime => Milestones.LandingAt - Milestones.TakeOffAt;
-    public static CompletedFlight Create(Guid id, string departureAirportIcao, string arrivalAirportIcao, FlightMilestones milestones, DateTimeOffset createdAt) => new(id, departureAirportIcao, arrivalAirportIcao, milestones, createdAt);
+    public static CompletedFlight Create(CompletedFlightCreationArgs args) => new(args);
 }

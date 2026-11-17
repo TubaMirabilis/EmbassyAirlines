@@ -37,7 +37,8 @@ internal sealed class AdjustFlightStatusEndpoint : IEndpoint
             newStatus is not (FlightStatus.Delayed or FlightStatus.Cancelled))
         {
             logger.LogWarning("Unsupported flight status adjustment: {Status}", dto.Status);
-            var error = Error.Validation("Flight.InvalidStatus", "Only Delayed and Cancelled can be set directly. Record operational milestones to transition to EnRoute or Arrived.");
+            var description = "Only Delayed and Cancelled can be set directly. Record operational milestones to transition to EnRoute or Arrived.";
+            var error = Error.Validation("Flight.InvalidStatus", description);
             return TypedResults.Problem(ErrorHandlingHelper.GetProblemDetails(error));
         }
         var flight = await ctx.Flights
