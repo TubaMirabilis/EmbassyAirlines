@@ -31,8 +31,9 @@ internal static class FlightsSmokeTestActions
     public static async Task AttemptPatchMilestoneAsync(HttpClient client, Guid flightId, string milestone, CancellationToken cancellationToken = default)
     {
         Console.WriteLine($"Attempting to record flight milestone {milestone} for flight {flightId}");
+        var dto = new RecordFlightMilestoneDto(milestone, DateTimeOffset.UtcNow);
         var startTime = Stopwatch.GetTimestamp();
-        using var res = await client.PatchAsJsonAsync($"flights/{flightId}/milestones", new RecordFlightMilestoneDto(milestone, DateTimeOffset.UtcNow), cancellationToken);
+        using var res = await client.PatchAsJsonAsync($"flights/{flightId}/milestones", dto, cancellationToken);
         res.EnsureSuccessStatusCode();
         var diff = Stopwatch.GetElapsedTime(startTime);
         Console.WriteLine($"Operation completed in {diff.TotalMilliseconds:F0} milliseconds");

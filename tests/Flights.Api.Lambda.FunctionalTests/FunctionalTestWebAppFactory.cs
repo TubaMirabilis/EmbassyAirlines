@@ -20,7 +20,9 @@ public class FunctionalTestWebAppFactory : WebApplicationFactory<Program>, IAsyn
     }
     protected override void ConfigureWebHost(IWebHostBuilder builder) => builder.ConfigureTestServices(services =>
                                                                               {
-                                                                                  services.AddDatabaseConnection<ApplicationDbContext>(_dbContainer.GetConnectionString(), useNodaTime: true, schema: "flights").AddOutboxInterceptor();
+                                                                                  var connectionString = _dbContainer.GetConnectionString();
+                                                                                  services.AddDatabaseConnection<ApplicationDbContext>(
+                                                                                      connectionString, true, "flights").AddOutboxInterceptor();
                                                                                   ConfigureAdditionalTestServices(services);
                                                                               });
     public async ValueTask InitializeAsync()

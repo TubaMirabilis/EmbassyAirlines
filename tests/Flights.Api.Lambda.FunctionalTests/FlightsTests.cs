@@ -126,10 +126,11 @@ public class FlightsTests : BaseFunctionalTest
     [Fact]
     public async Task AdjustFlightStatus_Should_ReturnBadRequest_WhenFlightStatusIsInvalid()
     {
+        var expected = "Only Delayed and Cancelled can be set directly. Record operational milestones to transition to EnRoute or Arrived.";
         var id = Guid.NewGuid();
         var dto = new AdjustFlightStatusDto("Asdf");
         var response = await HttpClient.PatchAsJsonAsync($"flights/{id}/status", dto, TestContext.Current.CancellationToken);
-        await GetProblemDetailsFromResponseAndAssert(response, "Only Delayed and Cancelled can be set directly. Record operational milestones to transition to EnRoute or Arrived.");
+        await GetProblemDetailsFromResponseAndAssert(response, expected);
     }
 
     [Fact]
