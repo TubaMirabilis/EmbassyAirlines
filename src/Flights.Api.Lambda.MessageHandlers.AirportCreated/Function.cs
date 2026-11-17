@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Text.Json;
 using Amazon.Lambda.Core;
 using Amazon.Lambda.Serialization.SystemTextJson;
@@ -44,40 +45,49 @@ public class Function
     private async Task ProcessMessageAsync(SQSEvent.SQSMessage message, ILambdaContext context)
     {
         using var activity = AirportCreatedTelemetry.Source.StartActivity("AirportCreatedEventHandler.ProcessMessage");
-        var messageElement = JsonElement.Parse(message.Body).GetProperty("Message").GetString();
-        if (string.IsNullOrWhiteSpace(messageElement))
-        {
-            throw new JsonException("SNS message payload is null or empty.");
-        }
-        var airportCreatedEvent = JsonElement.Parse(messageElement).GetProperty("data").Deserialize<AirportCreatedEvent>();
-        if (airportCreatedEvent is null)
-        {
-            throw new JsonException("Failed to deserialize AirportCreatedEvent.");
-        }
-        activity?.SetTag("airport.id", airportCreatedEvent.AirportId);
-        activity?.SetTag("airport.icao_code", airportCreatedEvent.IcaoCode);
-        activity?.SetTag("airport.iata_code", airportCreatedEvent.IataCode);
-        activity?.SetTag("airport.name", airportCreatedEvent.Name);
-        activity?.SetTag("airport.time_zone_id", airportCreatedEvent.TimeZoneId);
-        activity?.SetTag("event.id", airportCreatedEvent.Id);
-        activity?.SetTag("event.version", airportCreatedEvent.Version);
         activity?.SetTag("messaging.message.id", message.MessageId);
-        using var scope = _logger.BeginScope(new Dictionary<string, object>
+        try
         {
-            ["EventId"] = airportCreatedEvent.Id,
-            ["AirportId"] = airportCreatedEvent.AirportId,
-            ["IcaoCode"] = airportCreatedEvent.IcaoCode,
-            ["IataCode"] = airportCreatedEvent.IataCode,
-            ["AirportName"] = airportCreatedEvent.Name,
-            ["TimeZoneId"] = airportCreatedEvent.TimeZoneId,
-            ["Version"] = airportCreatedEvent.Version,
-            ["SqsMessageId"] = message.MessageId
-        });
-        _logger.LogInformation("Processing airport creation");
-        using var serviceScope = _host.Services.CreateScope();
-        var writer = serviceScope.ServiceProvider.GetRequiredService<IAirportProjectionWriter>();
-        var snapshot = new AirportSnapshot(airportCreatedEvent.AirportId, airportCreatedEvent.Version, airportCreatedEvent.Name, airportCreatedEvent.IcaoCode, airportCreatedEvent.IataCode, airportCreatedEvent.TimeZoneId, Instant.FromDateTimeOffset(airportCreatedEvent.CreatedAt), Instant.FromDateTimeOffset(airportCreatedEvent.UpdatedAt));
-        await writer.ApplyAsync(snapshot, CancellationToken.None);
-        _logger.LogInformation("Airport creation processing completed");
+            var messageElement = JsonElement.Parse(message.Body).GetProperty("Message").GetString();
+            if (string.IsNullOrWhiteSpace(messageElement))
+            {
+                throw new JsonException("SNS message payload is null or empty.");
+            }
+            var airportCreatedEvent = JsonElement.Parse(messageElement).GetProperty("data").Deserialize<AirportCreatedEvent>();
+            if (airportCreatedEvent is null)
+            {
+                throw new JsonException("Failed to deserialize AirportCreatedEvent.");
+            }
+            activity?.SetTag("airport.id", airportCreatedEvent.AirportId);
+            activity?.SetTag("airport.icao_code", airportCreatedEvent.IcaoCode);
+            activity?.SetTag("airport.iata_code", airportCreatedEvent.IataCode);
+            activity?.SetTag("airport.name", airportCreatedEvent.Name);
+            activity?.SetTag("airport.time_zone_id", airportCreatedEvent.TimeZoneId);
+            activity?.SetTag("event.id", airportCreatedEvent.Id);
+            activity?.SetTag("event.version", airportCreatedEvent.Version);
+            using var scope = _logger.BeginScope(new Dictionary<string, object>
+            {
+                ["EventId"] = airportCreatedEvent.Id,
+                ["AirportId"] = airportCreatedEvent.AirportId,
+                ["IcaoCode"] = airportCreatedEvent.IcaoCode,
+                ["IataCode"] = airportCreatedEvent.IataCode,
+                ["AirportName"] = airportCreatedEvent.Name,
+                ["TimeZoneId"] = airportCreatedEvent.TimeZoneId,
+                ["Version"] = airportCreatedEvent.Version,
+                ["SqsMessageId"] = message.MessageId
+            });
+            _logger.LogInformation("Processing airport creation");
+            using var serviceScope = _host.Services.CreateScope();
+            var writer = serviceScope.ServiceProvider.GetRequiredService<IAirportProjectionWriter>();
+            var snapshot = new AirportSnapshot(airportCreatedEvent.AirportId, airportCreatedEvent.Version, airportCreatedEvent.Name, airportCreatedEvent.IcaoCode, airportCreatedEvent.IataCode, airportCreatedEvent.TimeZoneId, Instant.FromDateTimeOffset(airportCreatedEvent.CreatedAt), Instant.FromDateTimeOffset(airportCreatedEvent.UpdatedAt));
+            await writer.ApplyAsync(snapshot, CancellationToken.None);
+            _logger.LogInformation("Airport creation processing completed");
+        }
+        catch (Exception ex)
+        {
+            activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
+            activity?.AddException(ex);
+            throw;
+        }
     }
 }

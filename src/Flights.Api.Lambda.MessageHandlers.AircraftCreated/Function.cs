@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Text.Json;
 using Amazon.Lambda.Core;
 using Amazon.Lambda.Serialization.SystemTextJson;
@@ -45,33 +46,42 @@ public class Function
     private async Task ProcessMessageAsync(SQSEvent.SQSMessage message, ILambdaContext context)
     {
         using var activity = AircraftCreatedTelemetry.Source.StartActivity("AircraftCreatedEventHandler.ProcessMessage");
-        var messageElement = JsonElement.Parse(message.Body).GetProperty("Message").GetString();
-        if (string.IsNullOrWhiteSpace(messageElement))
-        {
-            throw new JsonException("SNS message payload is null or empty.");
-        }
-        var aircraftCreatedEvent = JsonElement.Parse(messageElement).GetProperty("data").Deserialize<AircraftCreatedEvent>();
-        if (aircraftCreatedEvent is null)
-        {
-            throw new JsonException("Failed to deserialize AircraftCreatedEvent.");
-        }
-        activity?.SetTag("aircraft.id", aircraftCreatedEvent.AircraftId);
-        activity?.SetTag("aircraft.tail_number", aircraftCreatedEvent.TailNumber);
-        activity?.SetTag("aircraft.equipment_code", aircraftCreatedEvent.EquipmentCode);
-        activity?.SetTag("event.id", aircraftCreatedEvent.Id);
         activity?.SetTag("messaging.message.id", message.MessageId);
-        using var scope = _logger.BeginScope(new Dictionary<string, object>
+        try
         {
-            ["EventId"] = aircraftCreatedEvent.Id,
-            ["AircraftId"] = aircraftCreatedEvent.AircraftId,
-            ["TailNumber"] = aircraftCreatedEvent.TailNumber,
-            ["EquipmentCode"] = aircraftCreatedEvent.EquipmentCode,
-            ["SqsMessageId"] = message.MessageId
-        });
-        _logger.LogInformation("Processing aircraft creation");
-        using var serviceScope = _host.Services.CreateScope();
-        var writer = serviceScope.ServiceProvider.GetRequiredService<IAircraftProjectionWriter>();
-        await writer.InsertIfAbsentAsync(aircraftCreatedEvent.AircraftId, aircraftCreatedEvent.TailNumber, aircraftCreatedEvent.EquipmentCode, Instant.FromDateTimeOffset(aircraftCreatedEvent.CreatedAt), CancellationToken.None);
-        _logger.LogInformation("Aircraft creation processing completed");
+            var messageElement = JsonElement.Parse(message.Body).GetProperty("Message").GetString();
+            if (string.IsNullOrWhiteSpace(messageElement))
+            {
+                throw new JsonException("SNS message payload is null or empty.");
+            }
+            var aircraftCreatedEvent = JsonElement.Parse(messageElement).GetProperty("data").Deserialize<AircraftCreatedEvent>();
+            if (aircraftCreatedEvent is null)
+            {
+                throw new JsonException("Failed to deserialize AircraftCreatedEvent.");
+            }
+            activity?.SetTag("aircraft.id", aircraftCreatedEvent.AircraftId);
+            activity?.SetTag("aircraft.tail_number", aircraftCreatedEvent.TailNumber);
+            activity?.SetTag("aircraft.equipment_code", aircraftCreatedEvent.EquipmentCode);
+            activity?.SetTag("event.id", aircraftCreatedEvent.Id);
+            using var scope = _logger.BeginScope(new Dictionary<string, object>
+            {
+                ["EventId"] = aircraftCreatedEvent.Id,
+                ["AircraftId"] = aircraftCreatedEvent.AircraftId,
+                ["TailNumber"] = aircraftCreatedEvent.TailNumber,
+                ["EquipmentCode"] = aircraftCreatedEvent.EquipmentCode,
+                ["SqsMessageId"] = message.MessageId
+            });
+            _logger.LogInformation("Processing aircraft creation");
+            using var serviceScope = _host.Services.CreateScope();
+            var writer = serviceScope.ServiceProvider.GetRequiredService<IAircraftProjectionWriter>();
+            await writer.InsertIfAbsentAsync(aircraftCreatedEvent.AircraftId, aircraftCreatedEvent.TailNumber, aircraftCreatedEvent.EquipmentCode, Instant.FromDateTimeOffset(aircraftCreatedEvent.CreatedAt), CancellationToken.None);
+            _logger.LogInformation("Aircraft creation processing completed");
+        }
+        catch (Exception ex)
+        {
+            activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
+            activity?.AddException(ex);
+            throw;
+        }
     }
 }

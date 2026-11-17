@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Text.Json;
 using Aircraft.Infrastructure;
 using Aircraft.Infrastructure.Database;
@@ -44,36 +45,45 @@ public class Function
     private async Task ProcessMessageAsync(SQSEvent.SQSMessage message, ILambdaContext context)
     {
         using var activity = FlightDelayedEnRouteTelemetry.Source.StartActivity("FlightMarkedAsDelayedEnRouteEventHandler.ProcessMessage");
-        var messageElement = JsonElement.Parse(message.Body).GetProperty("Message").GetString();
-        if (string.IsNullOrWhiteSpace(messageElement))
-        {
-            throw new JsonException("SNS message payload is null or empty.");
-        }
-        var flightEvent = JsonElement.Parse(messageElement).GetProperty("data").Deserialize<FlightMarkedAsDelayedEnRouteEvent>();
-        if (flightEvent is null)
-        {
-            throw new JsonException("Failed to deserialize FlightMarkedAsDelayedEnRouteEvent.");
-        }
-        activity?.SetTag("flight.id", flightEvent.FlightId);
-        activity?.SetTag("flight.aircraft_id", flightEvent.AircraftId);
-        activity?.SetTag("flight.arrival_airport_icao_code", flightEvent.ArrivalAirportIcaoCode);
-        activity?.SetTag("event.id", flightEvent.Id);
         activity?.SetTag("messaging.message.id", message.MessageId);
-        using var scope = _logger.BeginScope(new Dictionary<string, object>
+        try
         {
-            ["EventId"] = flightEvent.Id,
-            ["FlightId"] = flightEvent.FlightId,
-            ["AircraftId"] = flightEvent.AircraftId,
-            ["ArrivalAirportIcaoCode"] = flightEvent.ArrivalAirportIcaoCode,
-            ["SqsMessageId"] = message.MessageId
-        });
-        _logger.LogInformation("Processing delayed en-route flight");
-        using var serviceScope = _host.Services.CreateScope();
-        var processor = serviceScope.ServiceProvider.GetRequiredService<FlightDepartureNotificationProcessor>();
-        var result = await processor.ProcessAsync(flightEvent.Id, flightEvent.AircraftId, flightEvent.ArrivalAirportIcaoCode, flightEvent.OffBlockAt);
-        if (_logger.IsEnabled(Microsoft.Extensions.Logging.LogLevel.Information))
+            var messageElement = JsonElement.Parse(message.Body).GetProperty("Message").GetString();
+            if (string.IsNullOrWhiteSpace(messageElement))
+            {
+                throw new JsonException("SNS message payload is null or empty.");
+            }
+            var flightEvent = JsonElement.Parse(messageElement).GetProperty("data").Deserialize<FlightMarkedAsDelayedEnRouteEvent>();
+            if (flightEvent is null)
+            {
+                throw new JsonException("Failed to deserialize FlightMarkedAsDelayedEnRouteEvent.");
+            }
+            activity?.SetTag("flight.id", flightEvent.FlightId);
+            activity?.SetTag("flight.aircraft_id", flightEvent.AircraftId);
+            activity?.SetTag("flight.arrival_airport_icao_code", flightEvent.ArrivalAirportIcaoCode);
+            activity?.SetTag("event.id", flightEvent.Id);
+            using var scope = _logger.BeginScope(new Dictionary<string, object>
+            {
+                ["EventId"] = flightEvent.Id,
+                ["FlightId"] = flightEvent.FlightId,
+                ["AircraftId"] = flightEvent.AircraftId,
+                ["ArrivalAirportIcaoCode"] = flightEvent.ArrivalAirportIcaoCode,
+                ["SqsMessageId"] = message.MessageId
+            });
+            _logger.LogInformation("Processing delayed en-route flight");
+            using var serviceScope = _host.Services.CreateScope();
+            var processor = serviceScope.ServiceProvider.GetRequiredService<FlightDepartureNotificationProcessor>();
+            var result = await processor.ProcessAsync(flightEvent.Id, flightEvent.AircraftId, flightEvent.ArrivalAirportIcaoCode, flightEvent.OffBlockAt);
+            if (_logger.IsEnabled(Microsoft.Extensions.Logging.LogLevel.Information))
+            {
+                _logger.LogInformation("Delayed en-route flight processing completed with outcome {Outcome}", result);
+            }
+        }
+        catch (Exception ex)
         {
-            _logger.LogInformation("Delayed en-route flight processing completed with outcome {Outcome}", result);
+            activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
+            activity?.AddException(ex);
+            throw;
         }
     }
 }

@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Text.Json;
 using Aircraft.Infrastructure;
 using Aircraft.Infrastructure.Database;
@@ -44,38 +45,47 @@ public class Function
     private async Task ProcessMessageAsync(SQSEvent.SQSMessage message, ILambdaContext context)
     {
         using var activity = FlightArrivalTelemetry.Source.StartActivity("FlightArrivedEventHandler.ProcessMessage");
-        var messageElement = JsonElement.Parse(message.Body).GetProperty("Message").GetString();
-        if (string.IsNullOrWhiteSpace(messageElement))
-        {
-            throw new JsonException("SNS message payload is null or empty.");
-        }
-        var flightArrivedEvent = JsonElement.Parse(messageElement).GetProperty("data").Deserialize<FlightArrivedEvent>();
-        if (flightArrivedEvent is null)
-        {
-            throw new JsonException("Failed to deserialize FlightArrivedEvent.");
-        }
-        activity?.SetTag("flight.id", flightArrivedEvent.FlightId);
-        activity?.SetTag("flight.aircraft_id", flightArrivedEvent.AircraftId);
-        activity?.SetTag("flight.arrival_airport_icao_code", flightArrivedEvent.ArrivalAirportIcaoCode);
-        activity?.SetTag("flight.departure_airport_icao_code", flightArrivedEvent.DepartureAirportIcaoCode);
-        activity?.SetTag("event.id", flightArrivedEvent.Id);
         activity?.SetTag("messaging.message.id", message.MessageId);
-        using var scope = _logger.BeginScope(new Dictionary<string, object>
+        try
         {
-            ["EventId"] = flightArrivedEvent.Id,
-            ["FlightId"] = flightArrivedEvent.FlightId,
-            ["AircraftId"] = flightArrivedEvent.AircraftId,
-            ["ArrivalAirportIcaoCode"] = flightArrivedEvent.ArrivalAirportIcaoCode,
-            ["DepartureAirportIcaoCode"] = flightArrivedEvent.DepartureAirportIcaoCode,
-            ["SqsMessageId"] = message.MessageId
-        });
-        _logger.LogInformation("Processing flight arrival");
-        using var serviceScope = _host.Services.CreateScope();
-        var processor = serviceScope.ServiceProvider.GetRequiredService<FlightArrivalNotificationProcessor>();
-        var result = await processor.ProcessAsync(flightArrivedEvent);
-        if (_logger.IsEnabled(Microsoft.Extensions.Logging.LogLevel.Information))
+            var messageElement = JsonElement.Parse(message.Body).GetProperty("Message").GetString();
+            if (string.IsNullOrWhiteSpace(messageElement))
+            {
+                throw new JsonException("SNS message payload is null or empty.");
+            }
+            var flightArrivedEvent = JsonElement.Parse(messageElement).GetProperty("data").Deserialize<FlightArrivedEvent>();
+            if (flightArrivedEvent is null)
+            {
+                throw new JsonException("Failed to deserialize FlightArrivedEvent.");
+            }
+            activity?.SetTag("flight.id", flightArrivedEvent.FlightId);
+            activity?.SetTag("flight.aircraft_id", flightArrivedEvent.AircraftId);
+            activity?.SetTag("flight.arrival_airport_icao_code", flightArrivedEvent.ArrivalAirportIcaoCode);
+            activity?.SetTag("flight.departure_airport_icao_code", flightArrivedEvent.DepartureAirportIcaoCode);
+            activity?.SetTag("event.id", flightArrivedEvent.Id);
+            using var scope = _logger.BeginScope(new Dictionary<string, object>
+            {
+                ["EventId"] = flightArrivedEvent.Id,
+                ["FlightId"] = flightArrivedEvent.FlightId,
+                ["AircraftId"] = flightArrivedEvent.AircraftId,
+                ["ArrivalAirportIcaoCode"] = flightArrivedEvent.ArrivalAirportIcaoCode,
+                ["DepartureAirportIcaoCode"] = flightArrivedEvent.DepartureAirportIcaoCode,
+                ["SqsMessageId"] = message.MessageId
+            });
+            _logger.LogInformation("Processing flight arrival");
+            using var serviceScope = _host.Services.CreateScope();
+            var processor = serviceScope.ServiceProvider.GetRequiredService<FlightArrivalNotificationProcessor>();
+            var result = await processor.ProcessAsync(flightArrivedEvent);
+            if (_logger.IsEnabled(Microsoft.Extensions.Logging.LogLevel.Information))
+            {
+                _logger.LogInformation("Flight arrival processing completed with outcome {Outcome}", result);
+            }
+        }
+        catch (Exception ex)
         {
-            _logger.LogInformation("Flight arrival processing completed with outcome {Outcome}", result);
+            activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
+            activity?.AddException(ex);
+            throw;
         }
     }
 }
