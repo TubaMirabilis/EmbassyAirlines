@@ -135,7 +135,18 @@ public sealed class FlightDepartureNotificationProcessorTests
     private async Task ProcessArrival(Guid aircraftId, string destination, DateTimeOffset onBlockAt, DateTimeOffset recordedAt)
     {
         var processor = new FlightArrivalNotificationProcessor(new TestDbContextFactory(_postgres), new FixedTimeProvider(recordedAt));
-        var flightArrivedEvent = new FlightArrivedEvent(Guid.NewGuid(), aircraftId, Guid.NewGuid(), "CYVR", destination, onBlockAt.AddHours(-2), onBlockAt.AddHours(-2).AddMinutes(15), onBlockAt.AddMinutes(-10), onBlockAt);
+        var flightArrivedEvent = new FlightArrivedEvent
+        {
+            Id = Guid.NewGuid(),
+            AircraftId = aircraftId,
+            FlightId = Guid.NewGuid(),
+            DepartureAirportIcaoCode = "CYVR",
+            ArrivalAirportIcaoCode = destination,
+            OffBlockAt = onBlockAt.AddHours(-2),
+            TakeOffAt = onBlockAt.AddHours(-2).AddMinutes(15),
+            LandingAt = onBlockAt.AddMinutes(-10),
+            OnBlockAt = onBlockAt
+        };
         var result = await processor.ProcessAsync(flightArrivedEvent, TestContext.Current.CancellationToken);
         Assert.Equal(AircraftFlightStatusProcessingResult.Applied, result.AircraftStatus);
     }

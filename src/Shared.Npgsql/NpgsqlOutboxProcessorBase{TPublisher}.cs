@@ -33,7 +33,9 @@ public abstract class NpgsqlOutboxProcessorBase<TPublisher> : OutboxProcessorBas
             || char.IsAsciiDigit(schema[0])
             || !schema.All(static c => char.IsAsciiLetterOrDigit(c) || c == '_'))
         {
-            throw new ArgumentException($"Schema name '{schema}' must be at most {MaxIdentifierLength} characters, start with an ASCII letter or underscore, and contain only ASCII letters, digits, and underscores.", nameof(schema));
+            var message = $"Schema name '{schema}' must be at most {MaxIdentifierLength} characters, " +
+                          "start with an ASCII letter or underscore, and contain only ASCII letters, digits, and underscores.";
+            throw new ArgumentException(message, nameof(schema));
         }
         return $"\"{schema}\"";
     }
@@ -72,7 +74,8 @@ public abstract class NpgsqlOutboxProcessorBase<TPublisher> : OutboxProcessorBas
         messages.Sort(static (left, right) => (left.CreatedOnUtc, left.Id).CompareTo((right.CreatedOnUtc, right.Id)));
         if (Logger.IsEnabled(LogLevel.Information))
         {
-            Logger.LogInformation("Claimed {ClaimedCount} outbox message(s) as {ClaimId} until {ClaimedUntilUtc:o}", messages.Count, claimId, messages[0].ClaimedUntilUtc);
+            Logger.LogInformation("Claimed {ClaimedCount} outbox message(s) as {ClaimId} until {ClaimedUntilUtc:o}",
+                messages.Count, claimId, messages[0].ClaimedUntilUtc);
         }
         return new ClaimedBatch(claimId, claimIssuedAt, messages);
     }
@@ -128,13 +131,10 @@ public abstract class NpgsqlOutboxProcessorBase<TPublisher> : OutboxProcessorBas
         {
             return true;
         }
-
         Logger.LogError(
-            "Outbox message {MessageId} of type {MessageType} is no longer validly claimed by {ClaimId}; its outcome was discarded because the claim expired or another worker now owns it",
-            message.Id,
-            message.Name,
-            claimId);
-
+            "Outbox message {MessageId} ({MessageType}) " +
+            "is no longer owned by claim {ClaimId}; outcome discarded",
+            message.Id, message.Name, claimId);
         return false;
     }
     private static string? GetStopReason(long claimIssuedAt, CancellationToken cancellationToken)
@@ -156,7 +156,9 @@ public abstract class NpgsqlOutboxProcessorBase<TPublisher> : OutboxProcessorBas
         {
             return;
         }
-        Logger.LogWarning("Stopped before {AbandonedCount} claimed outbox message(s) were attempted because {Reason}; they will be reprocessed once their claim expires", abandonedCount, reason);
+        Logger.LogWarning(
+            "Stopped before {AbandonedCount} claimed outbox message(s) were attempted because {Reason}; they will be reprocessed once their claim expires",
+            abandonedCount, reason);
     }
     private void LogBatchResult(int publishedCount, int attemptedCount)
     {

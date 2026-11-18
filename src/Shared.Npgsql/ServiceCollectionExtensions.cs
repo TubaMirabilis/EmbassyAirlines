@@ -9,7 +9,8 @@ namespace Shared.Npgsql;
 
 public static class ServiceCollectionExtensions
 {
-    public static IServiceCollection AddDatabaseConnection<TDbContext>(this IServiceCollection services, IConfiguration config, bool useNodaTime, string schema) where TDbContext : DbContext
+    public static IServiceCollection AddDatabaseConnection<TDbContext>(this IServiceCollection services, IConfiguration config, bool useNodaTime, string schema)
+        where TDbContext : DbContext
     {
         var dbConfig = config.GetSection("DbConnection").Get<DatabaseConnectionOptions>();
         Ensure.NotNull(dbConfig);

@@ -20,14 +20,30 @@ internal static class FlightStatusEventFactory
         {
             throw new InvalidOperationException("Cannot transition to EnRoute without an OffBlock milestone.");
         }
-        return flight.OffBlockAt <= flight.DepartureInstant ? new FlightMarkedAsEnRouteEvent(Guid.NewGuid(), flight.Aircraft.Id, flight.Id, flight.ArrivalAirport.IcaoCode, offBlockAt.ToDateTimeOffset()) : new FlightMarkedAsDelayedEnRouteEvent(Guid.NewGuid(), flight.Aircraft.Id, flight.Id, flight.ArrivalAirport.IcaoCode, offBlockAt.ToDateTimeOffset());
+        return flight.OffBlockAt <= flight.DepartureInstant
+            ? new FlightMarkedAsEnRouteEvent(Guid.NewGuid(), flight.Aircraft.Id, flight.Id, flight.ArrivalAirport.IcaoCode, offBlockAt.ToDateTimeOffset())
+            : new FlightMarkedAsDelayedEnRouteEvent(Guid.NewGuid(), flight.Aircraft.Id, flight.Id, flight.ArrivalAirport.IcaoCode, offBlockAt.ToDateTimeOffset());
     }
     private static FlightArrivedEvent HandleArrival(Flight flight)
     {
-        if (flight.OffBlockAt is not { } offBlockAt || flight.TakeoffAt is not { } takeoffAt || flight.LandingAt is not { } landingAt || flight.OnBlockAt is not { } onBlockAt)
+        if (flight.OffBlockAt is not { } offBlockAt ||
+            flight.TakeoffAt is not { } takeoffAt ||
+            flight.LandingAt is not { } landingAt ||
+            flight.OnBlockAt is not { } onBlockAt)
         {
             throw new InvalidOperationException("Cannot transition to Arrived with incomplete milestone information.");
         }
-        return new FlightArrivedEvent(Guid.NewGuid(), flight.Aircraft.Id, flight.Id, flight.DepartureAirport.IcaoCode, flight.ArrivalAirport.IcaoCode, offBlockAt.ToDateTimeOffset(), takeoffAt.ToDateTimeOffset(), landingAt.ToDateTimeOffset(), onBlockAt.ToDateTimeOffset());
+        return new FlightArrivedEvent
+        {
+            Id = Guid.NewGuid(),
+            AircraftId = flight.Aircraft.Id,
+            FlightId = flight.Id,
+            DepartureAirportIcaoCode = flight.DepartureAirport.IcaoCode,
+            ArrivalAirportIcaoCode = flight.ArrivalAirport.IcaoCode,
+            OffBlockAt = offBlockAt.ToDateTimeOffset(),
+            TakeOffAt = takeoffAt.ToDateTimeOffset(),
+            LandingAt = landingAt.ToDateTimeOffset(),
+            OnBlockAt = onBlockAt.ToDateTimeOffset()
+        };
     }
 }

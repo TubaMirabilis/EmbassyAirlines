@@ -57,7 +57,8 @@ public abstract class OutboxProcessorBase<TPublisher>
     private void RegisterPublishFailure(OutboxMessage message, Exception exception, DateTime now)
     {
         var unrecoverable = exception is JsonException or NotSupportedException;
-        Logger.LogError(exception, "Failed to publish outbox message {MessageId} of type {MessageType} on attempt {Attempt}", message.Id, message.Name, message.RetryCount + 1);
+        Logger.LogError(exception, "Failed to publish outbox message {MessageId} of type {MessageType} on attempt {Attempt}",
+            message.Id, message.Name, message.RetryCount + 1);
         RegisterFailure(message, exception.Message, unrecoverable, now);
     }
     private static void MarkAsProcessed(OutboxMessage message, DateTime now)

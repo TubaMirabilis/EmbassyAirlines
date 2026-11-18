@@ -33,7 +33,18 @@ public sealed class FlightArrivalNotificationProcessorTests
         var aircraftId = await _postgres.CreateAircraftAsync("C-FJRN", T0);
         var eventId = Guid.NewGuid();
         var flightId = Guid.NewGuid();
-        var flightArrivedEvent = new FlightArrivedEvent(eventId, aircraftId, flightId, "CYVR", "EHAM", ArrivalMilestones.OffBlockAt, ArrivalMilestones.TakeOffAt, ArrivalMilestones.LandingAt, ArrivalMilestones.OnBlockAt);
+        var flightArrivedEvent = new FlightArrivedEvent
+        {
+            Id = eventId,
+            AircraftId = aircraftId,
+            FlightId = flightId,
+            DepartureAirportIcaoCode = "CYVR",
+            ArrivalAirportIcaoCode = "EHAM",
+            OffBlockAt = ArrivalMilestones.OffBlockAt,
+            TakeOffAt = ArrivalMilestones.TakeOffAt,
+            LandingAt = ArrivalMilestones.LandingAt,
+            OnBlockAt = ArrivalMilestones.OnBlockAt
+        };
 
         // Act
         var result = await CreateProcessor(RecordedAt).ProcessAsync(flightArrivedEvent, TestContext.Current.CancellationToken);
@@ -63,7 +74,18 @@ public sealed class FlightArrivalNotificationProcessorTests
         await _postgres.SetUpdatedAtAsync(aircraftId, ArrivalMilestones.OnBlockAt.AddMinutes(30));
         var eventId = Guid.NewGuid();
         var flightId = Guid.NewGuid();
-        var flightArrivedEvent = new FlightArrivedEvent(eventId, aircraftId, flightId, "CYVR", "EHAM", ArrivalMilestones.OffBlockAt, ArrivalMilestones.TakeOffAt, ArrivalMilestones.LandingAt, ArrivalMilestones.OnBlockAt);
+        var flightArrivedEvent = new FlightArrivedEvent
+        {
+            Id = eventId,
+            AircraftId = aircraftId,
+            FlightId = flightId,
+            DepartureAirportIcaoCode = "CYVR",
+            ArrivalAirportIcaoCode = "EHAM",
+            OffBlockAt = ArrivalMilestones.OffBlockAt,
+            TakeOffAt = ArrivalMilestones.TakeOffAt,
+            LandingAt = ArrivalMilestones.LandingAt,
+            OnBlockAt = ArrivalMilestones.OnBlockAt
+        };
 
         // Act
         var result = await CreateProcessor(RecordedAt).ProcessAsync(flightArrivedEvent, TestContext.Current.CancellationToken);
@@ -92,7 +114,18 @@ public sealed class FlightArrivalNotificationProcessorTests
         await ProcessDeparture(aircraftId, "EGLL", departedAt, departureRecordedAt, TestContext.Current.CancellationToken);
         var eventId = Guid.NewGuid();
         var flightId = Guid.NewGuid();
-        var flightArrivedEvent = new FlightArrivedEvent(eventId, aircraftId, flightId, "CYVR", "EHAM", ArrivalMilestones.OffBlockAt, ArrivalMilestones.TakeOffAt, ArrivalMilestones.LandingAt, ArrivalMilestones.OnBlockAt);
+        var flightArrivedEvent = new FlightArrivedEvent
+        {
+            Id = eventId,
+            AircraftId = aircraftId,
+            FlightId = flightId,
+            DepartureAirportIcaoCode = "CYVR",
+            ArrivalAirportIcaoCode = "EHAM",
+            OffBlockAt = ArrivalMilestones.OffBlockAt,
+            TakeOffAt = ArrivalMilestones.TakeOffAt,
+            LandingAt = ArrivalMilestones.LandingAt,
+            OnBlockAt = ArrivalMilestones.OnBlockAt
+        };
 
         // Act
         var result = await CreateProcessor(RecordedAt).ProcessAsync(flightArrivedEvent, TestContext.Current.CancellationToken);
@@ -120,7 +153,18 @@ public sealed class FlightArrivalNotificationProcessorTests
         var aircraftId = await _postgres.CreateAircraftAsync("C-FJRN", T0);
         var eventId = Guid.NewGuid();
         var flightId = Guid.NewGuid();
-        var flightArrivedEvent = new FlightArrivedEvent(eventId, aircraftId, flightId, "CYVR", "EHAM", ArrivalMilestones.OffBlockAt, ArrivalMilestones.TakeOffAt, ArrivalMilestones.LandingAt, ArrivalMilestones.OnBlockAt);
+        var flightArrivedEvent = new FlightArrivedEvent
+        {
+            Id = eventId,
+            AircraftId = aircraftId,
+            FlightId = flightId,
+            DepartureAirportIcaoCode = "CYVR",
+            ArrivalAirportIcaoCode = "EHAM",
+            OffBlockAt = ArrivalMilestones.OffBlockAt,
+            TakeOffAt = ArrivalMilestones.TakeOffAt,
+            LandingAt = ArrivalMilestones.LandingAt,
+            OnBlockAt = ArrivalMilestones.OnBlockAt
+        };
 
         await CreateProcessor(RecordedAt).ProcessAsync(flightArrivedEvent, TestContext.Current.CancellationToken);
 
@@ -145,8 +189,30 @@ public sealed class FlightArrivalNotificationProcessorTests
         var firstEventId = Guid.NewGuid();
         var secondEventId = Guid.NewGuid();
         var flightId = Guid.NewGuid();
-        var firstEvent = new FlightArrivedEvent(firstEventId, aircraftId, flightId, "CYVR", "EHAM", ArrivalMilestones.OffBlockAt, ArrivalMilestones.TakeOffAt, ArrivalMilestones.LandingAt, ArrivalMilestones.OnBlockAt);
-        var secondEvent = new FlightArrivedEvent(secondEventId, aircraftId, flightId, "CYVR", "EHAM", ArrivalMilestones.OffBlockAt, ArrivalMilestones.TakeOffAt, ArrivalMilestones.LandingAt, ArrivalMilestones.OnBlockAt);
+        var firstEvent = new FlightArrivedEvent
+        {
+            Id = firstEventId,
+            AircraftId = aircraftId,
+            FlightId = flightId,
+            DepartureAirportIcaoCode = "CYVR",
+            ArrivalAirportIcaoCode = "EHAM",
+            OffBlockAt = ArrivalMilestones.OffBlockAt,
+            TakeOffAt = ArrivalMilestones.TakeOffAt,
+            LandingAt = ArrivalMilestones.LandingAt,
+            OnBlockAt = ArrivalMilestones.OnBlockAt
+        };
+        var secondEvent = new FlightArrivedEvent
+        {
+            Id = secondEventId,
+            AircraftId = aircraftId,
+            FlightId = flightId,
+            DepartureAirportIcaoCode = "CYVR",
+            ArrivalAirportIcaoCode = "EHAM",
+            OffBlockAt = ArrivalMilestones.OffBlockAt,
+            TakeOffAt = ArrivalMilestones.TakeOffAt,
+            LandingAt = ArrivalMilestones.LandingAt,
+            OnBlockAt = ArrivalMilestones.OnBlockAt
+        };
 
         await CreateProcessor(RecordedAt).ProcessAsync(firstEvent, TestContext.Current.CancellationToken);
 
@@ -181,12 +247,34 @@ public sealed class FlightArrivalNotificationProcessorTests
         await _postgres.ResetAsync();
         var aircraftId = await _postgres.CreateAircraftAsync("C-FJRN", T0);
         var flightId = Guid.NewGuid();
-        var recordedEvent = new FlightArrivedEvent(Guid.NewGuid(), aircraftId, flightId, "CYVR", "EHAM", ArrivalMilestones.OffBlockAt, ArrivalMilestones.TakeOffAt, ArrivalMilestones.LandingAt, ArrivalMilestones.OnBlockAt);
+        var recordedEvent = new FlightArrivedEvent
+        {
+            Id = Guid.NewGuid(),
+            AircraftId = aircraftId,
+            FlightId = flightId,
+            DepartureAirportIcaoCode = "CYVR",
+            ArrivalAirportIcaoCode = "EHAM",
+            OffBlockAt = ArrivalMilestones.OffBlockAt,
+            TakeOffAt = ArrivalMilestones.TakeOffAt,
+            LandingAt = ArrivalMilestones.LandingAt,
+            OnBlockAt = ArrivalMilestones.OnBlockAt
+        };
 
         await CreateProcessor(RecordedAt).ProcessAsync(recordedEvent, TestContext.Current.CancellationToken);
 
         var conflictingEventId = Guid.NewGuid();
-        var conflictingEvent = new FlightArrivedEvent(conflictingEventId, aircraftId, flightId, departureAirportIcao, arrivalAirportIcao, ArrivalMilestones.OffBlockAt, ArrivalMilestones.TakeOffAt, ArrivalMilestones.LandingAt, ArrivalMilestones.OnBlockAt.AddSeconds(onBlockDelaySeconds));
+        var conflictingEvent = new FlightArrivedEvent
+        {
+            Id = conflictingEventId,
+            AircraftId = aircraftId,
+            FlightId = flightId,
+            DepartureAirportIcaoCode = departureAirportIcao,
+            ArrivalAirportIcaoCode = arrivalAirportIcao,
+            OffBlockAt = ArrivalMilestones.OffBlockAt,
+            TakeOffAt = ArrivalMilestones.TakeOffAt,
+            LandingAt = ArrivalMilestones.LandingAt,
+            OnBlockAt = ArrivalMilestones.OnBlockAt.AddSeconds(onBlockDelaySeconds)
+        };
 
         // Act
         await Assert.ThrowsAsync<CompletedFlightConflictException>(() =>
@@ -210,12 +298,34 @@ public sealed class FlightArrivalNotificationProcessorTests
         var firstAircraftId = await _postgres.CreateAircraftAsync("C-FJRN", T0);
         var secondAircraftId = await _postgres.CreateAircraftAsync("C-FRSA", T0);
         var flightId = Guid.NewGuid();
-        var recordedEvent = new FlightArrivedEvent(Guid.NewGuid(), firstAircraftId, flightId, "CYVR", "EHAM", ArrivalMilestones.OffBlockAt, ArrivalMilestones.TakeOffAt, ArrivalMilestones.LandingAt, ArrivalMilestones.OnBlockAt);
+        var recordedEvent = new FlightArrivedEvent
+        {
+            Id = Guid.NewGuid(),
+            AircraftId = firstAircraftId,
+            FlightId = flightId,
+            DepartureAirportIcaoCode = "CYVR",
+            ArrivalAirportIcaoCode = "EHAM",
+            OffBlockAt = ArrivalMilestones.OffBlockAt,
+            TakeOffAt = ArrivalMilestones.TakeOffAt,
+            LandingAt = ArrivalMilestones.LandingAt,
+            OnBlockAt = ArrivalMilestones.OnBlockAt
+        };
 
         await CreateProcessor(RecordedAt).ProcessAsync(recordedEvent, TestContext.Current.CancellationToken);
 
         var conflictingEventId = Guid.NewGuid();
-        var conflictingEvent = new FlightArrivedEvent(conflictingEventId, secondAircraftId, flightId, "CYVR", "EHAM", ArrivalMilestones.OffBlockAt, ArrivalMilestones.TakeOffAt, ArrivalMilestones.LandingAt, ArrivalMilestones.OnBlockAt);
+        var conflictingEvent = new FlightArrivedEvent
+        {
+            Id = conflictingEventId,
+            AircraftId = secondAircraftId,
+            FlightId = flightId,
+            DepartureAirportIcaoCode = "CYVR",
+            ArrivalAirportIcaoCode = "EHAM",
+            OffBlockAt = ArrivalMilestones.OffBlockAt,
+            TakeOffAt = ArrivalMilestones.TakeOffAt,
+            LandingAt = ArrivalMilestones.LandingAt,
+            OnBlockAt = ArrivalMilestones.OnBlockAt
+        };
 
         // Act
         await Assert.ThrowsAsync<CompletedFlightConflictException>(() =>
@@ -242,7 +352,18 @@ public sealed class FlightArrivalNotificationProcessorTests
         var eventId = Guid.NewGuid();
         var flightId = Guid.NewGuid();
         var concurrentlyRecordedAt = RecordedAt.AddMinutes(-1);
-        var flightArrivedEvent = new FlightArrivedEvent(eventId, aircraftId, flightId, "CYVR", "EHAM", ArrivalMilestones.OffBlockAt, ArrivalMilestones.TakeOffAt, ArrivalMilestones.LandingAt, ArrivalMilestones.OnBlockAt);
+        var flightArrivedEvent = new FlightArrivedEvent
+        {
+            Id = eventId,
+            AircraftId = aircraftId,
+            FlightId = flightId,
+            DepartureAirportIcaoCode = "CYVR",
+            ArrivalAirportIcaoCode = "EHAM",
+            OffBlockAt = ArrivalMilestones.OffBlockAt,
+            TakeOffAt = ArrivalMilestones.TakeOffAt,
+            LandingAt = ArrivalMilestones.LandingAt,
+            OnBlockAt = ArrivalMilestones.OnBlockAt
+        };
 
         await using var concurrentDb = _postgres.CreateDbContext();
         await using var concurrentTransaction =
@@ -287,7 +408,18 @@ public sealed class FlightArrivalNotificationProcessorTests
         var concurrentDeparture = new BeforeSaveChangesHook(
             1,
             ct => ProcessDeparture(aircraftId, "EGLL", departedAt, departureRecordedAt, ct));
-        var flightArrivedEvent = new FlightArrivedEvent(eventId, aircraftId, flightId, "CYVR", "EHAM", ArrivalMilestones.OffBlockAt, ArrivalMilestones.TakeOffAt, ArrivalMilestones.LandingAt, ArrivalMilestones.OnBlockAt);
+        var flightArrivedEvent = new FlightArrivedEvent
+        {
+            Id = eventId,
+            AircraftId = aircraftId,
+            FlightId = flightId,
+            DepartureAirportIcaoCode = "CYVR",
+            ArrivalAirportIcaoCode = "EHAM",
+            OffBlockAt = ArrivalMilestones.OffBlockAt,
+            TakeOffAt = ArrivalMilestones.TakeOffAt,
+            LandingAt = ArrivalMilestones.LandingAt,
+            OnBlockAt = ArrivalMilestones.OnBlockAt
+        };
 
         // Act
         var result = await CreateProcessor(RecordedAt, concurrentDeparture, conflicts).ProcessAsync(flightArrivedEvent, TestContext.Current.CancellationToken);
@@ -319,7 +451,18 @@ public sealed class FlightArrivalNotificationProcessorTests
         var competingWrite = new BeforeSaveChangesHook(
             3,
             ct => TouchAircraft(aircraftId, ct));
-        var flightArrivedEvent = new FlightArrivedEvent(eventId, aircraftId, Guid.NewGuid(), "CYVR", "EHAM", ArrivalMilestones.OffBlockAt, ArrivalMilestones.TakeOffAt, ArrivalMilestones.LandingAt, ArrivalMilestones.OnBlockAt);
+        var flightArrivedEvent = new FlightArrivedEvent
+        {
+            Id = eventId,
+            AircraftId = aircraftId,
+            FlightId = Guid.NewGuid(),
+            DepartureAirportIcaoCode = "CYVR",
+            ArrivalAirportIcaoCode = "EHAM",
+            OffBlockAt = ArrivalMilestones.OffBlockAt,
+            TakeOffAt = ArrivalMilestones.TakeOffAt,
+            LandingAt = ArrivalMilestones.LandingAt,
+            OnBlockAt = ArrivalMilestones.OnBlockAt
+        };
 
         // Act
         await Assert.ThrowsAsync<DbUpdateConcurrencyException>(() =>
@@ -341,7 +484,18 @@ public sealed class FlightArrivalNotificationProcessorTests
         // Arrange
         await _postgres.ResetAsync();
         var eventId = Guid.NewGuid();
-        var flightArrivedEvent = new FlightArrivedEvent(eventId, Guid.NewGuid(), Guid.NewGuid(), "CYVR", "EHAM", ArrivalMilestones.OffBlockAt, ArrivalMilestones.TakeOffAt, ArrivalMilestones.LandingAt, ArrivalMilestones.OnBlockAt);
+        var flightArrivedEvent = new FlightArrivedEvent
+        {
+            Id = eventId,
+            AircraftId = Guid.NewGuid(),
+            FlightId = Guid.NewGuid(),
+            DepartureAirportIcaoCode = "CYVR",
+            ArrivalAirportIcaoCode = "EHAM",
+            OffBlockAt = ArrivalMilestones.OffBlockAt,
+            TakeOffAt = ArrivalMilestones.TakeOffAt,
+            LandingAt = ArrivalMilestones.LandingAt,
+            OnBlockAt = ArrivalMilestones.OnBlockAt
+        };
 
         // Act
         await Assert.ThrowsAsync<InvalidOperationException>(() =>

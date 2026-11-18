@@ -6,5 +6,6 @@ namespace Shared.Npgsql;
 // machine happens to be issuing the statement.
 public static class DatabaseClock
 {
-    public static DateTime UtcNow() => throw new NotSupportedException($"{nameof(DatabaseClock)}.{nameof(UtcNow)} may only be used inside an EF Core query, where it is translated to the PostgreSQL now() function.");
+    public static DateTime UtcNow() => throw new NotSupportedException(
+        $"{nameof(DatabaseClock)}.{nameof(UtcNow)} may only be used inside an EF Core query, where it is translated to the PostgreSQL now() function.");
 }
