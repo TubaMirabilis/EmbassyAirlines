@@ -90,7 +90,14 @@ public sealed class Flight : Entity
         DepartureLocalTime = schedule.DepartureTime;
         SchedulingAmbiguityPolicy = schedule.SchedulingAmbiguityPolicy;
         UpdatedAt = instant;
-        AddDomainEvent(new FlightRescheduledEvent(Guid.NewGuid(), Id, schedule.DepartureTime.ToDateTimeUnspecified(), schedule.ArrivalTime.ToDateTimeUnspecified()));
+        var flightRescheduledEvent = new FlightRescheduledEvent
+        {
+            ArrivalLocalTime = schedule.ArrivalTime.ToDateTimeUnspecified(),
+            DepartureLocalTime = schedule.DepartureTime.ToDateTimeUnspecified(),
+            FlightId = Id,
+            Id = Guid.NewGuid()
+        };
+        AddDomainEvent(flightRescheduledEvent);
     }
     public void RecordMilestone(
         FlightMilestone milestone,

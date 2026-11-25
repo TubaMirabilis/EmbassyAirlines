@@ -72,9 +72,16 @@ public class Function
                 ["SqsMessageId"] = message.MessageId
             });
             _logger.LogInformation("Processing aircraft creation");
+            var snapshot = new AircraftSnapshot
+            {
+                CreatedAt = Instant.FromDateTimeOffset(aircraftCreatedEvent.CreatedAt),
+                EquipmentCode = aircraftCreatedEvent.EquipmentCode,
+                Id = aircraftCreatedEvent.AircraftId,
+                TailNumber = aircraftCreatedEvent.TailNumber
+            };
             using var serviceScope = _host.Services.CreateScope();
             var writer = serviceScope.ServiceProvider.GetRequiredService<IAircraftProjectionWriter>();
-            await writer.InsertIfAbsentAsync(aircraftCreatedEvent.AircraftId, aircraftCreatedEvent.TailNumber, aircraftCreatedEvent.EquipmentCode, Instant.FromDateTimeOffset(aircraftCreatedEvent.CreatedAt), CancellationToken.None);
+            await writer.InsertIfAbsentAsync(snapshot, CancellationToken.None);
             _logger.LogInformation("Aircraft creation processing completed");
         }
         catch (Exception ex)

@@ -2,4 +2,10 @@ using Shared.Abstractions;
 
 namespace Shared.Contracts;
 
-public sealed record FlightRescheduledEvent(Guid Id, Guid FlightId, DateTime DepartureLocalTime, DateTime ArrivalLocalTime) : IDomainEvent;
+public sealed record FlightRescheduledEvent : IDomainEvent
+{
+    public required DateTime ArrivalLocalTime { get; init; }
+    public required DateTime DepartureLocalTime { get; init; }
+    public required Guid FlightId { get; init; }
+    public required Guid Id { get; init; }
+}

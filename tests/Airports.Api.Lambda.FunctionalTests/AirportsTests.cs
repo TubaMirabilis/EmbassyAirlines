@@ -179,11 +179,12 @@ public class AirportsTests : BaseFunctionalTest
     [Fact]
     public async Task Airport_Lifecycle_Should_Succeed()
     {
+        var ct = TestContext.Current.CancellationToken;
         // Create
         var request = new CreateOrUpdateAirportDto("CYVR", "YVR", "Vancouver International Airport", "America/Vancouver");
-        var response = await HttpClient.PostAsJsonAsync("airports", request, TestContext.Current.CancellationToken);
-        var content = await response.Content.ReadAsStreamAsync(TestContext.Current.CancellationToken);
-        var airport = await JsonSerializer.DeserializeAsync<AirportDto>(content, JsonSerializerOptions.Web, TestContext.Current.CancellationToken);
+        var response = await HttpClient.PostAsJsonAsync("airports", request, ct);
+        var content = await response.Content.ReadAsStreamAsync(ct);
+        var airport = await JsonSerializer.DeserializeAsync<AirportDto>(content, JsonSerializerOptions.Web, ct);
         if (airport is null)
         {
             throw new JsonException("Expected airport object not returned");
@@ -196,16 +197,16 @@ public class AirportsTests : BaseFunctionalTest
         // Update should return BadRequest when IcaoCode is empty
         var updateRequestWithEmptyIcao = new CreateOrUpdateAirportDto("", "YVR", "Vancouver Intercontinental Airport", "America/Vancouver");
         var updateUriWithEmptyIcao = new Uri($"airports/{airport.Id}", UriKind.Relative);
-        var updateResponseWithEmptyIcao = await HttpClient.PutAsJsonAsync(updateUriWithEmptyIcao, updateRequestWithEmptyIcao, TestContext.Current.CancellationToken);
+        var updateResponseWithEmptyIcao = await HttpClient.PutAsJsonAsync(updateUriWithEmptyIcao, updateRequestWithEmptyIcao, ct);
         await GetProblemDetailsFromResponseAndAssert(updateResponseWithEmptyIcao, "ICAO Code must consist of 4 uppercase letters only.");
 
         // Update
         var updateRequest = new CreateOrUpdateAirportDto("CYVR", "YVR", "Vancouver Intercontinental Airport", "America/Vancouver");
         var expected = new AirportDto(airport.Id, updateRequest.Name, updateRequest.IcaoCode, updateRequest.IataCode, updateRequest.TimeZoneId);
         var updateUri = new Uri($"airports/{airport.Id}", UriKind.Relative);
-        var updateResponse = await HttpClient.PutAsJsonAsync(updateUri, updateRequest, TestContext.Current.CancellationToken);
-        var updateContent = await updateResponse.Content.ReadAsStreamAsync(TestContext.Current.CancellationToken);
-        var updatedAirport = await JsonSerializer.DeserializeAsync<AirportDto>(updateContent, JsonSerializerOptions.Web, TestContext.Current.CancellationToken);
+        var updateResponse = await HttpClient.PutAsJsonAsync(updateUri, updateRequest, ct);
+        var updateContent = await updateResponse.Content.ReadAsStreamAsync(ct);
+        var updatedAirport = await JsonSerializer.DeserializeAsync<AirportDto>(updateContent, JsonSerializerOptions.Web, ct);
         updatedAirport.Should().BeEquivalentTo(expected);
     }
 }

@@ -50,7 +50,8 @@ internal sealed class UpdateAirportEndpoint : IEndpoint
         catch (DbUpdateConcurrencyException ex)
         {
             logger.LogWarning(ex, "Concurrency conflict while updating airport {AirportId}", id);
-            var error = Error.Conflict("Airport.ConcurrencyConflict", "The airport was modified by another request. Please retrieve its latest state and try again.");
+            var description = "The airport was modified by another request. Please retrieve its latest state and try again.";
+            var error = Error.Conflict("Airport.ConcurrencyConflict", description);
             return TypedResults.Problem(ErrorHandlingHelper.GetProblemDetails(error));
         }
         var response = new AirportDto(airport.Id, airport.Name, airport.IcaoCode, airport.IataCode, airport.TimeZoneId);

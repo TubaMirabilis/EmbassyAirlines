@@ -51,9 +51,16 @@ public sealed class AircraftProjectionWriterTests
 
     private async Task InsertIfAbsentAsync(Guid id, string tailNumber, string equipmentCode, Instant createdAt)
     {
+        var snapshot = new AircraftSnapshot
+        {
+            CreatedAt = createdAt,
+            EquipmentCode = equipmentCode,
+            Id = id,
+            TailNumber = tailNumber
+        };
         await using var db = _postgres.CreateDbContext();
         var writer = new AircraftProjectionWriter(db);
-        await writer.InsertIfAbsentAsync(id, tailNumber, equipmentCode, createdAt, TestContext.Current.CancellationToken);
+        await writer.InsertIfAbsentAsync(snapshot, TestContext.Current.CancellationToken);
     }
 
     private async Task<(Guid Id, string TailNumber, string EquipmentCode, Instant CreatedAt)> GetProjectionAsync(Guid id)

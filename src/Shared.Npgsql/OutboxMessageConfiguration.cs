@@ -19,6 +19,8 @@ public sealed class OutboxMessageConfiguration : IEntityTypeConfiguration<Outbox
         builder.Property(o => o.DeadLetteredOnUtc).IsRequired(false);
         builder.Property(o => o.ClaimedUntilUtc).IsRequired(false);
         builder.Property(o => o.ClaimId).IsRequired(false).IsConcurrencyToken();
-        builder.HasIndex(o => o.CreatedOnUtc).HasDatabaseName("ix_outbox_messages_unprocessed").HasFilter("processed_on_utc IS NULL AND dead_lettered_on_utc IS NULL");
+        builder.HasIndex(o => o.CreatedOnUtc)
+               .HasDatabaseName("ix_outbox_messages_unprocessed")
+               .HasFilter("processed_on_utc IS NULL AND dead_lettered_on_utc IS NULL");
     }
 }

@@ -83,7 +83,8 @@ public class AircraftTests : BaseFunctionalTest
         emptyAircraftList.Should().BeEquivalentTo(new AircraftListDto([], 1, 50, 0, false));
 
         // Create
-        var request = new CreateAircraftDto("C-FJRN", "B78X", 135500, 254011, 201848, 192777, 101522, new AircraftSituationDto("Parked", "CYVR"), TimeSpan.FromHours(0));
+        var situation = new AircraftSituationDto("Parked", "CYVR");
+        var request = new CreateAircraftDto("C-FJRN", "B78X", 135500, 254011, 201848, 192777, 101522, situation, TimeSpan.FromHours(0));
         var aircraft = await CreateAircraftAsync(request);
         aircraft.Should().Match<AircraftDto>(x =>
             x.TailNumber == request.TailNumber &&

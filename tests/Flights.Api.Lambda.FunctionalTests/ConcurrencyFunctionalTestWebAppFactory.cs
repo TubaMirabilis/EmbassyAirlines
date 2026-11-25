@@ -9,6 +9,7 @@ public sealed class ConcurrencyFunctionalTestWebAppFactory : FunctionalTestWebAp
         IServiceCollection services)
     {
         services.AddSingleton<ForceFlightConcurrencyConflictInterceptor>();
-        services.ConfigureDbContext<ApplicationDbContext>((sp, options) => options.AddInterceptors(sp.GetRequiredService<ForceFlightConcurrencyConflictInterceptor>()));
+        services.ConfigureDbContext<ApplicationDbContext>((sp, options) =>
+            options.AddInterceptors(sp.GetRequiredService<ForceFlightConcurrencyConflictInterceptor>()));
     }
 }
