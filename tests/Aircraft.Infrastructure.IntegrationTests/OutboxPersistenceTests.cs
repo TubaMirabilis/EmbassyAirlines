@@ -14,7 +14,7 @@ public sealed class OutboxPersistenceTests
 {
     private readonly PostgreSqlFixture _postgres;
     private readonly TimeProvider _timeProvider;
-    private readonly JsonSerializerOptions _options = new JsonSerializerOptions(JsonSerializerDefaults.Web);
+    private readonly JsonSerializerOptions _options = new(JsonSerializerDefaults.Web);
     public OutboxPersistenceTests(PostgreSqlFixture postgres)
     {
         _postgres = postgres;

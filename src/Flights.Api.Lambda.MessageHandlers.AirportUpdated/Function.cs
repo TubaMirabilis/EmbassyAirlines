@@ -79,7 +79,17 @@ public class Function
             _logger.LogInformation("Processing airport update");
             using var serviceScope = _host.Services.CreateScope();
             var writer = serviceScope.ServiceProvider.GetRequiredService<IAirportProjectionWriter>();
-            var snapshot = new AirportSnapshot(airportUpdatedEvent.AirportId, airportUpdatedEvent.Version, airportUpdatedEvent.Name, airportUpdatedEvent.IcaoCode, airportUpdatedEvent.IataCode, airportUpdatedEvent.TimeZoneId, Instant.FromDateTimeOffset(airportUpdatedEvent.CreatedAt), Instant.FromDateTimeOffset(airportUpdatedEvent.UpdatedAt));
+            var snapshot = new AirportSnapshot
+            {
+                Id = airportUpdatedEvent.AirportId,
+                Version = airportUpdatedEvent.Version,
+                Name = airportUpdatedEvent.Name,
+                IcaoCode = airportUpdatedEvent.IcaoCode,
+                IataCode = airportUpdatedEvent.IataCode,
+                TimeZoneId = airportUpdatedEvent.TimeZoneId,
+                CreatedAt = Instant.FromDateTimeOffset(airportUpdatedEvent.CreatedAt),
+                UpdatedAt = Instant.FromDateTimeOffset(airportUpdatedEvent.UpdatedAt)
+            };
             await writer.ApplyAsync(snapshot, CancellationToken.None);
             _logger.LogInformation("Airport update processing completed");
         }

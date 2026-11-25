@@ -75,10 +75,28 @@ public sealed class AirportProjectionWriterTests
         await using var db = _postgres.CreateDbContext();
         Assert.False(await db.Airports.AnyAsync(a => a.Id == snapshot.Id, TestContext.Current.CancellationToken));
     }
-    private static AirportSnapshot CreateHeathrowSnapshot(Guid id, long version) =>
-        new(id, version, "London Heathrow", "EGLL", "LHR", "Europe/London", s_createdAt, s_createdAt.Plus(Duration.FromHours(version)));
-    private static AirportSnapshot CreateDublinSnapshot(Guid id, long version) =>
-        new(id, version, "Dublin Airport", "EIDW", "DUB", "Europe/Dublin", s_createdAt, s_createdAt.Plus(Duration.FromHours(version)));
+    private static AirportSnapshot CreateHeathrowSnapshot(Guid id, long version) => new()
+    {
+        Id = id,
+        Version = version,
+        Name = "London Heathrow",
+        IcaoCode = "EGLL",
+        IataCode = "LHR",
+        TimeZoneId = "Europe/London",
+        CreatedAt = s_createdAt,
+        UpdatedAt = s_createdAt.Plus(Duration.FromHours(version))
+    };
+    private static AirportSnapshot CreateDublinSnapshot(Guid id, long version) => new()
+    {
+        Id = id,
+        Version = version,
+        Name = "Dublin Airport",
+        IcaoCode = "EIDW",
+        IataCode = "DUB",
+        TimeZoneId = "Europe/Dublin",
+        CreatedAt = s_createdAt,
+        UpdatedAt = s_createdAt.Plus(Duration.FromHours(version))
+    };
     private async Task ApplyAsync(AirportSnapshot snapshot)
     {
         await using var db = _postgres.CreateDbContext();
@@ -89,9 +107,19 @@ public sealed class AirportProjectionWriterTests
     {
         await using var db = _postgres.CreateDbContext();
         return await db.Airports
-            .AsNoTracking()
-            .Where(a => a.Id == id)
-            .Select(a => new AirportSnapshot(a.Id, a.Version, a.Name, a.IcaoCode, a.IataCode, a.TimeZoneId, a.CreatedAt, a.UpdatedAt))
-            .SingleAsync(TestContext.Current.CancellationToken);
+                       .AsNoTracking()
+                       .Where(a => a.Id == id)
+                       .Select(a => new AirportSnapshot
+                       {
+                           Id = a.Id,
+                           Version = a.Version,
+                           IcaoCode = a.IcaoCode,
+                           IataCode = a.IataCode,
+                           TimeZoneId = a.TimeZoneId,
+                           Name = a.Name,
+                           CreatedAt = a.CreatedAt,
+                           UpdatedAt = a.UpdatedAt
+                       })
+                       .SingleAsync(TestContext.Current.CancellationToken);
     }
 }

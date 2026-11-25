@@ -41,7 +41,7 @@ public readonly record struct RowRange : IEnumerable<int>
             return new RowRange(row, row);
         }
 
-        static RowRange Range(string start, string end) => new RowRange(
+        static RowRange Range(string start, string end) => new(
                 int.Parse(start, CultureInfo.InvariantCulture),
                 int.Parse(end, CultureInfo.InvariantCulture));
     }
