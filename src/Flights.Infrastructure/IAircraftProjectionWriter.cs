@@ -1,5 +1,3 @@
-using NodaTime;
-
 namespace Flights.Infrastructure;
 
 public interface IAircraftProjectionWriter

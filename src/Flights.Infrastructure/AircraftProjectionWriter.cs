@@ -1,6 +1,5 @@
 using Flights.Infrastructure.Database;
 using Microsoft.EntityFrameworkCore;
-using NodaTime;
 
 namespace Flights.Infrastructure;
 
