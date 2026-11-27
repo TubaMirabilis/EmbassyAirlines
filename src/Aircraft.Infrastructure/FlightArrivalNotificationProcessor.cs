@@ -87,14 +87,9 @@ public sealed class FlightArrivalNotificationProcessor
         {
             return CompletedFlightRecordingResult.Recorded;
         }
+        var specification = new MatchingCompletedFlightSpecification(aircraftId, flight);
         var matchesExisting = await ctx.Set<CompletedFlight>()
-            .AnyAsync(
-                cf => cf.Id == flight.Id
-                    && EF.Property<Guid?>(cf, "AircraftId") == aircraftId
-                    && cf.DepartureAirportIcao == flight.DepartureAirportIcao
-                    && cf.ArrivalAirportIcao == flight.ArrivalAirportIcao
-                    && cf.Milestones == flight.Milestones,
-                cancellationToken);
+                                       .AnyAsync(specification.Criteria, cancellationToken);
         if (!matchesExisting)
         {
             var message = new StringBuilder();

@@ -8,9 +8,18 @@ internal sealed class CompletedFlightConfiguration : IEntityTypeConfiguration<Co
 {
     public void Configure(EntityTypeBuilder<CompletedFlight> builder)
     {
-        builder.Property(cf => cf.ArrivalAirportIcao).HasMaxLength(4).IsUnicode(false).IsRequired();
-        builder.Property(cf => cf.DepartureAirportIcao).HasMaxLength(4).IsUnicode(false).IsRequired();
-        builder.HasOne<Core.Models.Aircraft>().WithMany(a => a.CompletedFlights).HasForeignKey("AircraftId").IsRequired();
+        builder.Property(cf => cf.ArrivalAirportIcao)
+               .HasMaxLength(4)
+               .IsUnicode(false)
+               .IsRequired();
+        builder.Property(cf => cf.DepartureAirportIcao)
+               .HasMaxLength(4)
+               .IsUnicode(false)
+               .IsRequired();
+        builder.HasOne<Core.Models.Aircraft>()
+               .WithMany(a => a.CompletedFlights)
+               .HasForeignKey("AircraftId")
+               .IsRequired();
         builder.ComplexProperty(cf => cf.Milestones, b =>
         {
             b.Property(e => e.LandingAt).IsRequired();
