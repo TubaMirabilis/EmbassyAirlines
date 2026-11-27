@@ -22,7 +22,14 @@ internal static class FlightStatusEventFactory
         }
         return flight.OffBlockAt <= flight.DepartureInstant
             ? new FlightMarkedAsEnRouteEvent(Guid.NewGuid(), flight.Aircraft.Id, flight.Id, flight.ArrivalAirport.IcaoCode, offBlockAt.ToDateTimeOffset())
-            : new FlightMarkedAsDelayedEnRouteEvent(Guid.NewGuid(), flight.Aircraft.Id, flight.Id, flight.ArrivalAirport.IcaoCode, offBlockAt.ToDateTimeOffset());
+            : new FlightMarkedAsDelayedEnRouteEvent
+            {
+                AircraftId = flight.Aircraft.Id,
+                ArrivalAirportIcaoCode = flight.ArrivalAirport.IcaoCode,
+                FlightId = flight.Id,
+                Id = Guid.NewGuid(),
+                OffBlockAt = offBlockAt.ToDateTimeOffset()
+            };
     }
     private static FlightArrivedEvent HandleArrival(Flight flight)
     {

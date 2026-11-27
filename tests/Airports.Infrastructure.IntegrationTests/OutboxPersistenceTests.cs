@@ -19,7 +19,18 @@ public sealed class OutboxPersistenceTests
     {
         await ResetDatabase();
         var now = DateTimeOffset.UtcNow;
-        var @event = new AirportCreatedEvent(Guid.NewGuid(), Guid.NewGuid(), 1, "Vancouver International Airport", "CYVR", "YVR", "America/Vancouver", now, now);
+        var @event = new AirportCreatedEvent
+        {
+            AirportId = Guid.NewGuid(),
+            CreatedAt = now,
+            IataCode = "YVR",
+            IcaoCode = "CYVR",
+            Id = Guid.NewGuid(),
+            Name = "Vancouver International Airport",
+            TimeZoneId = "America/Vancouver",
+            UpdatedAt = now,
+            Version = 1
+        };
         await using (var arrangeDb = _postgres.CreateDbContext())
         {
             arrangeDb.Add(new OutboxMessage(@event.Id, nameof(AirportCreatedEvent), JsonSerializer.Serialize(@event, _options), DateTime.UtcNow));

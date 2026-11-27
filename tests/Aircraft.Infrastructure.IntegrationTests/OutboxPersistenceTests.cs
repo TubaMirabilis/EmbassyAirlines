@@ -479,7 +479,10 @@ public sealed class OutboxPersistenceTests
         await AssertExcludedFromProcessing(eventId);
     }
 
-    private static void AssertNextAttemptScheduled(OutboxMessage message, TimeSpan expectedDelay, DateTime attemptStartedUtc, DateTime attemptFinishedUtc)
+    private static void AssertNextAttemptScheduled(OutboxMessage message,
+                                                   TimeSpan expectedDelay,
+                                                   DateTime attemptStartedUtc,
+                                                   DateTime attemptFinishedUtc)
     {
         // PostgreSQL stores timestamps to the microsecond, so allow for rounding at either bound.
         var tolerance = TimeSpan.FromMilliseconds(1);

@@ -12,7 +12,8 @@ public sealed class OutboxProcessor : NpgsqlOutboxProcessorBase<IMessagePublishe
     private static readonly Dictionary<string, Func<IMessagePublisher, string, CancellationToken, Task>> s_publishers =
         new(StringComparer.Ordinal)
         {
-            [nameof(AircraftCreatedEvent)] = (publisher, content, ct) => publisher.PublishAsync(OutboxJson.Deserialize<AircraftCreatedEvent>(content), ct)
+            [nameof(AircraftCreatedEvent)] = (publisher, content, ct) =>
+                publisher.PublishAsync(OutboxJson.Deserialize<AircraftCreatedEvent>(content), ct)
         };
     public OutboxProcessor(ApplicationDbContext dbContext,
                            IMessagePublisher publisher,

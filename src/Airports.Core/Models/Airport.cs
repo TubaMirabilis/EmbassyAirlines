@@ -19,7 +19,18 @@ public sealed class Airport : Entity
         IcaoCode = icaoCode;
         IataCode = iataCode;
         TimeZoneId = timeZoneId;
-        AddDomainEvent(new AirportCreatedEvent(Guid.NewGuid(), Id, Version, Name, IcaoCode, IataCode, TimeZoneId, CreatedAt, UpdatedAt));
+        AddDomainEvent(new AirportCreatedEvent
+        {
+            AirportId = Id,
+            CreatedAt = CreatedAt,
+            IataCode = IataCode,
+            IcaoCode = IcaoCode,
+            Id = Guid.NewGuid(),
+            Name = Name,
+            TimeZoneId = TimeZoneId,
+            UpdatedAt = UpdatedAt,
+            Version = Version
+        });
     }
 #pragma warning disable CS8618
     private Airport()

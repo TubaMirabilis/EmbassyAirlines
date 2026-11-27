@@ -11,7 +11,8 @@ namespace Shared.HttpApiLambdaDefaults;
 
 public static class HttpApiLambdaExtensions
 {
-    public static TBuilder AddHttpApiLambdaDefaults<TBuilder>(this TBuilder builder, string sourceName, Assembly assembly) where TBuilder : IHostApplicationBuilder
+    public static TBuilder AddHttpApiLambdaDefaults<TBuilder>(this TBuilder builder, string sourceName, Assembly assembly)
+        where TBuilder : IHostApplicationBuilder
     {
         builder.AddServiceDefaults();
         builder.Services.ConfigureOpenTelemetryTracerProvider(tracing => tracing.AddSource(sourceName));

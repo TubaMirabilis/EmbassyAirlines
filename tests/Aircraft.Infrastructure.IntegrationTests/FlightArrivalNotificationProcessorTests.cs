@@ -422,7 +422,8 @@ public sealed class FlightArrivalNotificationProcessorTests
         };
 
         // Act
-        var result = await CreateProcessor(RecordedAt, concurrentDeparture, conflicts).ProcessAsync(flightArrivedEvent, TestContext.Current.CancellationToken);
+        var processor = CreateProcessor(RecordedAt, concurrentDeparture, conflicts);
+        var result = await processor.ProcessAsync(flightArrivedEvent, TestContext.Current.CancellationToken);
 
         // Assert: the retry re-recorded the history it rolled back, then found the arrival stale.
         Assert.Equal(1, conflicts.Count);

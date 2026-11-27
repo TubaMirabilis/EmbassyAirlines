@@ -41,8 +41,9 @@ internal sealed class RecordFlightMilestoneEndpoint : IEndpoint
         var futureLimit = now.Plus(tolerance);
         if (occurredAt > futureLimit)
         {
-            logger.LogWarning("The request submitted a timestamp which violates the future tolerance limit.");
-            var error = Error.Validation("Flight.MilestoneViolatesFutureTolerance", "The request submitted a timestamp which violates the future tolerance limit.");
+            logger.LogWarning("Flight milestone timestamp {Timestamp} violates the future tolerance limit {FutureLimit}.", occurredAt, futureLimit);
+            var description = "The request submitted a timestamp which violates the future tolerance limit.";
+            var error = Error.Validation("Flight.MilestoneViolatesFutureTolerance", description);
             return TypedResults.Problem(ErrorHandlingHelper.GetProblemDetails(error));
         }
         var flight = await ctx.Flights

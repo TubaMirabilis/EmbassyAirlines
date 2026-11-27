@@ -28,7 +28,10 @@ internal static class FlightsSmokeTestActions
         Console.WriteLine($"Scheduled flight with ID: {flight.Id}");
         return flight;
     }
-    public static async Task AttemptPatchMilestoneAsync(HttpClient client, Guid flightId, string milestone, CancellationToken cancellationToken = default)
+    public static async Task AttemptPatchMilestoneAsync(HttpClient client,
+                                                        Guid flightId,
+                                                        string milestone,
+                                                        CancellationToken cancellationToken = default)
     {
         Console.WriteLine($"Attempting to record flight milestone {milestone} for flight {flightId}");
         var dto = new RecordFlightMilestoneDto(milestone, DateTimeOffset.UtcNow);

@@ -9,8 +9,10 @@ namespace Shared.Npgsql;
 
 public static class ServiceCollectionExtensions
 {
-    public static IServiceCollection AddDatabaseConnection<TDbContext>(this IServiceCollection services, IConfiguration config, bool useNodaTime, string schema)
-        where TDbContext : DbContext
+    public static IServiceCollection AddDatabaseConnection<TDbContext>(this IServiceCollection services, 
+                                                                       IConfiguration config,
+                                                                       bool useNodaTime,
+                                                                       string schema) where TDbContext : DbContext
     {
         var dbConfig = config.GetSection("DbConnection").Get<DatabaseConnectionOptions>();
         Ensure.NotNull(dbConfig);
@@ -23,7 +25,8 @@ public static class ServiceCollectionExtensions
         }
         dataSourceBuilder.UsePasswordProvider(
             passwordProvider: _ => throw new NotSupportedException("Use OpenAsync"),
-            passwordProviderAsync: async (builder, ct) => await RDSAuthTokenGenerator.GenerateAuthTokenAsync(dbConfig.Host, dbConfig.Port, dbConfig.Username));
+            passwordProviderAsync: async (builder, ct) =>
+                await RDSAuthTokenGenerator.GenerateAuthTokenAsync(dbConfig.Host, dbConfig.Port, dbConfig.Username));
         AddDatabaseConnection<TDbContext>(services, dataSourceBuilder.Build(), useNodaTime, schema);
         return services;
     }

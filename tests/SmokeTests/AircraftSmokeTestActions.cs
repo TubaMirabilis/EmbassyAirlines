@@ -61,7 +61,10 @@ internal static class AircraftSmokeTestActions
         }
         Console.WriteLine($"AWS S3 upload of file {path} to bucket aircraft-bucket-{accountId}-{region} completed successfully");
     }
-    public static async Task EnsureStatusAsync(HttpClient client, Guid aircraftId, string expectedStatus, CancellationToken cancellationToken = default)
+    public static async Task EnsureStatusAsync(HttpClient client,
+                                               Guid aircraftId,
+                                               string expectedStatus,
+                                               CancellationToken cancellationToken = default)
     {
         Console.WriteLine($"Waiting for aircraft {aircraftId} to reach status {expectedStatus}");
         var startTime = Stopwatch.GetTimestamp();
